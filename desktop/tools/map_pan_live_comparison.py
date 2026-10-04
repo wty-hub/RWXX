@@ -1,10 +1,11 @@
-"""ABBA comparison of frozen runtimes in an actual moving 500-unit local game."""
+"""ABBA comparison of frozen runtimes in an actual moving local game."""
 import argparse
 import json
 from pathlib import Path
 import subprocess
 import sys
 from map_pan_comparison import PROJECT, ORDER, summarize_comparison, write_json
+from map_pan_builtin_comparison import add_camera_arguments, camera_protocol
 
 
 def main():
@@ -14,8 +15,8 @@ def main():
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--java', required=True)
     p.add_argument('--fog', choices=('off', 'on'), default='off')
-    p.add_argument('--camera-period-seconds', type=int, default=20)
-    p.add_argument('--camera-mode', choices=('pan', 'jump'), default='pan')
+    p.add_argument('--units', type=int, choices=(500, 661, 1000, 2000), default=500)
+    add_camera_arguments(p)
     p.add_argument('--window-width', type=int, default=1920)
     p.add_argument('--window-height', type=int, default=1080)
     p.add_argument('--baseline-disable-frozen-pixel-mesh-reuse', action='store_true')
@@ -35,19 +36,50 @@ def main():
     p.add_argument('--baseline-disable-text-mesh-reuse', action='store_true')
     p.add_argument('--no-perf-window-log', action='store_true')
     p.add_argument('--canvas-stage-trace', action='store_true')
-    p.add_argument('--baseline-raster-threads', type=int, choices=(1, 2, 4))
-    p.add_argument('--candidate-raster-threads', type=int, choices=(1, 2, 4))
+    p.add_argument('--parallel-cell-raster', action='store_true', help='Enable whole-cell raster stripes in both variants')
+    p.add_argument('--candidate-parallel-cell-raster', action='store_true', help='Enable whole-cell raster stripes in candidate only')
+    p.add_argument('--adaptive-cell-raster', action='store_true', help='Select costly texture cells in both variants; requires common parallel stripes')
+    p.add_argument('--candidate-adaptive-cell-raster', action='store_true', help='Select costly texture cells in candidate only; requires candidate parallel stripes')
+    p.add_argument('--gpu-map-cell-cache', action='store_true', help='Enable Vulkan map cell rendering in both variants')
+    p.add_argument('--candidate-gpu-map-cell-cache', action='store_true', help='Enable Vulkan map cell rendering in candidate only')
+    p.add_argument('--primitive-text-metrics', action='store_true', help='Enable primitive text metrics in both variants')
+    p.add_argument('--candidate-primitive-text-metrics', action='store_true', help='Enable primitive text metrics in candidate only')
+    p.add_argument('--baseline-raster-threads', type=int, choices=range(1, 9))
+    p.add_argument('--candidate-raster-threads', type=int, choices=range(1, 9))
     p.add_argument('--baseline-layer-buffer-pixels', type=int, choices=(256, 384, 512))
     p.add_argument('--candidate-layer-buffer-pixels', type=int, choices=(256, 384, 512))
     args = p.parse_args()
+    if args.adaptive_cell_raster and not args.parallel_cell_raster:
+        p.error('--adaptive-cell-raster requires --parallel-cell-raster in both variants')
+    if args.candidate_adaptive_cell_raster and not (args.parallel_cell_raster or args.candidate_parallel_cell_raster):
+        p.error('--candidate-adaptive-cell-raster requires common or candidate --parallel-cell-raster')
+    try:
+        camera = camera_protocol(args)
+    except ValueError as error:
+        p.error(str(error))
     out = args.output.resolve(); out.mkdir(parents=True, exist_ok=False)
+    protocol = {**camera, 'units': args.units, 'mode': 'moving', 'teams': 15, 'fog': args.fog,
+                'logicalWindowWidth': args.window_width, 'logicalWindowHeight': args.window_height,
+                'order': ORDER, 'warmupSeconds': 20, 'sampleSeconds': 20, 'windowsPerProcess': 2,
+                'rasterThreadsRequested': {'baseline': args.baseline_raster_threads, 'candidate': args.candidate_raster_threads},
+                'parallelCellRasterRequested': {'baseline': args.parallel_cell_raster,
+                    'candidate': args.parallel_cell_raster or args.candidate_parallel_cell_raster},
+                'adaptiveCellRasterRequested': {'baseline': args.adaptive_cell_raster,
+                    'candidate': args.adaptive_cell_raster or args.candidate_adaptive_cell_raster},
+                'gpuMapCellCacheRequested': {'baseline': args.gpu_map_cell_cache,
+                    'candidate': args.gpu_map_cell_cache or args.candidate_gpu_map_cell_cache},
+                'primitiveTextMetricsRequested': {'baseline': args.primitive_text_metrics,
+                    'candidate': args.primitive_text_metrics or args.candidate_primitive_text_metrics}}
     runs = []
     for i, variant in enumerate(ORDER, 1):
         target = out / f'{i:02d}-{variant}'
         command = [sys.executable, str(PROJECT / 'desktop/tools/map_pan_live.py'), '--jar',
                         str(getattr(args, variant).resolve()), '--output', str(target), '--java', args.java,
-                        '--fog', args.fog, '--camera-period-seconds', str(args.camera_period_seconds),
-                        '--camera-mode', args.camera_mode, '--engine-trace',
+                        '--fog', args.fog, '--units', str(args.units),
+                        '--camera-period-seconds', str(args.camera_period_seconds),
+                        '--camera-mode', args.camera_mode, '--zoom-mode', camera['zoomMode'],
+                        '--zoom-period-seconds', str(args.zoom_period_seconds),
+                        '--zoom-min', str(args.zoom_min), '--zoom-max', str(args.zoom_max), '--engine-trace',
                         '--window-width', str(args.window_width), '--window-height', str(args.window_height)]
         if variant == 'baseline' and args.baseline_disable_frozen_pixel_mesh_reuse:
             command.append('--disable-frozen-pixel-mesh-reuse')
@@ -79,6 +111,14 @@ def main():
             command.append('--no-perf-window-log')
         if args.canvas_stage_trace:
             command.append('--canvas-stage-trace')
+        if protocol['parallelCellRasterRequested'][variant]:
+            command.append('--parallel-cell-raster')
+        if protocol['adaptiveCellRasterRequested'][variant]:
+            command.append('--adaptive-cell-raster')
+        if protocol['gpuMapCellCacheRequested'][variant]:
+            command.append('--gpu-map-cell-cache')
+        if protocol['primitiveTextMetricsRequested'][variant]:
+            command.append('--primitive-text-metrics')
         raster_threads = getattr(args, variant + '_raster_threads')
         if raster_threads is not None:
             command.extend(['--raster-threads', str(raster_threads)])
@@ -88,8 +128,8 @@ def main():
         subprocess.run(command, check=True)
         run = json.loads((target / 'diagnostic-summary.json').read_text(encoding='utf-8'))['run']
         run['variant'] = variant; runs.append(run)
-        write_json(out / 'summary.json', {'runs': runs})
-    report = {'runs': runs, 'comparison': summarize_comparison(runs)}
+        write_json(out / 'summary.json', {'protocol': protocol, 'runs': runs})
+    report = {'protocol': protocol, 'runs': runs, 'comparison': summarize_comparison(runs)}
     write_json(out / 'summary.json', report)
     print('COMPARISON ' + json.dumps(report['comparison']), flush=True)
 

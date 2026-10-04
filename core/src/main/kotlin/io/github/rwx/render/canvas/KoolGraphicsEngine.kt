@@ -821,7 +821,11 @@ class KoolGraphicsEngine private constructor(
             }
             val profile = CpuTargetProfile.createIfEnabled(texture, frame, width, height)
             val startedAt = if (profile != null) System.nanoTime() else 0L
-            val result = rasterizeFrameCommands(frame, pixels, width, height, visiting, profile,
+            val result = if (PARALLEL_CELL_RASTER_ENABLED) {
+                rasterizeCellStripes(frame, pixels, width, height, profile, owner == null && replacesContents)
+                    ?: rasterizeFrameCommands(frame, pixels, width, height, visiting, profile,
+                        zeroInitializedPixels = owner == null && replacesContents)
+            } else rasterizeFrameCommands(frame, pixels, width, height, visiting, profile,
                 zeroInitializedPixels = owner == null && replacesContents)
             profile?.log(System.nanoTime() - startedAt, result != null)
             if (result != null) return RasterizedTargetPixels(result, owner)
@@ -858,6 +862,168 @@ class KoolGraphicsEngine private constructor(
                 pixels = it,
                 premultipliedAlpha = false,
             )
+        }
+    }
+
+    /** Resolve and pin on the owner; each worker executes the original sequence on disjoint rows. */
+    private fun rasterizeCellStripes(
+        frame: KoolCanvasFrame,
+        pixels: IntArray,
+        width: Int,
+        height: Int,
+        profile: CpuTargetProfile?,
+        zeroInitializedPixels: Boolean,
+    ): IntArray? = rasterizeCellStripesWithPolicy(
+        frame, pixels, width, height, profile, zeroInitializedPixels, ADAPTIVE_CELL_RASTER_ENABLED,
+    )
+
+    private fun rasterizeCellStripesWithPolicy(
+        frame: KoolCanvasFrame,
+        pixels: IntArray,
+        width: Int,
+        height: Int,
+        profile: CpuTargetProfile?,
+        zeroInitializedPixels: Boolean,
+        adaptive: Boolean,
+    ): IntArray? {
+        if (RasterWorkerPool.insideWorker.get() || RasterWorkerPool.workerCount <= 1 ||
+            width.toLong() * height < PARALLEL_RASTER_MIN_PIXELS ||
+            height < RasterWorkerPool.workerCount * PARALLEL_RASTER_MIN_ROWS_PER_WORKER) return null
+        val store = textureStore as? KoolCanvasCpuTextureStore ?: return null
+        val sourceIds = linkedSetOf<KoolCanvasTextureId>()
+        for (command in frame.commands) {
+            when (command) {
+                is KoolCanvasCommand.Clear -> if (command.renderTarget != null) return null
+                is KoolCanvasCommand.DrawTexture -> {
+                    if (command.state.renderTarget != null || command.paint.textureEffect != null ||
+                        !command.state.isFiniteRasterState() || !command.source.isFiniteRect() ||
+                        !command.destination.isFiniteRect() || !command.paint.alphaMultiplier.isFinite()) return null
+                    sourceIds += command.texture.id
+                }
+                is KoolCanvasCommand.DrawRect -> {
+                    if (command.state.renderTarget != null || command.paint.style == KoolCanvasPaintStyle.Stroke ||
+                        !command.state.isFiniteRasterState() || !command.rect.isFiniteRect() ||
+                        !command.paint.alphaMultiplier.isFinite()) return null
+                }
+                else -> return null
+            }
+        }
+        // Clear/fill-only cells already use cheap array/row operations. Avoid even source
+        // preparation for them when choosing whether a whole-cell dispatch is worthwhile.
+        if (adaptive && sourceIds.isEmpty()) return null
+        val sourceLease = store.acquireRasterPixelSources(sourceIds) ?: return null
+        sourceLease.use { sources ->
+            if (adaptive && !adaptiveCellRasterHasEnoughTextureWork(frame, sources.images, width, height)) return null
+            val sourceImages = arrayOfNulls<KoolCanvasArgbImage>(frame.commands.size)
+            for (index in frame.commands.indices) {
+                val command = frame.commands[index] as? KoolCanvasCommand.DrawTexture ?: continue
+                sourceImages[index] = sources.images.getValue(command.texture.id)
+            }
+            val profiles = if (profile != null) arrayOfNulls<CpuTargetProfile>(RasterWorkerPool.workerCount) else null
+            val stripeRows = (height + RasterWorkerPool.workerCount - 1) / RasterWorkerPool.workerCount
+            processRasterRows(0, height, width) { rowStart, rowEnd ->
+                val stripeProfile = profile?.newStripeProfile()
+                profiles?.set(rowStart / stripeRows, stripeProfile)
+                rasterizeFrameStripe(frame, sourceImages, pixels, width, height, rowStart, rowEnd, stripeProfile, zeroInitializedPixels)
+            }
+            if (profile != null) profile.mergeStripeProfiles(profiles!!.filterNotNull(), frame.commands.size)
+        }
+        return pixels
+    }
+
+    /** Predict only texture work: fills and exact row copies need no whole-cell dispatch. */
+    private fun adaptiveCellRasterHasEnoughTextureWork(
+        frame: KoolCanvasFrame,
+        sources: Map<KoolCanvasTextureId, KoolCanvasArgbImage>,
+        width: Int,
+        height: Int,
+    ): Boolean {
+        var work = 0L
+        for (command in frame.commands) {
+            if (command !is KoolCanvasCommand.DrawTexture) continue
+            val quad = clipTextureQuad(command.source, command.destination, command.state.clipForGeometry()) ?: continue
+            val source = quad.source
+            val destination = quad.destination
+            val transform = command.state.transform
+            val bounds = transform.mapRectBounds(destination)
+            val left = floor(bounds.boundsLeft).toInt().coerceIn(0, width)
+            val top = floor(bounds.boundsTop).toInt().coerceIn(0, height)
+            val right = ceil(bounds.boundsRight).toInt().coerceIn(0, width)
+            val bottom = ceil(bounds.boundsBottom).toInt().coerceIn(0, height)
+            if (left >= right || top >= bottom) continue
+            val image = sources.getValue(command.texture.id)
+            if (transform === KoolCanvasTransform.Identity && textureRowCopyIsSupported(
+                    command, image, source, destination, left, top, right, bottom,
+                )) {
+                if (command.paint.blendMode == KoolCanvasBlendMode.Source) continue
+                val sourceLeft = source.left.toInt() + (left - destination.left.toInt())
+                val sourceTop = source.top.toInt() + (top - destination.top.toInt())
+                if (image.isOpaque(sourceLeft, sourceTop, right - left, bottom - top)) continue
+            }
+            // Linear sampling fetches four texels; nearest sampling and translucent row
+            // compositing read one. This is a dispatch heuristic, never a pixel shortcut.
+            val weight = if (command.paint.textureFilter == KoolCanvasTextureFilter.Linear) 4L else 1L
+            work += (right - left).toLong() * (bottom - top) * weight
+            if (work >= ADAPTIVE_CELL_RASTER_MIN_TEXTURE_WORK) return true
+        }
+        return false
+    }
+
+    private fun KoolCanvasRect.isFiniteRect(): Boolean =
+        left.isFinite() && top.isFinite() && right.isFinite() && bottom.isFinite()
+
+    private fun KoolCanvasState.isFiniteRasterState(): Boolean {
+        val t = transform
+        if (!t.scaleX.isFinite() || !t.scaleY.isFinite() || !t.skewX.isFinite() || !t.skewY.isFinite() ||
+            !t.translateX.isFinite() || !t.translateY.isFinite() || clip?.isFiniteRect() == false) return false
+        val determinant = t.scaleX * t.scaleY - t.skewX * t.skewY
+        return determinant.isFinite() && abs(determinant) >= .000001f
+    }
+
+    private fun rasterizeFrameStripe(
+        frame: KoolCanvasFrame,
+        sourceImages: Array<KoolCanvasArgbImage?>,
+        pixels: IntArray,
+        width: Int,
+        height: Int,
+        rowStart: Int,
+        rowEnd: Int,
+        profile: CpuTargetProfile?,
+        zeroInitializedPixels: Boolean,
+    ) {
+        var firstCommandIndex = 0
+        while (firstCommandIndex < frame.commands.size) {
+            val clear = frame.commands[firstCommandIndex] as? KoolCanvasCommand.Clear ?: break
+            if (clear.renderTarget != null || clear.blendMode == KoolCanvasBlendMode.ClearAlpha) break
+            firstCommandIndex++
+        }
+        if (firstCommandIndex > 0) {
+            val clear = frame.commands[firstCommandIndex - 1] as KoolCanvasCommand.Clear
+            val color = if (clear.blendMode == KoolCanvasBlendMode.Clear) 0 else clear.color.argb
+            if (color != 0 || !zeroInitializedPixels) pixels.fill(color, rowStart * width, rowEnd * width)
+            profile?.let { it.clearCommands += firstCommandIndex }
+        }
+        for (index in firstCommandIndex until frame.commands.size) {
+            when (val command = frame.commands[index]) {
+                is KoolCanvasCommand.Clear -> {
+                    profile?.let { it.clearCommands++ }
+                    if (command.blendMode == KoolCanvasBlendMode.ClearAlpha) {
+                        for (offset in rowStart * width until rowEnd * width) pixels[offset] = pixels[offset] and 0x00ffffff
+                    } else {
+                        val color = if (command.blendMode == KoolCanvasBlendMode.Clear) 0 else command.color.argb
+                        pixels.fill(color, rowStart * width, rowEnd * width)
+                    }
+                }
+                is KoolCanvasCommand.DrawTexture -> check(rasterizeResolvedTextureCommand(command, sourceImages[index]!!,
+                    pixels, width, height, profile, rowStart, rowEnd)) { "Prechecked texture stripe was unsupported" }
+                is KoolCanvasCommand.DrawRect -> {
+                    profile?.let { it.rectCommands++ }
+                    check(rasterizeRectStripe(command, pixels, width, height, rowStart, rowEnd)) {
+                        "Prechecked rectangle stripe was unsupported"
+                    }
+                }
+                else -> error("Prechecked stripe contained unsupported geometry")
+            }
         }
     }
 
@@ -956,6 +1122,26 @@ class KoolGraphicsEngine private constructor(
                 )
             }
             ?: return false
+        return rasterizeResolvedTextureCommand(command, sourceImage, targetPixels, targetWidth, targetHeight,
+            profile, 0, targetHeight, recordProfile = false)
+    }
+
+    private fun rasterizeResolvedTextureCommand(
+        command: KoolCanvasCommand.DrawTexture,
+        sourceImage: KoolCanvasArgbImage,
+        targetPixels: IntArray,
+        targetWidth: Int,
+        targetHeight: Int,
+        profile: CpuTargetProfile?,
+        rowStart: Int,
+        rowEnd: Int,
+        recordProfile: Boolean = true,
+    ): Boolean {
+        // Common map tiles have the identity transform and cannot affect other row stripes.
+        // Reject before allocating clipped quads and X sampling arrays for those commands.
+        if ((rowStart > 0 || rowEnd < targetHeight) && command.state.transform === KoolCanvasTransform.Identity &&
+            (ceil(command.destination.boundsBottom).toInt() <= rowStart || floor(command.destination.boundsTop).toInt() >= rowEnd)) return true
+        if (recordProfile) profile?.recordTextureCommand(command)
         val textureQuad =
             clipTextureQuad(command.source, command.destination, command.state.clipForGeometry()) ?: return true
         val source = textureQuad.source
@@ -963,9 +1149,9 @@ class KoolGraphicsEngine private constructor(
         val transform = command.state.transform
         val targetBounds = transform.mapRectBounds(destination)
         val left = floor(targetBounds.boundsLeft).toInt().coerceIn(0, targetWidth)
-        val top = floor(targetBounds.boundsTop).toInt().coerceIn(0, targetHeight)
+        val top = floor(targetBounds.boundsTop).toInt().coerceIn(0, targetHeight).coerceAtLeast(rowStart)
         val right = ceil(targetBounds.boundsRight).toInt().coerceIn(0, targetWidth)
-        val bottom = ceil(targetBounds.boundsBottom).toInt().coerceIn(0, targetHeight)
+        val bottom = ceil(targetBounds.boundsBottom).toInt().coerceIn(0, targetHeight).coerceAtMost(rowEnd)
         if (left >= right || top >= bottom) return true
 
         if (transform === KoolCanvasTransform.Identity && copyTextureRowsIfPossible(
@@ -1228,39 +1414,12 @@ class KoolGraphicsEngine private constructor(
         right: Int,
         bottom: Int,
     ): Boolean {
-        if (command.paint.textureFilter != KoolCanvasTextureFilter.Nearest ||
-            command.paint.color.argb != -0x1 ||
-            command.paint.alphaMultiplier != 1f ||
-            source.width <= 0f ||
-            source.height <= 0f ||
-            destination.width <= 0f ||
-            destination.height <= 0f ||
-            !source.left.isWholePixel() ||
-            !source.top.isWholePixel() ||
-            !source.right.isWholePixel() ||
-            !source.bottom.isWholePixel() ||
-            !destination.left.isWholePixel() ||
-            !destination.top.isWholePixel() ||
-            !destination.right.isWholePixel() ||
-            !destination.bottom.isWholePixel() ||
-            source.width != destination.width ||
-            source.height != destination.height
-        ) {
-            return false
-        }
+        if (!textureRowCopyIsSupported(command, sourceImage, source, destination, left, top, right, bottom)) return false
 
         val sourceLeft = source.left.toInt() + (left - destination.left.toInt())
         val sourceTop = source.top.toInt() + (top - destination.top.toInt())
         val copyWidth = right - left
         val copyHeight = bottom - top
-        if (sourceLeft < 0 ||
-            sourceTop < 0 ||
-            sourceLeft + copyWidth > sourceImage.width ||
-            sourceTop + copyHeight > sourceImage.height
-        ) {
-            return false
-        }
-
         when (command.paint.blendMode) {
             KoolCanvasBlendMode.Source -> {
                 copyTextureRows(
@@ -1306,8 +1465,54 @@ class KoolGraphicsEngine private constructor(
 
             else -> return false
         }
-
         return true
+    }
+
+    /** Shared exact eligibility; callers distinguish opaque copying from alpha compositing. */
+    private fun textureRowCopyIsSupported(
+        command: KoolCanvasCommand.DrawTexture,
+        sourceImage: KoolCanvasArgbImage,
+        source: KoolCanvasRect,
+        destination: KoolCanvasRect,
+        left: Int,
+        top: Int,
+        right: Int,
+        bottom: Int,
+    ): Boolean {
+        if (command.paint.textureFilter != KoolCanvasTextureFilter.Nearest ||
+            command.paint.color.argb != -0x1 ||
+            command.paint.alphaMultiplier != 1f ||
+            source.width <= 0f ||
+            source.height <= 0f ||
+            destination.width <= 0f ||
+            destination.height <= 0f ||
+            !source.left.isWholePixel() ||
+            !source.top.isWholePixel() ||
+            !source.right.isWholePixel() ||
+            !source.bottom.isWholePixel() ||
+            !destination.left.isWholePixel() ||
+            !destination.top.isWholePixel() ||
+            !destination.right.isWholePixel() ||
+            !destination.bottom.isWholePixel() ||
+            source.width != destination.width ||
+            source.height != destination.height
+        ) {
+            return false
+        }
+
+        val sourceLeft = source.left.toInt() + (left - destination.left.toInt())
+        val sourceTop = source.top.toInt() + (top - destination.top.toInt())
+        val copyWidth = right - left
+        val copyHeight = bottom - top
+        if (sourceLeft < 0 ||
+            sourceTop < 0 ||
+            sourceLeft + copyWidth > sourceImage.width ||
+            sourceTop + copyHeight > sourceImage.height
+        ) {
+            return false
+        }
+
+        return command.paint.blendMode == KoolCanvasBlendMode.Source || command.paint.blendMode == KoolCanvasBlendMode.SourceOver
     }
 
     private fun copyTextureRows(
@@ -1467,6 +1672,15 @@ class KoolGraphicsEngine private constructor(
         targetPixels: IntArray,
         targetWidth: Int,
         targetHeight: Int,
+    ): Boolean = rasterizeRectStripe(command, targetPixels, targetWidth, targetHeight, 0, targetHeight)
+
+    private fun rasterizeRectStripe(
+        command: KoolCanvasCommand.DrawRect,
+        targetPixels: IntArray,
+        targetWidth: Int,
+        targetHeight: Int,
+        rowStart: Int,
+        rowEnd: Int,
     ): Boolean {
         if (command.state.renderTarget != null ||
             command.paint.style == KoolCanvasPaintStyle.Stroke
@@ -1479,9 +1693,9 @@ class KoolGraphicsEngine private constructor(
         val transform = command.state.transform
         val targetBounds = transform.mapRectBounds(destination)
         val left = floor(targetBounds.boundsLeft).toInt().coerceIn(0, targetWidth)
-        val top = floor(targetBounds.boundsTop).toInt().coerceIn(0, targetHeight)
+        val top = floor(targetBounds.boundsTop).toInt().coerceIn(0, targetHeight).coerceAtLeast(rowStart)
         val right = ceil(targetBounds.boundsRight).toInt().coerceIn(0, targetWidth)
-        val bottom = ceil(targetBounds.boundsBottom).toInt().coerceIn(0, targetHeight)
+        val bottom = ceil(targetBounds.boundsBottom).toInt().coerceIn(0, targetHeight).coerceAtMost(rowEnd)
         if (left >= right || top >= bottom) return true
         val color = paintColor(command.paint)
         val inverseTransform = transform.inverted() ?: return false
@@ -1528,7 +1742,7 @@ class KoolGraphicsEngine private constructor(
         }
         val workerCount = RasterWorkerPool.workerCount
         val pixelCount = rowCount * rowWidth
-        if (workerCount <= 1 ||
+        if (RasterWorkerPool.insideWorker.get() || workerCount <= 1 ||
             rowCount < workerCount * PARALLEL_RASTER_MIN_ROWS_PER_WORKER ||
             pixelCount < PARALLEL_RASTER_MIN_PIXELS
         ) {
@@ -1549,6 +1763,8 @@ class KoolGraphicsEngine private constructor(
             try {
                 RasterWorkerPool.executor.execute {
                     if (!taskState.compareAndSet(0, 1)) return@execute
+                    val previousWorkerState = RasterWorkerPool.insideWorker.get()
+                    RasterWorkerPool.insideWorker.set(true)
                     try {
                         if (failure.get() == null) {
                             block(rowStart, rowEnd)
@@ -1556,6 +1772,7 @@ class KoolGraphicsEngine private constructor(
                     } catch (throwable: Throwable) {
                         failure.compareAndSet(null, throwable)
                     } finally {
+                        RasterWorkerPool.insideWorker.set(previousWorkerState)
                         taskState.set(3)
                         latch.countDown()
                     }
@@ -2524,6 +2741,26 @@ class KoolGraphicsEngine private constructor(
         private var tintedTextureCommands: Int = 0
         private var sourceBlendTextureCommands: Int = 0
         private var sourceOverTextureCommands: Int = 0
+        private var stripeRaster = false
+
+        fun newStripeProfile(): CpuTargetProfile = CpuTargetProfile(texture, width, height)
+
+        fun mergeStripeProfiles(profiles: List<CpuTargetProfile>, commands: Int) {
+            stripeRaster = true
+            totalCommands = commands
+            clearCommands = profiles.sumOf { it.clearCommands }
+            textureCommands = profiles.sumOf { it.textureCommands }
+            rectCommands = profiles.sumOf { it.rectCommands }
+            linearTextureCommands = profiles.sumOf { it.linearTextureCommands }
+            nearestTextureCommands = profiles.sumOf { it.nearestTextureCommands }
+            fastTextureCopies = profiles.sumOf { it.fastTextureCopies }
+            sampledTextureDraws = profiles.sumOf { it.sampledTextureDraws }
+            sampledPixels = profiles.sumOf { it.sampledPixels }
+            transformedTextureCommands = profiles.sumOf { it.transformedTextureCommands }
+            tintedTextureCommands = profiles.sumOf { it.tintedTextureCommands }
+            sourceBlendTextureCommands = profiles.sumOf { it.sourceBlendTextureCommands }
+            sourceOverTextureCommands = profiles.sumOf { it.sourceOverTextureCommands }
+        }
 
         fun recordTextureCommand(command: KoolCanvasCommand.DrawTexture) {
             textureCommands += 1
@@ -2564,7 +2801,8 @@ class KoolGraphicsEngine private constructor(
                         " transformedTexture=$transformedTextureCommands" +
                         " tintedTexture=$tintedTextureCommands" +
                         " sourceBlend=$sourceBlendTextureCommands" +
-                        " sourceOverBlend=$sourceOverTextureCommands",
+                        " sourceOverBlend=$sourceOverTextureCommands" +
+                        " stripeRaster=$stripeRaster",
             )
         }
 
@@ -2579,6 +2817,10 @@ class KoolGraphicsEngine private constructor(
     }
 
     internal companion object {
+        private val PARALLEL_CELL_RASTER_ENABLED = (System.getenv("RWX_PARALLEL_CELL_RASTER") == "1")
+            .also { println("[RWX canvas] parallelCellRaster=$it") }
+        private val ADAPTIVE_CELL_RASTER_ENABLED = adaptiveCellRasterEnabled(System.getenv())
+            .also { println("[RWX canvas] adaptiveCellRaster=$it") }
         private val TEXTURE_METADATA_REUSE_ENABLED = (System.getenv("RWX_DISABLE_TEXTURE_METADATA_REUSE") != "1")
             .also { println("[RWX canvas] textureMetadataReuse=$it") }
         private val IMMUTABLE_PIXEL_SNAPSHOT_REUSE_ENABLED =
@@ -2607,12 +2849,15 @@ class KoolGraphicsEngine private constructor(
         const val ATLAS_MAX_TEXTURE_HEIGHT: Int = 100
         const val MAX_FRAME_SNAPSHOT_DEPENDENCY_DEPTH: Int = 64
         const val PARALLEL_RASTER_MIN_PIXELS: Int = 64 * 1024
+        const val ADAPTIVE_CELL_RASTER_MIN_TEXTURE_WORK: Long = 4L * PARALLEL_RASTER_MIN_PIXELS
         const val PARALLEL_RASTER_MIN_ROWS_PER_WORKER: Int = 16
         const val PNG_COLOR_GRAYSCALE: Int = 0
         const val PNG_COLOR_RGB: Int = 2
         const val PNG_COLOR_INDEXED: Int = 3
         const val PNG_COLOR_GRAYSCALE_ALPHA: Int = 4
         const val PNG_COLOR_RGBA: Int = 6
+        internal fun adaptiveCellRasterEnabled(environment: Map<String, String>): Boolean =
+            environment["RWX_PARALLEL_CELL_RASTER"] == "1" && environment["RWX_ADAPTIVE_CELL_RASTER"] == "1"
         val DEFAULT_TEXTURE_SIZE: Pair<Int, Int> = 64 to 64
         val PNG_SIGNATURE: ByteArray = byteArrayOf(
             0x89.toByte(),
@@ -2626,6 +2871,7 @@ class KoolGraphicsEngine private constructor(
         )
 
         object RasterWorkerPool {
+            internal val insideWorker: ThreadLocal<Boolean> = ThreadLocal.withInitial { false }
             private val workerSerial = AtomicInteger()
             val workerCount: Int = System.getProperty("rwx.koolRasterThreads")
                 ?.toIntOrNull()

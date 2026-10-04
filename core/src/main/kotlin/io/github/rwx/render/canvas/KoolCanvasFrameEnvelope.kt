@@ -232,6 +232,41 @@ class KoolCanvasCpuTextureStore internal constructor(
         return source.image
     }
 
+    /** Pins only current immutable pixels for a synchronous raster job, without freezing commands. */
+    @Synchronized
+    internal fun acquireRasterPixelSources(ids: Collection<KoolCanvasTextureId>): RasterPixelSources? {
+        check(!closed) { "CPU texture store is closed" }
+        val images = LinkedHashMap<KoolCanvasTextureId, KoolCanvasArgbImage>(ids.size)
+        val allocations = IdentityHashMap<KoolCanvasPixelPool.Allocation, Boolean>()
+        val retained = ArrayList<KoolCanvasPixelPool.PixelOwner>()
+        try {
+            for (id in ids) {
+                val source = sources[id]?.resource as? FrozenCanvasResource.Pixels
+                if (source == null) {
+                    retained.forEach { it.close() }
+                    return null
+                }
+                images[id] = source.image
+                val owner = source.pixelOwner
+                if (owner != null && allocations.put(owner.allocation, true) == null) retained.add(owner.retain())
+            }
+            return RasterPixelSources(images, retained)
+        } catch (failure: Throwable) {
+            retained.forEach { it.close() }
+            throw failure
+        }
+    }
+
+    internal class RasterPixelSources internal constructor(
+        val images: Map<KoolCanvasTextureId, KoolCanvasArgbImage>,
+        private val owners: List<KoolCanvasPixelPool.PixelOwner>,
+    ) : AutoCloseable {
+        private val closed = AtomicBoolean()
+        override fun close() {
+            if (closed.compareAndSet(false, true)) owners.forEach { it.close() }
+        }
+    }
+
     /** Returned storage is not cleared; a fresh raster must clear it before writing. */
     @Synchronized
     internal fun borrowTargetPixels(width: Int, height: Int): KoolCanvasPixelPool.PixelOwner? {

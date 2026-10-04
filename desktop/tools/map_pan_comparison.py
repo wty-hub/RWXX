@@ -223,7 +223,7 @@ def machine_state() -> dict:
 def isolated_seed() -> str:
     seed = (PROJECT / "preferences.toml").read_text(encoding="utf-8")
     settings = {"renderVsync": "false", "slick2dFullScreen": "false", "maxFrameRate": "300",
-                "highRefreshRate": "true", "batterySaving": "false"}
+                "highRefreshRate": "true", "batterySaving": "false", "sendReports": "false"}
     for key, value in settings.items():
         seed, count = re.subn(rf'(?m)^{key}\s*=\s*"[^"\n]*"', f'{key} = "{value}"', seed)
         if count != 1:

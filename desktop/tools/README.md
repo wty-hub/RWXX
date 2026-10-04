@@ -111,7 +111,27 @@ python desktop/tools/analyze_replay_normal_epochs.py $replayOut
 
 `--time-based-map-zoom-cache` 请求默认关闭的显示缓存真实时间节拍实验，`--disable-texture-metadata-reuse` 回退纹理元数据命中复用。两者的请求和实际启动日志都须核对。当前真实反馈来自正常联机对局，迷雾显示消失后仍卡；回放缩放只能覆盖地图显示路径，不能替代联机验收。
 
-工具回归命令如下；本次归档时全部 **35 项测试通过**。
+`map_pan_live.py` 与 `map_pan_live_comparison.py` 也支持同样的连续缩放参数，使用 `--units 500` 可构建与当前欧洲回放数量接近的动态本地场景。运行器核对实际地图迷雾、fixture 数量、每窗移动／弹丸及真实缩放变化。以下对照只切换整格并行，两侧使用两个 worker；实验仍默认关闭。
+
+```powershell
+$stripeOut = Join-Path 'build/rwx-benchmark' "live-zoom-stripe-$stamp"
+python desktop/tools/map_pan_live_comparison.py `
+  --baseline $jar --candidate $jar --java $java --output $stripeOut `
+  --units 500 --fog on --camera-mode pan-zoom --camera-period-seconds 1 `
+  --zoom-period-seconds 4 --zoom-min .35 --zoom-max 1.5 `
+  --baseline-raster-threads 2 --candidate-raster-threads 2 `
+  --candidate-parallel-cell-raster `
+  --legacy-short-owner-park --disable-native-bgra-upload --no-perf-window-log `
+  --window-width 1280 --window-height 720
+```
+
+单次运行的 `--parallel-cell-raster`、`--primitive-text-metrics` 分别请求默认关闭的整格光栅和字体度量实验；comparison 的 `--candidate-` 前缀只启用候选侧。`--raster-threads 1..8` 覆盖 worker 数，comparison 分别接受 baseline／candidate 参数。回放工具另提供 `--cpu-target-profile` 逐格记录复制／采样及实际 stripe 路径；它有日志开销，只用于独立诊断。
+
+`--adaptive-cell-raster` 必须配合 `--parallel-cell-raster`，请求按实际采样工作量选择整格并行；comparison 可只启用候选。`--gpu-map-cell-cache` 及 comparison 的 `--candidate-gpu-map-cell-cache` 用于独立 GPU 原型包。运行器要求原生能力日志通过，且测量期已创建格子的命中计数确有增长。复用预热时已创建的格子可以有效，创建计数不必继续增长；仅请求开启、只有预热记录或测量期计数不动均不算有效。回退原因计数没有单调时钟标记，报告保留全进程计数。
+
+GPU 地图缓存实验默认关闭。支持 pass 复用的运行包在开启该实验后，可用 replay／live 的 `--disable-gpu-map-cell-pass-reuse` 回退到每次创建绘制资源；该参数必须同时指定 `--gpu-map-cell-cache`，通过 `RWX_DISABLE_GPU_MAP_CELL_PASS_REUSE=1` 显式传入，并写入协议 `gpuMapCellPassReuseDisabled`。同包对照应在两侧均启用 GPU 缓存，仅基线添加回退参数。旧原型包的缓存命中证据不能证明实际进入 pass 池；24 包需另查原生分配及池复用计数。
+
+工具回归命令如下；2026-10-05 补测时全部 **56 项测试通过**，包含两项新增 pass 复用参数回归。检查参数的实际环境传递、协议记录、继承环境隔离及缺少 GPU 开关时在建立输出目录前失败；该工具检查不启动 Java。
 
 ```powershell
 python -m unittest discover -s desktop/tools -p 'test_*.py'

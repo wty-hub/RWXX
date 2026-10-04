@@ -7,7 +7,7 @@ import shutil
 
 from map_pan_comparison import (PROJECT, REPLAY_ALIAS, analyze_run, copy_replay_alias,
                                 isolated_seed, run_environment, write_json)
-from map_pan_builtin_comparison import launch
+from map_pan_builtin_comparison import launch, confirm_experimental_modes
 from map_pan_diagnostic import export_jfr
 from vulkan_native_matrix import java_command
 
@@ -39,12 +39,24 @@ def main():
     parser.add_argument('--disable-text-mesh-reuse', action='store_true')
     parser.add_argument('--disable-texture-metadata-reuse', action='store_true')
     parser.add_argument('--time-based-map-zoom-cache', action='store_true', help='Opt-in display-cache cadence experiment')
+    parser.add_argument('--parallel-cell-raster', action='store_true', help='Opt-in whole-cell CPU stripe experiment')
+    parser.add_argument('--adaptive-cell-raster', action='store_true', help='Select costly texture cells for stripes; requires --parallel-cell-raster')
+    parser.add_argument('--gpu-map-cell-cache', action='store_true', help='Enable opt-in Vulkan map cell rendering; require measured GPU cache activity')
+    parser.add_argument('--disable-gpu-map-cell-pass-reuse', action='store_true',
+                        help='Disable post-fence GPU cell pass reuse for a controlled GPU-only comparison; requires --gpu-map-cell-cache')
+    parser.add_argument('--primitive-text-metrics', action='store_true', help='Opt-in primitive glyph metrics experiment')
+    parser.add_argument('--cpu-target-profile', action='store_true', help='Log CPU raster details; diagnostic timing only')
+    parser.add_argument('--raster-threads', type=int, choices=range(1, 9), help='Override CPU raster workers for controlled tests')
     parser.add_argument('--no-perf-window-log', action='store_true')
     parser.add_argument('--canvas-stage-trace', action='store_true')
     parser.add_argument('--disable-native-bgra-upload', action='store_true', help='Controlled Vulkan RGBA baseline')
     parser.add_argument('--native-bgra-upload', action='store_true', help='Enable the experimental Vulkan BGRA path')
     parser.add_argument('--force-legacy-reload-gc', action='store_true')
     args = parser.parse_args()
+    if args.disable_gpu_map_cell_pass_reuse and not args.gpu_map_cell_cache:
+        parser.error('--disable-gpu-map-cell-pass-reuse requires --gpu-map-cell-cache')
+    if args.adaptive_cell_raster and not args.parallel_cell_raster:
+        parser.error('--adaptive-cell-raster requires --parallel-cell-raster')
     if args.camera_period_seconds < 1 or args.zoom_period_seconds < 1:
         parser.error('camera and zoom periods must be >= 1 second')
     if not (math.isfinite(args.zoom_min) and math.isfinite(args.zoom_max) and 0 < args.zoom_min < args.zoom_max):
@@ -71,6 +83,10 @@ def main():
     if args.diagnostic:
         command[1:1] = ['-XX:FlightRecorderOptions=stackdepth=64',
                        f'-XX:StartFlightRecording=filename={output / "profile.jfr"},settings=profile,dumponexit=true']
+    if args.cpu_target_profile:
+        command[1:1] = ['-Drwx.kool.cpuTargetProfile=true']
+    if args.raster_threads is not None:
+        command[1:1] = [f'-Drwx.koolRasterThreads={args.raster_threads}']
     env = run_environment(output, sandbox, 'replay-pan')
     if args.legacy_owner_pacing:
         env['RWX_LEGACY_OWNER_PACING'] = '1'
@@ -84,6 +100,16 @@ def main():
         env['RWX_DISABLE_TEXTURE_METADATA_REUSE'] = '1'
     if args.time_based_map_zoom_cache:
         env['RWX_TIME_BASED_MAP_ZOOM_CACHE'] = '1'
+    if args.parallel_cell_raster:
+        env['RWX_PARALLEL_CELL_RASTER'] = '1'
+    if args.adaptive_cell_raster:
+        env['RWX_ADAPTIVE_CELL_RASTER'] = '1'
+    if args.gpu_map_cell_cache:
+        env['RWX_GPU_MAP_CELL_CACHE'] = '1'
+    if args.disable_gpu_map_cell_pass_reuse:
+        env['RWX_DISABLE_GPU_MAP_CELL_PASS_REUSE'] = '1'
+    if args.primitive_text_metrics:
+        env['RWX_PRIMITIVE_TEXT_METRICS'] = '1'
     if args.vk_trace:
         env['RWX_VK_TRACE'] = str(output / 'vulkan-stages.csv')
     if args.engine_section_trace:
@@ -113,7 +139,7 @@ def main():
         env['RWX_FORCE_LEGACY_RELOAD_GC'] = '1'
     report = {'runtimeSha256': hashlib.sha256(jar.read_bytes()).hexdigest(),
               'replaySha256': digest, 'replaySource': str(args.replay.resolve()),
-              'diagnosticOnly': args.diagnostic or args.vk_trace or args.engine_section_trace or camera_trace,
+              'diagnosticOnly': args.diagnostic or args.vk_trace or args.engine_section_trace or camera_trace or args.cpu_target_profile,
               'protocol': {'fog': args.fog, 'cameraMode': camera_mode, 'cameraModeRequested': args.camera_mode,
                            'cameraPeriodSeconds': args.camera_period_seconds,
                            'zoomMode': zoom_mode, 'zoomPeriodSeconds': args.zoom_period_seconds,
@@ -129,6 +155,13 @@ def main():
                            'textMeshReuseRequested': not args.disable_text_mesh_reuse,
                            'textureMetadataReuseRequested': not args.disable_texture_metadata_reuse,
                            'timeBasedMapZoomCacheRequested': args.time_based_map_zoom_cache,
+                           'parallelCellRasterRequested': args.parallel_cell_raster,
+                           'adaptiveCellRasterRequested': args.adaptive_cell_raster,
+                           'gpuMapCellCacheRequested': args.gpu_map_cell_cache,
+                           'gpuMapCellPassReuseDisabled': args.disable_gpu_map_cell_pass_reuse,
+                           'primitiveTextMetricsRequested': args.primitive_text_metrics,
+                           'cpuTargetProfileRequested': args.cpu_target_profile,
+                           'rasterThreadsRequested': args.raster_threads,
                            'vulkanStageTraceRequested': args.vk_trace,
                            'engineSectionTraceRequested': args.engine_section_trace,
                            'forceLegacyReloadGc': args.force_legacy_reload_gc},
@@ -140,6 +173,9 @@ def main():
                 'replayAliasVerified': hashlib.sha256(alias.read_bytes()).hexdigest() == digest,
                 'replayAliasSha256': digest})
     report['run'] = analyze_run(output, run)
+    actual_log = (output / 'replay-pan.log').read_text(encoding='utf-8', errors='replace')
+    confirm_experimental_modes(report['run'], actual_log, args.parallel_cell_raster,
+                               args.primitive_text_metrics, args.adaptive_cell_raster, args.gpu_map_cell_cache)
     # The shared pan analyzer deliberately retains its existing pan/jump contract.
     # Add zoom confirmation here so a runtime that silently ignores new flags fails.
     zoom_confirmed = report['run']['setup'] is not None and report['run']['setup'].get('zoomMode') == zoom_mode

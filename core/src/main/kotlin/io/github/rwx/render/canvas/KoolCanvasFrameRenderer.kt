@@ -26,7 +26,9 @@ class KoolCanvasFrameRenderer(
     private val renderingFrameTextureIds: MutableSet<KoolCanvasTextureId> = mutableSetOf(),
     private val performanceRates: () -> CanvasFrameRateSample? = CanvasFrameMetrics::snapshot,
     private val reuseTextMeshes: Boolean = System.getenv("RWX_DISABLE_TEXT_MESH_REUSE") != "1",
+    private val primitiveTextMetrics: Boolean = System.getenv("RWX_PRIMITIVE_TEXT_METRICS") == "1",
 ) {
+    private val textMetrics = if (primitiveTextMetrics) KoolPrimitiveTextMetrics() else null
     private var attachedScene: Scene? = null
     private val primitiveMeshes = linkedMapOf<PrimitiveMeshKey, Mesh<VertexLayouts.PositionNormalColor>>()
     private val usedPrimitiveMeshKeys = mutableSetOf<PrimitiveMeshKey>()
@@ -63,6 +65,7 @@ class KoolCanvasFrameRenderer(
 
     init {
         if (textMeshMetricsEnabled) println("RWXTextMeshReuse enabled=$reuseTextMeshes")
+        println("RWXPrimitiveTextMetrics enabled=$primitiveTextMetrics")
     }
     private val performanceHudEntries = mutableListOf<Pair<KoolCanvasCommand.DrawText, TextMeshEntry>>()
     private var performanceHudSample: CanvasFrameRateSample? = null
@@ -2748,7 +2751,8 @@ class KoolCanvasFrameRenderer(
         viewport: KoolCanvasViewport,
         command: KoolCanvasCommand.DrawText,
     ): Boolean {
-        val metrics = font.textDimensions(command.text, TextMetrics())
+        val metrics = textMetrics?.textDimensions(font, command.text)
+            ?: font.textDimensions(command.text, TextMetrics())
         val origin = alignedTextOrigin(command, metrics)
         if (!command.state.intersectsClip(textBounds(origin, metrics))) {
             return false
