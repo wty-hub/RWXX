@@ -350,3 +350,45 @@ GPU 缓存验证工具已允许预热后仅命中数增长、创建数保持不�
 冷启动诊断仍明确保留失败：第 0 帧 primitive-only 的 CameraData／Model uniform modCount 均为 0，两个读取像素 alpha 都为 0，原期待为 125，`coldExpectedRgbaPassed=false`。预热后的 primitive alpha 为 125，两 tile 原顺序及重分组 alpha 为 164，三项诊断的完整 RGBA 比较通过。这澄清了 34 包首次对照受到 Oracle 初始化影响，不构成生产启动缺陷已修复的宣称，也没有放宽旧 RGBA 断言。实际日志为 `build/map-pan-stage-runtime/europe-gpu-map-cell-oracle-35-pool-fog-batching.log` 和 `europe-gpu-map-cell-oracle-35-pool-fog-diagnostic.log`，构建与冷／热结果在验证 JSON 的 `followup2026-10-05.fogBatchNative35`。
 
 此时正常游戏的同包 A B B A 仍在运行，本补充只记录原生图像正确性与测试初始化边界，不纳入未完成的帧率结果，不宣称批次游戏性能改善或快速拖动／缩放卡顿已经解决。
+
+
+35 包完成自带地图的同包 fog batching A B B A 对照。四轮均正常退出、valid=true，包 SHA-256 均为 `bbec251d7cdc38d6747041d767a164ab1492c5b544c0cdbc46054cc6f1c2f32d`，实际 Vulkan framebuffer 为 1280×720，15 个同阵营队伍、500 个存活且持续移动的单位、实际 TileMap 雾显示开启；平移与缩放周期各 1 秒，八个窗口实际缩放均到达约 0.2–2.5。仅 wrapper 的 `RWX_GPU_MAP_CELL_FOG_BATCHING` 按 0／1／1／0 改变，GPU 地图缓存保持开启；无 JFR、native 阶段诊断或窗口性能日志。这是正常本地动态 fixture，不是原欧洲回放，也没有测量物理屏幕 scanout 或鼠标输入延迟。
+
+按四个窗口值取中位数，候选的新画面率从 88.5721 提升到 174.1594 次每秒（+96.6302%），fresh P95 从 27.2692 降至 12.4225 毫秒，fresh P99 从 182.6833 降至 42.9594 毫秒（−76.4842%）。中位 P99 不等于全部间隔合并后的 P99。实际新画面率、P99 和最大间隔如下，第一／第二窗口分别列出；没有用 engineFps 代替新画面率。
+
+| 35 包进程顺序 | 新画面率（次／秒） | fresh P99（毫秒） | 最大新画面间隔（毫秒） | 两窗口 >33.333／50／100 毫秒次数 |
+| --- | --- | --- | --- | --- |
+| A1，原顺序 | 92.7972／107.4995 | 163.6112／133.7347 | 608.0301／658.4669 | 159／120／77 |
+| B1，重分组 | 176.3000／175.9570 | 40.4261／45.4927 | 115.3372／113.6053 | 110／49／7 |
+| B2，重分组 | 168.0988／172.3618 | 48.6974／39.3554 | 133.2969／144.3677 | 112／59／11 |
+| A2，原顺序 | 58.9445／84.3469 | 240.5788／201.7553 | 720.1533／690.6430 | 151／107／81 |
+
+每个进程按实际窗口的区间并集统计，避免 0.0026–1.8618 毫秒的小幅窗口重叠重复计数；两种模式各约 80 秒，原顺序超过 33.333／50／100 毫秒为 310／227／158 次，候选为 222／108／18 次。间隔按结束的 fresh acceptance 归属，首个跨左边界间隔保留、右边界未结束间隔不计。候选仍有 18 次超过 100 毫秒，最长 144.3677 毫秒，快速拖动／缩放仍不能验收为无顿挫。accepted presentation 中重复 snapshot 的比例中位数从 5.2185% 升至 9.0211%（+3.8026 个百分点）；CSV 只记录成功接受的 presentation，没有失败尝试或物理 scanout，不能把这个比例称为显示丢帧率。
+
+四轮各有 18 个约五秒资源采样，分配减释放、活动／空闲／待退休、版本退休及复用账本都闭合。最终实际分配为 32／32／29／32 组，实际释放均为 0、待完成退休均为 0，最终活动／空闲分别为 12／20、2／30、6／23、8／24；这些是退出前采样，不是 shutdown 零资源证明。DirectBuffer 采样峰值／最终分别为 157.50／155.78、230.64／212.73、186.60／167.59、190.44／151.78 MiB，heap 峰值／最终分别为 1472.22／1472.22、942.69／777.19、912.86／912.86、1329.83／877.83 MiB。候选的 DirectBuffer 数量峰值较少（20,001／16,768，原顺序 120,114／138,073），但字节峰值没有一致下降；不能只凭对象数量称总内存减少。最终空闲缓存网格为 0／346／250／178，候选对应前台／影子容量估计为 16,738,928／11,554,944 字节；附件及 idle renderer 预算不覆盖全部 native／GPU／Direct 内存。
+
+两个候选在窗口内首末计数采样之间，共记录 11,958 次 batch 尝试且全部进入分组、5,338 次实际重排，重叠及不支持回退均为 0；填充／纹理命令差分为 975,462／481,912，分组前后数量保持。这确认候选实际执行了批次路径，首末采样未覆盖全部窗口边缘，不能当作完整 80 秒的总数。原顺序没有 fogBatching 计数字段，不能把缺失字段当成测得零操作。本轮没有 pipeline 数或原生创建时长记录，不补造这些指标。完整控制、逐窗口阈值、采样内存与 CPU 范围保存在 `build/map-pan-builtin-fast-zoom-gpu-pool-35-fog-batch-abba/fog-batch-builtin-abba-review.json`；验证 JSON 新增 `followup2026-10-05.fogBatchBuiltinAbba35`，此前记录保持。这是该 fixture 中已完成的性能改善证据，不替代原欧洲图和其余短停顿的验收。
+
+
+35 包另行完成原欧洲图的 fog batching／memory-budget 残余诊断，实际 Vulkan、开雾、1280×720、1 秒平移与 0.2–2.5／1 秒缩放，退出码 0、valid=true。排除同步重载及跨界间隔后，普通区间 39.3799134 秒、6,068 个新画面间隔，超过 33.333／50／100 毫秒为 146／75／13 次，P95 为 15.502965 毫秒、P99 为 55.434654 毫秒、最大 161.724 毫秒。89 个有效时钟标记、一个零跨度标记拒绝，最大留一校准残差为 4.141 微秒；本轮不是 A B B A，不能把它与 34 原型诊断相减认定批次优化的独占改善。
+
+本轮普通区间完整包含 16,859 次原生 graphics-create（最长 0.4654 毫秒）和 6,813 次 submit（最长 28.6562 毫秒），两者单次至少 50 毫秒的数量都为 0。全程唯一 484.1733 毫秒 submit 出现在 Vulkan 预算 probe elapsed 12.2912893 秒，即预热阶段，QPC 为 205841815710200–205842299883500，早于主窗口开始 205855385201500；不能用它解释普通窗口的卡顿。它结束后预算查询耗时 0.0931 毫秒、usage 398,270,464／budget 7,754,063,258 字节，是驱动估计而非驻留或分页证据。34 的半秒主屏幕 pipeline 创建结论不能套用到这轮 35 测量。
+
+| 35 欧洲诊断普通新画面间隔（毫秒） | 同区间 GC union（毫秒） | 最长重叠 owner 帧（毫秒） | 该 owner snapshot 阶段（毫秒） |
+| --- | --- | --- | --- |
+| 161.7240 | 32.547637 | 95.9122 | 68.7908 |
+| 141.6968 | 70.053805 | 96.6387 | 3.7835 |
+| 141.5255 | 84.898031 | 108.2958 | 38.0648 |
+| 140.0745 | 27.796071 | 90.1104 | 57.5196 |
+| 137.6506 | 94.138744 | 147.8205 | 61.0609 |
+
+最长一段的 owner snapshot 68.7908 毫秒包含 32.547637 毫秒 GC，扣除已报告 GC 后仍有 36.243163 毫秒墙钟；完整 owner CPU 计数为 62.5 毫秒，受到线程时钟量化影响。采样有六条包含 `KoolCanvasCpuTextureStore.freezeFrame` 的 owner 栈，其中三条叶为 `IdentityHashMap.resize`，这是快照构建的具体候选，不等于该方法独占全部 68.8 毫秒。主线程另有两条明确 child `Slot.bind` 和两条 root screen collection 栈；通用 KSL collection 栈无法进一步区分 root／child，不能任意归给其中一方。其余四段也有 GC、源准备、地图命令生成、child 几何和 KSL 构建共同出现，样本跨度不能当作连续 CPU 时间。
+
+140.0745 毫秒间隔中，主线程 park 实际 29.653856 毫秒、请求 2 毫秒，但重叠 GC 27.796071 毫秒，不能只据其实际时长认定 Windows timer 超时。普通区间另有一条 45,760 字节 buffer-upload wrapper 跨度 65.4676 毫秒，其中 GC 重叠 65.343948 毫秒；137.6506 毫秒长间隔的一条 96 字节 upload 跨度 30.0894 毫秒也重叠 GC 29.906214 毫秒，不能称为相同耗时的纯 GPU 复制。仍应分别降低快照／临时容器分配和 renderer 构建成本，并用实际对照验证。完整 QPC、owner 分阶段 GC 交叠、去重全栈及预算记录见 `build/map-pan-replay-europe-fast-zoom-gpu-pool-35-failure-diagnostic-fog-batching-memory-budget/normal-residual-gap-review-35.json` 和验证 JSON 的 `followup2026-10-05.fogBatchEuropeDiagnostic35`。GC 扣除后的墙钟仍可包含调度或锁等待，不是独占 CPU；本轮仍未通过流畅性验收。
+
+
+### 35 包原始 JFR 分配采样补充
+
+此前紧凑 JFR 导出过滤了 allocation 事件；缺少这些事件不能说明没有分配。另行读取同次诊断的原始 `profile.jfr`，全程有 24,803 条 `jdk.ObjectAllocationSample`，其中 9,844 条落在上述 39.3799134 秒普通区间，时钟校准没有外推事件。采样权重合计约 13.89 GB，engine-owner 约 8.58 GB、main 约 5.31 GB。这些是 JFR 的加权分配估计，既不是实际存活堆大小，也不是 native/direct 内存测量。
+
+前列对象包含 Paint、TextureRef、DrawTexture、Rect 和 Object 数组。具体全栈定位到 owner 的 `DrawTexture.copy → freezeFrame`、main 的 `DrawTexture.copy → GpuMapCellSources.prepare`，以及两处 IdentityHashMap 扩容。freezeFrame 的包含式采样权重约 2.293 GB，GpuMapCellSources.prepare 约 2.121 GB，KSL createPipeline 约 0.952 GB；这些调用栈可以互相包含，不能相加或视为独占 CPU 时间，也不能据此断言某条分配引发了特定一次 GC。下一步优先验证有容量上限的临时查找表复用，保持已发布帧和实际 fence 仍持有的资源独立。完整权重、分组全栈和限制保存在验证 JSON 的 `followup2026-10-05.fogBatchRawAllocation35`，原始报告为 `build/map-pan-replay-europe-fast-zoom-gpu-pool-35-failure-diagnostic-fog-batching-memory-budget/normal-allocation-sample-review-35.json`。

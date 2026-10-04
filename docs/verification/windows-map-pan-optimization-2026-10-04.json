@@ -26820,6 +26820,2075 @@
       "gameplayAbbaCompleteAtCheckpoint": false,
       "performanceImprovementClaim": false,
       "fluidityAccepted": false
+    },
+    "fogBatchBuiltinAbba35": {
+      "status": "same-runtime builtin fog-on fast-zoom ABBA complete; performance improved in this fixture, ordinary stutter remains",
+      "source": "build/map-pan-builtin-fast-zoom-gpu-pool-35-fog-batch-abba/comparison.json",
+      "compactReview": "build/map-pan-builtin-fast-zoom-gpu-pool-35-fog-batch-abba/fog-batch-builtin-abba-review.json",
+      "runtimeSha256": "bbec251d7cdc38d6747041d767a164ab1492c5b544c0cdbc46054cc6f1c2f32d",
+      "controlValidation": {
+        "allFourExitZeroAndValid": true,
+        "order": [
+          "baseline",
+          "candidate",
+          "candidate",
+          "baseline"
+        ],
+        "sameRuntimeShaVerifiedInAllChildReports": true,
+        "matchingActualVulkanFramebuffers": [
+          1280,
+          720
+        ],
+        "actualMapFogEnabledAllRuns": true,
+        "actualGpuMapCellCapabilityAndActivityAllRuns": true,
+        "unitFixture": "15 allied teams,500 living units with ordinary movement; simulation advances in all8 windows",
+        "onlyChangedWrapperEnvironment": "RWX_GPU_MAP_CELL_FOG_BATCHING=0/1/1/0",
+        "noJfrOrNativeStageDiagnostics": true,
+        "noPerfWindowLog": true,
+        "physicalScanoutMeasured": false
+      },
+      "protocol": {
+        "scenario": "builtin",
+        "order": [
+          "baseline",
+          "candidate",
+          "candidate",
+          "baseline"
+        ],
+        "sameRuntime": true,
+        "onlyChangedEnvironment": "RWX_GPU_MAP_CELL_FOG_BATCHING",
+        "fog": "on",
+        "cameraPeriodSeconds": 1,
+        "zoomPeriodSeconds": 1,
+        "requestedZoom": [
+          0.2,
+          2.5
+        ],
+        "window": [
+          1280,
+          720
+        ],
+        "gpuMapCellCache": true,
+        "rasterThreads": 4,
+        "diagnostic": false,
+        "physicalScanoutMeasured": false,
+        "note": "Europe raw windows include replay reloads; built-in is a normal local 500-moving-unit fixture."
+      },
+      "primaryComparison": {
+        "validComparison": true,
+        "matchingMeasuredViewports": true,
+        "measuredViewports": [
+          [
+            1280.0,
+            720.0
+          ]
+        ],
+        "aggregation": "median of measurement-window values; percentile medians are not pooled percentiles",
+        "variants": {
+          "baseline": {
+            "processCount": 2,
+            "windowCount": 4,
+            "allMeasurementsValid": true,
+            "engineFps": 222.68812581473117,
+            "renderFps": 93.29539117189924,
+            "newFps": 88.57206030003721,
+            "repeatRatio": 0.052185154212706156,
+            "presentIntervalP95Ms": 25.66755,
+            "presentIntervalP99Ms": 174.1241,
+            "freshSnapshotIntervalP95Ms": 27.26915,
+            "freshSnapshotIntervalP99Ms": 182.68325
+          },
+          "candidate": {
+            "processCount": 2,
+            "windowCount": 4,
+            "allMeasurementsValid": true,
+            "engineFps": 243.66907067596009,
+            "renderFps": 191.87877243778823,
+            "newFps": 174.15939279208345,
+            "repeatRatio": 0.09021112908148807,
+            "presentIntervalP95Ms": 10.726500000000001,
+            "presentIntervalP99Ms": 32.689750000000004,
+            "freshSnapshotIntervalP95Ms": 12.4225,
+            "freshSnapshotIntervalP99Ms": 42.9594
+          }
+        },
+        "candidateChange": {
+          "engineFps": {
+            "absolute": 20.98094486122892,
+            "percent": 9.421672028747663
+          },
+          "renderFps": {
+            "absolute": 98.58338126588899,
+            "percent": 105.6680078485833
+          },
+          "newFps": {
+            "absolute": 85.58733249204624,
+            "percent": 96.63017005827771
+          },
+          "repeatRatio": {
+            "absolute": 0.03802597486878191,
+            "percent": 72.86741879460281
+          },
+          "presentIntervalP95Ms": {
+            "absolute": -14.941049999999997,
+            "percent": -58.209879789851385
+          },
+          "presentIntervalP99Ms": {
+            "absolute": -141.43435,
+            "percent": -81.22617719201419
+          },
+          "freshSnapshotIntervalP95Ms": {
+            "absolute": -14.84665,
+            "percent": -54.44485801720993
+          },
+          "freshSnapshotIntervalP99Ms": {
+            "absolute": -139.72384999999997,
+            "percent": -76.4842151647729
+          }
+        }
+      },
+      "mergedIntervalThresholdAggregate": {
+        "baseline": {
+          "mergedSeconds": 80.0219785,
+          "freshGapCount": 6873,
+          "over33_333Ms": 310,
+          "over50Ms": 227,
+          "over100Ms": 158,
+          "maxFreshGapMs": 720.1533
+        },
+        "candidate": {
+          "mergedSeconds": 80.00932180000001,
+          "freshGapCount": 13856,
+          "over33_333Ms": 222,
+          "over50Ms": 108,
+          "over100Ms": 18,
+          "maxFreshGapMs": 144.3677
+        }
+      },
+      "runs": [
+        {
+          "index": 1,
+          "variant": "baseline",
+          "pid": 7096,
+          "exitCode": 0,
+          "validMeasurement": true,
+          "actualFog": true,
+          "movingConfirmed": true,
+          "teams": 15,
+          "units": 500,
+          "configurationMarker": "RWXVulkanConfiguration framebuffer=1280x720 samples=4 configuredSamples=4 presentMode=0 vsync=false targetFps=300 asyncSceneUpdate=false nativeBgraUploads=false gpuMapCellSupported=true",
+          "rawWindowOverlapMs": 0.6098,
+          "mergedMeasuredSeconds": 40.0093995,
+          "windows": [
+            {
+              "repetition": 1,
+              "sampleStartNanos": 205210287688300,
+              "sampleEndNanos": 205230288298100,
+              "newFps": 92.79717061426797,
+              "renderFps": 97.14703798681178,
+              "repeatRatio": 0.04477611940298507,
+              "freshSnapshotIntervalP95Ms": 29.3458,
+              "freshSnapshotIntervalP99Ms": 163.6112,
+              "freshSnapshotIntervalMaxMs": 608.0301,
+              "actualZoomMinimum": 0.2000236,
+              "actualZoomMaximum": 2.4999988,
+              "freshEngineFrames": 4435,
+              "framesWithMovingUnits": 4420,
+              "freshGapStats": {
+                "count": 1856,
+                "over33_333Ms": 79,
+                "over50Ms": 57,
+                "over100Ms": 38,
+                "maxMs": 608.0301
+              }
+            },
+            {
+              "repetition": 2,
+              "sampleStartNanos": 205230287688300,
+              "sampleEndNanos": 205250297087800,
+              "newFps": 107.4994779328585,
+              "renderFps": 112.84696474774267,
+              "repeatRatio": 0.04738706820194863,
+              "freshSnapshotIntervalP95Ms": 21.9498,
+              "freshSnapshotIntervalP99Ms": 133.7347,
+              "freshSnapshotIntervalMaxMs": 658.4669,
+              "actualZoomMinimum": 0.2,
+              "actualZoomMaximum": 2.4999979,
+              "freshEngineFrames": 4637,
+              "framesWithMovingUnits": 4622,
+              "freshGapStats": {
+                "count": 2151,
+                "over33_333Ms": 80,
+                "over50Ms": 63,
+                "over100Ms": 39,
+                "maxMs": 658.4669
+              }
+            }
+          ],
+          "unionFreshGapStats": {
+            "count": 4006,
+            "over33_333Ms": 159,
+            "over50Ms": 120,
+            "over100Ms": 77,
+            "maxMs": 658.4669
+          },
+          "wholeProcessMemory": {
+            "samples": 18,
+            "min": {
+              "directBufferCount": 491,
+              "directBufferMemoryUsedBytes": 19430036,
+              "directBufferTotalCapacityBytes": 19430036,
+              "heapUsedBytes": 213493504,
+              "heapCommittedBytes": 536870912
+            },
+            "peak": {
+              "directBufferCount": 120114,
+              "directBufferMemoryUsedBytes": 165152176,
+              "directBufferTotalCapacityBytes": 165152176,
+              "heapUsedBytes": 1543732464,
+              "heapCommittedBytes": 1981808640
+            },
+            "finalSampleNanos": 205275372674900,
+            "final": {
+              "directBufferCount": 114048,
+              "directBufferMemoryUsedBytes": 163343016,
+              "directBufferTotalCapacityBytes": 163343016,
+              "heapUsedBytes": 1543732464,
+              "heapCommittedBytes": 1981808640
+            }
+          },
+          "measuredWindowMemory": {
+            "samples": 7,
+            "min": {
+              "directBufferCount": 66619,
+              "directBufferMemoryUsedBytes": 125602008,
+              "directBufferTotalCapacityBytes": 125602008,
+              "heapUsedBytes": 733183216,
+              "heapCommittedBytes": 1521483776
+            },
+            "peak": {
+              "directBufferCount": 104671,
+              "directBufferMemoryUsedBytes": 165152176,
+              "directBufferTotalCapacityBytes": 165152176,
+              "heapUsedBytes": 1243784248,
+              "heapCommittedBytes": 1829765120
+            },
+            "finalSampleNanos": 205245317894200,
+            "final": {
+              "directBufferCount": 92106,
+              "directBufferMemoryUsedBytes": 143475992,
+              "directBufferTotalCapacityBytes": 143475992,
+              "heapUsedBytes": 733183216,
+              "heapCommittedBytes": 1829765120
+            }
+          },
+          "cacheLedger": {
+            "samples": 18,
+            "mismatchCount": 0,
+            "peak": {
+              "allocated": 32,
+              "actualReleased": 0,
+              "live": 12,
+              "pendingRetirements": 7,
+              "idleSlots": 26,
+              "idleBytes": 27262976,
+              "idleRenderCachedMeshes": 489,
+              "idleRenderCachedEstimatedBytes": 2240960,
+              "idleRenderCacheEvictions": 1950,
+              "idleRenderCachePrunedMeshes": 252007
+            },
+            "finalSampleNanos": 205275372674900,
+            "final": {
+              "created": 4259,
+              "hits": 35018,
+              "retired": 4247,
+              "live": 12,
+              "pending": 4,
+              "allocated": 32,
+              "pooledReused": 4227,
+              "actualReleased": 0,
+              "retirementCompleted": 4247,
+              "pendingRetirements": 0,
+              "idleSlots": 20,
+              "idleBytes": 20971520,
+              "idleRenderCachedMeshes": 0,
+              "idleRenderCachedEstimatedBytes": 0,
+              "idleRenderCacheEvictions": 1950,
+              "idleRenderCachePrunedMeshes": 252007,
+              "idleRenderCacheBudgetEnabled": true
+            }
+          },
+          "measuredFogCounterDelta": {
+            "present": false
+          },
+          "measuredResourceSummary": {
+            "samples": 8,
+            "cpu": {
+              "systemCpuPercent": {
+                "samples": 8,
+                "min": 51.84,
+                "max": 83.61,
+                "mean": 62.1425
+              },
+              "javaCpuPercent": {
+                "samples": 8,
+                "min": 29.22,
+                "max": 35.51,
+                "mean": 31.1375
+              }
+            },
+            "availablePhysicalMemoryMiBMinimum": 356.4
+          }
+        },
+        {
+          "index": 2,
+          "variant": "candidate",
+          "pid": 32460,
+          "exitCode": 0,
+          "validMeasurement": true,
+          "actualFog": true,
+          "movingConfirmed": true,
+          "teams": 15,
+          "units": 500,
+          "configurationMarker": "RWXVulkanConfiguration framebuffer=1280x720 samples=4 configuredSamples=4 presentMode=0 vsync=false targetFps=300 asyncSceneUpdate=false nativeBgraUploads=false gpuMapCellSupported=true",
+          "rawWindowOverlapMs": 0.0026,
+          "mergedMeasuredSeconds": 40.004886,
+          "windows": [
+            {
+              "repetition": 1,
+              "sampleStartNanos": 205311630425400,
+              "sampleEndNanos": 205331630428000,
+              "newFps": 176.299977081003,
+              "renderFps": 192.44997498150326,
+              "repeatRatio": 0.08391790075344245,
+              "freshSnapshotIntervalP95Ms": 12.4987,
+              "freshSnapshotIntervalP99Ms": 40.4261,
+              "freshSnapshotIntervalMaxMs": 115.3372,
+              "actualZoomMinimum": 0.2,
+              "actualZoomMaximum": 2.5,
+              "freshEngineFrames": 4953,
+              "framesWithMovingUnits": 4937,
+              "freshGapStats": {
+                "count": 3526,
+                "over33_333Ms": 52,
+                "over50Ms": 22,
+                "over100Ms": 3,
+                "maxMs": 115.3372
+              }
+            },
+            {
+              "repetition": 2,
+              "sampleStartNanos": 205331630425400,
+              "sampleEndNanos": 205351635311400,
+              "newFps": 175.9570137015527,
+              "renderFps": 194.00260516355854,
+              "repeatRatio": 0.09301726359185777,
+              "freshSnapshotIntervalP95Ms": 11.9126,
+              "freshSnapshotIntervalP99Ms": 45.4927,
+              "freshSnapshotIntervalMaxMs": 113.6053,
+              "actualZoomMinimum": 0.20000002,
+              "actualZoomMaximum": 2.5,
+              "freshEngineFrames": 4882,
+              "framesWithMovingUnits": 4865,
+              "freshGapStats": {
+                "count": 3520,
+                "over33_333Ms": 58,
+                "over50Ms": 27,
+                "over100Ms": 4,
+                "maxMs": 113.6053
+              }
+            }
+          ],
+          "unionFreshGapStats": {
+            "count": 7046,
+            "over33_333Ms": 110,
+            "over50Ms": 49,
+            "over100Ms": 7,
+            "maxMs": 115.3372
+          },
+          "wholeProcessMemory": {
+            "samples": 18,
+            "min": {
+              "directBufferCount": 491,
+              "directBufferMemoryUsedBytes": 19430036,
+              "directBufferTotalCapacityBytes": 19430036,
+              "heapUsedBytes": 212615192,
+              "heapCommittedBytes": 536870912
+            },
+            "peak": {
+              "directBufferCount": 20001,
+              "directBufferMemoryUsedBytes": 241839752,
+              "directBufferTotalCapacityBytes": 241839752,
+              "heapUsedBytes": 988485088,
+              "heapCommittedBytes": 1181745152
+            },
+            "finalSampleNanos": 205376370877600,
+            "final": {
+              "directBufferCount": 18788,
+              "directBufferMemoryUsedBytes": 223066388,
+              "directBufferTotalCapacityBytes": 223066388,
+              "heapUsedBytes": 814945760,
+              "heapCommittedBytes": 1181745152
+            }
+          },
+          "measuredWindowMemory": {
+            "samples": 8,
+            "min": {
+              "directBufferCount": 9385,
+              "directBufferMemoryUsedBytes": 165659464,
+              "directBufferTotalCapacityBytes": 165659464,
+              "heapUsedBytes": 419632608,
+              "heapCommittedBytes": 1181745152
+            },
+            "peak": {
+              "directBufferCount": 16928,
+              "directBufferMemoryUsedBytes": 220822328,
+              "directBufferTotalCapacityBytes": 220822328,
+              "heapUsedBytes": 907220448,
+              "heapCommittedBytes": 1181745152
+            },
+            "finalSampleNanos": 205351354947700,
+            "final": {
+              "directBufferCount": 12217,
+              "directBufferMemoryUsedBytes": 178705736,
+              "directBufferTotalCapacityBytes": 178705736,
+              "heapUsedBytes": 507188704,
+              "heapCommittedBytes": 1181745152
+            }
+          },
+          "cacheLedger": {
+            "samples": 18,
+            "mismatchCount": 0,
+            "peak": {
+              "allocated": 32,
+              "actualReleased": 0,
+              "live": 4,
+              "pendingRetirements": 0,
+              "idleSlots": 30,
+              "idleBytes": 31457280,
+              "idleRenderCachedMeshes": 375,
+              "idleRenderCachedEstimatedBytes": 16757984,
+              "idleRenderCacheEvictions": 946,
+              "idleRenderCachePrunedMeshes": 23519
+            },
+            "finalSampleNanos": 205376370877600,
+            "final": {
+              "created": 8388,
+              "hits": 75221,
+              "retired": 8386,
+              "live": 2,
+              "pending": 0,
+              "allocated": 32,
+              "pooledReused": 8356,
+              "actualReleased": 0,
+              "retirementCompleted": 8386,
+              "pendingRetirements": 0,
+              "idleSlots": 30,
+              "idleBytes": 31457280,
+              "idleRenderCachedMeshes": 346,
+              "idleRenderCachedEstimatedBytes": 16738928,
+              "idleRenderCacheEvictions": 946,
+              "idleRenderCachePrunedMeshes": 23519,
+              "idleRenderCacheBudgetEnabled": true
+            }
+          },
+          "measuredFogCounterDelta": {
+            "present": true,
+            "samples": 8,
+            "firstSampleNanos": 205316336973000,
+            "lastSampleNanos": 205351354947700,
+            "delta": {
+              "attempts": 5905,
+              "grouped": 5905,
+              "reorderedPasses": 2771,
+              "fallbackOverlap": 0,
+              "fallbackUnsupported": 0,
+              "sourceFillCommands": 491690,
+              "sourceTextureCommands": 256782,
+              "groupedFillCommands": 491690,
+              "groupedTextureCommands": 256782
+            }
+          },
+          "measuredResourceSummary": {
+            "samples": 8,
+            "cpu": {
+              "systemCpuPercent": {
+                "samples": 8,
+                "min": 40.5,
+                "max": 66.45,
+                "mean": 48.53125
+              },
+              "javaCpuPercent": {
+                "samples": 8,
+                "min": 20.6,
+                "max": 26.55,
+                "mean": 23.45125
+              }
+            },
+            "availablePhysicalMemoryMiBMinimum": 987.9
+          }
+        },
+        {
+          "index": 3,
+          "variant": "candidate",
+          "pid": 11288,
+          "exitCode": 0,
+          "validMeasurement": true,
+          "actualFog": true,
+          "movingConfirmed": true,
+          "teams": 15,
+          "units": 500,
+          "configurationMarker": "RWXVulkanConfiguration framebuffer=1280x720 samples=4 configuredSamples=4 presentMode=0 vsync=false targetFps=300 asyncSceneUpdate=false nativeBgraUploads=false gpuMapCellSupported=true",
+          "rawWindowOverlapMs": 0.1389,
+          "mergedMeasuredSeconds": 40.0044358,
+          "windows": [
+            {
+              "repetition": 1,
+              "sampleStartNanos": 205408543551700,
+              "sampleEndNanos": 205428543690600,
+              "newFps": 168.0988325536079,
+              "renderFps": 184.19872073988446,
+              "repeatRatio": 0.08740499457111835,
+              "freshSnapshotIntervalP95Ms": 12.9099,
+              "freshSnapshotIntervalP99Ms": 48.6974,
+              "freshSnapshotIntervalMaxMs": 133.2969,
+              "actualZoomMinimum": 0.20000009,
+              "actualZoomMaximum": 2.4999995,
+              "freshEngineFrames": 4753,
+              "framesWithMovingUnits": 4737,
+              "freshGapStats": {
+                "count": 3362,
+                "over33_333Ms": 63,
+                "over50Ms": 33,
+                "over100Ms": 5,
+                "maxMs": 133.2969
+              }
+            },
+            {
+              "repetition": 2,
+              "sampleStartNanos": 205428543551700,
+              "sampleEndNanos": 205448547987500,
+              "newFps": 172.36177188261416,
+              "renderFps": 191.3075698940732,
+              "repeatRatio": 0.09903318526260779,
+              "freshSnapshotIntervalP95Ms": 12.3463,
+              "freshSnapshotIntervalP99Ms": 39.3554,
+              "freshSnapshotIntervalMaxMs": 144.3677,
+              "actualZoomMinimum": 0.20000002,
+              "actualZoomMaximum": 2.4999971,
+              "freshEngineFrames": 4867,
+              "framesWithMovingUnits": 4851,
+              "freshGapStats": {
+                "count": 3448,
+                "over33_333Ms": 49,
+                "over50Ms": 26,
+                "over100Ms": 6,
+                "maxMs": 144.3677
+              }
+            }
+          ],
+          "unionFreshGapStats": {
+            "count": 6810,
+            "over33_333Ms": 112,
+            "over50Ms": 59,
+            "over100Ms": 11,
+            "maxMs": 144.3677
+          },
+          "wholeProcessMemory": {
+            "samples": 18,
+            "min": {
+              "directBufferCount": 491,
+              "directBufferMemoryUsedBytes": 19430036,
+              "directBufferTotalCapacityBytes": 19430036,
+              "heapUsedBytes": 224944408,
+              "heapCommittedBytes": 536870912
+            },
+            "peak": {
+              "directBufferCount": 16768,
+              "directBufferMemoryUsedBytes": 195669000,
+              "directBufferTotalCapacityBytes": 195669000,
+              "heapUsedBytes": 957205416,
+              "heapCommittedBytes": 1181745152
+            },
+            "finalSampleNanos": 205473522884700,
+            "final": {
+              "directBufferCount": 16768,
+              "directBufferMemoryUsedBytes": 175729620,
+              "directBufferTotalCapacityBytes": 175729620,
+              "heapUsedBytes": 957205416,
+              "heapCommittedBytes": 1181745152
+            }
+          },
+          "measuredWindowMemory": {
+            "samples": 8,
+            "min": {
+              "directBufferCount": 9705,
+              "directBufferMemoryUsedBytes": 136397856,
+              "directBufferTotalCapacityBytes": 136397856,
+              "heapUsedBytes": 535275248,
+              "heapCommittedBytes": 1181745152
+            },
+            "peak": {
+              "directBufferCount": 16029,
+              "directBufferMemoryUsedBytes": 176095864,
+              "directBufferTotalCapacityBytes": 176095864,
+              "heapUsedBytes": 813913328,
+              "heapCommittedBytes": 1181745152
+            },
+            "finalSampleNanos": 205448514037100,
+            "final": {
+              "directBufferCount": 15786,
+              "directBufferMemoryUsedBytes": 175481832,
+              "directBufferTotalCapacityBytes": 175481832,
+              "heapUsedBytes": 765961968,
+              "heapCommittedBytes": 1181745152
+            }
+          },
+          "cacheLedger": {
+            "samples": 18,
+            "mismatchCount": 0,
+            "peak": {
+              "allocated": 29,
+              "actualReleased": 0,
+              "live": 12,
+              "pendingRetirements": 0,
+              "idleSlots": 23,
+              "idleBytes": 24117248,
+              "idleRenderCachedMeshes": 392,
+              "idleRenderCachedEstimatedBytes": 15163264,
+              "idleRenderCacheEvictions": 890,
+              "idleRenderCachePrunedMeshes": 22009
+            },
+            "finalSampleNanos": 205473522884700,
+            "final": {
+              "created": 8216,
+              "hits": 72464,
+              "retired": 8210,
+              "live": 6,
+              "pending": 0,
+              "allocated": 29,
+              "pooledReused": 8187,
+              "actualReleased": 0,
+              "retirementCompleted": 8210,
+              "pendingRetirements": 0,
+              "idleSlots": 23,
+              "idleBytes": 24117248,
+              "idleRenderCachedMeshes": 250,
+              "idleRenderCachedEstimatedBytes": 11554944,
+              "idleRenderCacheEvictions": 890,
+              "idleRenderCachePrunedMeshes": 22009,
+              "idleRenderCacheBudgetEnabled": true
+            }
+          },
+          "measuredFogCounterDelta": {
+            "present": true,
+            "samples": 8,
+            "firstSampleNanos": 205413499837200,
+            "lastSampleNanos": 205448514037100,
+            "delta": {
+              "attempts": 6053,
+              "grouped": 6053,
+              "reorderedPasses": 2567,
+              "fallbackOverlap": 0,
+              "fallbackUnsupported": 0,
+              "sourceFillCommands": 483772,
+              "sourceTextureCommands": 225130,
+              "groupedFillCommands": 483772,
+              "groupedTextureCommands": 225130
+            }
+          },
+          "measuredResourceSummary": {
+            "samples": 8,
+            "cpu": {
+              "systemCpuPercent": {
+                "samples": 8,
+                "min": 43.42,
+                "max": 68.2,
+                "mean": 54.0075
+              },
+              "javaCpuPercent": {
+                "samples": 8,
+                "min": 21.18,
+                "max": 33.71,
+                "mean": 25.72125
+              }
+            },
+            "availablePhysicalMemoryMiBMinimum": 1011.1
+          }
+        },
+        {
+          "index": 4,
+          "variant": "baseline",
+          "pid": 27020,
+          "exitCode": 0,
+          "validMeasurement": true,
+          "actualFog": true,
+          "movingConfirmed": true,
+          "teams": 15,
+          "units": 500,
+          "configurationMarker": "RWXVulkanConfiguration framebuffer=1280x720 samples=4 configuredSamples=4 presentMode=0 vsync=false targetFps=300 asyncSceneUpdate=false nativeBgraUploads=false gpuMapCellSupported=true",
+          "rawWindowOverlapMs": 1.8618,
+          "mergedMeasuredSeconds": 40.012579,
+          "windows": [
+            {
+              "repetition": 1,
+              "sampleStartNanos": 205507902084300,
+              "sampleEndNanos": 205527903946100,
+              "newFps": 58.9445128552983,
+              "renderFps": 62.69416380029183,
+              "repeatRatio": 0.05980861244019139,
+              "freshSnapshotIntervalP95Ms": 47.9726,
+              "freshSnapshotIntervalP99Ms": 240.5788,
+              "freshSnapshotIntervalMaxMs": 720.1533,
+              "actualZoomMinimum": 0.20000292,
+              "actualZoomMaximum": 2.499999,
+              "freshEngineFrames": 4448,
+              "framesWithMovingUnits": 4434,
+              "freshGapStats": {
+                "count": 1179,
+                "over33_333Ms": 81,
+                "over50Ms": 56,
+                "over100Ms": 40,
+                "maxMs": 720.1533
+              }
+            },
+            {
+              "repetition": 2,
+              "sampleStartNanos": 205527902084300,
+              "sampleEndNanos": 205547914663300,
+              "newFps": 84.34694998580643,
+              "renderFps": 89.44374435698668,
+              "repeatRatio": 0.05698324022346369,
+              "freshSnapshotIntervalP95Ms": 25.1925,
+              "freshSnapshotIntervalP99Ms": 201.7553,
+              "freshSnapshotIntervalMaxMs": 690.643,
+              "actualZoomMinimum": 0.20002262,
+              "actualZoomMaximum": 2.5,
+              "freshEngineFrames": 4474,
+              "framesWithMovingUnits": 4459,
+              "freshGapStats": {
+                "count": 1688,
+                "over33_333Ms": 70,
+                "over50Ms": 51,
+                "over100Ms": 41,
+                "maxMs": 690.643
+              }
+            }
+          ],
+          "unionFreshGapStats": {
+            "count": 2867,
+            "over33_333Ms": 151,
+            "over50Ms": 107,
+            "over100Ms": 81,
+            "maxMs": 720.1533
+          },
+          "wholeProcessMemory": {
+            "samples": 18,
+            "min": {
+              "directBufferCount": 491,
+              "directBufferMemoryUsedBytes": 19430036,
+              "directBufferTotalCapacityBytes": 19430036,
+              "heapUsedBytes": 285917592,
+              "heapCommittedBytes": 536870912
+            },
+            "peak": {
+              "directBufferCount": 138073,
+              "directBufferMemoryUsedBytes": 199690936,
+              "directBufferTotalCapacityBytes": 199686840,
+              "heapUsedBytes": 1394429576,
+              "heapCommittedBytes": 2028994560
+            },
+            "finalSampleNanos": 205573956465900,
+            "final": {
+              "directBufferCount": 103072,
+              "directBufferMemoryUsedBytes": 159156504,
+              "directBufferTotalCapacityBytes": 159156504,
+              "heapUsedBytes": 920473224,
+              "heapCommittedBytes": 2028994560
+            }
+          },
+          "measuredWindowMemory": {
+            "samples": 8,
+            "min": {
+              "directBufferCount": 42710,
+              "directBufferMemoryUsedBytes": 113824520,
+              "directBufferTotalCapacityBytes": 113824520,
+              "heapUsedBytes": 823173992,
+              "heapCommittedBytes": 1308622848
+            },
+            "peak": {
+              "directBufferCount": 88021,
+              "directBufferMemoryUsedBytes": 149107992,
+              "directBufferTotalCapacityBytes": 149107992,
+              "heapUsedBytes": 1242910344,
+              "heapCommittedBytes": 1896873984
+            },
+            "finalSampleNanos": 205543931865800,
+            "final": {
+              "directBufferCount": 62955,
+              "directBufferMemoryUsedBytes": 120989120,
+              "directBufferTotalCapacityBytes": 120989120,
+              "heapUsedBytes": 927813256,
+              "heapCommittedBytes": 1896873984
+            }
+          },
+          "cacheLedger": {
+            "samples": 18,
+            "mismatchCount": 0,
+            "peak": {
+              "allocated": 32,
+              "actualReleased": 0,
+              "live": 12,
+              "pendingRetirements": 0,
+              "idleSlots": 28,
+              "idleBytes": 29360128,
+              "idleRenderCachedMeshes": 510,
+              "idleRenderCachedEstimatedBytes": 1910832,
+              "idleRenderCacheEvictions": 1703,
+              "idleRenderCachePrunedMeshes": 217291
+            },
+            "finalSampleNanos": 205573956465900,
+            "final": {
+              "created": 3725,
+              "hits": 27156,
+              "retired": 3717,
+              "live": 8,
+              "pending": 2,
+              "allocated": 32,
+              "pooledReused": 3693,
+              "actualReleased": 0,
+              "retirementCompleted": 3717,
+              "pendingRetirements": 0,
+              "idleSlots": 24,
+              "idleBytes": 25165824,
+              "idleRenderCachedMeshes": 178,
+              "idleRenderCachedEstimatedBytes": 418752,
+              "idleRenderCacheEvictions": 1703,
+              "idleRenderCachePrunedMeshes": 217291,
+              "idleRenderCacheBudgetEnabled": true
+            }
+          },
+          "measuredFogCounterDelta": {
+            "present": false
+          },
+          "measuredResourceSummary": {
+            "samples": 8,
+            "cpu": {
+              "systemCpuPercent": {
+                "samples": 8,
+                "min": 49.86,
+                "max": 60.98,
+                "mean": 55.69875
+              },
+              "javaCpuPercent": {
+                "samples": 8,
+                "min": 23.09,
+                "max": 38.44,
+                "mean": 30.9425
+              }
+            },
+            "availablePhysicalMemoryMiBMinimum": 398.4
+          }
+        }
+      ],
+      "pipelineCountsRecorded": false,
+      "physicalScanoutMeasured": false,
+      "fluidityAccepted": false,
+      "limits": [
+        "Window medians are the primary runner aggregation; median P99 is not a pooled P99.",
+        "Per-window gaps are assigned to their ending fresh acceptance, including the first left-boundary crossing; the final unfinished interval is excluded.",
+        "Threshold aggregates use merged interval unions per process, avoiding double-counted ending timestamps at the slight raw-window overlap.",
+        "Memory/cache peaks and finals from five-second snapshots are sampling observations, not continuous maxima or shutdown-zero claims. Whole-process data includes warmup and time outside windows.",
+        "Frame memory fields do not include all native/GPU allocations. Idle attachment/render budgets do not cap total process memory.",
+        "Fog counters are cumulative; measured deltas are between the first/last samples inside the union and therefore do not cover unsampled boundaries. Missing baseline fog counters mean disabled instrumentation path, not measured zero operations.",
+        "Repeated accepted snapshots increased in the candidate. The accepted-present CSV does not record physical scanout or failed presentation attempts, so repeat ratio is not a dropped-presentation measurement.",
+        "CPU resource samples use all logical processors; each value covers the preceding sampler interval, which may straddle a window boundary. Page-fault counts include soft faults and cannot prove paging.",
+        "This is a built-in local moving-unit fog-on fixture, not the user Europe replay or a physical mouse latency measurement. No all-map fluidity guarantee follows.",
+        "Pipeline counts and per-create native timings were not recorded and are not inferred."
+      ]
+    },
+    "fogBatchEuropeDiagnostic35": {
+      "status": "single instrumented Europe normal-gap attribution; remaining pauses not resolved",
+      "compactReview": "build/map-pan-replay-europe-fast-zoom-gpu-pool-35-failure-diagnostic-fog-batching-memory-budget/normal-residual-gap-review-35.json",
+      "runtimeSha256": "bbec251d7cdc38d6747041d767a164ab1492c5b544c0cdbc46054cc6f1c2f32d",
+      "validMeasurement": true,
+      "exitCode": 0,
+      "protocol": {
+        "scenario": "original Europe replay",
+        "framebuffer": [
+          1280.0,
+          720.0
+        ],
+        "fogOn": true,
+        "cameraPeriodSeconds": 1,
+        "zoomPeriodSeconds": 1,
+        "requestedZoom": [
+          0.2,
+          2.5
+        ],
+        "fogBatchingEnabled": true,
+        "diagnosticOnly": true,
+        "physicalScanoutMeasured": false,
+        "notAbba": true
+      },
+      "clockCalibration": {
+        "validMarkerCount": 89,
+        "rejectedMarkerCount": 1,
+        "leaveOneMarkerOutResidualMaxAbsMs": 0.004141,
+        "method": "Pair marker JFR start/end with monoStart/monoEnd, piecewise linear integer interpolation. Map event start and end independently; label edge extrapolation."
+      },
+      "normalSummary": {
+        "mergedMeasurementIntervals": [
+          {
+            "sampleStartNanos": 205855385201500,
+            "sampleEndNanos": 205895388039500
+          }
+        ],
+        "measurementSeconds": 40.002838,
+        "excludedReloadEpochSeconds": 0.6229246,
+        "normalMeasuredSeconds": 39.3799134,
+        "normalFreshThresholdCounts": {
+          "33.333333": 146,
+          "50": 75,
+          "100": 13
+        },
+        "normalPooledFreshIntervalMs": {
+          "count": 6068,
+          "min": 1.0596,
+          "median": 4.16685,
+          "p95": 15.502964999999989,
+          "p99": 55.43465399999999,
+          "max": 161.724
+        }
+      },
+      "nativeCallStatistics": {
+        "full-trace": {
+          "graphics-pipeline-create": {
+            "count": 35386,
+            "totalWallMs": 589.4316,
+            "maxWallMs": 9.7523,
+            "atLeast50Ms": 0
+          },
+          "submit": {
+            "count": 15036,
+            "totalWallMs": 1465.3586,
+            "maxWallMs": 484.1733,
+            "atLeast50Ms": 1
+          },
+          "fence": {
+            "count": 15036,
+            "totalWallMs": 324.19620000000003,
+            "maxWallMs": 183.8129,
+            "atLeast50Ms": 1
+          },
+          "buffer-upload": {
+            "count": 16,
+            "totalWallMs": 338.0675,
+            "maxWallMs": 66.5458,
+            "atLeast50Ms": 3
+          },
+          "texture-load": {
+            "count": 2057,
+            "totalWallMs": 549.1691,
+            "maxWallMs": 36.8851,
+            "atLeast50Ms": 0
+          }
+        },
+        "normal-measurement": {
+          "graphics-pipeline-create": {
+            "count": 16859,
+            "totalWallMs": 237.2801,
+            "maxWallMs": 0.4654,
+            "atLeast50Ms": 0
+          },
+          "submit": {
+            "count": 6813,
+            "totalWallMs": 430.90409999999997,
+            "maxWallMs": 28.6562,
+            "atLeast50Ms": 0
+          },
+          "fence": {
+            "count": 6812,
+            "totalWallMs": 59.4386,
+            "maxWallMs": 5.4833,
+            "atLeast50Ms": 0
+          },
+          "buffer-upload": {
+            "count": 5,
+            "totalWallMs": 150.0884,
+            "maxWallMs": 65.4676,
+            "atLeast50Ms": 1
+          },
+          "texture-load": {
+            "count": 958,
+            "totalWallMs": 188.3559,
+            "maxWallMs": 1.6455,
+            "atLeast50Ms": 0
+          }
+        }
+      },
+      "allNativeOrUploadCallsAtLeast50Ms": [
+        {
+          "startNanos": 205836007280300,
+          "endNanos": 205836073826100,
+          "stage": "buffer-upload",
+          "value0": 1680,
+          "value1": -1,
+          "value2": -1,
+          "durationMs": 66.5458,
+          "classification": "outside-measurement",
+          "gcOverlapUnionMs": 0.0
+        },
+        {
+          "startNanos": 205841815710200,
+          "endNanos": 205842299883500,
+          "stage": "submit",
+          "value0": 0,
+          "value1": 1351,
+          "value2": -1,
+          "durationMs": 484.1733,
+          "classification": "outside-measurement",
+          "gcOverlapUnionMs": 6.462451
+        },
+        {
+          "startNanos": 205842712072400,
+          "endNanos": 205842895885300,
+          "stage": "fence",
+          "value0": 0,
+          "value1": 1378,
+          "value2": -1,
+          "durationMs": 183.8129,
+          "classification": "outside-measurement",
+          "gcOverlapUnionMs": 0.0
+        },
+        {
+          "startNanos": 205853759638900,
+          "endNanos": 205853811493500,
+          "stage": "buffer-upload",
+          "value0": 160,
+          "value1": -1,
+          "value2": -1,
+          "durationMs": 51.8546,
+          "classification": "outside-measurement",
+          "gcOverlapUnionMs": 51.709198
+        },
+        {
+          "startNanos": 205893783381300,
+          "endNanos": 205893848848900,
+          "stage": "buffer-upload",
+          "value0": 45760,
+          "value1": -1,
+          "value2": -1,
+          "durationMs": 65.4676,
+          "classification": "normal-measurement",
+          "gcOverlapUnionMs": 65.343948
+        }
+      ],
+      "warmupOnlyLongSubmit": {
+        "call": {
+          "startNanos": 205841815710200,
+          "endNanos": 205842299883500,
+          "stage": "submit",
+          "value0": 0,
+          "value1": 1351,
+          "value2": -1,
+          "durationMs": 484.1733,
+          "classification": "outside-measurement",
+          "gcOverlapUnionMs": 6.462451
+        },
+        "budgetQueryAfterOriginalSubmitEnded": {
+          "type": "sample",
+          "supported": true,
+          "reason": "long-submit",
+          "deviceHandle": 1660219995240,
+          "queueHandle": 1660222348472,
+          "sampleNanos": 205842299926500,
+          "queryStartNanos": 205842299926500,
+          "queryEndNanos": 205842300019600,
+          "queryDurationNanos": 93100,
+          "elapsedNanos": 12291289300,
+          "frameOrdinal": 1351,
+          "submitOrdinal": 1351,
+          "submitStartNanos": 205841815710200,
+          "submitEndNanos": 205842299883500,
+          "submitDurationNanos": 484173300,
+          "submitResult": 0,
+          "querySucceeded": true,
+          "heapCount": 1,
+          "heaps": [
+            {
+              "index": 0,
+              "flags": 1,
+              "sizeBytes": 8444735488,
+              "budgetBytes": 7754063258,
+              "usageBytes": 398270464
+            }
+          ]
+        },
+        "secondsSinceVulkanBudgetProbeCreation": 12.2912893,
+        "secondsSinceScenarioSetupAtSubmitEnd": 6.914682,
+        "measurementStartsNanos": 205855385201500,
+        "isNormalMeasurement": false
+      },
+      "normalTop5Summary": [
+        {
+          "startNanos": 205878650492700,
+          "endNanos": 205878812216700,
+          "freshGapMs": 161.724,
+          "gcOverlapUnionMs": 32.547637,
+          "longestOwnerFrame": {
+            "startNanos": 205878623739000,
+            "endNanos": 205878719651200,
+            "tick": 1213,
+            "wallMs": 95.9122,
+            "cpuMs": 62.5,
+            "workMs": 27.12,
+            "updateMs": 2.1524,
+            "drawMs": 24.962,
+            "layerRedrawMs": 0.0014,
+            "snapshotMs": 68.7908
+          },
+          "longestOwnerPhaseGcDecomposition": [
+            {
+              "phase": "work",
+              "startNanos": 205878623739000,
+              "endNanos": 205878650859000,
+              "wallMs": 27.12,
+              "gcOverlapUnionMs": 0.0,
+              "wallWithoutReportedGcMs": 27.12,
+              "freshGapOverlapMs": 0.3663
+            },
+            {
+              "phase": "layerRedraw",
+              "startNanos": 205878650859000,
+              "endNanos": 205878650860400,
+              "wallMs": 0.0014,
+              "gcOverlapUnionMs": 0.0,
+              "wallWithoutReportedGcMs": 0.0014,
+              "freshGapOverlapMs": 0.0014
+            },
+            {
+              "phase": "snapshot",
+              "startNanos": 205878650860400,
+              "endNanos": 205878719651200,
+              "wallMs": 68.7908,
+              "gcOverlapUnionMs": 32.547637,
+              "wallWithoutReportedGcMs": 36.243163,
+              "freshGapOverlapMs": 68.7908
+            }
+          ],
+          "sampleBucketCounts": {
+            "owner.other": 2,
+            "owner.freezeFrame": 6,
+            "owner.gameUpdate": 2,
+            "main.rootScreenCollect": 2,
+            "main.other": 3,
+            "main.childSlotBind": 2,
+            "owner.mapCommandRecording": 3
+          },
+          "topNativeOrUploadCall": {
+            "startNanos": 205878797718900,
+            "endNanos": 205878798015300,
+            "stage": "texture-load",
+            "value0": 230400,
+            "value1": 240,
+            "value2": 240,
+            "durationMs": 0.2964,
+            "gcOverlapUnionMs": 0.0
+          },
+          "sameClockParks": []
+        },
+        {
+          "startNanos": 205870651765400,
+          "endNanos": 205870793462200,
+          "freshGapMs": 141.6968,
+          "gcOverlapUnionMs": 70.053805,
+          "longestOwnerFrame": {
+            "startNanos": 205870650105300,
+            "endNanos": 205870746744000,
+            "tick": 978,
+            "wallMs": 96.6387,
+            "cpuMs": 15.625,
+            "workMs": 14.6393,
+            "updateMs": 13.6654,
+            "drawMs": 0.9551,
+            "layerRedrawMs": 78.2159,
+            "snapshotMs": 3.7835
+          },
+          "longestOwnerPhaseGcDecomposition": [
+            {
+              "phase": "work",
+              "startNanos": 205870650105300,
+              "endNanos": 205870664744600,
+              "wallMs": 14.6393,
+              "gcOverlapUnionMs": 0.0,
+              "wallWithoutReportedGcMs": 14.6393,
+              "freshGapOverlapMs": 12.9792
+            },
+            {
+              "phase": "layerRedraw",
+              "startNanos": 205870664744600,
+              "endNanos": 205870742960500,
+              "wallMs": 78.2159,
+              "gcOverlapUnionMs": 70.053805,
+              "wallWithoutReportedGcMs": 8.162095000000008,
+              "freshGapOverlapMs": 78.2159
+            },
+            {
+              "phase": "snapshot",
+              "startNanos": 205870742960500,
+              "endNanos": 205870746744000,
+              "wallMs": 3.7835,
+              "gcOverlapUnionMs": 0.0,
+              "wallWithoutReportedGcMs": 3.7835,
+              "freshGapOverlapMs": 3.7835
+            }
+          ],
+          "sampleBucketCounts": {
+            "owner.gameUpdate": 2,
+            "owner.mapCommandRecording": 2,
+            "owner.freezeFrame": 1,
+            "main.childSlotBind": 2,
+            "main.cellSourcePrepare": 1,
+            "main.kslCollectRootChildUnresolved": 1
+          },
+          "topNativeOrUploadCall": {
+            "startNanos": 205870784418100,
+            "endNanos": 205870784589800,
+            "stage": "texture-load",
+            "value0": 230400,
+            "value1": 240,
+            "value2": 240,
+            "durationMs": 0.1717,
+            "gcOverlapUnionMs": 0.0
+          },
+          "sameClockParks": []
+        },
+        {
+          "startNanos": 205871620996800,
+          "endNanos": 205871762522300,
+          "freshGapMs": 141.5255,
+          "gcOverlapUnionMs": 84.898031,
+          "longestOwnerFrame": {
+            "startNanos": 205871616138400,
+            "endNanos": 205871724434200,
+            "tick": 1005,
+            "wallMs": 108.2958,
+            "cpuMs": 15.625,
+            "workMs": 6.7296,
+            "updateMs": 2.7547,
+            "drawMs": 3.9606,
+            "layerRedrawMs": 63.5014,
+            "snapshotMs": 38.0648
+          },
+          "longestOwnerPhaseGcDecomposition": [
+            {
+              "phase": "work",
+              "startNanos": 205871616138400,
+              "endNanos": 205871622868000,
+              "wallMs": 6.7296,
+              "gcOverlapUnionMs": 0.0,
+              "wallWithoutReportedGcMs": 6.7296,
+              "freshGapOverlapMs": 1.8712
+            },
+            {
+              "phase": "layerRedraw",
+              "startNanos": 205871622868000,
+              "endNanos": 205871686369400,
+              "wallMs": 63.5014,
+              "gcOverlapUnionMs": 56.918044,
+              "wallWithoutReportedGcMs": 6.583355999999995,
+              "freshGapOverlapMs": 63.5014
+            },
+            {
+              "phase": "snapshot",
+              "startNanos": 205871686369400,
+              "endNanos": 205871724434200,
+              "wallMs": 38.0648,
+              "gcOverlapUnionMs": 27.979987,
+              "wallWithoutReportedGcMs": 10.084812999999997,
+              "freshGapOverlapMs": 38.0648
+            }
+          ],
+          "sampleBucketCounts": {
+            "owner.other": 3,
+            "main.other": 1,
+            "main.childSlotBind": 1,
+            "main.kslCollectRootChildUnresolved": 1
+          },
+          "topNativeOrUploadCall": {
+            "startNanos": 205871751250200,
+            "endNanos": 205871751512100,
+            "stage": "texture-load",
+            "value0": 230400,
+            "value1": 240,
+            "value2": 240,
+            "durationMs": 0.2619,
+            "gcOverlapUnionMs": 0.0
+          },
+          "sameClockParks": []
+        },
+        {
+          "startNanos": 205882617057700,
+          "endNanos": 205882757132200,
+          "freshGapMs": 140.0745,
+          "gcOverlapUnionMs": 27.796071,
+          "longestOwnerFrame": {
+            "startNanos": 205882589437700,
+            "endNanos": 205882679548100,
+            "tick": 1327,
+            "wallMs": 90.1104,
+            "cpuMs": 62.5,
+            "workMs": 32.588,
+            "updateMs": 6.8516,
+            "drawMs": 25.7299,
+            "layerRedrawMs": 0.0028,
+            "snapshotMs": 57.5196
+          },
+          "longestOwnerPhaseGcDecomposition": [
+            {
+              "phase": "work",
+              "startNanos": 205882589437700,
+              "endNanos": 205882622025700,
+              "wallMs": 32.588,
+              "gcOverlapUnionMs": 0.0,
+              "wallWithoutReportedGcMs": 32.588,
+              "freshGapOverlapMs": 4.968
+            },
+            {
+              "phase": "layerRedraw",
+              "startNanos": 205882622025700,
+              "endNanos": 205882622028500,
+              "wallMs": 0.0028,
+              "gcOverlapUnionMs": 0.0,
+              "wallWithoutReportedGcMs": 0.0028,
+              "freshGapOverlapMs": 0.0028
+            },
+            {
+              "phase": "snapshot",
+              "startNanos": 205882622028500,
+              "endNanos": 205882679548100,
+              "wallMs": 57.5196,
+              "gcOverlapUnionMs": 27.796071,
+              "wallWithoutReportedGcMs": 29.723528999999996,
+              "freshGapOverlapMs": 57.5196
+            }
+          ],
+          "sampleBucketCounts": {
+            "owner.other": 5,
+            "owner.mapCommandRecording": 2,
+            "main.other": 2,
+            "main.childSlotBind": 3,
+            "main.cellSourcePrepare": 1,
+            "main.drawCaptureRootChildUnresolved": 1,
+            "owner.freezeFrame": 1
+          },
+          "topNativeOrUploadCall": {
+            "startNanos": 205882621473300,
+            "endNanos": 205882623866400,
+            "stage": "fence",
+            "value0": 0,
+            "value1": 7875,
+            "value2": -1,
+            "durationMs": 2.3931,
+            "gcOverlapUnionMs": 0.0
+          },
+          "sameClockParks": [
+            {
+              "startNanos": 205882629033687,
+              "endNanos": 205882658687543,
+              "actualDurationMs": 29.653856,
+              "requestedTimeoutNanos": 2000000,
+              "gcOverlapUnionMs": 27.796071,
+              "thread": "main"
+            }
+          ]
+        },
+        {
+          "startNanos": 205859573043700,
+          "endNanos": 205859710694300,
+          "freshGapMs": 137.6506,
+          "gcOverlapUnionMs": 94.138744,
+          "longestOwnerFrame": {
+            "startNanos": 205859576669200,
+            "endNanos": 205859724489700,
+            "tick": 671,
+            "wallMs": 147.8205,
+            "cpuMs": 46.875,
+            "workMs": 86.7581,
+            "updateMs": 0.0329,
+            "drawMs": 86.7131,
+            "layerRedrawMs": 0.0015,
+            "snapshotMs": 61.0609
+          },
+          "longestOwnerPhaseGcDecomposition": [
+            {
+              "phase": "work",
+              "startNanos": 205859576669200,
+              "endNanos": 205859663427300,
+              "wallMs": 86.7581,
+              "gcOverlapUnionMs": 64.23253,
+              "wallWithoutReportedGcMs": 22.525570000000002,
+              "freshGapOverlapMs": 86.7581
+            },
+            {
+              "phase": "layerRedraw",
+              "startNanos": 205859663427300,
+              "endNanos": 205859663428800,
+              "wallMs": 0.0015,
+              "gcOverlapUnionMs": 0.0,
+              "wallWithoutReportedGcMs": 0.0015,
+              "freshGapOverlapMs": 0.0015
+            },
+            {
+              "phase": "snapshot",
+              "startNanos": 205859663428800,
+              "endNanos": 205859724489700,
+              "wallMs": 61.0609,
+              "gcOverlapUnionMs": 29.906214,
+              "wallWithoutReportedGcMs": 31.154685999999998,
+              "freshGapOverlapMs": 47.2655
+            }
+          ],
+          "sampleBucketCounts": {
+            "owner.mapCommandRecording": 4,
+            "main.cellSourcePrepare": 2,
+            "main.kslCollectRootChildUnresolved": 1
+          },
+          "topNativeOrUploadCall": {
+            "startNanos": 205859667878000,
+            "endNanos": 205859697967400,
+            "stage": "buffer-upload",
+            "value0": 96,
+            "value1": -1,
+            "value2": -1,
+            "durationMs": 30.0894,
+            "gcOverlapUnionMs": 29.906214
+          },
+          "sameClockParks": []
+        }
+      ],
+      "wholeProcessFinalFogCounters": {
+        "attempts": 11899,
+        "grouped": 11899,
+        "reorderedPasses": 5111,
+        "fallbackOverlap": 0,
+        "fallbackUnsupported": 0,
+        "sourceFillCommands": 1004974,
+        "sourceTextureCommands": 447837,
+        "groupedFillCommands": 1004974,
+        "groupedTextureCommands": 447837
+      },
+      "fluidityAccepted": false,
+      "cross34CausalImprovementClaim": false,
+      "limits": [
+        "This35 fog-batching diagnostic is a single instrumented Europe run, not ABBA and not the built-in fixture. Cross34/35 raw diagnostic differences do not establish causal improvement.",
+        "Normal statistics exclude reload epochs and crossing fresh intervals; no synchronization-stall optimization is claimed.",
+        "ClockSync piecewise mapping is valid for these measured gaps; rejected zero-span marker is retained, no raw epoch-offset fallback is used.",
+        "Thread CPU clocks are quantized; JFR samples identify paths rather than continuous or exclusive CPU time.",
+        "Owner phase boundaries are reconstructed backwards from endSnapshot trace phase laps. GC-subtracted wall time still includes scheduling/locks/other pauses and is not exclusive CPU. Phases may begin before or end after the fresh gap.",
+        "GC union is timing overlap, not proof of the allocation site that triggered it. A buffer-upload wrapper span can include GC and must not be called65ms GPU transfer.",
+        "KSL pipeline construction sampled in generic Scene collection cannot identify root versus child without explicit screen-pass or Slot.bind frames. Distinct childBind and rootScreenCollect stacks are marked only when present.",
+        "Budget usage is a driver estimate, not residency/paging or a causal VRAM measure. Budget queries run after original submit ended; sparse before/after samples do not give continuous maxima.",
+        "The484.1733ms submit occurred during warmup, before all measurement windows, and is not a cause of a measured normal gap.",
+        "Physical scanout and mouse input latency were not measured; remaining161.724ms normal gap prevents a fluidity acceptance."
+      ]
+    },
+    "fogBatchRawAllocation35": {
+      "sourceRawJfr": "profile.jfr",
+      "sourceAllocationOnly": "allocation-samples-35.ndjson",
+      "runtimeSha256": "bbec251d7cdc38d6747041d767a164ab1492c5b544c0cdbc46054cc6f1c2f32d",
+      "clockCalibration": {
+        "validMarkerCount": 89,
+        "rejectedMarkerCount": 1,
+        "rejectedMarkers": [
+          {
+            "event": {
+              "type": "rwx.ClockSync",
+              "start": 1791149576666167207,
+              "duration": 2126,
+              "thread": "RWX-engine-owner",
+              "stack": [],
+              "monoStart": 205881968284000,
+              "monoEnd": 205881968284000,
+              "epochMillis": 1791149576428
+            },
+            "reason": "zero, negative or extremely small marker clock interval"
+          }
+        ],
+        "markerThreads": [
+          "RWX-engine-owner"
+        ],
+        "markerPayloadRangeNanos": [
+          205835440340700,
+          205925033688300
+        ],
+        "betweenMarkerSlopeMin": 0.9957062848446772,
+        "betweenMarkerSlopeMedian": 0.9957085916978818,
+        "betweenMarkerSlopeMax": 0.9957162848199566,
+        "leaveOneMarkerOutResidualMedianAbsMs": 7.3e-05,
+        "leaveOneMarkerOutResidualMaxAbsMs": 0.004141,
+        "method": "Pair marker JFR start/end with monoStart/monoEnd, piecewise linear integer interpolation. Map event start and end independently; label edge extrapolation."
+      },
+      "normalIntervals": [
+        {
+          "startNanos": 205855385201500,
+          "endNanos": 205869260516900
+        },
+        {
+          "startNanos": 205869883441500,
+          "endNanos": 205895388039500
+        }
+      ],
+      "normalSeconds": 39.3799134,
+      "rawAllocationSampleEventCount": 24803,
+      "normalAllocationSampleEventCount": 9844,
+      "excludedAllocationSampleEvents": 14959,
+      "normalExtrapolatedEvents": 0,
+      "normalSumSampleWeightBytes": 13889869800,
+      "byThread": {
+        "PathSolver-1": {
+          "eventCount": 49,
+          "sampleWeightBytes": 159976
+        },
+        "Thread-11": {
+          "eventCount": 102,
+          "sampleWeightBytes": 328240
+        },
+        "Thread-10": {
+          "eventCount": 17,
+          "sampleWeightBytes": 11944
+        },
+        "RWX-engine-owner": {
+          "eventCount": 5830,
+          "sampleWeightBytes": 8583078800
+        },
+        "JFR Periodic Tasks": {
+          "eventCount": 22,
+          "sampleWeightBytes": 2944
+        },
+        "main": {
+          "eventCount": 3761,
+          "sampleWeightBytes": 5306214208
+        },
+        "TimerQueue": {
+          "eventCount": 25,
+          "sampleWeightBytes": 16224
+        },
+        "AWT-EventQueue-0": {
+          "eventCount": 27,
+          "sampleWeightBytes": 9184
+        },
+        "C1 CompilerThread0": {
+          "eventCount": 2,
+          "sampleWeightBytes": 256
+        },
+        "C2 CompilerThread0": {
+          "eventCount": 1,
+          "sampleWeightBytes": 192
+        },
+        "PathSolver-2": {
+          "eventCount": 8,
+          "sampleWeightBytes": 47832
+        }
+      },
+      "topClasses10": [
+        {
+          "class": "io.github.rwx.render.canvas.KoolCanvasPaint",
+          "sampleWeightBytes": 2262100576,
+          "eventCount": 1171,
+          "percentOfNormalSampleWeight": 16.285973940518865
+        },
+        {
+          "class": "io.github.rwx.render.canvas.KoolCanvasTextureRef",
+          "sampleWeightBytes": 1702595792,
+          "eventCount": 1118,
+          "percentOfNormalSampleWeight": 12.257823986226278
+        },
+        {
+          "class": "io.github.rwx.render.canvas.KoolCanvasCommand$DrawTexture",
+          "sampleWeightBytes": 1528299256,
+          "eventCount": 950,
+          "percentOfNormalSampleWeight": 11.002977551308653
+        },
+        {
+          "class": "io.github.rwx.render.canvas.KoolCanvasRect",
+          "sampleWeightBytes": 1458438920,
+          "eventCount": 1106,
+          "percentOfNormalSampleWeight": 10.500018653882558
+        },
+        {
+          "class": "[Ljava.lang.Object;",
+          "sampleWeightBytes": 1323293464,
+          "eventCount": 749,
+          "percentOfNormalSampleWeight": 9.52704008787757
+        },
+        {
+          "class": "[B",
+          "sampleWeightBytes": 718733432,
+          "eventCount": 489,
+          "percentOfNormalSampleWeight": 5.174515257155255
+        },
+        {
+          "class": "java.util.LinkedHashMap$LinkedKeyIterator",
+          "sampleWeightBytes": 474628568,
+          "eventCount": 354,
+          "percentOfNormalSampleWeight": 3.417084355967109
+        },
+        {
+          "class": "io.github.rwx.render.canvas.KoolCanvasTextureId",
+          "sampleWeightBytes": 427752424,
+          "eventCount": 439,
+          "percentOfNormalSampleWeight": 3.079599954205474
+        },
+        {
+          "class": "java.util.LinkedHashMap$Entry",
+          "sampleWeightBytes": 342148208,
+          "eventCount": 294,
+          "percentOfNormalSampleWeight": 2.4632931260449973
+        },
+        {
+          "class": "[I",
+          "sampleWeightBytes": 311928336,
+          "eventCount": 159,
+          "percentOfNormalSampleWeight": 2.245725413495237
+        }
+      ],
+      "topStackGroups10": [
+        {
+          "thread": "RWX-engine-owner",
+          "class": "io.github.rwx.render.canvas.KoolCanvasCommand$DrawTexture",
+          "eventCount": 268,
+          "sampleWeightBytes": 642115152,
+          "percentOfNormalSampleWeight": 4.622902599130195,
+          "stack": [
+            "io.github.rwx.render.canvas.KoolCanvasCommand$DrawTexture.copy",
+            "io.github.rwx.render.canvas.KoolCanvasCommand$DrawTexture.copy$default",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$lambda$9",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore$$Lambda.0x000000001f60b518.invoke",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$texture",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$lambda$9",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore$$Lambda.0x000000001f60b518.invoke",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession.publishFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession.engineFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession.access$engineFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession$owner$2$2.invoke",
+            "io.github.rwx.kool.KoolDesktopGameSession$owner$2$2.invoke",
+            "io.github.rwx.kool.EngineOwnerLoop.run",
+            "io.github.rwx.kool.EngineOwnerLoop.thread$run",
+            "io.github.rwx.kool.EngineOwnerLoop$$Lambda.0x000000001f4adca0.run",
+            "java.lang.Thread.runWith",
+            "java.lang.Thread.run"
+          ]
+        },
+        {
+          "thread": "main",
+          "class": "io.github.rwx.render.canvas.KoolCanvasCommand$DrawTexture",
+          "eventCount": 245,
+          "sampleWeightBytes": 540609672,
+          "percentOfNormalSampleWeight": 3.892114755460127,
+          "stack": [
+            "io.github.rwx.render.canvas.KoolCanvasCommand$DrawTexture.copy",
+            "io.github.rwx.render.canvas.KoolCanvasCommand$DrawTexture.copy$default",
+            "io.github.rwx.render.canvas.KoolCanvasGpuMapCellSources.prepare",
+            "io.github.rwx.render.canvas.KoolCanvasGpuMapCellCache.createPooledEntry",
+            "io.github.rwx.render.canvas.KoolCanvasGpuMapCellCache.resolve",
+            "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.resolveTexture",
+            "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.addTexture",
+            "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.render",
+            "io.github.rwx.render.canvas.KoolCanvasSceneHost$configure$2.onRenderScene$lambda$1",
+            "io.github.rwx.render.canvas.KoolCanvasSceneHost$configure$2$$Lambda.0x000000001f614ab0.invoke",
+            "io.github.rwx.render.canvas.KoolCanvasFontRegistry.withSnapshot$io_github_rwx_core",
+            "io.github.rwx.render.canvas.KoolCanvasSceneHost$configure$2.onRenderScene",
+            "de.fabmax.kool.scene.Scene.collectScene$kool_core",
+            "de.fabmax.kool.KoolContext.render",
+            "de.fabmax.kool.platform.Lwjgl3Context.renderFrame$kool_core",
+            "de.fabmax.kool.platform.swing.SwingWindowSubsystem$unmanagedRenderLoop$1.invokeSuspend",
+            "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith",
+            "kotlinx.coroutines.DispatchedTask.run",
+            "kotlinx.coroutines.EventLoopImplBase.processNextEvent",
+            "kotlinx.coroutines.BlockingCoroutine.joinBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default",
+            "kotlinx.coroutines.BuildersKt.runBlocking$default",
+            "de.fabmax.kool.platform.swing.SwingWindowSubsystem.unmanagedRenderLoop",
+            "de.fabmax.kool.platform.swing.SwingWindowSubsystem.runRenderLoop",
+            "io.github.rwx.PacedSwingWindowSubsystem.runRenderLoop",
+            "de.fabmax.kool.platform.Lwjgl3Context.run",
+            "io.github.rwx.KoolDesktopMain$run$1.invokeSuspend",
+            "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith",
+            "kotlinx.coroutines.DispatchedTask.run",
+            "kotlinx.coroutines.EventLoopImplBase.processNextEvent",
+            "kotlinx.coroutines.BlockingCoroutine.joinBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default",
+            "kotlinx.coroutines.BuildersKt.runBlocking$default",
+            "io.github.rwx.KoolDesktopMain.run",
+            "io.github.rwx.KoolDesktopMain.main"
+          ]
+        },
+        {
+          "thread": "RWX-engine-owner",
+          "class": "io.github.rwx.render.canvas.KoolCanvasPaint",
+          "eventCount": 136,
+          "sampleWeightBytes": 513563152,
+          "percentOfNormalSampleWeight": 3.6973935637611235,
+          "stack": [
+            "io.github.rwx.render.canvas.KoolCanvasPaint.copy",
+            "io.github.rwx.render.canvas.KoolCanvasPaint.copy$default",
+            "io.github.rwx.render.canvas.KoolGraphicsEngine.withDirectBlitTextureBlend",
+            "io.github.rwx.render.canvas.KoolGraphicsEngine.drawTexture",
+            "io.github.rwx.render.canvas.KoolGraphicsEngine.a",
+            "com.corrodinggames.rts.game.map.MapLayer.renderLayerRegion",
+            "com.corrodinggames.rts.game.map.LayerBufferManager.renderCellContents",
+            "com.corrodinggames.rts.game.map.LayerBufferManager.renderCellInto",
+            "com.corrodinggames.rts.game.map.LayerBufferManager.renderCell",
+            "com.corrodinggames.rts.game.map.LayerBufferManager.renderOffscreenPendingRedraws",
+            "io.github.rwx.kool.KoolDesktopGameSession.engineFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession.access$engineFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession$owner$2$2.invoke",
+            "io.github.rwx.kool.KoolDesktopGameSession$owner$2$2.invoke",
+            "io.github.rwx.kool.EngineOwnerLoop.run",
+            "io.github.rwx.kool.EngineOwnerLoop.thread$run",
+            "io.github.rwx.kool.EngineOwnerLoop$$Lambda.0x000000001f4adca0.run",
+            "java.lang.Thread.runWith",
+            "java.lang.Thread.run"
+          ]
+        },
+        {
+          "thread": "RWX-engine-owner",
+          "class": "io.github.rwx.render.canvas.KoolCanvasTextureRef",
+          "eventCount": 311,
+          "sampleWeightBytes": 477747824,
+          "percentOfNormalSampleWeight": 3.4395414131239734,
+          "stack": [
+            "io.github.rwx.render.canvas.KoolCanvasTextureRef.copy-duknHb8",
+            "io.github.rwx.render.canvas.KoolCanvasTextureRef.copy-duknHb8$default",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$texture",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$lambda$9",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore$$Lambda.0x000000001f60b518.invoke",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$texture",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$lambda$9",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore$$Lambda.0x000000001f60b518.invoke",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession.publishFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession.engineFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession.access$engineFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession$owner$2$2.invoke",
+            "io.github.rwx.kool.KoolDesktopGameSession$owner$2$2.invoke",
+            "io.github.rwx.kool.EngineOwnerLoop.run",
+            "io.github.rwx.kool.EngineOwnerLoop.thread$run",
+            "io.github.rwx.kool.EngineOwnerLoop$$Lambda.0x000000001f4adca0.run",
+            "java.lang.Thread.runWith",
+            "java.lang.Thread.run"
+          ]
+        },
+        {
+          "thread": "main",
+          "class": "io.github.rwx.render.canvas.KoolCanvasTextureRef",
+          "eventCount": 293,
+          "sampleWeightBytes": 477201112,
+          "percentOfNormalSampleWeight": 3.4356053647097538,
+          "stack": [
+            "io.github.rwx.render.canvas.KoolCanvasTextureRef.copy-duknHb8",
+            "io.github.rwx.render.canvas.KoolCanvasTextureRef.copy-duknHb8$default",
+            "io.github.rwx.render.canvas.KoolCanvasGpuMapCellSources.prepare",
+            "io.github.rwx.render.canvas.KoolCanvasGpuMapCellCache.createPooledEntry",
+            "io.github.rwx.render.canvas.KoolCanvasGpuMapCellCache.resolve",
+            "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.resolveTexture",
+            "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.addTexture",
+            "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.render",
+            "io.github.rwx.render.canvas.KoolCanvasSceneHost$configure$2.onRenderScene$lambda$1",
+            "io.github.rwx.render.canvas.KoolCanvasSceneHost$configure$2$$Lambda.0x000000001f614ab0.invoke",
+            "io.github.rwx.render.canvas.KoolCanvasFontRegistry.withSnapshot$io_github_rwx_core",
+            "io.github.rwx.render.canvas.KoolCanvasSceneHost$configure$2.onRenderScene",
+            "de.fabmax.kool.scene.Scene.collectScene$kool_core",
+            "de.fabmax.kool.KoolContext.render",
+            "de.fabmax.kool.platform.Lwjgl3Context.renderFrame$kool_core",
+            "de.fabmax.kool.platform.swing.SwingWindowSubsystem$unmanagedRenderLoop$1.invokeSuspend",
+            "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith",
+            "kotlinx.coroutines.DispatchedTask.run",
+            "kotlinx.coroutines.EventLoopImplBase.processNextEvent",
+            "kotlinx.coroutines.BlockingCoroutine.joinBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default",
+            "kotlinx.coroutines.BuildersKt.runBlocking$default",
+            "de.fabmax.kool.platform.swing.SwingWindowSubsystem.unmanagedRenderLoop",
+            "de.fabmax.kool.platform.swing.SwingWindowSubsystem.runRenderLoop",
+            "io.github.rwx.PacedSwingWindowSubsystem.runRenderLoop",
+            "de.fabmax.kool.platform.Lwjgl3Context.run",
+            "io.github.rwx.KoolDesktopMain$run$1.invokeSuspend",
+            "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith",
+            "kotlinx.coroutines.DispatchedTask.run",
+            "kotlinx.coroutines.EventLoopImplBase.processNextEvent",
+            "kotlinx.coroutines.BlockingCoroutine.joinBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default",
+            "kotlinx.coroutines.BuildersKt.runBlocking$default",
+            "io.github.rwx.KoolDesktopMain.run",
+            "io.github.rwx.KoolDesktopMain.main"
+          ]
+        },
+        {
+          "thread": "main",
+          "class": "io.github.rwx.render.canvas.KoolCanvasRect",
+          "eventCount": 169,
+          "sampleWeightBytes": 407557952,
+          "percentOfNormalSampleWeight": 2.934210024056525,
+          "stack": [
+            "io.github.rwx.render.canvas.KoolCanvasRect$Companion.fromSize",
+            "io.github.rwx.render.canvas.KoolCanvasTextureRef.<init>",
+            "io.github.rwx.render.canvas.KoolCanvasTextureRef.<init>",
+            "io.github.rwx.render.canvas.KoolCanvasTextureRef.copy-duknHb8",
+            "io.github.rwx.render.canvas.KoolCanvasTextureRef.copy-duknHb8$default",
+            "io.github.rwx.render.canvas.KoolCanvasGpuMapCellSources.prepare",
+            "io.github.rwx.render.canvas.KoolCanvasGpuMapCellCache.createPooledEntry",
+            "io.github.rwx.render.canvas.KoolCanvasGpuMapCellCache.resolve",
+            "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.resolveTexture",
+            "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.addTexture",
+            "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.render",
+            "io.github.rwx.render.canvas.KoolCanvasSceneHost$configure$2.onRenderScene$lambda$1",
+            "io.github.rwx.render.canvas.KoolCanvasSceneHost$configure$2$$Lambda.0x000000001f614ab0.invoke",
+            "io.github.rwx.render.canvas.KoolCanvasFontRegistry.withSnapshot$io_github_rwx_core",
+            "io.github.rwx.render.canvas.KoolCanvasSceneHost$configure$2.onRenderScene",
+            "de.fabmax.kool.scene.Scene.collectScene$kool_core",
+            "de.fabmax.kool.KoolContext.render",
+            "de.fabmax.kool.platform.Lwjgl3Context.renderFrame$kool_core",
+            "de.fabmax.kool.platform.swing.SwingWindowSubsystem$unmanagedRenderLoop$1.invokeSuspend",
+            "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith",
+            "kotlinx.coroutines.DispatchedTask.run",
+            "kotlinx.coroutines.EventLoopImplBase.processNextEvent",
+            "kotlinx.coroutines.BlockingCoroutine.joinBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default",
+            "kotlinx.coroutines.BuildersKt.runBlocking$default",
+            "de.fabmax.kool.platform.swing.SwingWindowSubsystem.unmanagedRenderLoop",
+            "de.fabmax.kool.platform.swing.SwingWindowSubsystem.runRenderLoop",
+            "io.github.rwx.PacedSwingWindowSubsystem.runRenderLoop",
+            "de.fabmax.kool.platform.Lwjgl3Context.run",
+            "io.github.rwx.KoolDesktopMain$run$1.invokeSuspend",
+            "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith",
+            "kotlinx.coroutines.DispatchedTask.run",
+            "kotlinx.coroutines.EventLoopImplBase.processNextEvent",
+            "kotlinx.coroutines.BlockingCoroutine.joinBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default",
+            "kotlinx.coroutines.BuildersKt.runBlocking$default",
+            "io.github.rwx.KoolDesktopMain.run",
+            "io.github.rwx.KoolDesktopMain.main"
+          ]
+        },
+        {
+          "thread": "main",
+          "class": "[Ljava.lang.Object;",
+          "eventCount": 105,
+          "sampleWeightBytes": 312768424,
+          "percentOfNormalSampleWeight": 2.2517736199370275,
+          "stack": [
+            "java.util.IdentityHashMap.resize",
+            "java.util.IdentityHashMap.put",
+            "io.github.rwx.render.canvas.KoolCanvasGpuMapCellSources.prepare",
+            "io.github.rwx.render.canvas.KoolCanvasGpuMapCellCache.createPooledEntry",
+            "io.github.rwx.render.canvas.KoolCanvasGpuMapCellCache.resolve",
+            "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.resolveTexture",
+            "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.addTexture",
+            "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.render",
+            "io.github.rwx.render.canvas.KoolCanvasSceneHost$configure$2.onRenderScene$lambda$1",
+            "io.github.rwx.render.canvas.KoolCanvasSceneHost$configure$2$$Lambda.0x000000001f614ab0.invoke",
+            "io.github.rwx.render.canvas.KoolCanvasFontRegistry.withSnapshot$io_github_rwx_core",
+            "io.github.rwx.render.canvas.KoolCanvasSceneHost$configure$2.onRenderScene",
+            "de.fabmax.kool.scene.Scene.collectScene$kool_core",
+            "de.fabmax.kool.KoolContext.render",
+            "de.fabmax.kool.platform.Lwjgl3Context.renderFrame$kool_core",
+            "de.fabmax.kool.platform.swing.SwingWindowSubsystem$unmanagedRenderLoop$1.invokeSuspend",
+            "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith",
+            "kotlinx.coroutines.DispatchedTask.run",
+            "kotlinx.coroutines.EventLoopImplBase.processNextEvent",
+            "kotlinx.coroutines.BlockingCoroutine.joinBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default",
+            "kotlinx.coroutines.BuildersKt.runBlocking$default",
+            "de.fabmax.kool.platform.swing.SwingWindowSubsystem.unmanagedRenderLoop",
+            "de.fabmax.kool.platform.swing.SwingWindowSubsystem.runRenderLoop",
+            "io.github.rwx.PacedSwingWindowSubsystem.runRenderLoop",
+            "de.fabmax.kool.platform.Lwjgl3Context.run",
+            "io.github.rwx.KoolDesktopMain$run$1.invokeSuspend",
+            "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith",
+            "kotlinx.coroutines.DispatchedTask.run",
+            "kotlinx.coroutines.EventLoopImplBase.processNextEvent",
+            "kotlinx.coroutines.BlockingCoroutine.joinBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default",
+            "kotlinx.coroutines.BuildersKt.runBlocking$default",
+            "io.github.rwx.KoolDesktopMain.run",
+            "io.github.rwx.KoolDesktopMain.main"
+          ]
+        },
+        {
+          "thread": "RWX-engine-owner",
+          "class": "[Ljava.lang.Object;",
+          "eventCount": 99,
+          "sampleWeightBytes": 294554376,
+          "percentOfNormalSampleWeight": 2.1206417356050378,
+          "stack": [
+            "java.util.IdentityHashMap.resize",
+            "java.util.IdentityHashMap.put",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$texture",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$lambda$9",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore$$Lambda.0x000000001f60b518.invoke",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$texture",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$lambda$9",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore$$Lambda.0x000000001f60b518.invoke",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession.publishFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession.engineFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession.access$engineFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession$owner$2$2.invoke",
+            "io.github.rwx.kool.KoolDesktopGameSession$owner$2$2.invoke",
+            "io.github.rwx.kool.EngineOwnerLoop.run",
+            "io.github.rwx.kool.EngineOwnerLoop.thread$run",
+            "io.github.rwx.kool.EngineOwnerLoop$$Lambda.0x000000001f4adca0.run",
+            "java.lang.Thread.runWith",
+            "java.lang.Thread.run"
+          ]
+        },
+        {
+          "thread": "RWX-engine-owner",
+          "class": "java.util.LinkedHashMap$LinkedKeyIterator",
+          "eventCount": 172,
+          "sampleWeightBytes": 269832480,
+          "percentOfNormalSampleWeight": 1.9426566547081672,
+          "stack": [
+            "java.util.LinkedHashMap$LinkedKeySet.iterator",
+            "java.util.HashSet.iterator",
+            "io.github.rwx.render.canvas.KoolGraphicsEngine.releasePendingImmediateFrameSnapshots",
+            "io.github.rwx.render.canvas.KoolGraphicsEngine.flushTargetTextureFrame",
+            "io.github.rwx.render.canvas.KoolGraphicsEngine.flushPendingTarget",
+            "io.github.rwx.render.canvas.KoolGraphicsEngine.drawTexture",
+            "io.github.rwx.render.canvas.KoolGraphicsEngine.a",
+            "com.corrodinggames.rts.game.map.MapLayer.renderLayerRegion",
+            "com.corrodinggames.rts.game.map.LayerBufferManager.renderCellContents",
+            "com.corrodinggames.rts.game.map.LayerBufferManager.renderCellInto",
+            "com.corrodinggames.rts.game.map.LayerBufferManager.renderCell",
+            "com.corrodinggames.rts.game.map.LayerBufferManager.setRenderScale",
+            "com.corrodinggames.rts.game.map.TileMap.renderFogOverlayAndCursorSelection",
+            "com.corrodinggames.rts.game.map.TileMap.updateFogRenderPass",
+            "com.corrodinggames.rts.game.GameLogic.drawGame",
+            "com.corrodinggames.rts.game.GameLogic.draw",
+            "com.corrodinggames.rts.game.GameLogic.drawThreadSafe",
+            "com.corrodinggames.rts.game.GameLogic.runGameLoopFrame",
+            "com.corrodinggames.rts.game.GameLogic.gameLoop",
+            "io.github.rwx.kool.KoolDesktopGameSession.runGameLoop",
+            "io.github.rwx.kool.KoolDesktopGameSession.engineFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession.access$engineFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession$owner$2$2.invoke",
+            "io.github.rwx.kool.KoolDesktopGameSession$owner$2$2.invoke",
+            "io.github.rwx.kool.EngineOwnerLoop.run",
+            "io.github.rwx.kool.EngineOwnerLoop.thread$run",
+            "io.github.rwx.kool.EngineOwnerLoop$$Lambda.0x000000001f4adca0.run",
+            "java.lang.Thread.runWith",
+            "java.lang.Thread.run"
+          ]
+        },
+        {
+          "thread": "RWX-engine-owner",
+          "class": "io.github.rwx.render.canvas.KoolCanvasFrozenPixelIdentity",
+          "eventCount": 115,
+          "sampleWeightBytes": 264970016,
+          "percentOfNormalSampleWeight": 1.9076493863175017,
+          "stack": [
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$texture",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$lambda$9",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore$$Lambda.0x000000001f60b518.invoke",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$texture",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$lambda$9",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore$$Lambda.0x000000001f60b518.invoke",
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession.publishFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession.engineFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession.access$engineFrame",
+            "io.github.rwx.kool.KoolDesktopGameSession$owner$2$2.invoke",
+            "io.github.rwx.kool.KoolDesktopGameSession$owner$2$2.invoke",
+            "io.github.rwx.kool.EngineOwnerLoop.run",
+            "io.github.rwx.kool.EngineOwnerLoop.thread$run",
+            "io.github.rwx.kool.EngineOwnerLoop$$Lambda.0x000000001f4adca0.run",
+            "java.lang.Thread.runWith",
+            "java.lang.Thread.run"
+          ]
+        }
+      ],
+      "overlappingPathInclusiveWeights": {
+        "ownerFreeze": {
+          "eventCount": 1373,
+          "sampleWeightBytes": 2292653024
+        },
+        "kslCreatePipeline": {
+          "eventCount": 767,
+          "sampleWeightBytes": 952442280
+        },
+        "childSlotBind": {
+          "eventCount": 650,
+          "sampleWeightBytes": 732206448
+        },
+        "gpuSourcePrepare": {
+          "eventCount": 1018,
+          "sampleWeightBytes": 2121195416
+        },
+        "leaseRetainPixels": {
+          "eventCount": 1,
+          "sampleWeightBytes": 523712
+        }
+      },
+      "limits": [
+        "ObjectAllocationSample weight is a statistical estimate associated with sampled allocation sites, not exact allocated bytes or a measurement of all heap/native/direct/GPU memory.",
+        "Paths are inclusive and overlap; they must not be summed as exclusive costs.",
+        "Allocation timestamps are mapped with validated89 ClockSync markers and normal intervals exclude reload epochs. No raw epoch-offset fallback is used.",
+        "Stack sampling weights do not measure continuous or exclusive CPU duration, and do not prove which allocation caused any particular G1 pause.",
+        "The previous compact-profile export filtered allocation events out;24803 raw samples establish that compact absence cannot imply recording absence.",
+        "No production/build/game was launched by this read; Java JFRReader completed exit0."
+      ],
+      "sourceReport": "build/map-pan-replay-europe-fast-zoom-gpu-pool-35-failure-diagnostic-fog-batching-memory-budget/normal-allocation-sample-review-35.json"
     }
   }
 }
