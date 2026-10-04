@@ -1,13 +1,19 @@
 package io.github.rwx.kool.vulkan
 
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
+import io.github.rwx.render.canvas.CanvasStageTrace
 import java.io.File
 import java.util.Locale
 
 /** Native-stage counters supplement engine / Canvas timing; emitted only for successful submissions. */
 internal object VulkanBackendMetrics {
     private val target = System.getenv("RWX_VK_METRICS")?.takeIf { it.isNotBlank() }
-    val enabled: Boolean get() = target != null
+    private val stageTrace = CanvasStageTrace.fromEnvironment("RWX_VK_TRACE")
+    val enabled: Boolean get() = target != null || stageTrace.enabled
+    fun stageStart(): Long = stageTrace.start()
+    fun stageEnd(stage: String, start: Long, value0: Long = -1, value1: Long = -1, value2: Long = -1) =
+        stageTrace.record(stage, start, value0, value1, value2)
+    private var frameOrdinal = 0L
     private var start = System.nanoTime()
     private var frames = 0
     private var bufferBytes = 0L
@@ -22,30 +28,36 @@ internal object VulkanBackendMetrics {
     private var submitNanos = 0L
 
     inline fun measureSubmit(call: () -> Int): Int {
-        if (!enabled) return call()
-        val start = System.nanoTime()
-        return try { call() } finally { submitNanos += System.nanoTime() - start }
+        return measureNative("submit", call) { submitNanos += it }
     }
 
     inline fun measureFenceWait(call: () -> Int): Int {
-        if (!enabled) return call()
-        val start = System.nanoTime()
-        return try { call() } finally { fenceWaitNanos += System.nanoTime() - start }
+        return measureNative("fence", call) { fenceWaitNanos += it }
     }
 
     inline fun measureAcquire(call: () -> Int): Int {
-        if (!enabled) return call()
-        val start = System.nanoTime()
-        return try { call() } finally { acquireNanos += System.nanoTime() - start }
+        return measureNative("acquire", call) { acquireNanos += it }
     }
 
     inline fun measurePresent(call: () -> Int): Int {
+        return measureNative("present", call) { presentNanos += it }
+    }
+
+    private inline fun measureNative(stage: String, call: () -> Int, accumulate: (Long) -> Unit): Int {
         if (!enabled) return call()
-        val start = System.nanoTime()
-        return try { call() } finally { presentNanos += System.nanoTime() - start }
+        val started = System.nanoTime()
+        var result = Int.MIN_VALUE
+        return try { call().also { result = it } } finally {
+            val ended = System.nanoTime()
+            accumulate(ended - started)
+            stageTrace.recordCompleted(stage, started, ended, result.toLong(), frameOrdinal + 1)
+        }
     }
 
     fun submitted(state: VulkanUploadState) {
+        frameOrdinal++
+        val traceStart = stageTrace.start()
+        stageTrace.record("submission-summary", traceStart, state.bufferUploadBytes, state.textureUploadBytes, state.uploadNanos)
         val output = target ?: return
         frames++
         bufferBytes += state.bufferUploadBytes

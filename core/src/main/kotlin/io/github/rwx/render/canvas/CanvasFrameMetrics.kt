@@ -31,8 +31,30 @@ object CanvasFrameMetrics {
     private var chosenSequence = -1L
     private var chosenGeneration = -1L
     @Volatile private var published: CanvasFrameRateSample? = null
+    private var textCacheRecorded = false
+    private var textCacheCreated = 0L
+    private var textCacheExactHits = 0L
+    private var textCacheReused = 0L
+    private var textCachePruned = 0L
+    private var textCacheScanCandidates = 0L
+    private var textCacheLive = 0
+    private var textCachePeak = 0
 
     fun snapshot(): CanvasFrameRateSample? = published
+
+    /** Render-thread counters; the existing diagnostic sample writes them without per-mesh I/O. */
+    internal fun textMeshCache(created: Long, exactHits: Long, reused: Long, pruned: Long,
+                               scanCandidates: Long, live: Int, peak: Int) {
+        if (diagnostics == null) return
+        textCacheRecorded = true
+        textCacheCreated = created
+        textCacheExactHits = exactHits
+        textCacheReused = reused
+        textCachePruned = pruned
+        textCacheScanCandidates = scanCandidates
+        textCacheLive = live
+        textCachePeak = peak
+    }
 
     @Synchronized fun produced(envelope: FrameEnvelope) {
         hud.produced(envelope.simulationTick, envelope.generation)
@@ -53,7 +75,9 @@ object CanvasFrameMetrics {
         trace?.write("$now,$chosenGeneration,$chosenSequence\n")
         counter.presented(chosenSequence, chosenGeneration, now)
         val sample = counter.sample(now, 5_000_000_000L) ?: return
-        val line = "{\"seconds\":%.3f,\"acceptedPresentFps\":%.2f,\"presentFps\":%.2f,\"producedSnapshotHz\":%.2f,\"freshSnapshotHz\":%.2f,\"simulationTicksPerSecond\":%.2f,\"repeatRatio\":%.5f,\"p95Ms\":%.3f,\"p99Ms\":%.3f}".format(
+        val textCache = if (!textCacheRecorded) "" else
+            ",\"textMeshCache\":{\"created\":$textCacheCreated,\"exactHits\":$textCacheExactHits,\"reused\":$textCacheReused,\"pruned\":$textCachePruned,\"scanCandidates\":$textCacheScanCandidates,\"live\":$textCacheLive,\"peak\":$textCachePeak}"
+        val line = "{\"sampleNanos\":$now,\"seconds\":%.3f,\"acceptedPresentFps\":%.2f,\"presentFps\":%.2f,\"producedSnapshotHz\":%.2f,\"freshSnapshotHz\":%.2f,\"simulationTicksPerSecond\":%.2f,\"repeatRatio\":%.5f,\"p95Ms\":%.3f,\"p99Ms\":%.3f$textCache}".format(
             Locale.ROOT, sample.seconds, sample.acceptedPresentFps, sample.acceptedPresentFps,
             sample.producedSnapshotHz, sample.freshSnapshotHz, sample.simulationTicksPerSecond,
             sample.repeatRatio, sample.p95Ms, sample.p99Ms)

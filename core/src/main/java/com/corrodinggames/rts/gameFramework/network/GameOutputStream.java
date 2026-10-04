@@ -349,6 +349,11 @@ public class GameOutputStream {
         this.currentDataOutput.write(bArr);
     }
 
+    /** Writes a byte range without a length prefix to the current block. */
+    public void writeBytesRaw(byte[] bytes, int offset, int length) throws IOException {
+        this.currentDataOutput.write(bytes, offset, length);
+    }
+
     /* JADX INFO: renamed from: a */
     public void writeShort(short s) throws IOException {
         this.currentDataOutput.writeShort(s);

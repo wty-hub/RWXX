@@ -15,6 +15,7 @@ import io.github.rwx.geometry.RectF
 import io.github.rwx.trimAssetPath
 import kotlinx.coroutines.runBlocking
 import java.io.*
+import java.lang.ref.WeakReference
 import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutorService
@@ -40,10 +41,16 @@ class KoolGraphicsEngine private constructor(
     private val targetMode: RenderTargetMode = RenderTargetMode.DEFAULT,
     private val textureStore: KoolCanvasTextureStore = KoolCanvasTextureRegistry,
     private val targetStates: MutableMap<Texture, KoolTargetState> = IdentityHashMap(),
+    private val textureMetadata: MutableMap<Texture, TextureMetadata> = WeakHashMap(),
     private val assetBytes: (String) -> ByteArray? = ::readAssetBytesFromFileSystem,
     private val enableTextureAtlas: Boolean = false,
 ) : GraphicsEngine {
     override fun backendCapabilities(): GraphicsBackendCapabilities = BACKEND_CAPABILITIES
+
+    override fun prefersDirectLayerBufferRendering(): Boolean = true
+
+    // CPU pixels and GPU uploads have explicit owners; a resync does not need a full collection.
+    override fun requestsEagerGcOnLevelReload(): Boolean = false
 
     /**
      * Kool has a separate team-color texture path, but does not execute the
@@ -80,12 +87,13 @@ class KoolGraphicsEngine private constructor(
      * Pixels of the newest commit of an [RenderTargetMode.IMMEDIATE] target. A commit that
      * rasterizes the same pixels again does not have to convert and upload the whole target.
      */
-    private var lastImmediatePixels: IntArray? = null
 
     private val pendingFrameDependencySnapshotIds = linkedSetOf<KoolCanvasTextureId>()
     private val pendingFrameDependencySnapshots = mutableMapOf<KoolCanvasTextureId, ImmediateFrameSnapshot>()
     private val pendingPixelDependencySnapshots = mutableMapOf<KoolCanvasTextureId, ImmediatePixelSnapshot>()
     private val registeredTexturePixelRevisions = mutableMapOf<KoolCanvasTextureId, TexturePixelRegistration>()
+    private val registeredImmediatePixels = mutableMapOf<KoolCanvasTextureId, RegisteredImmediatePixels>()
+    private val registeredImmediateFrames = mutableMapOf<KoolCanvasTextureId, RegisteredImmediateFrame>()
     private var directBlitActive = false
     private val drawRoleStack = ArrayDeque<Pair<KoolCanvasDrawRole, Long>>()
     var hudLayout: io.github.rwx.session.GameHudLayoutSnapshot? = null
@@ -122,6 +130,7 @@ class KoolGraphicsEngine private constructor(
             return KoolGraphicsEngine(
                 textureStore = textureStore,
                 targetStates = targetStates,
+                textureMetadata = textureMetadata,
                 assetBytes = assetBytes,
                 enableTextureAtlas = enableTextureAtlas,
             )
@@ -132,6 +141,7 @@ class KoolGraphicsEngine private constructor(
             targetMode = mode,
             textureStore = textureStore,
             targetStates = targetStates,
+            textureMetadata = textureMetadata,
             assetBytes = assetBytes,
             enableTextureAtlas = false,
         )
@@ -226,7 +236,16 @@ class KoolGraphicsEngine private constructor(
             sourceKey = "generated/${i}x$i2/${generatedTextureSerial++}",
             assetPath = null,
             hasAlpha = z,
-        )
+        ).also { texture ->
+            if (i == BACKEND_CAPABILITIES.fixedLayerBufferPixelSize && i2 == i) {
+                (textureStore as? KoolCanvasCpuTextureStore)?.preallocateTargetPixels(i, i2)
+            }
+            // A generated target has valid empty contents before its first commit. An empty
+            // Frame draws nothing, so it cannot clear the scene underneath this pending target.
+            textureStore.registerFrame(texture.toCanvasTextureId(), KoolCanvasFrame(
+                KoolCanvasViewport(texture.width(), texture.height()), emptyList(),
+            ))
+        }
 
     override fun o() {
         commandBuffer.clear(KoolCanvasColor.Transparent, KoolCanvasBlendMode.ClearAlpha)
@@ -580,36 +599,76 @@ class KoolGraphicsEngine private constructor(
                 releasePendingImmediateFrameSnapshots()
                 val previous = lastCommittedFrameSnapshot ?: return@let null
                 textureStore.registerFrame(id, previous.frame)
+                if (textureStore is KoolCanvasCpuTextureStore && targetMode == RenderTargetMode.IMMEDIATE) {
+                    // An empty re-commit changes the stored Frame object, but must retain the
+                    // pixel revision from the actual fallback. Legacy edits may have happened
+                    // since then and must still invalidate this registration.
+                    val published = registeredImmediateFrames[id]
+                    val registeredFrame = textureStore.frame(id)
+                    if (published != null && registeredFrame != null) {
+                        registeredImmediateFrames[id] = published.copy(frame = WeakReference(registeredFrame))
+                    }
+                }
                 return@let TargetTextureCommit(id, previous.auxiliaryIds)
             }
-            val pixels = if (targetMode == RenderTargetMode.IMMEDIATE) {
+            val raster = if (targetMode == RenderTargetMode.IMMEDIATE) {
                 rasterizeTargetFrame(texture, frame, visiting = setOf(id))
             } else {
                 null
             }
-            if (pixels != null) {
-                if (lastImmediatePixels?.contentEquals(pixels) == true && textureStore.argbImageView(id) != null) {
+            if (raster != null) try {
+                val pixels = raster.pixels
+                // The store owns this current image. A raw cached array could already have been
+                // returned to the pool after an external replacement or unsupported fallback.
+                val existingImage = textureStore.argbImageView(id)
+                if (existingImage?.pixels?.contentEquals(pixels) == true && (textureStore !is KoolCanvasCpuTextureStore ||
+                            registeredImmediatePixels[id]?.matchesTexture(texture, existingImage,
+                                legacyRegistration = if (TEXTURE_METADATA_REUSE_ENABLED) null else texture.pixelRegistration()) == true)) {
                     // This commit rasterized exactly the pixels that are already on the GPU (a layer
                     // buffer cell re-commits unchanged content all the time). Re-registering them
                     // would convert the whole target to RGBA and upload it again for no reason.
+                    lastCommittedFrameSnapshot = null
                     releasePendingImmediateFrameSnapshots()
                     commandBuffer.beginFrame(frame.viewport)
                     return@let TargetTextureCommit(id, emptyList())
                 }
-                lastImmediatePixels = pixels
-                texture.setCommittedArgbPixels(pixels)
+                val owner = raster.owner
+                if (owner != null) {
+                    val textureOwner = owner.retain()
+                    texture.setImmutableArgbPixels(pixels, textureOwner::close)
+                } else {
+                    texture.setCommittedArgbPixels(pixels)
+                }
                 texture.setPremultipliedAlpha(false)
-                textureStore.registerArgb(
-                    id = id,
-                    width = texture.width().coerceAtLeast(1),
-                    height = texture.height().coerceAtLeast(1),
-                    argbPixels = pixels,
-                    alphaBleed = texture.alphaBleedRequired,
-                )
-                registeredTexturePixelRevisions[id] = texture.pixelRegistration()
+                if (textureStore is KoolCanvasCpuTextureStore) {
+                    if (owner != null) {
+                        textureStore.registerPooledArgb(id, texture.width().coerceAtLeast(1),
+                            texture.height().coerceAtLeast(1), owner, texture.alphaBleedRequired)
+                    } else {
+                        textureStore.registerOwnedArgb(id, texture.width().coerceAtLeast(1),
+                            texture.height().coerceAtLeast(1), pixels, texture.alphaBleedRequired)
+                    }
+                } else {
+                    textureStore.registerArgb(
+                        id = id,
+                        width = texture.width().coerceAtLeast(1),
+                        height = texture.height().coerceAtLeast(1),
+                        argbPixels = pixels,
+                        alphaBleed = texture.alphaBleedRequired,
+                    )
+                }
+                val registration = texture.pixelRegistration()
+                registeredTexturePixelRevisions[id] = registration
+                lastCommittedFrameSnapshot = null
+                registeredImmediateFrames.remove(id)
+                if (textureStore is KoolCanvasCpuTextureStore) {
+                    rememberImmediatePixels(id, registration, texture.alphaBleedRequired)
+                }
                 commandBuffer.beginFrame(frame.viewport)
                 releasePendingImmediateFrameSnapshots()
                 TargetTextureCommit(id, emptyList())
+            } finally {
+                raster.owner?.close()
             } else {
                 val committedFrame = frame.withPersistedTargetContents(lastCommittedFrameSnapshot?.frame)
                 val snapshot = snapshotFrameDependencies(committedFrame)
@@ -618,6 +677,13 @@ class KoolGraphicsEngine private constructor(
                     auxiliaryIds = (snapshot.auxiliaryIds + pendingFrameDependencySnapshotIds).distinct(),
                 )
                 textureStore.registerFrame(id, commitSnapshot.frame)
+                if (textureStore is KoolCanvasCpuTextureStore && targetMode == RenderTargetMode.IMMEDIATE) {
+                    textureStore.frame(id)?.let { registeredFrame ->
+                        registeredImmediateFrames[id] = RegisteredImmediateFrame(
+                            texture.pixelRegistration(), texture.alphaBleedRequired, WeakReference(registeredFrame),
+                        )
+                    }
+                }
                 lastCommittedFrameSnapshot = commitSnapshot
                 pendingFrameDependencySnapshotIds.clear()
                 pendingFrameDependencySnapshots.clear()
@@ -651,7 +717,14 @@ class KoolGraphicsEngine private constructor(
             if (command !is KoolCanvasCommand.DrawTexture || command.texture.id in visiting) {
                 command
             } else {
-                val nestedFrame = textureStore.frame(command.texture.id) ?: return@map command
+                val nestedFrame = textureStore.frame(command.texture.id)
+                if (nestedFrame == null) {
+                    if (command.texture.id.isFrameSnapshotId && textureStore is KoolCanvasCpuTextureStore &&
+                        textureStore.argbImageView(command.texture.id) != null) {
+                        auxiliaryIds += command.texture.id
+                    }
+                    return@map command
+                }
                 if (command.texture.id.isFrameSnapshotId && !cloneExistingSnapshots) {
                     auxiliaryIds += command.texture.id
                     auxiliaryIds += collectFrameSnapshotIds(
@@ -699,8 +772,11 @@ class KoolGraphicsEngine private constructor(
             if (command !is KoolCanvasCommand.DrawTexture || command.texture.id in visiting) {
                 return@forEach
             }
-            val nestedFrame = textureStore.frame(command.texture.id) ?: return@forEach
-            if (command.texture.id.isFrameSnapshotId && collected.add(command.texture.id)) {
+            val nestedFrame = textureStore.frame(command.texture.id)
+            val isPixelSnapshot = textureStore is KoolCanvasCpuTextureStore &&
+                textureStore.argbImageView(command.texture.id) != null
+            if (command.texture.id.isFrameSnapshotId && (nestedFrame != null || isPixelSnapshot) &&
+                collected.add(command.texture.id) && nestedFrame != null) {
                 collectFrameSnapshotIds(
                     frame = nestedFrame,
                     visiting = visiting + command.texture.id,
@@ -712,19 +788,49 @@ class KoolGraphicsEngine private constructor(
         return collected.toList()
     }
 
+    private data class RasterizedTargetPixels(val pixels: IntArray, val owner: KoolCanvasPixelPool.PixelOwner? = null)
+
     private fun rasterizeTargetFrame(
         texture: Texture,
         frame: KoolCanvasFrame,
         visiting: Set<KoolCanvasTextureId> = emptySet(),
-    ): IntArray? {
+    ): RasterizedTargetPixels? {
         val width = texture.width().coerceAtLeast(1)
         val height = texture.height().coerceAtLeast(1)
-        val pixels = texture.argbPixelsCopy?.copyOf(width * height) ?: IntArray(width * height)
-        val profile = CpuTargetProfile.createIfEnabled(texture, frame, width, height)
-        val startedAt = if (profile != null) System.nanoTime() else 0L
-        return rasterizeFrameCommands(frame, pixels, width, height, visiting, profile).also {
-            profile?.log(System.nanoTime() - startedAt, it != null)
+        // A full replacement discards the previous target pixels before drawing any geometry.
+        // Avoid resolving and copying them, including the extra copy used to normalize the size.
+        val replacesContents = frame.replacesTargetContents()
+        val owner = (textureStore as? KoolCanvasCpuTextureStore)?.borrowTargetPixels(width, height)
+        try {
+            val pixels = if (owner != null) {
+                // A leading full clear initializes even dirty pooled storage. For incremental
+                // updates, copying the previous pixels initializes their prefix; only a missing
+                // tail needs zeroing before alpha-only clears or geometry can read it.
+                owner.pixels.also { destination ->
+                    if (!replacesContents) {
+                        val previous = texture.argbPixelsRef
+                        val copied = minOf(previous?.size ?: 0, destination.size)
+                        previous?.copyInto(destination, endIndex = copied)
+                        if (copied < destination.size) destination.fill(0, copied, destination.size)
+                    }
+                }
+            } else if (replacesContents) {
+                IntArray(width * height)
+            } else {
+                texture.argbPixelsCopy?.copyOf(width * height) ?: IntArray(width * height)
+            }
+            val profile = CpuTargetProfile.createIfEnabled(texture, frame, width, height)
+            val startedAt = if (profile != null) System.nanoTime() else 0L
+            val result = rasterizeFrameCommands(frame, pixels, width, height, visiting, profile,
+                zeroInitializedPixels = owner == null && replacesContents)
+            profile?.log(System.nanoTime() - startedAt, result != null)
+            if (result != null) return RasterizedTargetPixels(result, owner)
+        } catch (error: Throwable) {
+            owner?.close()
+            throw error
         }
+        owner?.close()
+        return null
     }
 
     private fun rasterizeFrameToImage(
@@ -762,9 +868,27 @@ class KoolGraphicsEngine private constructor(
         height: Int,
         visiting: Set<KoolCanvasTextureId>,
         profile: CpuTargetProfile? = null,
+        zeroInitializedPixels: Boolean = false,
     ): IntArray? {
         profile?.totalCommands = frame.commands.size
-        for (command in frame.commands) {
+        var firstCommandIndex = 0
+        // Consecutive leading full clears replace every pixel even in dirty pooled storage.
+        // Stop at geometry, another target, or an alpha-only clear, which must preserve RGB.
+        while (firstCommandIndex < frame.commands.size) {
+            val clear = frame.commands[firstCommandIndex] as? KoolCanvasCommand.Clear ?: break
+            if (clear.renderTarget != null || clear.blendMode == KoolCanvasBlendMode.ClearAlpha) break
+            firstCommandIndex++
+        }
+        if (firstCommandIndex > 0) {
+            val clear = frame.commands[firstCommandIndex - 1] as KoolCanvasCommand.Clear
+            val color = if (clear.blendMode == KoolCanvasBlendMode.Clear) 0 else clear.color.argb
+            if (color != 0) fillRasterPixels(pixels, color)
+            else if (!zeroInitializedPixels) pixels.fill(0)
+            // Profiling counts recorded commands, including clears whose writes were omitted.
+            profile?.let { it.clearCommands += firstCommandIndex }
+        }
+        for (commandIndex in firstCommandIndex until frame.commands.size) {
+            val command = frame.commands[commandIndex]
             when (command) {
                 is KoolCanvasCommand.Clear -> {
                     profile?.let { it.clearCommands += 1 }
@@ -884,12 +1008,24 @@ class KoolGraphicsEngine private constructor(
         processRasterRows(top, bottom, right - left) { rowStart, rowEnd ->
             for (y in rowStart until rowEnd) {
                 for (x in left until right) {
-                    val localPoint = inverseTransform.map(KoolCanvasPoint(x + 0.5f, y + 0.5f))
-                    if (!destination.contains(localPoint.x, localPoint.y)) {
+                    val localX: Float
+                    val localY: Float
+                    if (RASTER_SCALAR_MAPPING_ENABLED) {
+                        val pixelX = x + 0.5f
+                        val pixelY = y + 0.5f
+                        // Keep Transform.map's Float multiplication and addition order.
+                        localX = inverseTransform.scaleX * pixelX + inverseTransform.skewX * pixelY + inverseTransform.translateX
+                        localY = inverseTransform.skewY * pixelX + inverseTransform.scaleY * pixelY + inverseTransform.translateY
+                    } else {
+                        val localPoint = inverseTransform.map(KoolCanvasPoint(x + 0.5f, y + 0.5f))
+                        localX = localPoint.x
+                        localY = localPoint.y
+                    }
+                    if (!destination.contains(localX, localY)) {
                         continue
                     }
                     val sourceColor =
-                        sampleSourceColor(command, sourceImage, source, destination, localPoint.x, localPoint.y)
+                        sampleSourceColor(command, sourceImage, source, destination, localX, localY)
                     blendRenderTargetPixel(
                         pixels = targetPixels,
                         index = x + (y * targetWidth),
@@ -1337,7 +1473,8 @@ class KoolGraphicsEngine private constructor(
         ) {
             return false
         }
-        val destination = command.state.clipForGeometry()?.let { command.rect.intersect(it) } ?: command.rect
+        val clip = command.state.clipForGeometry()
+        val destination = if (clip == null) command.rect else command.rect.intersect(clip) ?: return true
         if (destination.isEmpty) return true
         val transform = command.state.transform
         val targetBounds = transform.mapRectBounds(destination)
@@ -1351,8 +1488,19 @@ class KoolGraphicsEngine private constructor(
         processRasterRows(top, bottom, right - left) { rowStart, rowEnd ->
             for (y in rowStart until rowEnd) {
                 for (x in left until right) {
-                    val localPoint = inverseTransform.map(KoolCanvasPoint(x + 0.5f, y + 0.5f))
-                    if (!destination.contains(localPoint.x, localPoint.y)) {
+                    val localX: Float
+                    val localY: Float
+                    if (RASTER_SCALAR_MAPPING_ENABLED) {
+                        val pixelX = x + 0.5f
+                        val pixelY = y + 0.5f
+                        localX = inverseTransform.scaleX * pixelX + inverseTransform.skewX * pixelY + inverseTransform.translateX
+                        localY = inverseTransform.skewY * pixelX + inverseTransform.scaleY * pixelY + inverseTransform.translateY
+                    } else {
+                        val localPoint = inverseTransform.map(KoolCanvasPoint(x + 0.5f, y + 0.5f))
+                        localX = localPoint.x
+                        localY = localPoint.y
+                    }
+                    if (!destination.contains(localX, localY)) {
                         continue
                     }
                     blendRenderTargetPixel(targetPixels, x + (y * targetWidth), color, command.paint.blendMode)
@@ -1395,19 +1543,42 @@ class KoolGraphicsEngine private constructor(
         for (taskIndex in 0 until taskCount) {
             val rowStart = top + taskIndex * rowsPerTask
             val rowEnd = minOf(bottom, rowStart + rowsPerTask)
-            RasterWorkerPool.executor.execute {
-                try {
-                    if (failure.get() == null) {
-                        block(rowStart, rowEnd)
+            // A submission failure can race a worker starting. Cancel only a task that has not
+            // started; otherwise its finally must signal completion before its pixels are freed.
+            val taskState = AtomicInteger(0)
+            try {
+                RasterWorkerPool.executor.execute {
+                    if (!taskState.compareAndSet(0, 1)) return@execute
+                    try {
+                        if (failure.get() == null) {
+                            block(rowStart, rowEnd)
+                        }
+                    } catch (throwable: Throwable) {
+                        failure.compareAndSet(null, throwable)
+                    } finally {
+                        taskState.set(3)
+                        latch.countDown()
                     }
-                } catch (throwable: Throwable) {
-                    failure.compareAndSet(null, throwable)
-                } finally {
-                    latch.countDown()
                 }
+            } catch (throwable: Throwable) {
+                failure.compareAndSet(null, throwable)
+                if (taskState.compareAndSet(0, 2)) latch.countDown()
+                for (unsubmitted in taskIndex + 1 until taskCount) latch.countDown()
+                break
             }
         }
-        latch.await()
+        var interrupted = false
+        while (true) {
+            try {
+                latch.await()
+                break
+            } catch (throwable: InterruptedException) {
+                interrupted = true
+                failure.compareAndSet(null, throwable)
+            }
+        }
+        // The caller may return pooled storage only after every admitted writer has stopped.
+        if (interrupted) Thread.currentThread().interrupt()
         failure.get()?.let { throw it }
     }
 
@@ -1602,6 +1773,16 @@ class KoolGraphicsEngine private constructor(
             )
         }
         val inverseAlpha = 255 - sourceAlpha
+        if (OPAQUE_SOURCE_OVER_FAST_PATH_ENABLED && destinationAlpha == 255) {
+            // An opaque destination keeps output alpha at 255, so unpremultiplication is
+            // the identity. Keep saturation for premultiplied inputs whose RGB exceeds alpha.
+            return argb(
+                alpha = 255,
+                red = (sourceColor.redComponent + multiplyChannel(destinationColor.redComponent, inverseAlpha)).coerceAtMost(255),
+                green = (sourceColor.greenComponent + multiplyChannel(destinationColor.greenComponent, inverseAlpha)).coerceAtMost(255),
+                blue = (sourceColor.blueComponent + multiplyChannel(destinationColor.blueComponent, inverseAlpha)).coerceAtMost(255),
+            )
+        }
         val destinationContributionAlpha = multiplyChannelRounded(destinationAlpha, inverseAlpha)
         val outAlpha = (sourceAlpha + destinationContributionAlpha).coerceAtMost(255)
         if (outAlpha == 0) return 0
@@ -1641,6 +1822,15 @@ class KoolGraphicsEngine private constructor(
         val destinationAlpha = destinationColor.alphaComponent
         if (destinationAlpha == 0) return sourceColor
         val inverseAlpha = 255 - sourceAlpha
+        if (OPAQUE_SOURCE_OVER_FAST_PATH_ENABLED && destinationAlpha == 255) {
+            // Retain both channel floors separately; combining the numerators changes pixels.
+            return argb(
+                alpha = 255,
+                red = multiplyChannel(sourceColor.redComponent, sourceAlpha) + multiplyChannel(destinationColor.redComponent, inverseAlpha),
+                green = multiplyChannel(sourceColor.greenComponent, sourceAlpha) + multiplyChannel(destinationColor.greenComponent, inverseAlpha),
+                blue = multiplyChannel(sourceColor.blueComponent, sourceAlpha) + multiplyChannel(destinationColor.blueComponent, inverseAlpha),
+            )
+        }
         val destinationContributionAlpha = multiplyChannelRounded(destinationAlpha, inverseAlpha)
         val outAlpha = (sourceAlpha + destinationContributionAlpha).coerceAtMost(255)
         if (outAlpha == 0) return 0
@@ -1719,10 +1909,18 @@ class KoolGraphicsEngine private constructor(
     }
 
     private fun releaseKoolTexture(texture: Texture) {
-        targetStates.remove(texture)?.releaseAuxiliaryTextures(textureStore)
         val id = texture.toCanvasTextureId()
+        targetStates.remove(texture)?.let { state ->
+            state.engine.releasePendingImmediateFrameSnapshots()
+            state.releaseAuxiliaryTextures(textureStore)
+            state.engine.registeredImmediatePixels.remove(id)
+            state.engine.registeredImmediateFrames.remove(id)
+        }
         registeredTexturePixelRevisions.remove(id)
+        registeredImmediatePixels.remove(id)
+        registeredImmediateFrames.remove(id)
         textureStore.unregister(id)
+        textureMetadata.remove(texture)
     }
 
     private fun drawTexture(
@@ -1909,7 +2107,8 @@ class KoolGraphicsEngine private constructor(
             val snapshot = snapshotFrameDependencies(sourceFrame, visiting = setOf(sourceId))
             val snapshotId = sourceId.snapshotId()
             textureStore.registerFrame(snapshotId, snapshot.frame)
-            pendingFrameDependencySnapshotIds += snapshot.auxiliaryIds
+            val activeIds = targetTexture?.let(targetStates::get)?.activeAuxiliaryIds ?: emptySet()
+            snapshot.auxiliaryIds.filterNotTo(pendingFrameDependencySnapshotIds, activeIds::contains)
             pendingFrameDependencySnapshotIds += snapshotId
             pendingFrameDependencySnapshots[sourceId] = ImmediateFrameSnapshot(sourceFrame, snapshotId)
             return textureRef.copy(id = snapshotId)
@@ -1918,9 +2117,22 @@ class KoolGraphicsEngine private constructor(
         if (targetStates[texture]?.mode == null || targetStates[texture]?.mode == RenderTargetMode.DEFAULT) {
             return textureRef
         }
-        val registration = texture.pixelRegistration()
-        pendingPixelDependencySnapshots[sourceId]?.takeIf { it.registration == registration }?.let { snapshot ->
+        val legacyRegistration = if (TEXTURE_METADATA_REUSE_ENABLED) null else texture.pixelRegistration()
+        val sourceImage = if (textureStore is KoolCanvasCpuTextureStore) textureStore.argbImageView(sourceId) else null
+        pendingPixelDependencySnapshots[sourceId]?.takeIf {
+            (if (legacyRegistration != null) it.registration == legacyRegistration else it.registration.matchesTexture(texture)) &&
+                it.sourceImage === sourceImage
+        }?.let { snapshot ->
             return textureRef.copy(id = snapshot.textureId)
+        }
+        val registration = legacyRegistration ?: texture.pixelRegistration()
+        if (IMMUTABLE_PIXEL_SNAPSHOT_REUSE_ENABLED && textureStore is KoolCanvasCpuTextureStore) {
+            val snapshotId = sourceId.snapshotId()
+            textureStore.snapshotPixels(sourceId, snapshotId)?.let { image ->
+                pendingFrameDependencySnapshotIds += snapshotId
+                pendingPixelDependencySnapshots[sourceId] = ImmediatePixelSnapshot(registration, snapshotId, image)
+                return textureRef.copy(id = snapshotId)
+            }
         }
         val ownedPixels = texture.argbPixelsCopy
         // Without the bleed pass the store keeps the array it is handed, so fall back to a copy
@@ -1939,7 +2151,7 @@ class KoolGraphicsEngine private constructor(
             )
         }
         pendingFrameDependencySnapshotIds += snapshotId
-        pendingPixelDependencySnapshots[sourceId] = ImmediatePixelSnapshot(registration, snapshotId)
+        pendingPixelDependencySnapshots[sourceId] = ImmediatePixelSnapshot(registration, snapshotId, sourceImage)
         return textureRef.copy(id = snapshotId)
     }
 
@@ -1956,15 +2168,22 @@ class KoolGraphicsEngine private constructor(
             if (command !is KoolCanvasCommand.DrawTexture || command.texture.id in visiting) {
                 return@forEach
             }
-            val nestedFrame = textureStore.frame(command.texture.id) ?: return@forEach
-            if (command.texture.id.isFrameSnapshotId) {
+            val nestedFrame = textureStore.frame(command.texture.id)
+            val isPixelSnapshot = textureStore is KoolCanvasCpuTextureStore &&
+                textureStore.argbImageView(command.texture.id) != null
+            if (command.texture.id.isFrameSnapshotId && (nestedFrame != null || isPixelSnapshot) &&
+                command.texture.id !in pendingFrameDependencySnapshotIds &&
+                command.texture.id !in (targetTexture?.let(targetStates::get)?.activeAuxiliaryIds ?: emptySet())) {
                 retainer.retainFrameSnapshot(command.texture.id)
+                pendingFrameDependencySnapshotIds += command.texture.id
             }
-            retainExistingFrameSnapshotDependencies(
-                frame = nestedFrame,
-                visiting = visiting + command.texture.id,
-                remainingDepth = remainingDepth - 1,
-            )
+            if (nestedFrame != null) {
+                retainExistingFrameSnapshotDependencies(
+                    frame = nestedFrame,
+                    visiting = visiting + command.texture.id,
+                    remainingDepth = remainingDepth - 1,
+                )
+            }
         }
     }
 
@@ -1979,19 +2198,52 @@ class KoolGraphicsEngine private constructor(
         val id = texture.toCanvasTextureId()
         val width = texture.width().coerceAtLeast(1)
         val height = texture.height().coerceAtLeast(1)
-        val registration = texture.pixelRegistration(width, height)
-        if (registeredTexturePixelRevisions[id] == registration) {
+        val legacyRegistration = if (TEXTURE_METADATA_REUSE_ENABLED) null else texture.pixelRegistration(width, height)
+        val immediateTarget = if (textureStore is KoolCanvasCpuTextureStore) {
+            targetStates[texture]?.takeIf { it.mode == RenderTargetMode.IMMEDIATE }
+        } else null
+        if (immediateTarget != null) {
+            val frame = textureStore.frame(id)
+            val publishedFrame = registeredImmediateFrames[id]
+                ?.takeIf { it.matchesTexture(texture, frame, width, height, legacyRegistration) }
+                ?: immediateTarget.engine.registeredImmediateFrames[id]
+                    ?.takeIf { it.matchesTexture(texture, frame, width, height, legacyRegistration) }
+            if (publishedFrame != null) {
+                registeredTexturePixelRevisions[id] = legacyRegistration ?: publishedFrame.registration
+                registeredImmediateFrames[id] = publishedFrame
+                return
+            }
+            val image = textureStore.argbImageView(id)
+            val published = registeredImmediatePixels[id]
+                ?.takeIf { it.matchesTexture(texture, image, width, height, legacyRegistration) }
+                ?: immediateTarget.engine.registeredImmediatePixels[id]
+                    ?.takeIf { it.matchesTexture(texture, image, width, height, legacyRegistration) }
+            if (published != null) {
+                registeredTexturePixelRevisions[id] = legacyRegistration ?: published.registration
+                registeredImmediatePixels[id] = published
+                return
+            }
+        } else if (if (legacyRegistration != null) registeredTexturePixelRevisions[id] == legacyRegistration
+            else registeredTexturePixelRevisions[id]?.matchesTexture(texture, width, height) == true) {
             return
         }
         // The store converts and uploads these pixels itself and the texture keeps owning the array,
         // so hand over the live array instead of cloning every changed texture on every frame.
         val pixels = texture.argbPixelsRef ?: return
+        val registration = legacyRegistration ?: texture.pixelRegistration(width, height)
         if (texture.usesPremultipliedAlpha()) {
             textureStore.registerPremultipliedArgb(id, width, height, pixels)
         } else {
             textureStore.registerArgb(id, width, height, pixels, alphaBleed = texture.alphaBleedRequired)
         }
         registeredTexturePixelRevisions[id] = registration
+        registeredImmediateFrames.remove(id)
+        if (immediateTarget != null) rememberImmediatePixels(id, registration, texture.alphaBleedRequired)
+    }
+
+    private fun rememberImmediatePixels(id: KoolCanvasTextureId, registration: TexturePixelRegistration, alphaBleed: Boolean) {
+        val image = textureStore.argbImageView(id) ?: return
+        registeredImmediatePixels[id] = RegisteredImmediatePixels(registration, alphaBleed, WeakReference(image))
     }
 
     private fun Texture.resolveForKool(): Texture =
@@ -2017,15 +2269,26 @@ class KoolGraphicsEngine private constructor(
         )
     }
 
-    private fun Texture.toCanvasTextureRef(): KoolCanvasTextureRef =
-        KoolCanvasTextureRef(
-            id = toCanvasTextureId(),
-            width = width().coerceAtLeast(0),
-            height = height().coerceAtLeast(0),
-            hasAlpha = f(),
-            requiresOrderedAlpha = requiresOrderedAlpha(),
-            premultipliedAlpha = usesPremultipliedAlpha(),
-        )
+    private fun Texture.toCanvasTextureRef(): KoolCanvasTextureRef {
+        if (!TEXTURE_METADATA_REUSE_ENABLED) {
+            return KoolCanvasTextureRef(toCanvasTextureId(), width().coerceAtLeast(0), height().coerceAtLeast(0),
+                f(), requiresOrderedAlpha(), usesPremultipliedAlpha())
+        }
+        val metadata = canvasMetadata()
+        val width = width().coerceAtLeast(0)
+        val height = height().coerceAtLeast(0)
+        val hasAlpha = f()
+        val orderedAlpha = requiresOrderedAlpha()
+        val premultiplied = usesPremultipliedAlpha()
+        metadata.reference?.let { reference ->
+            if (reference.width == width && reference.height == height && reference.hasAlpha == hasAlpha &&
+                reference.requiresOrderedAlpha == orderedAlpha && reference.premultipliedAlpha == premultiplied) {
+                return reference
+            }
+        }
+        return KoolCanvasTextureRef(metadata.id, width, height, hasAlpha, orderedAlpha, premultiplied)
+            .also { metadata.reference = it }
+    }
 
     private fun KoolCanvasPaint.withDirectBlitTextureBlend(texture: Texture): KoolCanvasPaint {
         if (!directBlitActive ||
@@ -2062,7 +2325,16 @@ class KoolGraphicsEngine private constructor(
         return copy(blendMode = KoolCanvasBlendMode.Source)
     }
 
-    private fun Texture.toCanvasTextureId(): KoolCanvasTextureId = KoolCanvasTextureId("legacy-texture-$d")
+    private fun Texture.toCanvasTextureId(): KoolCanvasTextureId =
+        if (TEXTURE_METADATA_REUSE_ENABLED) canvasMetadata().id else KoolCanvasTextureId("legacy-texture-$d")
+
+    private fun Texture.canvasMetadata(): TextureMetadata {
+        textureMetadata[this]?.let { metadata ->
+            if (metadata.legacyId == d) return metadata
+        }
+        return TextureMetadata(d, KoolCanvasTextureId("legacy-texture-$d"))
+            .also { textureMetadata[this] = it }
+    }
 
     private fun Texture.pixelRegistration(
         width: Int = width().coerceAtLeast(1),
@@ -2183,6 +2455,7 @@ class KoolGraphicsEngine private constructor(
     private data class ImmediatePixelSnapshot(
         val registration: TexturePixelRegistration,
         val textureId: KoolCanvasTextureId,
+        val sourceImage: KoolCanvasArgbImage?,
     )
 
     private data class TargetTextureCommit(
@@ -2195,7 +2468,43 @@ class KoolGraphicsEngine private constructor(
         val height: Int,
         val pixelRevision: Int,
         val premultipliedAlpha: Boolean,
-    )
+    ) {
+        fun matchesTexture(texture: Texture, width: Int = texture.width().coerceAtLeast(1),
+            height: Int = texture.height().coerceAtLeast(1)): Boolean =
+            this.width == width && this.height == height && pixelRevision == texture.getPixelRevision() &&
+                premultipliedAlpha == texture.usesPremultipliedAlpha()
+    }
+
+    // Values never retain their weak Texture key. Shared offscreen engines keep one ID string and
+    // immutable draw reference per live texture; changes publish new metadata without mutating
+    // references already held by frames or leases. Legacy d remains mutable and is checked above.
+    private class TextureMetadata(val legacyId: Int, val id: KoolCanvasTextureId) {
+        var reference: KoolCanvasTextureRef? = null
+    }
+
+    private data class RegisteredImmediatePixels(
+        val registration: TexturePixelRegistration,
+        val alphaBleed: Boolean,
+        val image: WeakReference<KoolCanvasArgbImage>,
+    ) {
+        fun matchesTexture(texture: Texture, image: KoolCanvasArgbImage?, width: Int = texture.width().coerceAtLeast(1),
+            height: Int = texture.height().coerceAtLeast(1), legacyRegistration: TexturePixelRegistration? = null): Boolean =
+            image != null && (if (legacyRegistration != null) registration == legacyRegistration
+                else registration.matchesTexture(texture, width, height)) &&
+                alphaBleed == texture.alphaBleedRequired && this.image.get() === image
+    }
+
+    private data class RegisteredImmediateFrame(
+        val registration: TexturePixelRegistration,
+        val alphaBleed: Boolean,
+        val frame: WeakReference<KoolCanvasFrame>,
+    ) {
+        fun matchesTexture(texture: Texture, frame: KoolCanvasFrame?, width: Int = texture.width().coerceAtLeast(1),
+            height: Int = texture.height().coerceAtLeast(1), legacyRegistration: TexturePixelRegistration? = null): Boolean =
+            frame != null && (if (legacyRegistration != null) registration == legacyRegistration
+                else registration.matchesTexture(texture, width, height)) &&
+                alphaBleed == texture.alphaBleedRequired && this.frame.get() === frame
+    }
 
     private class CpuTargetProfile(
         private val texture: Texture,
@@ -2270,8 +2579,17 @@ class KoolGraphicsEngine private constructor(
     }
 
     internal companion object {
+        private val TEXTURE_METADATA_REUSE_ENABLED = (System.getenv("RWX_DISABLE_TEXTURE_METADATA_REUSE") != "1")
+            .also { println("[RWX canvas] textureMetadataReuse=$it") }
+        private val IMMUTABLE_PIXEL_SNAPSHOT_REUSE_ENABLED =
+            System.getenv("RWX_DISABLE_IMMUTABLE_PIXEL_SNAPSHOT_REUSE") != "1"
+        private val RASTER_SCALAR_MAPPING_ENABLED = System.getenv("RWX_DISABLE_RASTER_SCALAR_MAPPING") != "1"
+        private val OPAQUE_SOURCE_OVER_FAST_PATH_ENABLED =
+            System.getenv("RWX_DISABLE_OPAQUE_SOURCE_OVER_FAST_PATH") != "1"
         val BACKEND_CAPABILITIES = GraphicsBackendCapabilities(
-            fixedLayerBufferPixelSize = 512,
+            fixedLayerBufferPixelSize = KoolLayerBufferSizing.startupPixels,
+            extraLayerBufferCells = 1,
+            layerBufferScrollPreloadWorldMargin = 256,
             clearLayerBuffersBeforeCopy = true,
             supportsLayerBufferPreRendering = false,
             supportsSmoothFogLayerBuffers = false,

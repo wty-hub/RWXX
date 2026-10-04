@@ -49,7 +49,13 @@ public class GameInterfaceRenderer extends Serializable {
 
     private static int debugHudCount = 0;
     private final ReplayTimelineControls replayTimeline = new ReplayTimelineControls();
+    private final ReplayVisionControls replayVision = new ReplayVisionControls();
     private final KoolPaint replayTimelinePaint = new KoolPaint();
+
+    public void resetReplayPresentationControls() {
+        replayTimeline.reset();
+        replayVision.reset();
+    }
 
     private ReplayTimelineControls.Layout replayTimelineLayout() {
         float scale = gameEngine.screenScale;
@@ -59,14 +65,30 @@ public class GameInterfaceRenderer extends Serializable {
     }
 
     public boolean isReplayTimelineAt(float x, float y) {
+        if (gameEngine.replayEngine.j() && !gameEngine.isMenuOpen
+                && replayVision.contains(replayVisionLayout(), x, y)) return true;
         return gameEngine.replayEngine.j() && gameEngine.replayEngine.getDurationMillis() >= 0
                 && (replayTimeline.isCaptured() || replayTimelineLayout().contains(x, y));
     }
 
     public boolean updateReplayTimelineInput() {
-        if (!gameEngine.replayEngine.j() || gameUI.isDraggingSelection) {
+        if (!gameEngine.replayEngine.j() || gameUI.isDraggingSelection || gameEngine.isMenuOpen) {
             replayTimeline.reset();
+            replayVision.reset();
             return false;
+        }
+        ReplayEngine replay = gameEngine.replayEngine;
+        java.util.List<PlayerTeam> teams = replay.getFogDisplayTeams();
+        boolean visionDown = gameEngine.isTouchDown() && gameEngine.getTouchPointerCount() == 1
+                && gameEngine.touchPointerEnabled[0];
+        if (replayVision.handle(replayVisionLayout(), visionDown, gameEngine.getTouchX(), gameEngine.getTouchY(),
+                gameEngine.getMouseWheelDelta(), teams.size(), !replay.isSeeking(), action -> {
+                    if (action == ReplayVisionControls.TOGGLE_FOG) replay.setFogDisplayEnabled(!replay.isFogDisplayEnabled());
+                    else if (action >= 0 && action < teams.size()) replay.setFogDisplayTeamId(teams.get(action).teamId);
+                })) {
+            replayTimeline.reset();
+            gameEngine.touchPointerEnabled[0] = false;
+            return true;
         }
         // A legacy/incomplete recording has no trustworthy end time. Keep its HUD readable,
         // but let the normal map input path handle touches until the index is available.
@@ -177,6 +199,57 @@ public class GameInterfaceRenderer extends Serializable {
             gameEngine.renderGraphicsEngine.a(status, layout.left() + layout.width() / 2,
                     layout.top() + layout.height() + gameUI.unitRangePaint.k(), text);
         }
+    }
+
+    private ReplayVisionControls.Layout replayVisionLayout() {
+        float scale = gameEngine.screenScale;
+        float icon = fastTexture == null ? 32 * scale : fastTexture.q * scale * 1.6f;
+        return ReplayVisionControls.layout(gameEngine.currentScreenWidthPixels, gameEngine.screenHeight, scale,
+                7 + gameUI.unitRangePaint.k() + 10, icon, gameEngine.replayEngine.getFogDisplayTeams().size());
+    }
+
+    private void drawReplayVisionBox(ReplayVisionControls.Box box, String label, int color, boolean active) {
+        float scale = replayVisionLayout().rowHeight() / 30;
+        drawReplayTimelineRoundedRect(box.left(), box.top(), box.left() + box.width(), box.top() + box.height(),
+                4 * scale, active ? KoolArgbColor.a(255, 43, 77, 101) : KoolArgbColor.a(245, 22, 29, 39));
+        KoolPaint text = new KoolPaint(gameUI.unitRangePaint);
+        text.a(KoolPaint.Align.LEFT);
+        text.b(13 * scale);
+        text.b(color);
+        float available = Math.max(1, box.width() - 16 * scale);
+        if (text.a(label) > available) text.b(text.k() * available / text.a(label));
+        gameEngine.renderGraphicsEngine.a(label, box.left() + 8 * scale,
+                box.top() + box.height() / 2 + text.k() / 3, text);
+    }
+
+    private void drawReplayVision() {
+        ReplayEngine replay = gameEngine.replayEngine;
+        ReplayVisionControls.Layout layout = replayVisionLayout();
+        int white = KoolArgbColor.a(255, 218, 231, 243);
+        int muted = KoolArgbColor.a(255, 140, 153, 168);
+        drawReplayVisionBox(layout.button(), Locale.get("replay.vision.menu"), white, replayVision.isOpen());
+        if (!replayVision.isOpen()) return;
+        java.util.List<PlayerTeam> teams = replay.getFogDisplayTeams();
+        drawReplayVisionBox(layout.panel(), "", white, false);
+        drawReplayVisionBox(layout.toggle(), (replay.isFogDisplayEnabled() ? "[x] " : "[ ] ")
+                + Locale.get("replay.vision.showFog"), replay.isSeeking() || teams.isEmpty() ? muted : white, false);
+        PlayerTeam selected = replay.getFogDisplayTeam();
+        String status = replay.isSeeking() ? Locale.get("replay.timeline.seeking")
+                : (selected != null && replay.getFogDisplayData() == null)
+                || teams.isEmpty() ? Locale.get("replay.vision.noData") : Locale.get("replay.vision.player");
+        drawReplayVisionBox(new ReplayVisionControls.Box(layout.panel().left(), layout.panel().top() + layout.rowHeight(),
+                layout.panel().width(), layout.rowHeight()), status, muted, false);
+        for (int i = 0; i < layout.visibleRows() && replayVision.getFirstRow() + i < teams.size(); i++) {
+            PlayerTeam team = teams.get(replayVision.getFirstRow() + i);
+            String label = team.getTeamSlotLabel() + "  " + (team.teamName == null || team.teamName.isBlank()
+                    ? team.getTeamColorDisplayName() : team.teamName);
+            drawReplayVisionBox(layout.row(i), label, replay.isSeeking() ? muted : team.teamColorPaint.e(),
+                    team.teamId == replay.getFogDisplayTeamId());
+        }
+        boolean canScroll = teams.size() > layout.visibleRows();
+        drawReplayVisionBox(layout.previous(), "▲", canScroll && replayVision.getFirstRow() > 0 ? white : muted, false);
+        drawReplayVisionBox(layout.next(), "▼", canScroll && replayVision.getFirstRow() + layout.visibleRows() < teams.size()
+                ? white : muted, false);
     }
 
 
@@ -496,6 +569,7 @@ public class GameInterfaceRenderer extends Serializable {
 
     /* JADX INFO: renamed from: a */
     void handleZoomAndGestures(float f, boolean isNativeHudVisible) {
+        if (replayVision.isOpen()) return;
         float touchPointerCount;
         float touchPointerCount2;
         float fDistance;
@@ -2481,7 +2555,7 @@ public class GameInterfaceRenderer extends Serializable {
         int n2 = (int) (n * float2);
         int n3 = 4 + n2 / 2;
         int n4 = 4 + n2 / 2;
-        if (this.gameEngine.consumeKeyPress(111)) {
+        if (this.gameEngine.consumeKeyPress(111) && !replayVision.close()) {
             boolean clearCurrentAction = false;
             if (!this.gameUI.isDraggingSelection) {
                 clearCurrentAction = this.gameUI.clearCurrentAction();
@@ -2575,6 +2649,7 @@ public class GameInterfaceRenderer extends Serializable {
                 }
             }
         }
+        if (boolean2 && this.gameEngine.replayEngine.j() && !this.gameUI.isDraggingSelection) drawReplayVision();
         if (this.gameUI.isDraggingSelection) {
             this.gameEngine.isMenuOpen = false;
             final int screenPixels = this.gameEngine.toScreenPixels(190);

@@ -7,6 +7,14 @@ import de.fabmax.kool.configJvm
 import org.lwjgl.vulkan.VK10.VK_SUCCESS
 import io.github.rwx.render.canvas.CanvasFrameMetrics
 import io.github.rwx.render.canvas.CanvasFramePresentation
+import io.github.rwx.render.canvas.KoolCanvasTextureRegistry
+import org.lwjgl.system.MemoryStack
+import org.lwjgl.vulkan.VkFormatProperties
+import org.lwjgl.vulkan.VK10.VK_FORMAT_B8G8R8A8_UNORM
+import org.lwjgl.vulkan.VK10.VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT
+import org.lwjgl.vulkan.VK10.VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT
+import org.lwjgl.vulkan.VK10.vkGetPhysicalDeviceFormatProperties
+import org.lwjgl.vulkan.VK11.VK_FORMAT_FEATURE_TRANSFER_DST_BIT
 import org.lwjgl.vulkan.VkCommandBuffer
 import org.lwjgl.vulkan.VkDevice
 import org.lwjgl.vulkan.VkQueue
@@ -31,11 +39,23 @@ object VulkanFrameLifecycle {
     fun created(backend: RenderBackendVk) {
         completedShutdown = false
         current = states.getOrPut(backend) { VulkanUploadState(backend) }
+        val nativeBgraSupported = MemoryStack.stackPush().use { stack ->
+            val properties = VkFormatProperties.calloc(stack)
+            vkGetPhysicalDeviceFormatProperties(backend.physicalDevice.vkPhysicalDevice,
+                VK_FORMAT_B8G8R8A8_UNORM, properties)
+            supportsNativeBgraUploads(properties.optimalTilingFeatures(),
+                // Conversion is faster, but controlled live runs have not demonstrated fewer stalls.
+                // Keep this format experiment explicit until normal-game frame tails improve.
+                disabled = System.getenv("RWX_NATIVE_BGRA_UPLOAD") != "1" ||
+                    System.getenv("RWX_DISABLE_NATIVE_BGRA_UPLOAD") == "1")
+        }
+        KoolCanvasTextureRegistry.configureNativeBgraUploads(nativeBgraSupported)
         if (VulkanBackendMetrics.enabled || System.getenv("RWX_FRAME_METRICS") != null) {
             println("RWXVulkanConfiguration framebuffer=${backend.swapchain.width}x${backend.swapchain.height} " +
                 "samples=${backend.swapchain.numSamples} configuredSamples=${KoolSystem.configJvm.numSamples} " +
                 "presentMode=$presentMode vsync=${KoolSystem.configJvm.isVsync} " +
-                "targetFps=${backend.ctx.maxFrameRate} asyncSceneUpdate=${KoolSystem.configJvm.asyncSceneUpdate}")
+                "targetFps=${backend.ctx.maxFrameRate} asyncSceneUpdate=${KoolSystem.configJvm.asyncSceneUpdate} " +
+                "nativeBgraUploads=$nativeBgraSupported")
         }
     }
 
@@ -60,7 +80,11 @@ object VulkanFrameLifecycle {
             state.deviceIdle(destroying)
             if (destroying) {
                 states.remove(backend)
-                if (current === state) { current = null; completedShutdown = true }
+                if (current === state) {
+                    current = null
+                    completedShutdown = true
+                    KoolCanvasTextureRegistry.configureNativeBgraUploads(false)
+                }
             }
         }
         if (destroying) VulkanPipelineCache.release(backend.device.vkDevice)
@@ -115,6 +139,12 @@ object VulkanFrameLifecycle {
     }
     @JvmStatic fun checkedDeviceIdle(result: Int) {
         check(result == VK_SUCCESS) { "Vulkan device idle wait failed: $result" }
+    }
+
+    internal fun supportsNativeBgraUploads(optimalTilingFeatures: Int, disabled: Boolean): Boolean {
+        val required = VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT or
+            VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT or VK_FORMAT_FEATURE_TRANSFER_DST_BIT
+        return !disabled && (optimalTilingFeatures and required) == required
     }
 }
 

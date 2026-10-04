@@ -29,6 +29,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.TreeMap;
 
 /* JADX INFO: renamed from: com.corrodinggames.rts.gameFramework.n.f */
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/gameFramework/n/f.class */
@@ -161,6 +162,19 @@ public class MissionEngine extends Serializable {
         int i = gameInputStream.readInt();
         if (i >= 1) {
             int i2 = gameInputStream.readInt();
+            // This index belongs to this restore only; the map still rebuilds every trigger.
+            TreeMap<String, MapTrigger> savedTriggerIndex = null;
+            if (i2 > 0) {
+                savedTriggerIndex = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+                for (MapTrigger mapTrigger : this.J) {
+                    if (mapTrigger == null || mapTrigger.uniqueId == null) {
+                        // Keep the linear lookup's failure order for malformed trigger lists.
+                        savedTriggerIndex = null;
+                        break;
+                    }
+                    savedTriggerIndex.putIfAbsent(mapTrigger.uniqueId, mapTrigger);
+                }
+            }
             for (int i3 = 0; i3 < i2; i3++) {
                 String utf = gameInputStream.readUTF();
                 boolean z = gameInputStream.readBoolean();
@@ -178,7 +192,7 @@ public class MissionEngine extends Serializable {
                 if (i >= 4) {
                     i6 = gameInputStream.readInt();
                 }
-                MapTrigger mapTriggerE = e(utf);
+                MapTrigger mapTriggerE = savedTriggerIndex == null ? e(utf) : savedTriggerIndex.get(utf.trim());
                 if (mapTriggerE == null) {
                     GameEngine.logColored("MissionEngine:readIn: Could not find saved trigger:" + utf + " for de/activation");
                 } else {

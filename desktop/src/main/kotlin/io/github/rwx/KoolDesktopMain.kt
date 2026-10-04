@@ -60,6 +60,9 @@ object KoolDesktopMain : KoinComponent {
         configureKoolFramebuffer()
         val options = AppOptions.parseArgs(args, isDesktop = true)
         val renderBackend = selectedRenderBackend()
+        if (renderBackend !== RenderBackendVk.Companion) {
+            io.github.rwx.render.canvas.KoolCanvasTextureRegistry.configureNativeBgraUploads(false)
+        }
         val fullscreenRequested = SettingsEngine.getInstance().slick2dFullScreen
         val swingHost = SwingKoolHost.create(
             fullscreen = fullscreenRequested,

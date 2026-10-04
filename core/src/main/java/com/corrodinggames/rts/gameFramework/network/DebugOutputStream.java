@@ -314,6 +314,14 @@ public class DebugOutputStream extends GameOutputStream {
         this.activePrintStream.write(bArr);
     }
 
+    @Override
+    public void writeBytesRaw(byte[] bytes, int offset, int length) {
+        java.util.Objects.checkFromIndexSize(offset, length, bytes.length);
+        for (int index = offset; index < offset + length; index++) {
+            writeByte(bytes[index]);
+        }
+    }
+
     @Override // com.corrodinggames.rts.gameFramework.network.GameOutputStream
     /* JADX INFO: renamed from: a */
     public void writeShort(short s) {

@@ -231,6 +231,62 @@ public final class TileMap {
     /* JADX INFO: renamed from: E */
     public boolean fogEnabled = true;
 
+    /** The observer used by terrain/minimap drawing, independent of simulation visibility. */
+    public PlayerTeam getFogDisplayTeam() {
+        GameEngine engine = GameEngine.getInstance();
+        return engine.replayEngine.j() ? engine.replayEngine.getFogDisplayTeam() : engine.playerTeam;
+    }
+
+    public byte[][] getFogDisplayData() {
+        GameEngine engine = GameEngine.getInstance();
+        if (engine.replayEngine.j()) return engine.replayEngine.getFogDisplayData();
+        PlayerTeam team = getFogDisplayTeam();
+        return team == null ? null : team.fogOfWarData;
+    }
+
+    public boolean isFogDisplayEnabled() {
+        GameEngine engine = GameEngine.getInstance();
+        return (engine.replayEngine.j() ? engine.replayEngine.isFogDisplayEnabled() : fogEnabled)
+                && getFogDisplayData() != null;
+    }
+
+    public void updateRealtimeFogDisplay(byte[][] previous, byte[][] current) {
+        if (current == null) return;
+        if (previous == null || previous.length != tileCountX || previous[0].length != tileCountY) {
+            invalidateFogDisplay();
+            return;
+        }
+        ensureFogCacheAllocated();
+        boolean changed = false;
+        for (int x = 0; x < tileCountX; x++) {
+            for (int y = 0; y < tileCountY; y++) {
+                if (previous[x][y] != current[x][y]) {
+                    for (int nx = Math.max(0, x - 1); nx <= Math.min(tileCountX - 1, x + 1); nx++) {
+                        for (int ny = Math.max(0, y - 1); ny <= Math.min(tileCountY - 1, y + 1); ny++) {
+                            fogOfWarCurrent[nx][ny] = 127;
+                            fogOfWarNext[nx][ny] = 127;
+                        }
+                    }
+                    layerBufferManager.invalidateTileArea(x, y, true);
+                    changed = true;
+                }
+            }
+        }
+        GameEngine engine = GameEngine.getInstance();
+        if (changed && engine.minimap != null) engine.minimap.isFogRefreshPending = true;
+    }
+
+    public void invalidateFogDisplay() {
+        if (tileCountX > 0 && tileCountY > 0) {
+            ensureFogCacheAllocated();
+            for (byte[] column : fogOfWarCurrent) Arrays.fill(column, (byte) 127);
+            for (byte[] column : fogOfWarNext) Arrays.fill(column, (byte) 127);
+        }
+        layerBufferManager.invalidateFogDisplay();
+        GameEngine engine = GameEngine.getInstance();
+        if (engine.minimap != null) engine.minimap.refreshFogDisplay();
+    }
+
     /* JADX INFO: renamed from: F */
     public boolean fogPeriodicMaintenanceEnabled = false;
 
@@ -1550,7 +1606,7 @@ public final class TileMap {
             }
             LayerBufferManager layerBufferManager2 = layerBufferManager;
             boolean z2 = false;
-            boolean isCurrentPlayerTeam = playerTeam.isCurrentPlayerTeam();
+            boolean isCurrentPlayerTeam = !gameEngine.replayEngine.j() && playerTeam.isCurrentPlayerTeam();
             for (int i9 = i5; i9 <= i7; i9++) {
                 for (int i10 = i6; i10 <= i8; i10++) {
                     byte b3 = bArr[i9][i10];
@@ -1628,7 +1684,7 @@ public final class TileMap {
                             GameEngine.logColored("fogOfWar_map==null for:" + i);
                         }
                         boolean z2 = false;
-                        boolean isCurrentPlayerTeam = playerTeamK.isCurrentPlayerTeam();
+                        boolean isCurrentPlayerTeam = !gameEngine.replayEngine.j() && playerTeamK.isCurrentPlayerTeam();
                         byte[][] bArr = playerTeamK.fogOfWarData;
                         byte[][] bArr2 = this.fogOfWarNext;
                         for (int i3 = 0; i3 < this.tileCountX; i3++) {

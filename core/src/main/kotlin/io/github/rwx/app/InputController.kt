@@ -2,6 +2,7 @@ package io.github.rwx.app
 
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.KeyboardInput
+import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.input.PointerInput
 import io.github.rwx.mod.registry.UiRegistry
 import io.github.rwx.render.canvas.KoolCanvasViewport
@@ -17,6 +18,7 @@ internal class InputController(
     private val dismissDialog: () -> Boolean = { false },
     private val isModalOverlayOpen: () -> Boolean = { false },
     pointerViewport: () -> KoolCanvasViewport? = { null },
+    private val legacyPointerForwarding: Boolean = "1" == System.getenv("RWX_LEGACY_POINTER_FORWARDING"),
 ) {
     private val legacyPointerSink = LegacyGamePointerSink(
         gameSession = gameSession,
@@ -58,10 +60,12 @@ internal class InputController(
             }
             if (!UiRegistry.cancelWorldPositionSelection()) navigateBack()
         }
-        InputStack.defaultInputHandler.pointerListeners += GatedPointerListener(
-            { shouldForwardKoolInputForScreen(currentScreen(), gameSession.acceptsKoolInput) },
-            legacyPointerSink,
-        )
+        if (legacyPointerForwarding) {
+            InputStack.defaultInputHandler.pointerListeners += GatedPointerListener(
+                { shouldForwardKoolInputForScreen(currentScreen(), gameSession.acceptsKoolInput) },
+                legacyPointerSink,
+            )
+        }
     }
 
     fun resetOnHostFocusLost() {
@@ -69,10 +73,13 @@ internal class InputController(
         legacyKeyboardSink.resetOnHostFocusLost()
     }
 
-    fun forwardInputForFrame() {
+    fun forwardInputForFrame(isRenderLoopFrame: Boolean, pointer: Pointer = PointerInput.pointerState.primaryPointer) {
         gameKeyboardHandler.syncRegistration()
+        // Kool 0.19 dispatches InputStack from KeyboardInput.poll BEFORE updating PointerInput.
+        // Forward the new pointer only after poll, avoiding the stale listener and startup drive.
+        if (!legacyPointerForwarding && !isRenderLoopFrame) return
         if (shouldForwardKoolInputForScreen(currentScreen(), gameSession.acceptsKoolInput)) {
-            legacyPointerSink.onPointer(PointerInput.pointerState.primaryPointer)
+            legacyPointerSink.onPointer(pointer)
         }
     }
 }

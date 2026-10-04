@@ -1,21 +1,31 @@
 package io.github.rwx.kool
 
 import com.corrodinggames.rts.game.units.BaseUnit
+import com.corrodinggames.rts.game.map.TileMap
 import com.corrodinggames.rts.gameFramework.GameEngine
 import com.corrodinggames.rts.gameFramework.PerformanceProfiler
 import io.github.rwx.logger
+import java.io.BufferedWriter
 import java.io.File
+import java.lang.management.ManagementFactory
 
 /**
  * Frame-time statistics for the Kool desktop renderer, enabled with `RWX_PERF_LOG=1` (log) or
- * `RWX_PERF_LOG=/path/file` (append to a file).
+ * `RWX_PERF_LOG=/path/file` (append to a file). `RWX_ENGINE_FRAME_TRACE=/path/file.csv`
+ * additionally enables a buffered per-frame trace and can be used without the window log.
  *
- * Measures the same phases on the same replay every run: the Kool renderer drives the game loop
- * from the Kool frame callback, so the phases measured here are the frame interval, the legacy game
- * work (`update` + `draw`), the visible layer buffer redraw and the command-buffer snapshot handed
- * to the Kool canvas.
+ * Measures the independent engine owner's frame interval, legacy game work (`update` + `draw`),
+ * visible layer buffer redraw and the command-buffer snapshot handed to the Kool canvas.
  */
-internal class KoolFrameTimeLog private constructor(private val output: File?) {
+internal class KoolFrameTimeLog private constructor(private val output: File?, private val windowLogEnabled: Boolean,
+    traceOutput: File?) : AutoCloseable {
+    private val traceWriter: BufferedWriter? = traceOutput?.let { file ->
+        file.parentFile?.mkdirs()
+        file.bufferedWriter().also { writer ->
+            writer.write("frameStartNanos,frameEndNanos,epochMillisAtEnd,intervalNanos,workNanos,updateNanos,drawNanos,layerRedrawNanos,snapshotNanos,tick,cameraX,cameraY,zoom,ownerCpuNanos,visiblePendingRedraws")
+            writer.newLine()
+        }
+    }
     private val intervals = LongArray(MAX_SAMPLES)
     private val works = LongArray(MAX_SAMPLES)
     private val updates = LongArray(MAX_SAMPLES)
@@ -26,19 +36,26 @@ internal class KoolFrameTimeLog private constructor(private val output: File?) {
     private var lastFrameStart = 0L
     private var phaseStart = 0L
     private var windowStart = System.nanoTime()
+    private val cpuClock = if (traceWriter != null) ManagementFactory.getThreadMXBean().takeIf {
+        it.isCurrentThreadCpuTimeSupported && it.isThreadCpuTimeEnabled
+    } else null
+    private var cpuStart = -1L
+    private val clockSampler = if (traceWriter != null) KoolJfrClockSampler() else null
 
     init {
         PerformanceProfiler.frameTimingEnabled = true
     }
 
-    /** Called at the top of a Kool-driven game frame, before any engine work. */
+    /** Called at the top of an engine-owner game frame, before any engine work. */
     fun beginFrame() {
         val now = System.nanoTime()
+        clockSampler?.sample(now)
         if (lastFrameStart != 0L && count < MAX_SAMPLES) {
             intervals[count] = now - lastFrameStart
         }
         lastFrameStart = now
         phaseStart = now
+        cpuStart = cpuClock?.currentThreadCpuTime ?: -1L
     }
 
     fun endGameWork() {
@@ -57,12 +74,36 @@ internal class KoolFrameTimeLog private constructor(private val output: File?) {
     }
 
     fun endSnapshot() {
-        snapshots[slot()] = lap()
+        val slot = slot()
+        snapshots[slot] = lap()
+        traceWriter?.let { writer ->
+            val epochMillisAtEnd = System.currentTimeMillis()
+            val engine = GameEngine.getInstance()
+            writer.append(lastFrameStart.toString()).append(',').append(phaseStart.toString()).append(',')
+                .append(epochMillisAtEnd.toString()).append(',').append(intervals[slot].toString()).append(',')
+                .append(works[slot].toString()).append(',').append(updates[slot].toString()).append(',')
+                .append(draws[slot].toString()).append(',').append(layers[slot].toString()).append(',')
+                .append(snapshots[slot].toString()).append(',').append((engine?.currentTick ?: -1).toString()).append(',')
+                .append((engine?.viewpointX ?: Float.NaN).toString()).append(',')
+                .append((engine?.viewpointY ?: Float.NaN).toString()).append(',')
+                .append((engine?.zoom ?: Float.NaN).toString()).append(',')
+                .append(if (cpuStart >= 0L) (cpuClock!!.currentThreadCpuTime - cpuStart).toString() else "-1")
+                .append(',').append(if (engine?.hasLoadedLevel == true && engine.tileMap != null &&
+                    TileMap.layerBufferManager.hasVisiblePendingRedraws()) "1" else "0")
+            writer.newLine()
+        }
         if (count < MAX_SAMPLES) count++
         val now = System.nanoTime()
         if (now - windowStart >= WINDOW_NANOS) {
-            report(now)
+            if (windowLogEnabled) report(now) else {
+                count = 0
+                windowStart = now
+            }
         }
+    }
+
+    override fun close() {
+        traceWriter?.close()
     }
 
     private fun slot(): Int = count.coerceAtMost(MAX_SAMPLES - 1)
@@ -112,9 +153,11 @@ internal class KoolFrameTimeLog private constructor(private val output: File?) {
         private const val WINDOW_NANOS = 5_000_000_000L
 
         fun fromEnvironment(): KoolFrameTimeLog? {
-            val value = System.getenv("RWX_PERF_LOG")?.takeIf { it.isNotBlank() } ?: return null
-            val file = value.takeUnless { it == "1" || it.equals("true", ignoreCase = true) }?.let(::File)
-            return KoolFrameTimeLog(file)
+            val value = System.getenv("RWX_PERF_LOG")?.takeIf { it.isNotBlank() }
+            val trace = System.getenv("RWX_ENGINE_FRAME_TRACE")?.takeIf { it.isNotBlank() }?.let(::File)
+            if (value == null && trace == null) return null
+            val file = value?.takeUnless { it == "1" || it.equals("true", ignoreCase = true) }?.let(::File)
+            return KoolFrameTimeLog(file, value != null, trace)
         }
     }
 }

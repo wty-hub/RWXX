@@ -434,7 +434,7 @@ public class Minimap {
         this.fogUpdateRect.a(0, (int) (f * this.height), (int) this.width, (int) (f2 * this.height));
         this.fogGraphics.a(this.backgroundTexture, this.fogUpdateRect, this.fogUpdateRect, (KoolPaint) null);
         TileMap tileMap = gameEngine.tileMap;
-        if (tileMap.fogEnabled) {
+        if (tileMap.isFogDisplayEnabled()) {
             boolean z = tileMap.fogRenderActive;
             GamePaint gamePaint2 = this.fogAlphaPaints[5];
             GamePaint gamePaint3 = this.fogAlphaPaints[10];
@@ -460,7 +460,7 @@ public class Minimap {
                 i2 = tileMap.tileCountY;
             }
             int i3 = 0;
-            byte[][] bArr = gameEngine.playerTeam.fogOfWarData;
+            byte[][] bArr = tileMap.getFogDisplayData();
             if (bArr != null) {
                 int i4 = tileMap.tileCountX;
                 Rect rect = this.tempDrawRect;
@@ -709,6 +709,15 @@ public class Minimap {
         }
     }
 
+    public void refreshFogDisplay() {
+        isFogRefreshPending = false;
+        isFogRefreshActive = false;
+        fogRefreshProgress = 0;
+        if (isSetup && fogGraphics != null && backgroundTexture != null && unitsGraphics != null) {
+            drawFog(0, 1);
+        }
+    }
+
     /* JADX INFO: renamed from: a */
     public void update(float f) {
         if (GameEngine.isNonAndroidVersion && !GameEngine.isPCOrIOSVersion) {
@@ -810,7 +819,7 @@ public class Minimap {
         if (this.lastElementUpdateX != ((int) this.x) || this.lastElementUpdateY != ((int) this.y) || this.elementPositionsDirty) {
             updateElementPositions();
         }
-        if (gameEngine.tileMap.fogEnabled) {
+        if (gameEngine.tileMap.isFogDisplayEnabled()) {
             if (this.isFogRefreshPending && !this.isFogRefreshActive) {
                 this.fogRefreshDelayTimer = Utility.moveTowardsZero(this.fogRefreshDelayTimer, 1.0f);
                 if (this.fogRefreshDelayTimer == 0.0f) {

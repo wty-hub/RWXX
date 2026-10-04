@@ -11,6 +11,7 @@ import com.corrodinggames.rts.gameFramework.ui.GameUI;
 import io.github.rwx.geometry.Rect;
 import io.github.rwx.geometry.RectF;
 import io.github.rwx.render.canvas.KoolCanvasBlendMode;
+import io.github.rwx.render.canvas.KoolGraphicsEngine;
 import io.github.rwx.render.canvas.KoolPaint;
 
 import java.util.ArrayList;
@@ -19,8 +20,17 @@ import java.util.IdentityHashMap;
 /* JADX INFO: renamed from: com.corrodinggames.rts.game.b.c */
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/game/b/c.class */
 public final class LayerBufferManager {
+    private static final boolean TIME_BASED_ZOOM_CACHE_REQUESTED =
+            "1".equals(System.getenv("RWX_TIME_BASED_MAP_ZOOM_CACHE"));
     private GraphicsEngine graphicsBackend;
     private boolean smoothFogFadingEnabled;
+    private boolean timeBasedZoomCacheEnabled;
+    private final ZoomCacheCadence zoomCacheCadence = new ZoomCacheCadence();
+    private final ArrayList<LayerBufferCell> offscreenRedrawCandidates = new ArrayList<>();
+    private boolean prewarmCameraSampleValid;
+    private long prewarmCameraSampleNanos;
+    private float prewarmCameraX, prewarmCameraY;
+    private double prewarmVelocityX, prewarmVelocityY;
 
     /* JADX INFO: renamed from: f */
     int gridOriginWorldX;
@@ -78,9 +88,18 @@ public final class LayerBufferManager {
         this.graphicsBackend = graphicsEngine;
         this.smoothFogFadingEnabled = TileMap.softFogFadingEnabled
                 && graphicsEngine.backendCapabilities().getSupportsSmoothFogLayerBuffers();
+        this.timeBasedZoomCacheEnabled = TIME_BASED_ZOOM_CACHE_REQUESTED && graphicsEngine instanceof KoolGraphicsEngine;
+        if (System.getenv("RWX_FRAME_METRICS") != null || System.getenv("RWX_MAP_CACHE_TRACE") != null) {
+            System.out.println("RWXMapZoomCache timeBased=" + this.timeBasedZoomCacheEnabled
+                    + " referenceFps=60 stableNanos=" + ZoomCacheCadence.STABLE_NANOS);
+        }
     }
 
     public void releaseLayerBuffers() {
+        offscreenRedrawCandidates.clear();
+        prewarmCameraSampleValid = false;
+        zoomCacheCadence.reset();
+        timeBasedZoomCacheEnabled = false;
         GraphicsEngine previousBackend = this.graphicsBackend;
         IdentityHashMap<Texture, Boolean> releasedTextures = new IdentityHashMap<>();
         Texture fallbackTexture = previousBackend != null ? previousBackend.r() : null;
@@ -148,6 +167,12 @@ public final class LayerBufferManager {
 
     /* JADX INFO: renamed from: a */
     public void updateGridParams() {
+        updateGridParams("");
+    }
+
+    private void updateGridParams(String resetReason) {
+        prewarmCameraSampleValid = false;
+        zoomCacheCadence.reset();
         GameEngine gameEngine = GameEngine.getInstance();
         this.renderScale = computeRenderScale();
         if (this.renderScale > 1.0f) {
@@ -167,6 +192,7 @@ public final class LayerBufferManager {
                 layerBufferCell.preRendered = false;
             }
         }
+        if (MapCacheTrace.isEnabled()) MapCacheTrace.recordGrid("reset", this, resetReason, 0);
     }
 
     /* JADX INFO: renamed from: b */
@@ -256,6 +282,7 @@ public final class LayerBufferManager {
 
     private void markReusedCellForRedraw(LayerBufferCell layerBufferCell) {
         layerBufferCell.needsRedraw = true;
+        layerBufferCell.preRendered = false;
     }
 
     private void invalidateCell(LayerBufferCell layerBufferCell, boolean smoothFade) {
@@ -291,6 +318,20 @@ public final class LayerBufferManager {
                 for (int i2 = 0; i2 < this.gridCellsPerAxis; i2++) {
                     this.gridCells[i][i2].needsRedraw = true;
                 }
+            }
+        }
+    }
+
+    public void invalidateFogDisplay() {
+        invalidateAllCells();
+        if (gridCells == null) return;
+        for (LayerBufferCell[] column : gridCells) {
+            for (LayerBufferCell cell : column) {
+                if (cell == null) continue;
+                cell.fadeProgressRatio = 0;
+                cell.enableSmoothFade = false;
+                cell.fadeFrameCount = 0;
+                cell.preRendered = false;
             }
         }
     }
@@ -453,7 +494,13 @@ public final class LayerBufferManager {
     /* JADX INFO: renamed from: c */
     public void renderCell(int i, int i2) {
         LayerBufferCell layerBufferCell = TileMap.layerBufferManager.gridCells[i][i2];
-        renderCellInto(i, i2, this.bufferLayerGraphics, false);
+        boolean direct = resourceBackend().prefersDirectLayerBufferRendering();
+        GraphicsEngine target = direct ? layerBufferCell.cellGraphicsCopy : this.bufferLayerGraphics;
+        try {
+            renderCellInto(i, i2, target, direct);
+        } finally {
+            if (direct) target.f();
+        }
     }
 
     /* JADX INFO: renamed from: c */
@@ -462,6 +509,21 @@ public final class LayerBufferManager {
     }
 
     private void renderCellInto(int i, int i2, GraphicsEngine graphicsEngine, boolean directToCellTexture) {
+        if (!MapCacheTrace.isEnabled()) {
+            renderCellContents(i, i2, graphicsEngine, directToCellTexture);
+            return;
+        }
+        MapCacheTrace.CellSpan span = MapCacheTrace.beginCell(this, i, i2);
+        boolean completed = false;
+        try {
+            renderCellContents(i, i2, graphicsEngine, directToCellTexture);
+            completed = true;
+        } finally {
+            MapCacheTrace.endCell(span, completed);
+        }
+    }
+
+    private void renderCellContents(int i, int i2, GraphicsEngine graphicsEngine, boolean directToCellTexture) {
         LayerBufferCell layerBufferCell = TileMap.layerBufferManager.gridCells[i][i2];
         GameEngine gameEngine = GameEngine.getInstance();
         TileMap tileMap = gameEngine.tileMap;
@@ -484,7 +546,7 @@ public final class LayerBufferManager {
             }
             if (GameUI.bO) {
             }
-            if (tileMap.fogEnabled) {
+            if (tileMap.isFogDisplayEnabled()) {
             }
             if (z2) {
                 graphicsEngine.b(-16777216);
@@ -500,7 +562,7 @@ public final class LayerBufferManager {
         if (!tileMap.groundLayer.hasAlpha) {
             z3 = true;
         }
-        if (tileMap.fogEnabled) {
+        if (tileMap.isFogDisplayEnabled()) {
             z4 = true;
         }
         if (TileMap.fogDebugGlobalFlag) {
@@ -510,20 +572,20 @@ public final class LayerBufferManager {
         if (z3) {
             graphicsEngine.a(true);
         }
-        tileMap.groundLayer.renderLayerRegion(graphicsEngine, i3, i4, i3, i4, this.cellWorldExtent, this.cellWorldExtent, this.renderScale, this.renderScale, tileMap.fogEnabled, false, false);
+        tileMap.groundLayer.renderLayerRegion(graphicsEngine, i3, i4, i3, i4, this.cellWorldExtent, this.cellWorldExtent, this.renderScale, this.renderScale, tileMap.isFogDisplayEnabled(), false, false);
         if (tileMap.groundDetailsLayer != null) {
             if (z3 && tileMap.groundDetailsLayer.hasAlpha) {
                 graphicsEngine.f();
                 GameEngine.log("Ending blit early");
             }
-            tileMap.groundDetailsLayer.renderLayerRegion(graphicsEngine, i3, i4, i3, i4, this.cellWorldExtent, this.cellWorldExtent, this.renderScale, this.renderScale, tileMap.fogEnabled, false, false);
+            tileMap.groundDetailsLayer.renderLayerRegion(graphicsEngine, i3, i4, i3, i4, this.cellWorldExtent, this.cellWorldExtent, this.renderScale, this.renderScale, tileMap.isFogDisplayEnabled(), false, false);
         }
         if (tileMap.groundDetails2Layer != null) {
             if (z3 && tileMap.groundDetails2Layer.hasAlpha) {
                 graphicsEngine.f();
                 GameEngine.log("Ending blit early");
             }
-            tileMap.groundDetails2Layer.renderLayerRegion(graphicsEngine, i3, i4, i3, i4, this.cellWorldExtent, this.cellWorldExtent, this.renderScale, this.renderScale, tileMap.fogEnabled, false, false);
+            tileMap.groundDetails2Layer.renderLayerRegion(graphicsEngine, i3, i4, i3, i4, this.cellWorldExtent, this.cellWorldExtent, this.renderScale, this.renderScale, tileMap.isFogDisplayEnabled(), false, false);
         }
         for (MapLayer mapLayer : tileMap.mapLayers) {
             if (mapLayer.isItemsLayer) {
@@ -531,15 +593,15 @@ public final class LayerBufferManager {
                     graphicsEngine.f();
                     GameEngine.log("Ending blit early");
                 }
-                mapLayer.renderLayerRegion(graphicsEngine, i3, i4, i3, i4, this.cellWorldExtent, this.cellWorldExtent, this.renderScale, this.renderScale, tileMap.fogEnabled, false, false);
+                mapLayer.renderLayerRegion(graphicsEngine, i3, i4, i3, i4, this.cellWorldExtent, this.cellWorldExtent, this.renderScale, this.renderScale, tileMap.isFogDisplayEnabled(), false, false);
             }
         }
         renderScorchMarksInCell(i, i2, graphicsEngine);
-        if (tileMap.fogEnabled) {
+        if (tileMap.isFogDisplayEnabled()) {
             if (z4) {
                 graphicsEngine.a(false);
             }
-            tileMap.groundLayer.renderLayerRegion(graphicsEngine, i3, i4, i3, i4, this.cellWorldExtent, this.cellWorldExtent, this.renderScale, this.renderScale, tileMap.fogEnabled, true, true);
+            tileMap.groundLayer.renderLayerRegion(graphicsEngine, i3, i4, i3, i4, this.cellWorldExtent, this.cellWorldExtent, this.renderScale, this.renderScale, tileMap.isFogDisplayEnabled(), true, true);
         }
         if (z3 || z4) {
             graphicsEngine.f();
@@ -575,10 +637,20 @@ public final class LayerBufferManager {
             bindGraphicsBackend(gameEngine.renderGraphicsEngine);
         }
         int iMax = Math.max((int) gameEngine.currentScreenWidthPixels, (int) gameEngine.currentScreenHeightPixels) + 3;
-        if (this.gridCells != null && this.cellBufferPixelSize * this.gridCellsPerAxis < iMax + this.cellBufferPixelSize + 1) {
-            GameEngine.log("map", "screen must have changed size, layerBufferSize too small at " + this.gridCellsPerAxis + ", adding to LayerBitmapBuffer");
-            GameEngine.log("map", "new viewpoint:" + gameEngine.currentScreenWidthPixels + ", " + gameEngine.currentScreenHeightPixels);
-            resizeBufferGrid(this.gridCellsPerAxis + 1);
+        if (this.gridCells != null) {
+            int requiredCells = this.gridCellsPerAxis;
+            int fixedSize = resourceBackend().backendCapabilities().getFixedLayerBufferPixelSize();
+            if (fixedSize > 0) {
+                requiredCells = fixedLayerBufferGridCells(this.gridCellsPerAxis, iMax, fixedSize,
+                        resourceBackend().backendCapabilities().getExtraLayerBufferCells());
+            } else if (this.cellBufferPixelSize * this.gridCellsPerAxis < iMax + this.cellBufferPixelSize + 1) {
+                requiredCells++;
+            }
+            if (requiredCells > this.gridCellsPerAxis) {
+                GameEngine.log("map", "screen must have changed size, layerBufferSize too small at " + this.gridCellsPerAxis + ", adding to LayerBitmapBuffer");
+                GameEngine.log("map", "new viewpoint:" + gameEngine.currentScreenWidthPixels + ", " + gameEngine.currentScreenHeightPixels);
+                resizeBufferGrid(requiredCells);
+            }
         }
         if (this.gridCells == null) {
             // TileMap initializes the user preference after the manager is bound during engine startup.
@@ -593,8 +665,8 @@ public final class LayerBufferManager {
             boolean z = fixedLayerBufferPixelSize > 0;
             if (z) {
                 this.cellBufferPixelSize = fixedLayerBufferPixelSize;
-                this.gridCellsPerAxis = (iMax / this.cellBufferPixelSize) + 2
-                        + Math.max(0, resourceBackend.backendCapabilities().getExtraLayerBufferCells());
+                this.gridCellsPerAxis = fixedLayerBufferGridCells(0, iMax, this.cellBufferPixelSize,
+                        resourceBackend.backendCapabilities().getExtraLayerBufferCells());
             } else {
                 iMax = Math.max(600, iMax);
                 this.cellBufferPixelSize = (iMax / (this.gridCellsPerAxis - 2)) + 7 + 4;
@@ -639,12 +711,14 @@ public final class LayerBufferManager {
         }
     }
 
-    /* JADX INFO: renamed from: c */
-    public void resizeBufferGrid(int i) {
-        if (i < this.gridCellsPerAxis) {
-            GameEngine.logWarningAndStack("newLayerBufferCount:" + i);
-            return;
-        }
+    /** New and existing fixed-size grids need the same coverage and backend preload cells. */
+    static int fixedLayerBufferGridCells(int currentCells, int longestPixelsWithPadding, int fixedPixelSize, int extraCells) {
+        return Math.max(currentCells, (longestPixelsWithPadding / fixedPixelSize) + 2 + Math.max(0, extraCells));
+    }
+
+    /** Grow storage without replacing the existing targets; allocation and invalidation follow. */
+    boolean growGridStorage(int i) {
+        if (i <= this.gridCellsPerAxis) return false;
         LayerBufferCell[][] layerBufferCellArr = new LayerBufferCell[i][i];
         for (int i2 = 0; i2 < this.gridCellsPerAxis; i2++) {
             for (int i3 = 0; i3 < this.gridCellsPerAxis; i3++) {
@@ -653,6 +727,16 @@ public final class LayerBufferManager {
         }
         this.gridCells = layerBufferCellArr;
         this.gridCellsPerAxis = i;
+        return true;
+    }
+
+    /* JADX INFO: renamed from: c */
+    public void resizeBufferGrid(int i) {
+        if (i < this.gridCellsPerAxis) {
+            GameEngine.logWarningAndStack("newLayerBufferCount:" + i);
+            return;
+        }
+        growGridStorage(i);
         initMissingLayerBufferImages();
     }
 
@@ -787,7 +871,132 @@ public final class LayerBufferManager {
         return renderPendingRedraws(budgetMs, false);
     }
 
+    /** Prepare recycled terrain cells before they enter the viewport; preserve visible fog cadence. */
+    public int renderOffscreenPendingRedraws(int budgetMs) {
+        if (this.gridCells == null || budgetMs <= 0) return 0;
+        GameEngine engine = GameEngine.getInstance();
+        long now = System.nanoTime();
+        long deadlineNanos = budgetMs == Integer.MAX_VALUE ? Long.MAX_VALUE : now + budgetMs * 1000000L;
+        // This is called after publishing the frame, so sample the final clamped camera once.
+        // Resets/zoom changes discard the previous sample; stopping/reversing only changes order.
+        double elapsedSeconds = (now - prewarmCameraSampleNanos) / 1_000_000_000.0;
+        prewarmVelocityX = prewarmCameraSampleValid && elapsedSeconds > 0
+                ? (engine.viewpointX - prewarmCameraX) / elapsedSeconds : 0;
+        prewarmVelocityY = prewarmCameraSampleValid && elapsedSeconds > 0
+                ? (engine.viewpointY - prewarmCameraY) / elapsedSeconds : 0;
+        if (!Double.isFinite(prewarmVelocityX)) prewarmVelocityX = 0;
+        if (!Double.isFinite(prewarmVelocityY)) prewarmVelocityY = 0;
+        prewarmCameraX = engine.viewpointX;
+        prewarmCameraY = engine.viewpointY;
+        prewarmCameraSampleNanos = now;
+        prewarmCameraSampleValid = true;
+        offscreenRedrawCandidates.clear();
+        for (int i = 0; i < this.gridCellsPerAxis; i++) {
+            for (int j = 0; j < this.gridCellsPerAxis; j++) {
+                LayerBufferCell cell = this.gridCells[i][j];
+                if (cell == null || !cell.screenDstRect.a() || !cell.needsRedraw) continue;
+                long left = this.gridOriginWorldX + (long) i * this.cellWorldStepSize;
+                long top = this.gridOriginWorldY + (long) j * this.cellWorldStepSize;
+                if (left >= engine.tileMap.getWorldWidth() || top >= engine.tileMap.getWorldHeight()
+                        || left + this.cellWorldExtent <= 0 || top + this.cellWorldExtent <= 0) continue;
+                offscreenRedrawCandidates.add(cell);
+            }
+        }
+        // Stable insertion sort avoids a temporary sort array for these small reusable queues.
+        for (int i = 1; i < offscreenRedrawCandidates.size(); i++) {
+            LayerBufferCell cell = offscreenRedrawCandidates.get(i);
+            double entry = prewarmEntryTime(cell, engine);
+            double distance = prewarmViewportDistance(cell, engine);
+            int insertion = i;
+            while (insertion > 0) {
+                LayerBufferCell previous = offscreenRedrawCandidates.get(insertion - 1);
+                if (comparePrewarmPriority(entry, distance, prewarmEntryTime(previous, engine),
+                        prewarmViewportDistance(previous, engine)) >= 0) break;
+                offscreenRedrawCandidates.set(insertion, previous);
+                insertion--;
+            }
+            offscreenRedrawCandidates.set(insertion, cell);
+        }
+        int renderedCount = 0;
+        boolean lockedFogAtlas = false;
+        try {
+            for (int i = 0; i < offscreenRedrawCandidates.size(); i++) {
+                LayerBufferCell cell = offscreenRedrawCandidates.get(i);
+                if (renderedCount > 0 && System.nanoTime() >= deadlineNanos) break;
+                if (resourceBackend().backendCapabilities().getRequiresFogAtlasLock() && !lockedFogAtlas) {
+                    TileMap.acquireFogAtlasLock();
+                    lockedFogAtlas = true;
+                }
+                engine.renderGraphicsEngine.i();
+                renderCell(cell.gridX, cell.gridY);
+                engine.renderGraphicsEngine.j();
+                renderedCount++;
+            }
+            return renderedCount;
+        } finally {
+            if (lockedFogAtlas) TileMap.releaseFogAtlasLock();
+            offscreenRedrawCandidates.clear();
+        }
+    }
+
+    private double prewarmEntryTime(LayerBufferCell cell, GameEngine engine) {
+        double left = this.gridOriginWorldX + (long) cell.gridX * this.cellWorldStepSize;
+        double top = this.gridOriginWorldY + (long) cell.gridY * this.cellWorldStepSize;
+        return offscreenEntryTime(left, top, left + this.cellWorldExtent, top + this.cellWorldExtent,
+                engine.viewpointXSnapped, engine.viewpointYSnapped, engine.visibleWorldWidth,
+                engine.visibleWorldHeight, prewarmVelocityX, prewarmVelocityY);
+    }
+
+    private double prewarmViewportDistance(LayerBufferCell cell, GameEngine engine) {
+        double left = this.gridOriginWorldX + (long) cell.gridX * this.cellWorldStepSize;
+        double top = this.gridOriginWorldY + (long) cell.gridY * this.cellWorldStepSize;
+        return offscreenViewportDistanceSquared(left, top, left + this.cellWorldExtent,
+                top + this.cellWorldExtent, engine.viewpointXSnapped, engine.viewpointYSnapped,
+                engine.visibleWorldWidth, engine.visibleWorldHeight);
+    }
+
+    /** Slab intersection time; infinity means the current camera trajectory misses the cell. */
+    static double offscreenEntryTime(double left, double top, double right, double bottom,
+                                    double cameraX, double cameraY, double width, double height,
+                                    double velocityX, double velocityY) {
+        if (!Double.isFinite(velocityX) || !Double.isFinite(velocityY)) return Double.POSITIVE_INFINITY;
+        double entry = 0, exit = Double.POSITIVE_INFINITY;
+        if (velocityX == 0) {
+            if (right < cameraX || left > cameraX + width) return Double.POSITIVE_INFINITY;
+        } else {
+            double a = (left - cameraX - width) / velocityX;
+            double b = (right - cameraX) / velocityX;
+            entry = Math.max(entry, Math.min(a, b));
+            exit = Math.min(exit, Math.max(a, b));
+        }
+        if (velocityY == 0) {
+            if (bottom < cameraY || top > cameraY + height) return Double.POSITIVE_INFINITY;
+        } else {
+            double a = (top - cameraY - height) / velocityY;
+            double b = (bottom - cameraY) / velocityY;
+            entry = Math.max(entry, Math.min(a, b));
+            exit = Math.min(exit, Math.max(a, b));
+        }
+        return entry <= exit ? entry : Double.POSITIVE_INFINITY;
+    }
+
+    static double offscreenViewportDistanceSquared(double left, double top, double right, double bottom,
+                                                   double cameraX, double cameraY, double width, double height) {
+        double dx = Math.max(0, Math.max(cameraX - right, left - cameraX - width));
+        double dy = Math.max(0, Math.max(cameraY - bottom, top - cameraY - height));
+        return dx * dx + dy * dy;
+    }
+
+    static int comparePrewarmPriority(double entryA, double distanceA, double entryB, double distanceB) {
+        int timeOrder = Double.compare(entryA, entryB);
+        return timeOrder != 0 ? timeOrder : Double.compare(distanceA, distanceB);
+    }
+
     private int renderPendingRedraws(int budgetMs, boolean visibleOnly) {
+        return renderPendingRedraws(budgetMs, visibleOnly, false);
+    }
+
+    private int renderPendingRedraws(int budgetMs, boolean visibleOnly, boolean offscreenOnly) {
         if (this.gridCells == null) {
             return 0;
         }
@@ -802,11 +1011,20 @@ public final class LayerBufferManager {
             for (int i = 0; i < this.gridCellsPerAxis; i++) {
                 for (int i2 = 0; i2 < this.gridCellsPerAxis; i2++) {
                     LayerBufferCell layerBufferCell = this.gridCells[i][i2];
-                    if (layerBufferCell == null || (visibleOnly && layerBufferCell.screenDstRect.a())) {
+                    if (layerBufferCell == null || (visibleOnly && layerBufferCell.screenDstRect.a())
+                            || (offscreenOnly && !layerBufferCell.screenDstRect.a())) {
                         continue;
                     }
-                    if (!layerBufferCell.needsRedraw && !layerBufferCell.enableSmoothFade) {
+                    if (!layerBufferCell.needsRedraw && (offscreenOnly || !layerBufferCell.enableSmoothFade)) {
                         continue;
+                    }
+                    if (offscreenOnly) {
+                        long left = this.gridOriginWorldX + (long) i * this.cellWorldStepSize;
+                        long top = this.gridOriginWorldY + (long) i2 * this.cellWorldStepSize;
+                        if (left >= gameEngine.tileMap.getWorldWidth() || top >= gameEngine.tileMap.getWorldHeight()
+                                || left + this.cellWorldExtent <= 0 || top + this.cellWorldExtent <= 0) {
+                            continue;
+                        }
                     }
                     if (renderedCount > 0 && System.nanoTime() >= deadlineNanos) {
                         return renderedCount;
@@ -830,6 +1048,58 @@ public final class LayerBufferManager {
         }
     }
 
+    static int boundedScrollPreloadMargin(int requested, int cells, int step, float visibleExtent) {
+        if (requested <= 0) return 0;
+        // Leave enough room that scrolling one way cannot immediately trigger the opposite check.
+        double spare = (cells - 1L) * step - Math.ceil(visibleExtent) - 5.0;
+        return (int) Math.min(requested, Math.max(0.0, Math.floor(spare / 2.0)));
+    }
+
+    /** Keep the overlapping cells on their existing world coordinates after bounded large pans. */
+    boolean scrollGridToViewport(int cameraX, int cameraY, float width, float height, int preloadX, int preloadY) {
+        int limit = Math.max(0, this.gridCellsPerAxis - 1);
+        long span = (long) this.gridCellsPerAxis * this.cellWorldStepSize;
+        double right = (double) cameraX + width + 4 + preloadX;
+        long left = (long) cameraX - 1 - preloadX;
+        double bottom = (double) cameraY + height + 4 + preloadY;
+        long top = (long) cameraY - 1 - preloadY;
+        int moved = 0;
+        if (right > this.gridOriginWorldX + span) {
+            while (right > this.gridOriginWorldX + span && moved < limit) {
+                this.gridOriginWorldX += this.cellWorldStepSize;
+                scrollGridX(1);
+                if (MapCacheTrace.isEnabled()) MapCacheTrace.recordGrid("scroll", this, "x", 1);
+                moved++;
+            }
+        } else if (left < this.gridOriginWorldX) {
+            while (left < this.gridOriginWorldX && moved < limit) {
+                this.gridOriginWorldX -= this.cellWorldStepSize;
+                scrollGridX(-1);
+                if (MapCacheTrace.isEnabled()) MapCacheTrace.recordGrid("scroll", this, "x", -1);
+                moved++;
+            }
+        }
+        moved = 0;
+        if (bottom > this.gridOriginWorldY + span) {
+            while (bottom > this.gridOriginWorldY + span && moved < limit) {
+                this.gridOriginWorldY += this.cellWorldStepSize;
+                scrollGridY(1);
+                if (MapCacheTrace.isEnabled()) MapCacheTrace.recordGrid("scroll", this, "y", 1);
+                moved++;
+            }
+        } else if (top < this.gridOriginWorldY) {
+            while (top < this.gridOriginWorldY && moved < limit) {
+                this.gridOriginWorldY -= this.cellWorldStepSize;
+                scrollGridY(-1);
+                if (MapCacheTrace.isEnabled()) MapCacheTrace.recordGrid("scroll", this, "y", -1);
+                moved++;
+            }
+        }
+        // No wrapping by an entire grid: that has no overlap worth preserving. The caller resets.
+        return left >= this.gridOriginWorldX && right <= this.gridOriginWorldX + span
+                && top >= this.gridOriginWorldY && bottom <= this.gridOriginWorldY + span;
+    }
+
     /* JADX INFO: renamed from: a */
     public void setRenderScale(float f) {
         GameEngine gameEngine = GameEngine.getInstance();
@@ -838,6 +1108,7 @@ public final class LayerBufferManager {
         boolean z = false;
         float fComputeRenderScale = computeRenderScale();
         boolean z2 = false;
+        String resetReason = "";
         float f2 = fComputeRenderScale / this.renderScale;
         if (Utility.abs(f2 - 1.0f) < 0.01f) {
             f2 = 1.0f;
@@ -849,9 +1120,11 @@ public final class LayerBufferManager {
             }
             if (fComputeRenderScale - this.renderScale > f3) {
                 z2 = true;
+                resetReason = "zoom-enlarge";
             }
             if (fComputeRenderScale == 1.0f && this.renderScale != 1.0f) {
                 z2 = true;
+                resetReason = "zoom-unit-scale";
             }
         }
         if (f2 != 1.0f) {
@@ -870,56 +1143,50 @@ public final class LayerBufferManager {
             if (!GameEngine.isPC()) {
                 i += 10;
             }
-            if (Utility.abs(tileMap.fogScale - fComputeRenderScale) > 0.03f) {
+            boolean referenceChanged = Utility.abs(tileMap.fogScale - fComputeRenderScale) > 0.03f;
+            if (referenceChanged) {
                 tileMap.fogScale = gameEngine.zoom;
                 tileMap.fogFadeStep = 0;
             } else {
                 tileMap.fogFadeStep++;
             }
-            if (tileMap.fogFadeStep < 3) {
-                tileMap.fogFadeSpeed = 0.0f;
-            } else if (Utility.abs(fComputeRenderScale - this.renderScale) > f4) {
-                tileMap.fogFadeSpeed += 1.0f;
+            if (timeBasedZoomCacheEnabled) {
+                // This controls only terrain-cache resolution. The supplied f is simulation time;
+                // monotonic real time keeps the display cadence independent of owner refresh rate.
+                if (zoomCacheCadence.shouldRefresh(System.nanoTime(), !referenceChanged,
+                        Utility.abs(fComputeRenderScale - this.renderScale) > f4, i)) {
+                    tileMap.fogFadeSpeed = 0.0f;
+                    if (!z2) resetReason = "zoom-time";
+                    z2 = true;
+                }
+            } else {
+                if (tileMap.fogFadeStep < 3) {
+                    tileMap.fogFadeSpeed = 0.0f;
+                } else if (Utility.abs(fComputeRenderScale - this.renderScale) > f4) {
+                    tileMap.fogFadeSpeed += 1.0f;
+                }
+                if (tileMap.fogFadeSpeed > i) {
+                    tileMap.fogFadeSpeed = 0.0f;
+                    if (!z2) resetReason = "zoom-frames";
+                    z2 = true;
+                }
             }
-            if (tileMap.fogFadeSpeed > i) {
-                tileMap.fogFadeSpeed = 0.0f;
-                z2 = true;
-            }
+        } else if (timeBasedZoomCacheEnabled) {
+            zoomCacheCadence.reset();
         }
         int preloadWorldMargin = Math.max(
                 0,
                 resourceBackend().backendCapabilities().getLayerBufferScrollPreloadWorldMargin()
         );
-        if (gameEngine.viewpointXInt + gameEngine.visibleWorldWidth + 4.0f + preloadWorldMargin > this.gridOriginWorldX + (this.gridCellsPerAxis * this.cellWorldStepSize)) {
-            this.gridOriginWorldX += this.cellWorldStepSize;
-            scrollGridX(1);
-        }
-        if (gameEngine.viewpointXInt - 1 - preloadWorldMargin < this.gridOriginWorldX) {
-            this.gridOriginWorldX -= this.cellWorldStepSize;
-            scrollGridX(-1);
-        }
-        if (gameEngine.viewpointYInt + gameEngine.visibleWorldHeight + 4.0f + preloadWorldMargin > this.gridOriginWorldY + (this.gridCellsPerAxis * this.cellWorldStepSize)) {
-            this.gridOriginWorldY += this.cellWorldStepSize;
-            scrollGridY(1);
-        }
-        if (gameEngine.viewpointYInt - 1 - preloadWorldMargin < this.gridOriginWorldY) {
-            this.gridOriginWorldY -= this.cellWorldStepSize;
-            scrollGridY(-1);
-        }
-        if (gameEngine.viewpointXInt + gameEngine.visibleWorldWidth + 4.0f > this.gridOriginWorldX + (this.gridCellsPerAxis * this.cellWorldStepSize)) {
+        int preloadX = boundedScrollPreloadMargin(preloadWorldMargin, this.gridCellsPerAxis, this.cellWorldStepSize, gameEngine.visibleWorldWidth);
+        int preloadY = boundedScrollPreloadMargin(preloadWorldMargin, this.gridCellsPerAxis, this.cellWorldStepSize, gameEngine.visibleWorldHeight);
+        if (!z2 && !scrollGridToViewport(gameEngine.viewpointXInt, gameEngine.viewpointYInt,
+                gameEngine.visibleWorldWidth, gameEngine.visibleWorldHeight, preloadX, preloadY)) {
             z2 = true;
-        }
-        if (gameEngine.viewpointXInt - 1 < this.gridOriginWorldX) {
-            z2 = true;
-        }
-        if (gameEngine.viewpointYInt + gameEngine.visibleWorldHeight + 4.0f > this.gridOriginWorldY + (this.gridCellsPerAxis * this.cellWorldStepSize)) {
-            z2 = true;
-        }
-        if (gameEngine.viewpointYInt - 1 < this.gridOriginWorldY) {
-            z2 = true;
+            resetReason = "pan-outside-grid";
         }
         if (z2) {
-            updateGridParams();
+            updateGridParams(resetReason);
         }
         float f5 = gameEngine.zoom / this.renderScale;
         if (Utility.abs(f5 - 1.0f) < 1.0E-4f) {
@@ -958,7 +1225,8 @@ public final class LayerBufferManager {
                         layerBufferCell.fadeFrameCount++;
                     }
                     layerBufferCell.screenDstRect.a(i5 + 1, i6 + 1, (i5 + this.cellBufferPixelSize) - 2, (i6 + this.cellBufferPixelSize) - 2);
-                    if (layerBufferCell.screenDstRect.a <= f6 && layerBufferCell.screenDstRect.b <= f7) {
+                    if (layerBufferCell.screenDstRect.a <= f6 && layerBufferCell.screenDstRect.b <= f7
+                            && layerBufferCell.screenDstRect.c >= 0 && layerBufferCell.screenDstRect.d >= 0) {
                         if (layerBufferCell.screenDstRect.c > f6) {
                             layerBufferCell.screenDstRect.c = (int) f6;
                         }
@@ -1098,6 +1366,9 @@ public final class LayerBufferManager {
                                 gameEngine.renderGraphicsEngine.a(layerBufferCell.cellLayerTexture, layerBufferCell.tileSrcRect, layerBufferCell.screenDstRectF, this.copyBlitPaint);
                             }
                         }
+                    } else {
+                        // A cached cell wholly left or above the viewport is not visible either.
+                        layerBufferCell.screenDstRect.a(0, 0, 0, 0);
                     }
                 }
             } finally {
@@ -1112,6 +1383,44 @@ public final class LayerBufferManager {
         }
         if (!z) {
             this.useFogBlitComposite = false;
+        }
+    }
+
+    /** Display-only clock, with the legacy stability / refresh counts expressed at 60 Hz. */
+    static final class ZoomCacheCadence {
+        static final long STABLE_NANOS = 50_000_000L;
+        private boolean sampled;
+        private long previousNanos;
+        private long stableNanos;
+        private long refreshNanos;
+
+        void reset() {
+            sampled = false;
+            stableNanos = 0;
+            refreshNanos = 0;
+        }
+
+        boolean shouldRefresh(long now, boolean referenceStable, boolean differenceQualifies, int refreshFrames) {
+            long elapsed = sampled ? now - previousNanos : 0;
+            previousNanos = now;
+            sampled = true;
+            if (elapsed < 0 || !referenceStable) {
+                stableNanos = 0;
+                refreshNanos = 0;
+                return false;
+            }
+            long stablePart = Math.min(elapsed, STABLE_NANOS - stableNanos);
+            stableNanos += stablePart;
+            if (stableNanos < STABLE_NANOS) return false;
+            if (differenceQualifies) {
+                long refreshPart = elapsed - stablePart;
+                refreshNanos = refreshPart > Long.MAX_VALUE - refreshNanos
+                        ? Long.MAX_VALUE : refreshNanos + refreshPart;
+            }
+            long threshold = (refreshFrames * 1_000_000_000L + 59L) / 60L;
+            if (refreshNanos <= threshold) return false;
+            reset();
+            return true;
         }
     }
 }

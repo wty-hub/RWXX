@@ -57,6 +57,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/game/i.class */
 public class GameLogic extends GameEngine {
 
+    private static final boolean FORCE_LEGACY_RELOAD_GC =
+            "1".equals(System.getenv("RWX_FORCE_LEGACY_RELOAD_GC"));
+
     /* JADX INFO: renamed from: a */
     public static String gameVersionName;
 
@@ -612,6 +615,11 @@ public class GameLogic extends GameEngine {
     @Override // com.corrodinggames.rts.gameFramework.GameEngine
     /* JADX INFO: renamed from: a */
     public void loadLevel(boolean z, boolean z2, GameMode gameMode) {
+        // z2 preserves the replay and display state during a save/network resync. The map and
+        // mutable simulation state are still fully reloaded below; only eager collection differs.
+        final boolean eagerLevelGc = !z2 || FORCE_LEGACY_RELOAD_GC
+                || this.renderGraphicsEngine == null
+                || this.renderGraphicsEngine.requestsEagerGcOnLevelReload();
         beginLoadingStatus("Loading map data", 8);
         loadLevel("Loading map data");
         InGameMenuController surfaceHolder;
@@ -623,7 +631,9 @@ public class GameLogic extends GameEngine {
         resetGame(z2);
         PlayerTeam.syncAllTeamUnitCaps();
         this.isGameRecording = false;
-        System.gc();
+        if (eagerLevelGc) {
+            System.gc();
+        }
         this.fullReload = true;
         this.hasLoadedLevel = false;
         this.isShowingDialog = false;
@@ -952,8 +962,10 @@ public class GameLogic extends GameEngine {
                 this.settingsEngine.hasPlayedGameOrSeenHelp = true;
                 this.settingsEngine.save();
             }
-            for (int i12 = 0; i12 < 5; i12++) {
-                System.gc();
+            if (eagerLevelGc) {
+                for (int i12 = 0; i12 < 5; i12++) {
+                    System.gc();
+                }
             }
             if (!GameEngine.isNonAndroidVersion) {
                 Log.a("RustedWarfare", "getNativeHeapSize" + String.valueOf(Debug.getNativeHeapSize()));
@@ -1576,6 +1588,7 @@ public class GameLogic extends GameEngine {
             this.teamStats.update();
         }
         this.gameStatistics.b();
+        this.replayEngine.updateRealtimeFog(this);
         if (io.github.rwx.diagnostics.GameStateTrace.enabled) {
             io.github.rwx.diagnostics.GameStateTrace.onTickEnd(this);
         }

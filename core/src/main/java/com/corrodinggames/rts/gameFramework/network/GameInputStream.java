@@ -97,6 +97,11 @@ public class GameInputStream {
         return this.currentDataInput.readByte();
     }
 
+    /** Reads exactly this range from the current block, including fragmented input. */
+    public void readBytesRaw(byte[] bytes, int offset, int length) throws IOException {
+        this.currentDataInput.readFully(bytes, offset, length);
+    }
+
     /* JADX INFO: renamed from: e */
     public boolean readBoolean() throws IOException {
         return this.currentDataInput.readBoolean();

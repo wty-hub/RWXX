@@ -46,6 +46,12 @@ interface GraphicsEngine {
 
     fun backendCapabilities(): GraphicsBackendCapabilities = GraphicsBackendCapabilities()
 
+    /** Layer buffers may render into their owned cell target instead of a shared scratch target. */
+    fun prefersDirectLayerBufferRendering(): Boolean = false
+
+    /** Legacy backends may rely on eager collection when replacing a loaded level's resources. */
+    fun requestsEagerGcOnLevelReload(): Boolean = true
+
     fun supportsShaderEffects(): Boolean = false
 
     fun supportsPostProcessing(): Boolean = supportsShaderEffects()

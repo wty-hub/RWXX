@@ -6,9 +6,14 @@ import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.useRaw
 import io.github.rwx.logger
 import java.nio.ByteOrder
+import java.lang.management.ManagementFactory
+import java.util.IdentityHashMap
 
 private const val COMPLETE_SLICK_FRAME_TEXTURE_ID = "slick-complete-frame"
 private const val CPU_TEXTURE_PROFILE_INTERVAL = 120
+private val argbPackCpuClock = if (CanvasRenderStageTrace.enabled) ManagementFactory.getThreadMXBean().takeIf {
+    it.isCurrentThreadCpuTimeSupported && it.isThreadCpuTimeEnabled
+} else null
 
 @JvmInline
 value class KoolCanvasTextureId(val value: String)
@@ -98,7 +103,40 @@ object KoolCanvasTextureRegistry :
     private val registeredFrames = mutableMapOf<KoolCanvasTextureId, KoolCanvasFrame>()
     private val argbTextures = mutableMapOf<Pair<KoolCanvasTextureId, KoolCanvasTextureFilter>, Texture2d>()
     private val argbTextureUploadSlots = mutableMapOf<Pair<KoolCanvasTextureId, KoolCanvasTextureFilter>, Int>()
-    private val opaqueUploadBuffers = mutableMapOf<Pair<KoolCanvasTextureId, KoolCanvasTextureFilter>, Array<Uint8Buffer?>>()
+    private class ArgbUploadBuffers(val contextGeneration: Long) : AutoCloseable {
+        val slots = arrayOfNulls<KoolCanvasUploadBufferPool.BufferOwner>(2)
+        val displaced = ArrayList<KoolCanvasUploadBufferPool.BufferOwner>()
+
+        override fun close() {
+            slots.forEach { it?.close() }
+            slots.fill(null)
+            displaced.forEach { it.close() }
+            displaced.clear()
+        }
+
+        fun discard() {
+            slots.forEach { it?.discard() }
+            slots.fill(null)
+            displaced.forEach { it.discard() }
+            displaced.clear()
+        }
+    }
+    private val uploadBufferPool = KoolCanvasUploadBufferPool()
+    private var contextGeneration = 0L
+    private var nativeBgraUploads = false
+    val nativeBgraUploadsEnabled: Boolean
+        @Synchronized get() = nativeBgraUploads
+
+    /** Called by the actual backend at context creation/destruction, never during a live frame. */
+    @Synchronized
+    fun configureNativeBgraUploads(enabled: Boolean) {
+        if (nativeBgraUploads == enabled) return
+        // Layout is part of the GPU payload identity. Retain CPU sources, discard old-context slots.
+        invalidateContextResources()
+        nativeBgraUploads = enabled
+    }
+    private val opaqueUploadBuffers = mutableMapOf<Pair<KoolCanvasTextureId, KoolCanvasTextureFilter>, ArgbUploadBuffers>()
+    private val argbUploadOwners = IdentityHashMap<Texture2d, ArgbUploadBuffers>()
     private val completeFrameArgbBuffers = arrayOfNulls<IntArray>(2)
     private var completeFrameArgbSlot = -1
     private val argbTextureOwnerSerials = mutableMapOf<Pair<KoolCanvasTextureId, KoolCanvasTextureFilter>, Long>()
@@ -121,6 +159,21 @@ object KoolCanvasTextureRegistry :
     fun setCompleteFramePixelPacker(packer: KoolCanvasOpaquePixelPacker?) {
         opaquePixelPacker = packer
     }
+
+    /** A read-only snapshot for opt-in shutdown diagnostics, without touching render-owned caches. */
+    fun uploadBufferPoolDiagnostics(): String {
+        val stats = uploadBufferPool.stats()
+        return "enabled=${stats.enabled} idleCapacityBytes=${stats.idleCapacityBytes} " +
+            "maxBuffersPerSize=${stats.maxBuffersPerSize} retainedBytes=${stats.retainedBytes} " +
+            "retainedBuffers=${stats.retainedBuffers} activeBuffers=${stats.activeBuffers} " +
+            "allocations=${stats.allocations} misses=${stats.misses} reusedBuffers=${stats.reusedBuffers} " +
+            "preallocatedBuffers=${stats.preallocatedBuffers}"
+    }
+
+    internal fun uploadBufferPoolStats() = uploadBufferPool.stats()
+
+    /** Trim idle native storage without reading or releasing any render-owned texture. */
+    fun clearIdleUploadBufferPool() { uploadBufferPool.clear() }
 
     override val frameTextureRevision: Int
         @Synchronized get() = frameTextureRevisionValue
@@ -309,6 +362,12 @@ object KoolCanvasTextureRegistry :
      */
     @Synchronized
     override fun invalidateContextResources() {
+        // The old context owns its textures. Drop upload owners without recycling any storage
+        // which that context could still read; a late retirement callback cannot refill this pool.
+        contextGeneration++
+        uploadBufferPool.clear()
+        opaqueUploadBuffers.values.forEach { it.discard() }
+        argbUploadOwners.clear()
         registeredTextures.clear()
         argbTextures.clear()
         argbTextureUploadSlots.clear()
@@ -369,7 +428,7 @@ object KoolCanvasTextureRegistry :
                 mipMapping = MipMapping.Off,
                 samplerSettings = samplerSettings(filter),
                 name = "rwx-canvas-argb-${id.value}-$filter-$ownerSerial",
-            )
+            ).also { texture -> argbUploadOwners[texture] = checkNotNull(opaqueUploadBuffers[key]) }
         }
     }
 
@@ -419,10 +478,57 @@ object KoolCanvasTextureRegistry :
     }
 
     private fun releaseCachedArgbTextures(id: KoolCanvasTextureId) {
-        releaseCachedTextures(argbTextures, id)
+        val retiring = ArrayList<Pair<Texture2d, ArgbUploadBuffers?>>()
+        val iterator = argbTextures.iterator()
+        while (iterator.hasNext()) {
+            val (key, texture) = iterator.next()
+            if (key.first == id) {
+                val buffers = argbUploadOwners.remove(texture) ?: opaqueUploadBuffers[key]
+                opaqueUploadBuffers.remove(key)
+                retiring.add(texture to buffers)
+                iterator.remove()
+            }
+        }
         argbTextureUploadSlots.keys.removeAll { it.first == id }
-        opaqueUploadBuffers.keys.removeAll { it.first == id }
+        // A failed data-only Texture2d construction may leave slots without a texture reader.
+        val orphaned = opaqueUploadBuffers.iterator()
+        while (orphaned.hasNext()) {
+            val entry = orphaned.next()
+            if (entry.key.first == id) {
+                if (KoolCanvasGpuRetirement.hasRetirementSink) entry.value.close() else entry.value.discard()
+                orphaned.remove()
+            }
+        }
         argbTextureOwnerSerials.keys.removeAll { it.first == id }
+        // A completed Vulkan fence can synchronously drain other texture retirements here.
+        // Detach all old entries and metadata first; callbacks may even register this id anew.
+        retiring.forEach { (texture, buffers) -> retireArgbTexture(texture, buffers) }
+    }
+
+    private fun retireArgbTexture(texture: Texture2d, buffers: ArgbUploadBuffers?) {
+        if (!KoolCanvasGpuRetirement.hasRetirementSink) {
+            // Keep the original scene-frame retirement policy on backends without a completion
+            // fence. A loader may already hold uploadData locally, so its raw memory is never lent.
+            texture.retireTexture()
+            buffers?.discard()
+            return
+        }
+        val generation = buffers?.contextGeneration ?: contextGeneration
+        KoolCanvasGpuRetirement.retire {
+            synchronized(this) {
+                try {
+                    if (generation == contextGeneration) {
+                        // Data-only textures have no async provider which can repopulate uploadData.
+                        // Clearing a still-pending payload prevents any later uploader from reading
+                        // host memory after it has been returned to the pool.
+                        texture.uploadData = null
+                        if (!texture.isReleased) texture.release()
+                    }
+                } finally {
+                    buffers?.close()
+                }
+            }
+        }
     }
 
     private fun releaseCachedAssetTextures(id: KoolCanvasTextureId) {
@@ -444,8 +550,9 @@ object KoolCanvasTextureRegistry :
     }
 
     private fun refreshCachedArgbTextures(id: KoolCanvasTextureId, image: KoolCanvasArgbImage) {
-        argbTextures.forEach { (key, texture) ->
-            if (key.first == id && !texture.isReleased) {
+        val updating = argbTextures.entries.filter { it.key.first == id }.map { it.key to it.value }
+        updating.forEach { (key, texture) ->
+            if (argbTextures[key] === texture && !texture.isReleased && registeredArgbImages[id] === image) {
                 val currentSlot = argbTextureUploadSlots[key] ?: 0
                 val uploadSlot = if (texture.uploadData == null) 1 - currentSlot else currentSlot
                 val ownerSerial = checkNotNull(argbTextureOwnerSerials[key])
@@ -456,7 +563,28 @@ object KoolCanvasTextureRegistry :
                         reusableOpaqueUploadBuffer(key, uploadSlot, image.width, image.height),
                     )
                 )
+                // Resizing a slot can displace a buffer referenced by the previous uploadData.
+                // Only after replacing that payload may those old slots begin fence retirement.
+                retireDisplacedUploadBuffers(checkNotNull(opaqueUploadBuffers[key]))
             }
+        }
+    }
+
+    private fun retireDisplacedUploadBuffers(buffers: ArgbUploadBuffers) {
+        if (buffers.displaced.isEmpty()) return
+        val displaced = buffers.displaced.toList()
+        buffers.displaced.clear()
+        if (!KoolCanvasGpuRetirement.hasRetirementSink) {
+            displaced.forEach { it.discard() }
+            return
+        }
+        try {
+            KoolCanvasGpuRetirement.retire { displaced.forEach { it.close() } }
+        } catch (failure: Throwable) {
+            // Rejection cannot make these buffers reusable. Preserve them alongside any slots
+            // displaced by a reentrant resize; a later texture retirement may close them safely.
+            buffers.displaced.addAll(displaced)
+            throw failure
         }
     }
 
@@ -506,14 +634,24 @@ object KoolCanvasTextureRegistry :
         argbPixels: IntArray,
         reusableBuffer: Uint8Buffer? = null,
     ): ImageData2d {
+        val packStart = CanvasRenderStageTrace.start()
+        val packCpuStart = argbPackCpuClock?.currentThreadCpuTime ?: -1L
         val pixelCount = width * height
         val pixels = reusableBuffer ?: Uint8Buffer(pixelCount * 4)
+        val bgra = nativeBgraUploads && id.value != COMPLETE_SLICK_FRAME_TEXTURE_ID
         val packer = opaquePixelPacker?.takeIf { id.value == COMPLETE_SLICK_FRAME_TEXTURE_ID }
-        if (packer != null) {
+        if (bgra) {
+            packArgbPixelsToBgra(pixels, argbPixels, pixelCount)
+        } else if (packer != null) {
             packer.pack(pixels, argbPixels, pixelCount)
         } else {
             packArgbPixelsToRgba(pixels, argbPixels, pixelCount)
         }
+        CanvasRenderStageTrace.record("argb-pack", packStart, pixelCount.toLong() * 4, width.toLong(), height.toLong())
+        if (packCpuStart >= 0L) CanvasRenderStageTrace.record("argb-pack-work", packStart, pixelCount.toLong(),
+            argbPackCpuClock!!.currentThreadCpuTime - packCpuStart, if (bgra) 2 else 0)
+        if (bgra) return KoolCanvasBgraImageData(pixels, width, height,
+            "rwx-canvas-bgra-${id.value}-$filter-$ownerSerial-$uploadSlot")
         return BufferedImageData2d(
             data = pixels,
             width = width,
@@ -538,10 +676,14 @@ object KoolCanvasTextureRegistry :
         width: Int,
         height: Int,
     ): Uint8Buffer {
-        val byteCount = width * height * 4
-        val buffers = opaqueUploadBuffers.getOrPut(key) { arrayOfNulls(2) }
-        return buffers[slot]?.takeIf { it.capacity == byteCount }
-            ?: Uint8Buffer(byteCount).also { buffers[slot] = it }
+        val byteCount = Math.toIntExact(Math.multiplyExact(width.toLong() * height, 4L))
+        require(byteCount > 0) { "Invalid RGBA upload size" }
+        val buffers = opaqueUploadBuffers.getOrPut(key) { ArgbUploadBuffers(contextGeneration) }
+        buffers.slots[slot]?.takeIf { it.buffer.capacity == byteCount }?.let { return it.buffer }
+        val next = uploadBufferPool.borrow(byteCount)
+        buffers.slots[slot]?.let { buffers.displaced.add(it) }
+        buffers.slots[slot] = next
+        return next.buffer
     }
 
     internal fun bleedTransparentRgb(width: Int, height: Int, argbPixels: IntArray): IntArray {
@@ -625,6 +767,43 @@ internal fun packArgbPixelsToRgba(destination: Uint8Buffer, sourceArgb: IntArray
     }
 }
 
+/** ARGB words copied in little-endian order already have the BGRA layout Vulkan can sample. */
+internal fun packArgbPixelsToBgra(destination: Uint8Buffer, sourceArgb: IntArray, pixelCount: Int) {
+    destination.useRaw { bytes ->
+        val bgra = bytes.order(ByteOrder.LITTLE_ENDIAN).asIntBuffer()
+        val available = minOf(pixelCount, sourceArgb.size).coerceAtLeast(0)
+        bgra.put(sourceArgb, 0, available)
+        var remaining = (pixelCount - available).coerceAtLeast(0)
+        while (remaining > 0) {
+            val count = minOf(remaining, transparentBgraPixels.size)
+            bgra.put(transparentBgraPixels, 0, count)
+            remaining -= count
+        }
+    }
+}
+
+private val transparentBgraPixels = IntArray(16_384)
+
+/**
+ * A backend-private upload layout marker. Logical pixels remain RGBA; only the Vulkan loader
+ * accepts this payload and chooses B8G8R8A8_UNORM. Ordinary assets and OpenGL use RGBA buffers.
+ */
+class KoolCanvasBgraImageData(
+    val data: Uint8Buffer,
+    override val width: Int,
+    override val height: Int,
+    override val id: String,
+) : ImageData2d {
+    override val format: TexFormat = TexFormat.RGBA
+    init {
+        require(width > 0 && height > 0) { "BGRA image dimensions must be positive" }
+        val pixelCount = width.toLong() * height
+        require(pixelCount <= Int.MAX_VALUE / 4L && data.capacity.toLong() == pixelCount * 4L) {
+            "BGRA image payload must contain exactly four bytes per pixel"
+        }
+    }
+}
+
 
 data class KoolCanvasArgbImage(
     val width: Int,
@@ -635,6 +814,13 @@ data class KoolCanvasArgbImage(
     fun copyPixels(): KoolCanvasArgbImage = copy(pixels = pixels.copyOf())
 }
 
+/** Explicit recording-store identity; pixel revision ids remain independent immutable GPU owners. */
+@ConsistentCopyVisibility
+data class KoolCanvasFrozenPixelIdentity internal constructor(
+    val recordingOwnerId: Long,
+    val logicalTextureId: KoolCanvasTextureId,
+)
+
 data class KoolCanvasTextureRef(
     val id: KoolCanvasTextureId,
     val width: Int,
@@ -642,6 +828,7 @@ data class KoolCanvasTextureRef(
     val hasAlpha: Boolean = false,
     val requiresOrderedAlpha: Boolean = false,
     val premultipliedAlpha: Boolean = false,
+    val frozenPixelIdentity: KoolCanvasFrozenPixelIdentity? = null,
 ) {
     init {
         require(width >= 0) { "Texture width must be non-negative" }

@@ -1,5 +1,9 @@
 # 桌面端卡顿优化说明
 
+2026 年 10 月 4 日的 Windows 快速拖图、内存池、文字网格及等待策略记录见
+[Windows 快速拖图优化实现记录](windows-map-pan-optimization.md)。本文保留较早的测试数据与架构演进；
+涉及游戏循环内联于 Kool 回调的描述属于历史阶段，当前使用独立引擎所有者线程。
+
 本文记录 RWXX Linux 桌面端从「选中圈卡、操作不跟手」到「约 2000 单位仍能稳住 60fps」的改动。目标是：**只改显示和平台层，仿真与原版铁锈 bit-exact，可以联机。**
 
 约束见 `.cursor/rules/rw-compatibility.mdc`：不改确定性仿真、网络包、存档/回放、地图模组解析结果、校验和、游戏规则。`core/src/main/java/com/corrodinggames/rts/**` 里凡走逻辑路径的行为必须与 `/home/wty/code/TuanHun/铁锈代码` 一致。性能工作放在显示与平台层（`desktop/.../kool` 与纯显示代码）。旧的 `desktop/.../slick` 与 `slick2d-lwjgl3` 已删除，见第 11 节；下文提到它们的段落是当时的实测记录。
@@ -322,6 +326,9 @@ CPU 光栅化 + 上传。把它们改成 Kool 的 frame-backed 目标（`DEFAULT
 11.4 的定位就是靠它把 200ms 从 present/遮挡的怀疑里摘出来的。
 
 ### 11.6 已知风险：游戏循环与 present 耦合
+
+本节记录拆分前的历史风险。当前已完成引擎与呈现分离，见
+[原版引擎与 Vulkan 渲染分离](vulkan-engine-separation.md)；下文“仍未做的部分”仅描述当时状态。
 
 Kool 桌面路径把 gameLoop 内联在渲染回调里（`KoolDesktopGameSession.updateFrame` ← Kool
 `onRender`），并且 Kool 的 swapchain 用无限超时等待（`vkWaitForFences(..., -1)`、

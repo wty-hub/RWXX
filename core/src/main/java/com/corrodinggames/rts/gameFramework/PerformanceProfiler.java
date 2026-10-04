@@ -3,6 +3,7 @@ package com.corrodinggames.rts.gameFramework;
 import com.corrodinggames.rts.game.units.custom.logicBooleans.VariableScope;
 import io.github.rwx.geometry.Rect;
 import io.github.rwx.render.canvas.KoolPaint;
+import io.github.rwx.render.canvas.CanvasStageTrace;
 
 /* JADX INFO: renamed from: com.corrodinggames.rts.gameFramework.br */
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/gameFramework/br.class */
@@ -45,6 +46,8 @@ public final class PerformanceProfiler {
 
     private long updateStartNanos;
     private long drawStartNanos;
+    private static final CanvasStageTrace sectionTrace = CanvasStageTrace.Companion.fromEnvironment("RWX_ENGINE_SECTION_TRACE");
+    private final long[] sectionStarts = sectionTrace.getEnabled() ? new long[ProfilerSection.values().length] : null;
 
     /** Nanoseconds spent in the update and draw sections since the last {@link #takeFrameTimings()}. */
     public long updateNanos;
@@ -53,6 +56,9 @@ public final class PerformanceProfiler {
     public final void a(ProfilerSection profilerSection) {
         if (!frameTimingEnabled) {
             return;
+        }
+        if (sectionStarts != null) {
+            sectionStarts[profilerSection.ordinal()] = System.nanoTime();
         }
         if (profilerSection == ProfilerSection.update) {
             this.updateStartNanos = System.nanoTime();
@@ -64,6 +70,16 @@ public final class PerformanceProfiler {
     public final void b(ProfilerSection profilerSection) {
         if (!frameTimingEnabled) {
             return;
+        }
+        if (sectionStarts != null) {
+            int index = profilerSection.ordinal();
+            long start = sectionStarts[index];
+            sectionStarts[index] = 0;
+            long end = System.nanoTime();
+            // Keep the trace small and leave ordinary gameplay entirely uninstrumented.
+            if (start != 0 && end - start >= 2_000_000L) {
+                sectionTrace.recordCompleted(profilerSection.name(), start, end, -1L, -1L, -1L);
+            }
         }
         if (profilerSection == ProfilerSection.update && this.updateStartNanos != 0) {
             this.updateNanos += System.nanoTime() - this.updateStartNanos;

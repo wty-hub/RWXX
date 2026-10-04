@@ -10,6 +10,9 @@ internal class EngineOwnerLoop(
     private val periodNanos: () -> Long,
     private val tick: (Float) -> Unit,
     private val onFailure: (Throwable) -> Unit,
+    private val legacyPacing: Boolean = System.getenv("RWX_LEGACY_OWNER_PACING") == "1",
+    private val legacyShortOwnerPark: Boolean = System.getenv("RWX_GUARD_SHORT_OWNER_PARK") != "1" ||
+        System.getenv("RWX_LEGACY_SHORT_OWNER_PARK") == "1",
 ) : AutoCloseable {
     private data class InputTransition(val identity: String, val down: Boolean)
     private data class Task(val transition: InputTransition?, val execute: () -> Unit)
@@ -51,8 +54,13 @@ internal class EngineOwnerLoop(
     }
 
     private fun run() {
+        if (System.getenv("RWX_FRAME_METRICS") != null || System.getenv("RWX_ENGINE_FRAME_TRACE") != null) {
+            println("RWXOwnerPacing hybrid=${!legacyPacing} spinBudgetNanos=$SPIN_BUDGET_NANOS maxHybridPeriodNanos=$MAX_HYBRID_PERIOD_NANOS " +
+                "shortParkGuard=${!legacyPacing && !legacyShortOwnerPark} minCoarseParkNanos=$MIN_COARSE_PARK_NANOS")
+        }
         var previous = System.nanoTime()
         var deadline = previous
+        var pacingPeriod = Long.MAX_VALUE
         val inputStates = mutableMapOf<String, Boolean>()
         val transitionsObserved = mutableSetOf<String>()
         while (running.get() || tasks.isNotEmpty()) {
@@ -71,13 +79,24 @@ internal class EngineOwnerLoop(
             if (!running.get()) break
             val now = System.nanoTime()
             if (resetClock) { previous = now; deadline = now; resetClock = false }
-            if (now < deadline) { LockSupport.parkNanos(this, deadline - now); continue }
+            if (now < deadline) {
+                val remaining = deadline - now
+                if (!legacyPacing && pacingPeriod <= MAX_HYBRID_PERIOD_NANOS) {
+                    // Return to the outer loop after every wait so input, reset and close remain responsive.
+                    val coarsePark = remaining - SPIN_BUDGET_NANOS
+                    // A tiny coarse request can still oversleep by a Windows timer tick.
+                    if (coarsePark <= 0L || !legacyShortOwnerPark && coarsePark < MIN_COARSE_PARK_NANOS) Thread.onSpinWait()
+                    else LockSupport.parkNanos(this, coarsePark)
+                } else LockSupport.parkNanos(this, remaining)
+                continue
+            }
             val delta = ((now - previous).coerceAtLeast(0L) / 1_000_000_000.0).toFloat()
             previous = now
             try { tick(delta) } catch (error: Throwable) { onFailure(error) }
             transitionsObserved.clear()
             // This is the original outer throttle, not a fixed simulation accumulator.
-            deadline = now + periodNanos().coerceAtLeast(1L)
+            pacingPeriod = periodNanos().coerceAtLeast(1L)
+            deadline = now + pacingPeriod
         }
     }
 
@@ -85,5 +104,11 @@ internal class EngineOwnerLoop(
         synchronized(queueGate) { running.set(false) }
         LockSupport.unpark(thread)
         if (!isOwner) thread.join(5000)
+    }
+
+    private companion object {
+        const val SPIN_BUDGET_NANOS = 1_500_000L
+        const val MIN_COARSE_PARK_NANOS = 1_500_000L
+        const val MAX_HYBRID_PERIOD_NANOS = 3_333_333L
     }
 }

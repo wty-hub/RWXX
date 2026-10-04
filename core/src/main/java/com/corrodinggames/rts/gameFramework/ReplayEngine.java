@@ -4,6 +4,8 @@ import com.corrodinggames.rts.game.PlayerTeam;
 import com.corrodinggames.rts.game.ai.AIController;
 import com.corrodinggames.rts.game.units.EditorOrBuilder;
 import com.corrodinggames.rts.game.units.OrderableUnit;
+import com.corrodinggames.rts.game.units.BaseUnit;
+import com.corrodinggames.rts.game.units.custom.CustomUnit;
 import com.corrodinggames.rts.game.units.actions.AbstractUnitAction;
 import com.corrodinggames.rts.game.units.custom.logicBooleans.VariableScope;
 import com.corrodinggames.rts.game.units.custom.price.UnitPrice;
@@ -14,6 +16,10 @@ import java.io.*;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Arrays;
+import java.util.IdentityHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 /* JADX INFO: renamed from: com.corrodinggames.rts.gameFramework.ba */
@@ -105,6 +111,98 @@ public class ReplayEngine {
     private final AtomicReference<Integer> pendingSeek = new AtomicReference<>();
     private volatile SeekSession seekSession;
     private boolean restoringSeek;
+    // Presentation only: never serialized into the replay or simulation snapshots.
+    private boolean fogDisplayEnabled;
+    private int fogDisplayTeamId = -1;
+    private final ReplayFogState realtimeFog = new ReplayFogState();
+    private final Map<Long, ReplayFogState.Snapshot> fogCheckpoints = new HashMap<>();
+    private int fogTick = -1;
+
+    public boolean isFogDisplayEnabled() { return fogDisplayEnabled; }
+    public int getFogDisplayTeamId() { return fogDisplayTeamId; }
+    public byte[][] getFogDisplayData() { return getFogDisplayData(fogDisplayTeamId); }
+    public byte[][] getFogDisplayData(int teamId) { return realtimeFog.get(teamId); }
+
+    public void updateRealtimeFog(GameEngine engine) {
+        if (!fogDisplayEnabled || !j() || engine.tileMap == null || fogTick == engine.currentTick) return;
+        var map = engine.tileMap;
+        if (map.tileCountX <= 0 || map.tileCountY <= 0) return;
+        fogTick = engine.currentTick;
+        byte[][] previous = ReplayFogState.copy(getFogDisplayData());
+        boolean revealed = engine.networkEngine != null && engine.networkEngine.roomSettings.revealedMap;
+        realtimeFog.configure(map.tileCountX, map.tileCountY, revealed);
+        List<PlayerTeam> teams = getFogDisplayTeams();
+        for (PlayerTeam team : teams) realtimeFog.ensureTeam(team.teamId);
+        boolean refog = engine.networkEngine == null || engine.networkEngine.roomSettings.fogMode != 1;
+        realtimeFog.beginFrame(refog);
+        Map<PlayerTeam, int[]> visionRecipients = new IdentityHashMap<>();
+        for (BaseUnit base : BaseUnit.getGlobalUnitList()) {
+            if (!(base instanceof OrderableUnit unit) || unit.isDead || unit.isDestroyed
+                    || unit.transportContainer != null || unit.parentEntity != null || unit.team == null) continue;
+            int radius = unit.s();
+            if (unit instanceof CustomUnit custom && custom.buildProgress < 1
+                    && custom.unitConfig.fogOfWarSightRangeWhileNotBuilt != -1) {
+                radius = custom.unitConfig.fogOfWarSightRangeWhileNotBuilt;
+            }
+            if (radius <= 0) continue;
+            int[] recipients = visionRecipients.computeIfAbsent(unit.team, owner -> {
+                int[] ids = new int[teams.size()];
+                int count = 0;
+                for (PlayerTeam team : teams) if (team == owner || team.d(owner)) ids[count++] = team.teamId;
+                return Arrays.copyOf(ids, count);
+            });
+            realtimeFog.revealAll(recipients, unit.posX * map.tileScaleX, unit.posY * map.tileScaleY, radius);
+        }
+        map.updateRealtimeFogDisplay(previous, getFogDisplayData());
+    }
+
+    public static boolean isFogDisplayCandidate(PlayerTeam team) {
+        // isTeamSpectator is a legacy misnomer: AIController sets it as well.
+        // The actual spectator slot is represented by teamColorId == -3.
+        return team != null && team.teamId >= 0 && !team.isSpectatorTeamColor();
+    }
+
+    public List<PlayerTeam> getFogDisplayTeams() {
+        List<PlayerTeam> teams = new ArrayList<>();
+        for (int slot = 0; slot < PlayerTeam.TEAM_NEUTRAL; slot++) {
+            PlayerTeam team = PlayerTeam.k(slot);
+            if (isFogDisplayCandidate(team)) teams.add(team);
+        }
+        return teams;
+    }
+
+    public PlayerTeam getFogDisplayTeam() {
+        PlayerTeam team = fogDisplayTeamId < 0 ? null : PlayerTeam.k(fogDisplayTeamId);
+        return isFogDisplayCandidate(team) ? team : null;
+    }
+
+    public void setFogDisplayEnabled(boolean enabled) {
+        if (!j() || isSeeking()) return;
+        if (enabled && getFogDisplayTeam() == null) {
+            List<PlayerTeam> teams = getFogDisplayTeams();
+            if (teams.isEmpty()) return;
+            fogDisplayTeamId = teams.get(0).teamId;
+        }
+        boolean newlyEnabled = enabled && !fogDisplayEnabled;
+        fogDisplayEnabled = enabled;
+        if (newlyEnabled) {
+            fogTick = -1;
+            GameEngine engine = GameEngine.getInstance();
+            if (engine != null) updateRealtimeFog(engine);
+        }
+        refreshFogDisplay();
+    }
+
+    public void setFogDisplayTeamId(int teamId) {
+        if (!j() || isSeeking() || !isFogDisplayCandidate(PlayerTeam.k(teamId))) return;
+        fogDisplayTeamId = teamId;
+        refreshFogDisplay();
+    }
+
+    private void refreshFogDisplay() {
+        GameEngine engine = GameEngine.getInstance();
+        if (engine != null && engine.tileMap != null) engine.tileMap.invalidateFogDisplay();
+    }
     private int initialTimeMillis;
     // Only checkpoints whose enclosing simulation step was observed are safe shortcuts. A
     // resync can change the step rate, so its saved new rate cannot reconstruct the preceding step.
@@ -203,6 +301,7 @@ public class ReplayEngine {
         engine.gameUI.clearSelection();
         engine.gameUI.clearCurrentAction();
         seekSession = null;
+        refreshFogDisplay();
         if (engine.hasWonGame || engine.hasLostGame) engine.gameUI.endGameScreen.loadStats();
     }
 
@@ -215,6 +314,7 @@ public class ReplayEngine {
         for (ReplayTimelineIndex.Checkpoint candidate : index.checkpoints) {
             if (candidate.timeMillis() <= session.target
                     && observedSteps.containsKey(resyncKey(candidate.tick(), candidate.timeMillis()))
+                    && (!fogDisplayEnabled || fogCheckpoints.containsKey(resyncKey(candidate.tick(), candidate.timeMillis())))
                     && (checkpoint == null || candidate.timeMillis() >= checkpoint.timeMillis())) checkpoint = candidate;
         }
         restoringSeek = true;
@@ -252,6 +352,9 @@ public class ReplayEngine {
                 // that boundary, including its post-load unit update, rather than loading between ticks.
                 engine.currentTick = checkpoint.issuedTick();
                 engine.gameSpeed = 0;
+                if (fogDisplayEnabled) realtimeFog.restore(fogCheckpoints.get(resyncKey(checkpoint.tick(), checkpoint.timeMillis())));
+                else realtimeFog.reset();
+                fogTick = -1;
                 engine.update(observedSteps.get(resyncKey(checkpoint.tick(), checkpoint.timeMillis())));
                 if (seekError != null) throw new IOException(seekError);
                 engine.gameUI.messageManager.clear();
@@ -467,6 +570,17 @@ public class ReplayEngine {
     /* JADX WARN: Finally extract failed */
     public void e() {
         synchronized (this.M) {
+            realtimeFog.reset();
+            fogTick = -1;
+            if (!restoringSeek) {
+                fogCheckpoints.clear();
+                fogDisplayEnabled = false;
+                fogDisplayTeamId = -1;
+                GameEngine engine = GameEngine.getInstance();
+                if (engine != null && engine.gameUI != null && engine.gameUI.interfaceRenderer != null) {
+                    engine.gameUI.interfaceRenderer.resetReplayPresentationControls();
+                }
+            }
             indexGeneration++;
             if (indexThread != null) indexThread.interrupt();
             indexThread = null;
@@ -692,6 +806,8 @@ public class ReplayEngine {
                 gameEngine.isTriggerDebugMode = true;
             }
             initialTimeMillis = gameEngine.gameTimeMillis;
+            updateRealtimeFog(gameEngine);
+            refreshFogDisplay();
             if (!restoringSeek) startTimelineIndex(file);
             return true;
         } catch (IOException e2) {
@@ -889,6 +1005,10 @@ public class ReplayEngine {
             int i5 = this.gameInputStream.readInt();
             float f2 = this.gameInputStream.readFloat();
             float f3 = this.gameInputStream.readFloat();
+            if (!restoringSeek && fogDisplayEnabled) {
+                if (fogCheckpoints.size() >= 64) fogCheckpoints.clear();
+                fogCheckpoints.put(resyncKey(i4, i5), realtimeFog.snapshot());
+            }
             com.corrodinggames.rts.game.GameLogic logic = (com.corrodinggames.rts.game.GameLogic) gameEngine;
             float enclosingStep = logic.lastDelta / logic.speedMultiplier;
             if (!gameEngine.gameSaver.readSaveFromStream(new GameInputStream(this.gameInputStream.readBytesWithLength()), true, true, true)) {
@@ -906,6 +1026,7 @@ public class ReplayEngine {
             }
             gameEngine.networkEngine.applyChangedSetup(f2, "replay");
             gameEngine.networkEngine.J = f3;
+            refreshFogDisplay();
             this.gameInputStream.d("resync");
             return true;
         }

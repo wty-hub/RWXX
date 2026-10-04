@@ -1,5 +1,8 @@
 # 原版引擎与 Vulkan 渲染分离
 
+2026 年 10 月 4 日保留的地图缓存、像素与上传池、文字网格复用、指针和帧节奏改动见
+[Windows 快速拖图优化实现记录](windows-map-pan-optimization.md)。该记录单独列出本轮验证及实验默认状态。
+
 Kool 桌面后端由唯一的 `RWX-engine-owner` 线程执行完整原版 `gameLoop()`。输入、模拟、HUD 和原版绘制方法都在该线程运行；绘制方法中原有的状态修改与命令创建也保留。Kool 保持 `asyncSceneUpdate=false`，只消费完成的 CPU 画面并提交 GPU。
 
 引擎时钟不取渲染帧的 delta。沿用现有秒到原版时间的换算、上限以及 batterySaving / highRefreshRate 外层节流；没有引入统一固定 60 tick/s。联机、回放的累积器、步长协商、寻路等待和命令执行仍由原版循环处理。未载图的房间也运行外层循环，以处理网络消息。GPU 等待或窗口隐藏不暂停引擎；原版暂停和网络阻塞规则仍有效。

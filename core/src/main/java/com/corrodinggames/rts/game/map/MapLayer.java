@@ -219,7 +219,8 @@ public class MapLayer {
         if (i4 > this.heightTiles - 1) {
             i4 = this.heightTiles - 1;
         }
-        byte[][] bArr = gameEngine.playerTeam.fogOfWarData;
+        byte[][] bArr = tileMap.getFogDisplayData();
+        z = z && tileMap.isFogDisplayEnabled();
         float f9 = f * f7;
         float f10 = f2 * f8;
         float f11 = tileMap.tileWorldSizeX * f7;

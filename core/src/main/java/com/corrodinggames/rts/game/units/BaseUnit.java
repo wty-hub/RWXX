@@ -1430,7 +1430,7 @@ public abstract class BaseUnit extends SizedObject {
         if (!gameEngine.bufferedVisibleWorldRectF.b(this.posX, this.posY) || this.transportContainer != null) {
             return false;
         }
-        if ((this.attachmentData != null && (this.attachmentData.I || this.attachmentData.C)) || !d(gameEngine.playerTeam)) {
+        if ((this.attachmentData != null && (this.attachmentData.I || this.attachmentData.C)) || !isVisibleToLocalPlayer()) {
             return false;
         }
         return true;
@@ -1442,7 +1442,8 @@ public abstract class BaseUnit extends SizedObject {
 
     /* JADX INFO: renamed from: cf */
     public final boolean isVisibleToLocalPlayer() {
-        return d(GameEngine.getInstance().playerTeam);
+        GameEngine engine = GameEngine.getInstance();
+        return engine.replayEngine.j() || d(engine.playerTeam);
     }
 
     public boolean d(PlayerTeam playerTeam) {

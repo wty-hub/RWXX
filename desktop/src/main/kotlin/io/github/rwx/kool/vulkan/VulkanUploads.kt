@@ -5,6 +5,7 @@ import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.vk.*
 import de.fabmax.kool.util.*
+import io.github.rwx.render.canvas.KoolCanvasBgraImageData
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.util.vma.Vma.vmaFlushAllocation
 import org.lwjgl.vulkan.VK10.*
@@ -20,18 +21,19 @@ object VulkanUploads {
     @JvmStatic
     fun prepareTextures(command: DrawCommand, encoder: PassEncoderState) {
         val pipeline = command.pipeline
-        val groups = listOf(
-            pipeline.capturedPipelineData,
-            command.queue.view.viewPipelineData.getPipelineData(pipeline),
-            command.mesh.meshPipelineData.getPipelineData(pipeline),
-        )
-        groups.forEach { group -> group.bufferedBindings.forEach { binding ->
+        prepareGroupTextures(pipeline.capturedPipelineData, encoder)
+        prepareGroupTextures(command.queue.view.viewPipelineData.getPipelineData(pipeline), encoder)
+        prepareGroupTextures(command.mesh.meshPipelineData.getPipelineData(pipeline), encoder)
+    }
+
+    private fun prepareGroupTextures(group: BindGroupData, encoder: PassEncoderState) {
+        group.bufferedBindings.forEach { binding ->
             if (binding is BindGroupData.TextureBindingData<*>) {
                 binding.texture?.let { texture ->
                     if (texture.uploadData != null) encoder.backend.textureLoader.loadTexture(texture)
                 }
             }
-        } }
+        }
     }
 
     @JvmStatic
@@ -85,8 +87,14 @@ object VulkanUploads {
                 0, null, barriers, null)
         }
         state.bufferUploadBytes += bytes
-        if (startedAt != 0L) state.uploadNanos += System.nanoTime() - startedAt
+        if (startedAt != 0L) {
+            val uploadEnd = System.nanoTime()
+            state.uploadNanos += uploadEnd - startedAt
+            // Keep the trace small: small ordinary buffer transfers are summarized at submission.
+            if (uploadEnd - startedAt >= 1_000_000L) VulkanBackendMetrics.stageEnd("buffer-upload", startedAt, bytes.toLong())
+        }
     }
+
 
     @JvmStatic
     fun loadTexture(
@@ -101,13 +109,15 @@ object VulkanUploads {
         mipMapping: MipMapping,
         flags: Int,
     ): ImageVk {
+        val loadStart = VulkanBackendMetrics.stageStart()
         val levels = when (mipMapping) {
             MipMapping.Full -> numMipLevels(width, height, depth)
             is MipMapping.Limited -> mipMapping.numLevels
             MipMapping.Off -> 1
         }
         val image = ImageVk(loader.backend, ImageInfo(
-            imageType = type, format = vkFormat(data.format), width = width, height = height,
+            imageType = type, format = imageVkFormat(data, type, depth, layers, mipMapping, flags),
+            width = width, height = height,
             depth = depth, arrayLayers = layers, mipLevels = levels, samples = VK_SAMPLE_COUNT_1_BIT,
             usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT or
                 (if (mipMapping.isMipMapped) VK_IMAGE_USAGE_TRANSFER_SRC_BIT else 0),
@@ -126,6 +136,7 @@ object VulkanUploads {
             state.pendingImages.removeAll { it.owner.isReleased || it.image.isReleased }
             state.pendingImages += PendingImageUpload(tex, image, payload, mipMapping.isMipMapped)
         }
+        VulkanBackendMetrics.stageEnd("texture-load", loadStart, bytes.toLong(), width.toLong(), height.toLong())
         return image
     }
 
@@ -142,6 +153,7 @@ object VulkanUploads {
 
     internal fun copyImageData(src: ImageData, target: ByteBuffer) {
         when (src) {
+            is KoolCanvasBgraImageData -> copyBuffer(src.data, src.format, target)
             is BufferedImageData -> copyBuffer(src.data, src.format, target)
             is ImageDataCube -> {
                 listOf(src.posX, src.negX, src.posY, src.negY, src.posZ, src.negZ).forEach { copyImageData(it, target) }
@@ -150,6 +162,24 @@ object VulkanUploads {
             is ImageData2dArray -> src.images.forEach { copyImageData(it, target) }
             else -> error("Unsupported Vulkan image payload ${src::class.simpleName}")
         }
+    }
+
+    internal fun imageVkFormat(
+        data: ImageData,
+        type: Int,
+        depth: Int,
+        layers: Int,
+        mipMapping: MipMapping,
+        flags: Int,
+    ): Int {
+        if (data is KoolCanvasBgraImageData) {
+            require(type == VK_IMAGE_TYPE_2D && depth == 1 && layers == 1 && flags == 0) {
+                "Native BGRA canvas payloads require a plain 2d image"
+            }
+            require(mipMapping == MipMapping.Off) { "Native BGRA canvas payloads cannot generate mipmaps" }
+            return VK_FORMAT_B8G8R8A8_UNORM
+        }
+        return vkFormat(data.format)
     }
 
     private fun copyBuffer(src: Buffer, format: TexFormat, target: ByteBuffer) {

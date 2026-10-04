@@ -25,11 +25,15 @@ class KoolCanvasFrameRenderer(
     private val textureStore: KoolCanvasTextureStore = KoolCanvasTextureRegistry,
     private val renderingFrameTextureIds: MutableSet<KoolCanvasTextureId> = mutableSetOf(),
     private val performanceRates: () -> CanvasFrameRateSample? = CanvasFrameMetrics::snapshot,
+    private val reuseTextMeshes: Boolean = System.getenv("RWX_DISABLE_TEXT_MESH_REUSE") != "1",
 ) {
     private var attachedScene: Scene? = null
     private val primitiveMeshes = linkedMapOf<PrimitiveMeshKey, Mesh<VertexLayouts.PositionNormalColor>>()
     private val usedPrimitiveMeshKeys = mutableSetOf<PrimitiveMeshKey>()
     private val textureMeshes = linkedMapOf<TextureMeshKey, TextureMeshEntry>()
+    private val frameTextureMeshIdentities = mutableMapOf<KoolCanvasTextureId, TextureMeshIdentity>()
+    private val frameFrozenPixelVersionCounts = mutableMapOf<KoolCanvasFrozenPixelIdentity, Int>()
+    private val reuseFrozenPixelMeshes = System.getenv("RWX_DISABLE_FROZEN_PIXEL_MESH_REUSE") != "1"
     private val usedTextureMeshKeys = mutableSetOf<TextureMeshKey>()
     private val instancedTextureMeshes = linkedMapOf<TextureMeshKey, InstancedTextureMeshEntry>()
     private val usedInstancedTextureMeshKeys = mutableSetOf<TextureMeshKey>()
@@ -41,6 +45,25 @@ class KoolCanvasFrameRenderer(
     private val usedDisplacementTextureMeshKeys = mutableSetOf<DisplacementTextureMeshKey>()
     private val textMeshes = linkedMapOf<TextMeshKey, TextMeshEntry>()
     private val usedTextMeshKeys = mutableSetOf<TextMeshKey>()
+    private val textMeshMetricsEnabled = System.getenv("RWX_FRAME_METRICS") != null
+    private var textMeshCreated = 0L
+    private var textMeshExactHits = 0L
+    private var textMeshReused = 0L
+    private var textMeshPruned = 0L
+    private var textMeshScanCandidates = 0L
+    private var textMeshPeak = 0
+
+    internal data class TextMeshCacheSnapshot(
+        val created: Long, val exactHits: Long, val reused: Long, val pruned: Long,
+        val scanCandidates: Long, val live: Int, val peak: Int,
+    )
+
+    internal fun textMeshCacheSnapshot() = TextMeshCacheSnapshot(textMeshCreated, textMeshExactHits,
+        textMeshReused, textMeshPruned, textMeshScanCandidates, textMeshes.size, textMeshPeak)
+
+    init {
+        if (textMeshMetricsEnabled) println("RWXTextMeshReuse enabled=$reuseTextMeshes")
+    }
     private val performanceHudEntries = mutableListOf<Pair<KoolCanvasCommand.DrawText, TextMeshEntry>>()
     private var performanceHudSample: CanvasFrameRateSample? = null
     private var activeBatchIndex = -1
@@ -206,7 +229,7 @@ class KoolCanvasFrameRenderer(
         var texture: Texture2d,
         val mesh: Mesh<VertexLayouts.Position>,
         val shader: KoolCanvasInstancedTextureShader,
-        val batchKey: CanvasBatchKey.Texture,
+        var batchKey: CanvasBatchKey.Texture,
         val instances: MeshInstanceList<KoolCanvasTextureInstanceLayout>,
     )
 
@@ -214,7 +237,7 @@ class KoolCanvasFrameRenderer(
         var texture: Texture2d,
         val mesh: Mesh<VertexLayouts.Position>,
         val shader: KoolCanvasAffineInstancedTextureShader,
-        val batchKey: CanvasBatchKey.AffineTexture,
+        var batchKey: CanvasBatchKey.AffineTexture,
         val instances: MeshInstanceList<KoolCanvasAffineTextureInstanceLayout>,
     )
 
@@ -239,11 +262,16 @@ class KoolCanvasFrameRenderer(
         val layer: PrimitiveMeshLayer,
     )
 
+    private sealed interface TextureMeshIdentity {
+        data class Version(val textureId: KoolCanvasTextureId) : TextureMeshIdentity
+        data class FrozenPixels(val identity: KoolCanvasFrozenPixelIdentity, val frameVersionSlot: Int) : TextureMeshIdentity
+    }
+
     private data class TextureMeshKey(
         val batchIndex: Int?,
         val orderingSegment: Int?,
         val projectionBatchId: Int?,
-        val textureId: KoolCanvasTextureId,
+        val textureIdentity: TextureMeshIdentity,
         val textureFilter: KoolCanvasTextureFilter,
         val renderBlend: CanvasRenderBlend,
         val premultipliedAlpha: Boolean,
@@ -333,12 +361,17 @@ class KoolCanvasFrameRenderer(
     }
 
     fun render(scene: Scene, frame: KoolCanvasFrame) {
+        val prepareStart = CanvasRenderStageTrace.start()
         resetSceneCachesIfNeeded(scene)
+        frameTextureMeshIdentities.clear()
+        frameFrozenPixelVersionCounts.clear()
         performanceHudEntries.clear()
         performanceHudSample = performanceRates()
         renderSequence++
         adaptiveVisuals.prepare(frame)
         spriteAtlas.prepare(frame.commands)
+        CanvasRenderStageTrace.record("canvas-prepare", prepareStart, frame.commands.size.toLong())
+        val resetStart = CanvasRenderStageTrace.start()
         configureCamera(scene, frame.viewport)
         scene.clearColor = ClearColorFill(KoolCanvasColor.Transparent.toKoolColor())
         currentTextureRevision = textureRevisionStore?.textureRevision ?: Int.MIN_VALUE
@@ -428,6 +461,8 @@ class KoolCanvasFrameRenderer(
         currentViewportHalfWidth = viewport.width * 0.5f
         currentViewportHalfHeight = viewport.height * 0.5f
         val commands = frame.commands
+        CanvasRenderStageTrace.record("canvas-reset", resetStart)
+        val commandsStart = CanvasRenderStageTrace.start()
         var commandIndex = 0
         while (commandIndex < commands.size) {
             val command = commands[commandIndex]
@@ -494,6 +529,8 @@ class KoolCanvasFrameRenderer(
             }
             commandIndex++
         }
+        CanvasRenderStageTrace.record("canvas-commands", commandsStart, commands.size.toLong())
+        val finishStart = CanvasRenderStageTrace.start()
         for (mesh in primitiveMeshes.values) {
             mesh.isVisible = !mesh.geometry.isEmpty()
         }
@@ -534,7 +571,10 @@ class KoolCanvasFrameRenderer(
             if (entry.mesh.isVisible) entry.instances.incrementModCount()
         }
         pruneUnusedMeshes(scene)
+        if (textMeshMetricsEnabled) CanvasFrameMetrics.textMeshCache(textMeshCreated, textMeshExactHits,
+            textMeshReused, textMeshPruned, textMeshScanCandidates, textMeshes.size, textMeshPeak)
         (textureStore as? KoolCanvasRetiredTextureReleaser)?.releaseRetiredTextures()
+        CanvasRenderStageTrace.record("canvas-finish", finishStart)
     }
 
     private fun resetSceneCachesIfNeeded(scene: Scene) {
@@ -593,7 +633,9 @@ class KoolCanvasFrameRenderer(
         pruneUnusedMeshMap(scene, affineInstancedTextureMeshes, usedAffineInstancedTextureMeshKeys) { it.mesh }
         pruneUnusedMeshMap(scene, teamColorTextureMeshes, usedTeamColorTextureMeshKeys) { it.mesh }
         pruneUnusedMeshMap(scene, displacementTextureMeshes, usedDisplacementTextureMeshKeys) { it.mesh }
+        val previousTextMeshCount = textMeshes.size
         pruneUnusedMeshMap(scene, textMeshes, usedTextMeshKeys) { it.mesh }
+        textMeshPruned += previousTextMeshCount - textMeshes.size
         pruneUnusedMeshMap(scene, spriteMeshes, usedSpriteMeshKeys) { it.mesh }
         pruneUnusedMeshMap(scene, ringMeshes, usedRingMeshKeys) { it.mesh }
         spriteShaders.keys.removeAll { material -> spriteMeshes.keys.none { it.material == material } }
@@ -849,6 +891,20 @@ class KoolCanvasFrameRenderer(
         return mesh.also { primitiveMeshes[key] = it }
     }
 
+    private fun rememberFrozenPixelMeshIdentity(texture: KoolCanvasTextureRef) {
+        if (!reuseFrozenPixelMeshes) return
+        val identity = texture.frozenPixelIdentity ?: return
+        if (texture.id in frameTextureMeshIdentities) return
+        // A frame can intentionally sample two historical versions of the same logical texture.
+        // They need independent shaders/bindings even though later frames can reuse each slot.
+        val slot = frameFrozenPixelVersionCounts[identity] ?: 0
+        frameFrozenPixelVersionCounts[identity] = slot + 1
+        frameTextureMeshIdentities[texture.id] = TextureMeshIdentity.FrozenPixels(identity, slot)
+    }
+
+    private fun meshTextureIdentity(id: KoolCanvasTextureId): TextureMeshIdentity =
+        frameTextureMeshIdentities.getOrPut(id) { TextureMeshIdentity.Version(id) }
+
     private fun ensureTextureMesh(
         scene: Scene,
         textureId: KoolCanvasTextureId,
@@ -858,6 +914,7 @@ class KoolCanvasFrameRenderer(
         premultipliedAlpha: Boolean,
         ordered: Boolean,
     ): TextureMeshEntry {
+        val textureIdentity = meshTextureIdentity(textureId)
         val batchIndex = batchIndexForTexture(textureId, textureFilter, renderBlend, premultipliedAlpha)
         val keyBatchIndex = batchIndex.takeIf { ordered }
         val keyOrderingSegment = activeOrderingSegment.takeIf { !ordered }
@@ -867,7 +924,7 @@ class KoolCanvasFrameRenderer(
             cachedKey.batchIndex == keyBatchIndex &&
             cachedKey.orderingSegment == keyOrderingSegment &&
             cachedKey.projectionBatchId == keyProjectionBatchId &&
-            cachedKey.textureId == textureId &&
+            cachedKey.textureIdentity == textureIdentity &&
             cachedKey.textureFilter == textureFilter &&
             cachedKey.renderBlend == renderBlend &&
             cachedKey.premultipliedAlpha == premultipliedAlpha
@@ -885,7 +942,7 @@ class KoolCanvasFrameRenderer(
             batchIndex = keyBatchIndex,
             orderingSegment = keyOrderingSegment,
             projectionBatchId = keyProjectionBatchId,
-            textureId = textureId,
+            textureIdentity = textureIdentity,
             textureFilter = textureFilter,
             renderBlend = renderBlend,
             premultipliedAlpha = premultipliedAlpha,
@@ -930,6 +987,7 @@ class KoolCanvasFrameRenderer(
         premultipliedAlpha: Boolean,
         ordered: Boolean,
     ): InstancedTextureMeshEntry {
+        val textureIdentity = meshTextureIdentity(textureId)
         if (!ordered) {
             return ensureUnorderedInstancedTextureMesh(
                 scene,
@@ -949,7 +1007,7 @@ class KoolCanvasFrameRenderer(
             cachedKey.batchIndex == keyBatchIndex &&
             cachedKey.orderingSegment == keyOrderingSegment &&
             cachedKey.projectionBatchId == keyProjectionBatchId &&
-            cachedKey.textureId == textureId &&
+            cachedKey.textureIdentity == textureIdentity &&
             cachedKey.textureFilter == textureFilter &&
             cachedKey.renderBlend == renderBlend &&
             cachedKey.premultipliedAlpha == premultipliedAlpha
@@ -967,7 +1025,7 @@ class KoolCanvasFrameRenderer(
             batchIndex = keyBatchIndex,
             orderingSegment = keyOrderingSegment,
             projectionBatchId = keyProjectionBatchId,
-            textureId = textureId,
+            textureIdentity = textureIdentity,
             textureFilter = textureFilter,
             renderBlend = renderBlend,
             premultipliedAlpha = premultipliedAlpha,
@@ -1012,6 +1070,7 @@ class KoolCanvasFrameRenderer(
         renderBlend: CanvasRenderBlend,
         premultipliedAlpha: Boolean,
     ): InstancedTextureMeshEntry {
+        val textureIdentity = meshTextureIdentity(textureId)
         if (pendingOrderingSegmentAdvance) {
             val matchesActiveBatch =
                 activeTextureBatchMatches(textureId, textureFilter, renderBlend, premultipliedAlpha)
@@ -1025,13 +1084,16 @@ class KoolCanvasFrameRenderer(
         if (cachedKey.matchesUnorderedTexture(
                 keyOrderingSegment,
                 keyProjectionBatchId,
-                textureId,
+                textureIdentity,
                 textureFilter,
                 renderBlend,
                 premultipliedAlpha,
             )
         ) {
             val cachedEntry = lastInstancedTextureMeshEntry!!
+            if (cachedEntry.batchKey.textureId != textureId) {
+                cachedEntry.batchKey = CanvasBatchKey.Texture(textureId, textureFilter, renderBlend, premultipliedAlpha)
+            }
             val batchIndex = activateTextureBatch(cachedEntry.batchKey)
             markInstancedTextureMeshKeyUsed(cachedKey!!)
             updateInstancedTextureEntry(cachedEntry, texture)
@@ -1042,7 +1104,7 @@ class KoolCanvasFrameRenderer(
         if (alternateKey.matchesUnorderedTexture(
                 keyOrderingSegment,
                 keyProjectionBatchId,
-                textureId,
+                textureIdentity,
                 textureFilter,
                 renderBlend,
                 premultipliedAlpha,
@@ -1053,6 +1115,9 @@ class KoolCanvasFrameRenderer(
             alternateInstancedTextureMeshEntry = lastInstancedTextureMeshEntry
             lastInstancedTextureMeshKey = alternateKey
             lastInstancedTextureMeshEntry = alternateEntry
+            if (alternateEntry.batchKey.textureId != textureId) {
+                alternateEntry.batchKey = CanvasBatchKey.Texture(textureId, textureFilter, renderBlend, premultipliedAlpha)
+            }
             val batchIndex = activateTextureBatch(alternateEntry.batchKey)
             markInstancedTextureMeshKeyUsed(alternateKey!!)
             updateInstancedTextureEntry(alternateEntry, texture)
@@ -1064,7 +1129,7 @@ class KoolCanvasFrameRenderer(
             batchIndex = null,
             orderingSegment = keyOrderingSegment,
             projectionBatchId = keyProjectionBatchId,
-            textureId = textureId,
+            textureIdentity = textureIdentity,
             textureFilter = textureFilter,
             renderBlend = renderBlend,
             premultipliedAlpha = premultipliedAlpha,
@@ -1075,6 +1140,9 @@ class KoolCanvasFrameRenderer(
             alternateInstancedTextureMeshEntry = lastInstancedTextureMeshEntry
             lastInstancedTextureMeshKey = key
             lastInstancedTextureMeshEntry = existing
+            if (existing.batchKey.textureId != textureId) {
+                existing.batchKey = CanvasBatchKey.Texture(textureId, textureFilter, renderBlend, premultipliedAlpha)
+            }
             val batchIndex = activateTextureBatch(existing.batchKey)
             markInstancedTextureMeshKeyUsed(key)
             updateInstancedTextureEntry(existing, texture)
@@ -1108,7 +1176,7 @@ class KoolCanvasFrameRenderer(
     private fun TextureMeshKey?.matchesUnorderedTexture(
         orderingSegment: Int,
         projectionBatchId: Int?,
-        textureId: KoolCanvasTextureId,
+        textureIdentity: TextureMeshIdentity,
         textureFilter: KoolCanvasTextureFilter,
         renderBlend: CanvasRenderBlend,
         premultipliedAlpha: Boolean,
@@ -1117,7 +1185,7 @@ class KoolCanvasFrameRenderer(
                 batchIndex == null &&
                 this.orderingSegment == orderingSegment &&
                 this.projectionBatchId == projectionBatchId &&
-                this.textureId == textureId &&
+                this.textureIdentity == textureIdentity &&
                 this.textureFilter == textureFilter &&
                 this.renderBlend == renderBlend &&
                 this.premultipliedAlpha == premultipliedAlpha
@@ -1189,6 +1257,7 @@ class KoolCanvasFrameRenderer(
         premultipliedAlpha: Boolean,
         ordered: Boolean,
     ): AffineInstancedTextureMeshEntry {
+        val textureIdentity = meshTextureIdentity(textureId)
         if (!ordered) {
             return ensureUnorderedAffineInstancedTextureMesh(
                 scene,
@@ -1208,7 +1277,7 @@ class KoolCanvasFrameRenderer(
             cachedKey.batchIndex == keyBatchIndex &&
             cachedKey.orderingSegment == keyOrderingSegment &&
             cachedKey.projectionBatchId == keyProjectionBatchId &&
-            cachedKey.textureId == textureId &&
+            cachedKey.textureIdentity == textureIdentity &&
             cachedKey.textureFilter == textureFilter &&
             cachedKey.renderBlend == renderBlend &&
             cachedKey.premultipliedAlpha == premultipliedAlpha
@@ -1223,7 +1292,7 @@ class KoolCanvasFrameRenderer(
             batchIndex = keyBatchIndex,
             orderingSegment = keyOrderingSegment,
             projectionBatchId = keyProjectionBatchId,
-            textureId = textureId,
+            textureIdentity = textureIdentity,
             textureFilter = textureFilter,
             renderBlend = renderBlend,
             premultipliedAlpha = premultipliedAlpha,
@@ -1269,6 +1338,7 @@ class KoolCanvasFrameRenderer(
         renderBlend: CanvasRenderBlend,
         premultipliedAlpha: Boolean,
     ): AffineInstancedTextureMeshEntry {
+        val textureIdentity = meshTextureIdentity(textureId)
         if (pendingOrderingSegmentAdvance) {
             val matchesActiveBatch =
                 activeAffineTextureBatchMatches(textureId, textureFilter, renderBlend, premultipliedAlpha)
@@ -1282,13 +1352,16 @@ class KoolCanvasFrameRenderer(
         if (cachedKey.matchesUnorderedTexture(
                 keyOrderingSegment,
                 keyProjectionBatchId,
-                textureId,
+                textureIdentity,
                 textureFilter,
                 renderBlend,
                 premultipliedAlpha,
             )
         ) {
             val cachedEntry = lastAffineInstancedTextureMeshEntry!!
+            if (cachedEntry.batchKey.textureId != textureId) {
+                cachedEntry.batchKey = CanvasBatchKey.AffineTexture(textureId, textureFilter, renderBlend, premultipliedAlpha)
+            }
             val batchIndex = activateAffineTextureBatch(cachedEntry.batchKey)
             markAffineInstancedTextureMeshKeyUsed(cachedKey!!)
             updateAffineInstancedTextureEntry(cachedEntry, texture)
@@ -1299,7 +1372,7 @@ class KoolCanvasFrameRenderer(
         if (alternateKey.matchesUnorderedTexture(
                 keyOrderingSegment,
                 keyProjectionBatchId,
-                textureId,
+                textureIdentity,
                 textureFilter,
                 renderBlend,
                 premultipliedAlpha,
@@ -1310,6 +1383,9 @@ class KoolCanvasFrameRenderer(
             alternateAffineInstancedTextureMeshEntry = lastAffineInstancedTextureMeshEntry
             lastAffineInstancedTextureMeshKey = alternateKey
             lastAffineInstancedTextureMeshEntry = alternateEntry
+            if (alternateEntry.batchKey.textureId != textureId) {
+                alternateEntry.batchKey = CanvasBatchKey.AffineTexture(textureId, textureFilter, renderBlend, premultipliedAlpha)
+            }
             val batchIndex = activateAffineTextureBatch(alternateEntry.batchKey)
             markAffineInstancedTextureMeshKeyUsed(alternateKey!!)
             updateAffineInstancedTextureEntry(alternateEntry, texture)
@@ -1321,7 +1397,7 @@ class KoolCanvasFrameRenderer(
             batchIndex = null,
             orderingSegment = keyOrderingSegment,
             projectionBatchId = keyProjectionBatchId,
-            textureId = textureId,
+            textureIdentity = textureIdentity,
             textureFilter = textureFilter,
             renderBlend = renderBlend,
             premultipliedAlpha = premultipliedAlpha,
@@ -1332,6 +1408,9 @@ class KoolCanvasFrameRenderer(
             alternateAffineInstancedTextureMeshEntry = lastAffineInstancedTextureMeshEntry
             lastAffineInstancedTextureMeshKey = key
             lastAffineInstancedTextureMeshEntry = existing
+            if (existing.batchKey.textureId != textureId) {
+                existing.batchKey = CanvasBatchKey.AffineTexture(textureId, textureFilter, renderBlend, premultipliedAlpha)
+            }
             val batchIndex = activateAffineTextureBatch(existing.batchKey)
             markAffineInstancedTextureMeshKeyUsed(key)
             updateAffineInstancedTextureEntry(existing, texture)
@@ -1583,8 +1662,14 @@ class KoolCanvasFrameRenderer(
         markTextMeshKeyUsed(key)
         val existing = textMeshes[key]
         if (existing != null) {
+            textMeshExactHits++
             placeBatchNodeIfFirstUse(scene, existing.mesh, batchIndex)
             return existing
+        }
+
+        reusableTextMesh(key)?.let { existingEntry ->
+            placeBatchNodeIfFirstUse(scene, existingEntry.mesh, batchIndex)
+            return existingEntry
         }
 
         val shader = MsdfUiShader(
@@ -1611,7 +1696,29 @@ class KoolCanvasFrameRenderer(
         meshPruneRequired = true
         return TextMeshEntry(font.data, renderBlend, mesh, shader, builder).also {
             textMeshes[key] = it
+            textMeshCreated++
+            textMeshPeak = maxOf(textMeshPeak, textMeshes.size)
         }
+    }
+
+    private fun reusableTextMesh(key: TextMeshKey): TextMeshEntry? {
+        if (!reuseTextMeshes || key.batchIndex == null || key.orderingSegment != null || key.projectionBatchId != null) return null
+        val iterator = textMeshes.iterator()
+        while (iterator.hasNext()) {
+            val (previousKey, entry) = iterator.next()
+            textMeshScanCandidates++
+            if (previousKey in usedTextMeshKeys || previousKey.batchIndex == null ||
+                previousKey.orderingSegment != null || previousKey.projectionBatchId != null ||
+                previousKey.fontData !== key.fontData || previousKey.renderBlend != key.renderBlend ||
+                previousKey.typefaceKey != key.typefaceKey || previousKey.performanceHud != key.performanceHud) continue
+            // Geometry was cleared at frame start. Keep its shader/atlas owner and change only placement.
+            iterator.remove()
+            textMeshes[key] = entry
+            textMeshReused++
+            meshPruneRequired = true
+            return entry
+        }
+        return null
     }
 
     private fun batchIndexFor(key: CanvasBatchKey): Int {
@@ -1750,6 +1857,7 @@ class KoolCanvasFrameRenderer(
         if (paint.isRenderNoOp) return false
         if (command.source.hasZeroArea || command.destination.hasZeroArea) return false
         val textureRef = command.texture
+        rememberFrozenPixelMeshIdentity(textureRef)
         val textureFilter = paint.textureFilter
         val defaultTexturePaint = paint.isDefaultTexturePaint
         if (command.canUseUnorderedDefaultInstancedTextureQuad(defaultTexturePaint)) {
@@ -1862,6 +1970,7 @@ class KoolCanvasFrameRenderer(
             if (!command.canUseUnorderedDefaultInstancedTextureRun()) break
 
             val textureRef = command.texture
+            rememberFrozenPixelMeshIdentity(textureRef)
             val textureId = textureRef.id
             val textureFilter = command.paint.textureFilter
             var entry: InstancedTextureMeshEntry? = null

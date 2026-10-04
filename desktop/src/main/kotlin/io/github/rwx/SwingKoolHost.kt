@@ -49,7 +49,6 @@ class SwingKoolHost private constructor(
             return Vec2i(width.coerceAtLeast(1), height.coerceAtLeast(1))
         }
     private var initialContentFitPending = true
-    private var initialContentFitApplied = false
     private var applyingInitialContentFit = false
     private val closeRequested = AtomicBoolean(false)
     @Volatile
@@ -171,6 +170,11 @@ class SwingKoolHost private constructor(
         }
         frame.isVisible = true
         resizeCanvases()
+        fitInitialContentSize()
+        val configuration = frame.graphicsConfiguration
+        logger.info { "RWX window: bounds=${frame.bounds} canvas=${koolCanvas.width}x${koolCanvas.height} " +
+            "displayBounds=${configuration.bounds} scale=${configuration.defaultTransform.scaleX}x${configuration.defaultTransform.scaleY} " +
+            "screenInsets=${Toolkit.getDefaultToolkit().getScreenInsets(configuration)}" }
         showKool()
     }
 
@@ -350,26 +354,32 @@ class SwingKoolHost private constructor(
     private fun fitInitialContentSize() {
         if (startupFullscreen || macFullscreen?.isFullscreenOrTransitioning == true) return
         if (!initialContentFitPending || applyingInitialContentFit || !frame.isShowing) return
-        val preferred = panel.preferredSize
-        val needsFit = panel.width < preferred.width || panel.height < preferred.height
-        if (!needsFit) {
-            if (initialContentFitApplied) {
-                initialContentFitPending = false
-            }
+        val insets = frame.insets
+        if (!frame.isUndecorated && insets.top == 0 && insets.left == 0 && insets.bottom == 0 && insets.right == 0) return
+        val configuration = frame.graphicsConfiguration
+            ?: GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.defaultConfiguration
+        val targetBounds = initialWindowedFrameBounds(panel.preferredSize, insets,
+            configuration.bounds, Toolkit.getDefaultToolkit().getScreenInsets(configuration))
+        if (frame.bounds == targetBounds) {
+            initialContentFitPending = false
             return
         }
 
-        val insets = frame.insets
-        if (insets.top == 0 && insets.left == 0 && insets.bottom == 0 && insets.right == 0) return
-        val targetWidth = preferred.width + insets.left + insets.right
-        val targetHeight = preferred.height + insets.top + insets.bottom
-        if (frame.width == targetWidth && frame.height == targetHeight) return
-
         applyingInitialContentFit = true
-        initialContentFitApplied = true
-        frame.setSize(targetWidth, targetHeight)
-        frame.setLocationRelativeTo(null)
-        applyingInitialContentFit = false
+        try {
+            val contentWidth = (targetBounds.width - insets.left - insets.right).coerceAtLeast(1)
+            val contentHeight = (targetBounds.height - insets.top - insets.bottom).coerceAtLeast(1)
+            panel.preferredSize = Dimension(contentWidth, contentHeight)
+            panel.minimumSize = Dimension(minOf(800, contentWidth), minOf(600, contentHeight))
+            frame.minimumSize = Dimension(minOf(800, targetBounds.width), minOf(600, targetBounds.height))
+            frame.bounds = targetBounds
+            frame.validate()
+            resizeCanvases()
+            // Initial layout is now fitted. Later user resizes keep the user's chosen dimensions.
+            initialContentFitPending = false
+        } finally {
+            applyingInitialContentFit = false
+        }
     }
 
     fun setInGamePointerCursorActive(active: Boolean) {
@@ -498,10 +508,14 @@ private class PointerCursorCanvas : Canvas() {
     var inGamePointerCursorActive: Boolean = false
 
     override fun setCursor(cursor: Cursor?) {
-        if (inGamePointerCursorActive && cursor?.type == Cursor.DEFAULT_CURSOR) {
-            super.setCursor(pointerCursor ?: cursor)
+        val effectiveCursor = if (inGamePointerCursorActive && cursor?.type == Cursor.DEFAULT_CURSOR) {
+            pointerCursor ?: cursor
         } else {
-            super.setCursor(cursor)
+            cursor
         }
+        // Swing input reapplies its cursor each frame. AWT still enters the native cursor manager
+        // for an unchanged cursor, so avoid that work once this canvas has an explicit cursor.
+        if (isCursorSet && super.getCursor() === effectiveCursor) return
+        super.setCursor(effectiveCursor)
     }
 }

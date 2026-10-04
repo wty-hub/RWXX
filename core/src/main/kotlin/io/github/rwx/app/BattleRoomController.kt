@@ -36,7 +36,12 @@ internal class BattleRoomController(
     fun selectDefaultMap(): MapEntry? {
         selectedMap?.let { return it }
         return runCatching {
-            levelSelectViewModelFactory.create(selectedMode).items().firstOrNull()
+            val maps = levelSelectViewModelFactory.create(selectedMode).items()
+            val benchmarkMap = System.getProperty("rwx.benchmark.map")?.takeIf { it.isNotBlank() }
+            if (benchmarkMap == null) maps.firstOrNull()
+            else requireNotNull(maps.firstOrNull { it.mapAssetPath == benchmarkMap }) {
+                "Benchmark map is absent from ${selectedMode.label}: $benchmarkMap"
+            }
         }.onFailure { error ->
             logger.warn(error) { "Unable to select default RW map for ${selectedMode.label}" }
         }.getOrNull()?.also { map ->

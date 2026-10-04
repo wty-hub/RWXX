@@ -173,6 +173,13 @@ internal class KoolDesktopGameSession(
     override fun close() {
         canvasPresentationTracker.close()
         owner.close()
+        if (System.getenv("RWX_CANVAS_PIXEL_POOL_METRICS") == "1") {
+            logger.info { "RWX pixel pool: ${cpuTextures.pixelPoolDiagnostics()}" }
+            logger.info { "RWX upload buffer pool: ${KoolCanvasTextureRegistry.uploadBufferPoolDiagnostics()}" }
+        }
+        cpuTextures.clearIdlePixelPool()
+        KoolCanvasTextureRegistry.clearIdleUploadBufferPool()
+        frameTimeLog?.close()
         mailbox.close()
         selectedEnvelope?.close()
         selectedEnvelope = null
@@ -240,7 +247,10 @@ internal class KoolDesktopGameSession(
             return
         }
         // The legacy outer loop also services lobby packets and deferred tasks before a map exists.
-        if (engine.hasLoadedLevel) io.github.rwx.benchmark.VanillaBattleBenchmark.onFrame(engine)
+        if (engine.hasLoadedLevel) {
+            io.github.rwx.benchmark.VanillaBattleBenchmark.onFrame(engine)
+            io.github.rwx.benchmark.ReplayPanBenchmark.onFrame(engine)
+        }
         val viewport = appliedViewport
         if (viewport.width <= 0 || viewport.height <= 0) return
         frameTimeLog?.beginFrame()
@@ -248,10 +258,16 @@ internal class KoolDesktopGameSession(
         engine.renderGraphicsEngine = graphicsEngine
         runGameLoop(engine, deltaSeconds)
         frameTimeLog?.endGameWork()
-        if (drainLayerBuffers) TileMap.layerBufferManager.renderVisiblePendingRedrawsNow()
+        if (drainLayerBuffers || (engine.hasLoadedLevel && engine.tileMap != null &&
+                TileMap.layerBufferManager.hasVisiblePendingRedraws())) {
+            TileMap.layerBufferManager.renderVisiblePendingRedrawsNow()
+        }
         frameTimeLog?.endLayerRedraw()
         publishFrame(engine, viewport)
         frameTimeLog?.endSnapshot()
+        if (engine.hasLoadedLevel && engine.tileMap != null) {
+            TileMap.layerBufferManager.renderOffscreenPendingRedraws(2)
+        }
         publishUiState()
     }
 

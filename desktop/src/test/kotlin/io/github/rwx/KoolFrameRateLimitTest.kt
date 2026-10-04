@@ -8,11 +8,27 @@ import de.fabmax.kool.platform.KoolWindowJvm
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.WindowSubsystem
 import java.lang.reflect.Proxy
+import java.lang.management.ManagementFactory
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
 /** Exercises the patched Kool limiter with a window stub, without opening a graphics context. */
 class KoolFrameRateLimitTest {
+    @Test
+    fun `high refresh wait yields most of its CPU budget`() {
+        val clock = ManagementFactory.getThreadMXBean()
+        if (!clock.isCurrentThreadCpuTimeSupported || !clock.isThreadCpuTimeEnabled) return
+        val context = testContext()
+        KoolDesktopMain.syncDesktopFrameRateLimit(context, 300)
+        val limit = Lwjgl3Context::class.java.getDeclaredMethod("checkFrameRateLimits").apply { isAccessible = true }
+        val start = System.nanoTime()
+        val cpuStart = clock.currentThreadCpuTime
+        repeat(60) { limit.invoke(context) }
+        val cpu = clock.currentThreadCpuTime - cpuStart
+        val elapsed = System.nanoTime() - start
+        assertTrue(cpu < elapsed * .6, "Limiter used ${cpu / 1e6} ms CPU during ${elapsed / 1e6} ms wait")
+    }
+
     @Test
     fun `every frame waits for the configured interval rather than alternating with an uncapped frame`() {
         val context = testContext()

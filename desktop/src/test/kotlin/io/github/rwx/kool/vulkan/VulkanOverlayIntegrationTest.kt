@@ -4,6 +4,9 @@ import org.objectweb.asm.ClassReader
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodInsnNode
+import org.objectweb.asm.tree.LookupSwitchInsnNode
+import org.lwjgl.vulkan.VK10.VK_FORMAT_B8G8R8A8_UNORM
+import org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_UNORM
 import kotlin.test.*
 
 /** Verifies runtime classpath ordering as well as the pinned native overlay's bytecode contracts. */
@@ -12,6 +15,17 @@ class VulkanOverlayIntegrationTest {
         val path = "/de/fabmax/kool/pipeline/backend/vk/$name.class"
         val stream = checkNotNull(javaClass.getResourceAsStream(path)) { "Missing runtime class $path" }
         return stream.use { ClassNode().also { node -> ClassReader(it).accept(node, 0) } }
+    }
+
+    @Test
+    fun `native BGRA image statistics use the same four byte branch as RGBA`() {
+        val method = klass("ImageVk").methods.single { it.name == "getBytesPerPx" }
+        val switch = method.instructions.toArray().filterIsInstance<LookupSwitchInsnNode>().single()
+        val rgba = switch.labels[switch.keys.indexOf(VK_FORMAT_R8G8B8A8_UNORM)]
+        assertTrue(VK_FORMAT_B8G8R8A8_UNORM in switch.keys)
+        assertSame(rgba, switch.labels[switch.keys.indexOf(VK_FORMAT_B8G8R8A8_UNORM)])
+        val firstInstruction = generateSequence(rgba.next) { it.next }.first { it.opcode >= 0 }
+        assertEquals(Opcodes.ICONST_4, firstInstruction.opcode)
     }
 
     @Test

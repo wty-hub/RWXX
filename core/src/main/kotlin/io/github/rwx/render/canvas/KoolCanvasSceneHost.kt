@@ -3,6 +3,7 @@ package io.github.rwx.render.canvas
 import de.fabmax.kool.scene.OnRenderScene
 import de.fabmax.kool.scene.Scene
 import io.github.rwx.logger
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Frame statistics for the canvas replay itself, enabled with `RWX_CANVAS_PERF=1`.
@@ -46,6 +47,7 @@ internal object KoolCanvasRenderProbe {
 class KoolCanvasSceneHost(
     private val frameRenderer: KoolCanvasFrameRenderer = KoolCanvasFrameRenderer(),
     private val sceneName: String = DEFAULT_SCENE_NAME,
+    private val installResources: (KoolCanvasResourceLease) -> AutoCloseable = FrozenCanvasGpuResources::install,
 ) : KoolCanvasRenderer {
     private var activeScene: Scene? = null
     private val mailbox = LatestFrameMailbox()
@@ -90,10 +92,32 @@ class KoolCanvasSceneHost(
     private fun retireCurrent() {
         val envelope = currentEnvelope ?: return
         val installed = installedResources
+        // Until the fence sink accepts retirement, keep the old front and GPU owners in place.
+        // A sink may invoke or enqueue the callback and then throw; that callback must stay inert.
+        val retirementState = AtomicInteger(0) // Pending, accepted, requested, released, rejected.
+        val releaseResources: () -> Unit = {
+            try {
+                installed?.close()
+            } finally {
+                envelope.close()
+            }
+        }
+        val release: () -> Unit = {
+            if (!retirementState.compareAndSet(0, 2) && retirementState.compareAndSet(1, 3)) {
+                releaseResources()
+            }
+        }
+        try {
+            retirementSink?.invoke(release) ?: release()
+        } catch (failure: Throwable) {
+            retirementState.set(4)
+            throw failure
+        }
         currentEnvelope = null
         installedResources = null
-        val release = { installed?.close(); envelope.close() }
-        retirementSink?.invoke(release) ?: release()
+        if (!retirementState.compareAndSet(0, 1) && retirementState.compareAndSet(2, 3)) {
+            releaseResources()
+        }
     }
 
     private fun configure(scene: Scene) {
@@ -114,10 +138,32 @@ class KoolCanvasSceneHost(
             }
             mailbox.poll()?.let { next ->
                 // Install first: shared versions retain an owner while the previous GPU lease retires.
-                val installed = FrozenCanvasGpuResources.install(next.resourceLease)
-                retireCurrent()
-                currentEnvelope = next
-                installedResources = installed
+                val installStart = CanvasRenderStageTrace.start()
+                var installed: AutoCloseable? = null
+                var adopted = false
+                try {
+                    installed = installResources(next.resourceLease)
+                    retireCurrent()
+                    currentEnvelope = next
+                    installedResources = installed
+                    adopted = true
+                    CanvasRenderStageTrace.record("envelope-install", installStart, next.sequence, next.generation)
+                } catch (failure: Throwable) {
+                    if (!adopted) {
+                        // This new frame has never reached the renderer, so it needs no GPU fence.
+                        try {
+                            installed?.close()
+                        } catch (cleanup: Throwable) {
+                            if (cleanup !== failure) failure.addSuppressed(cleanup)
+                        }
+                        try {
+                            next.close()
+                        } catch (cleanup: Throwable) {
+                            if (cleanup !== failure) failure.addSuppressed(cleanup)
+                        }
+                    }
+                    throw failure
+                }
             }
             val envelope = currentEnvelope
             if (envelope != null) {
@@ -130,6 +176,8 @@ class KoolCanvasSceneHost(
                     renderedEnvelope = envelope
                     replayed = true
                     KoolCanvasRenderProbe.record(System.nanoTime() - startedAt)
+                    if (CanvasRenderStageTrace.enabled) CanvasRenderStageTrace.record(
+                        "canvas-new", startedAt, envelope.sequence, envelope.generation, envelope.frame.commands.size.toLong())
                 }
                 CanvasFramePresentation.chosen(presentationOwner, presentationTracker, envelope.sequence, envelope.generation, envelope.camera)
             } else {
@@ -141,10 +189,13 @@ class KoolCanvasSceneHost(
             }
             // Repeated presentation still drains textures already proven GPU-idle by the sink.
             if (!replayed) {
+                val repeatStart = CanvasRenderStageTrace.start()
                 if (envelope != null) KoolCanvasFontRegistry.withSnapshot(envelope.resourceLease.fonts) {
                     frameRenderer.refreshPerformanceHud(envelope.frame.viewport)
                 }
                 KoolCanvasTextureRegistry.releaseRetiredTextures()
+                CanvasRenderStageTrace.record("canvas-repeat", repeatStart, envelope?.sequence ?: -1,
+                    envelope?.generation ?: -1)
             }
         }
     }

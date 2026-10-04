@@ -32,6 +32,7 @@ open class Texture : Cloneable {
     var j: IntArray? = null
 
     private var committedArgbPixels: IntArray? = null
+    private var immutableArgbPixelsRelease: (() -> Unit)? = null
     private var argbPixelLoader: (() -> IntArray?)? = null
     private var orderedAlphaRequired: Boolean = false
     private var premultipliedAlpha: Boolean = false
@@ -252,6 +253,7 @@ open class Texture : Cloneable {
             }
 
             committedArgbPixels != null -> {
+                ensureWritableCommittedArgbPixels()
                 committedArgbPixels!![x + (y * p)] = color
                 pixelRevision++
             }
@@ -280,14 +282,20 @@ open class Texture : Cloneable {
             GameEngine.logColored("remove with keepInGPUMemory=true")
         }
         argbPixelLoader = null
+        if (immutableArgbPixelsRelease != null) {
+            committedArgbPixels = null
+            releaseImmutableArgbPixels()
+        }
     }
 
     open fun p() {
         val editable = j
         if (editable != null) {
-            committedArgbPixels = editable.clone()
+            val committed = editable.clone()
+            releaseImmutableArgbPixels()
+            committedArgbPixels = committed
             argbPixelLoader = null
-            m = containsTransparentPixels(editable)
+            m = containsTransparentPixels(committed)
             pixelRevision++
         }
         e++
@@ -362,11 +370,37 @@ open class Texture : Cloneable {
     fun ensureLoaded() = w()
 
     fun setCommittedArgbPixels(pixels: IntArray) {
+        val detached = pixels.clone()
         j = null
-        committedArgbPixels = pixels.clone()
+        releaseImmutableArgbPixels()
+        committedArgbPixels = detached
+        argbPixelLoader = null
+        m = containsTransparentPixels(detached)
+        pixelRevision++
+    }
+
+    /** Backend-owned read-only pixels. The caller supplies a retained owner before replacement. */
+    internal fun setImmutableArgbPixels(pixels: IntArray, release: () -> Unit) {
+        releaseImmutableArgbPixels()
+        j = null
+        committedArgbPixels = pixels
+        immutableArgbPixelsRelease = release
         argbPixelLoader = null
         m = containsTransparentPixels(pixels)
         pixelRevision++
+    }
+
+    private fun ensureWritableCommittedArgbPixels() {
+        if (immutableArgbPixelsRelease != null) {
+            committedArgbPixels = committedArgbPixels!!.clone()
+            releaseImmutableArgbPixels()
+        }
+    }
+
+    private fun releaseImmutableArgbPixels() {
+        val release = immutableArgbPixelsRelease
+        immutableArgbPixelsRelease = null
+        release?.invoke()
     }
 
     fun setArgbPixelLoader(loader: (() -> IntArray?)?) {
@@ -377,6 +411,7 @@ open class Texture : Cloneable {
 
     protected fun invalidateArgbPixelSnapshot(loader: (() -> IntArray?)? = null) {
         j = null
+        releaseImmutableArgbPixels()
         committedArgbPixels = null
         argbPixelLoader = loader
         pixelRevision++

@@ -1,0 +1,1512 @@
+{
+  "recordedDate": "2026-10-04",
+  "sourceBaseCommit": "e55bd8b",
+  "scope": "Retained Windows map-pan implementations and finite measured validation; no claim that all stalls are fixed.",
+  "artifact": {
+    "runtime": "build/map-pan-stage-runtime/text-mesh-reuse-controlled-15.jar",
+    "runtimeSha256": "fff2211667f74201163e5a9cda2b227abeec238421ed51c08d9f81f3281e7e43",
+    "replayName": "2080年欧洲回归🌎结盟15p城夺4.0(15p) [v1.15] (3 Oct 2026 16.42.58).replay",
+    "replaySha256": "5c14f2e1f0d41d4502352071d97a23a4c63729b945ed6c15bcb61ee0c57dada0",
+    "rawArtifactsCommitted": false,
+    "latestRuntime": "build/map-pan-stage-runtime/europe-zoom-metadata-controlled-16.jar",
+    "latestRuntimeSha256": "7cb4f094c499fc8c347c08a7084f6578291a6eaf7723f2eb47d38b0530738e44",
+    "note": "Source reports, runtime, raw traces and original replay are local ignored artifacts. This JSON preserves selected verified metrics, not all raw samples."
+  },
+  "formalProtocol": {
+    "backend": "vulkan",
+    "map": "Interlocked Large",
+    "livingUnits": 500,
+    "teams": 15,
+    "unitTypes": 6,
+    "moving": true,
+    "cameraMode": "pan",
+    "cameraPeriodSeconds": 1,
+    "cameraMaximumRequestedSpanWorldUnits": 1600,
+    "order": [
+      "baseline",
+      "candidate",
+      "candidate",
+      "baseline"
+    ],
+    "warmupSecondsPerProcess": 20,
+    "sampleSecondsPerWindow": 20,
+    "windowsPerProcess": 2,
+    "processesPerVariant": 2,
+    "jfrEnabled": false,
+    "vulkanStageTraceEnabled": false,
+    "sameRuntimeWithinComparison": true,
+    "uploadFormat": "RGBA",
+    "limit": "Different cohorts and actual viewports cannot be combined into total gains; automated fixed-zoom camera motion does not validate user-controlled continuous zoom or physical display scanout."
+  },
+  "retainedFormalComparisons": {
+    "opaqueSourceOverFogOn1920x1080": {
+      "source": "build/map-pan-live-opaque-source-over-fast-fog-on-abba/summary.json",
+      "comparison": {
+        "validComparison": true,
+        "matchingMeasuredViewports": true,
+        "measuredViewports": [
+          [
+            1920.0,
+            1080.0
+          ]
+        ],
+        "aggregation": "median of measurement-window values; percentile medians are not pooled percentiles",
+        "variants": {
+          "baseline": {
+            "processCount": 2,
+            "windowCount": 4,
+            "allMeasurementsValid": true,
+            "engineFps": 115.47797946833035,
+            "renderFps": 240.0397313751393,
+            "newFps": 108.15184774961044,
+            "repeatRatio": 0.5466146124934818,
+            "presentIntervalP95Ms": 6.8782,
+            "presentIntervalP99Ms": 9.9254,
+            "freshSnapshotIntervalP95Ms": 25.3681,
+            "freshSnapshotIntervalP99Ms": 48.71025
+          },
+          "candidate": {
+            "processCount": 2,
+            "windowCount": 4,
+            "allMeasurementsValid": true,
+            "engineFps": 183.47607498945274,
+            "renderFps": 242.26255013117998,
+            "newFps": 170.74187331760086,
+            "repeatRatio": 0.2950881103838153,
+            "presentIntervalP95Ms": 6.72375,
+            "presentIntervalP99Ms": 9.383099999999999,
+            "freshSnapshotIntervalP95Ms": 12.662299999999998,
+            "freshSnapshotIntervalP99Ms": 21.16935
+          }
+        },
+        "candidateChange": {
+          "engineFps": {
+            "absolute": 67.9980955211224,
+            "percent": 58.88403644936546
+          },
+          "renderFps": {
+            "absolute": 2.222818756040681,
+            "percent": 0.9260211812880392
+          },
+          "newFps": {
+            "absolute": 62.59002556799042,
+            "percent": 57.87235897522229
+          },
+          "repeatRatio": {
+            "absolute": -0.2515265021096664,
+            "percent": -46.01532713556315
+          },
+          "presentIntervalP95Ms": {
+            "absolute": -0.15444999999999975,
+            "percent": -2.2455002762350573
+          },
+          "presentIntervalP99Ms": {
+            "absolute": -0.5423000000000009,
+            "percent": -5.463759646966382
+          },
+          "freshSnapshotIntervalP95Ms": {
+            "absolute": -12.7058,
+            "percent": -50.08573759958374
+          },
+          "freshSnapshotIntervalP99Ms": {
+            "absolute": -27.5409,
+            "percent": -56.540255900965406
+          }
+        }
+      }
+    },
+    "pixelAndNativePoolFogOn1920x1080": {
+      "source": "build/map-pan-live-pixel-native-pool-final-fog-on-abba/summary.json",
+      "comparison": {
+        "validComparison": true,
+        "matchingMeasuredViewports": true,
+        "measuredViewports": [
+          [
+            1920.0,
+            1080.0
+          ]
+        ],
+        "aggregation": "median of measurement-window values; percentile medians are not pooled percentiles",
+        "variants": {
+          "baseline": {
+            "processCount": 2,
+            "windowCount": 4,
+            "allMeasurementsValid": true,
+            "engineFps": 48.85229780445742,
+            "renderFps": 224.07256798858964,
+            "newFps": 46.6100258218075,
+            "repeatRatio": 0.7952735942683866,
+            "presentIntervalP95Ms": 8.6318,
+            "presentIntervalP99Ms": 13.623850000000001,
+            "freshSnapshotIntervalP95Ms": 89.6094,
+            "freshSnapshotIntervalP99Ms": 139.95625
+          },
+          "candidate": {
+            "processCount": 2,
+            "windowCount": 4,
+            "allMeasurementsValid": true,
+            "engineFps": 58.74285852545235,
+            "renderFps": 232.32109025371108,
+            "newFps": 55.712676367764246,
+            "repeatRatio": 0.7610204634107325,
+            "presentIntervalP95Ms": 7.68335,
+            "presentIntervalP99Ms": 11.776900000000001,
+            "freshSnapshotIntervalP95Ms": 58.09315,
+            "freshSnapshotIntervalP99Ms": 107.6643
+          }
+        },
+        "candidateChange": {
+          "engineFps": {
+            "absolute": 9.890560720994927,
+            "percent": 20.245845467871693
+          },
+          "renderFps": {
+            "absolute": 8.248522265121437,
+            "percent": 3.6811834394389065
+          },
+          "newFps": {
+            "absolute": 9.102650545956749,
+            "percent": 19.52938318626265
+          },
+          "repeatRatio": {
+            "absolute": -0.034253130857654135,
+            "percent": -4.307087661971898
+          },
+          "presentIntervalP95Ms": {
+            "absolute": -0.9484500000000002,
+            "percent": -10.987858847517318
+          },
+          "presentIntervalP99Ms": {
+            "absolute": -1.8469499999999996,
+            "percent": -13.556740568928749
+          },
+          "freshSnapshotIntervalP95Ms": {
+            "absolute": -31.516249999999992,
+            "percent": -35.170696377835355
+          },
+          "freshSnapshotIntervalP99Ms": {
+            "absolute": -32.291950000000014,
+            "percent": -23.07288884919395
+          }
+        }
+      }
+    },
+    "ownerHybridFogOff1600x900": {
+      "source": "build/map-pan-live-owner-pacing-fast-no-fog-abba/owner-pacing-abba-review.json",
+      "validation": {
+        "validControlledComparison": true,
+        "sameRecordedRuntimeSha256": true,
+        "errors": []
+      },
+      "primaryMedianWindowComparison": {
+        "validComparison": true,
+        "matchingMeasuredViewports": true,
+        "measuredViewports": [
+          [
+            1600.0,
+            900.0
+          ]
+        ],
+        "aggregation": "median of measurement-window values; percentile medians are not pooled percentiles",
+        "variants": {
+          "baseline": {
+            "processCount": 2,
+            "windowCount": 4,
+            "allMeasurementsValid": true,
+            "engineFps": 237.73419073009399,
+            "renderFps": 238.86428230886668,
+            "newFps": 222.21677369776657,
+            "repeatRatio": 0.06969366253402709,
+            "presentIntervalP95Ms": 5.99735,
+            "presentIntervalP99Ms": 8.19085,
+            "freshSnapshotIntervalP95Ms": 7.8130500000000005,
+            "freshSnapshotIntervalP99Ms": 9.2683
+          },
+          "candidate": {
+            "processCount": 2,
+            "windowCount": 4,
+            "allMeasurementsValid": true,
+            "engineFps": 291.68641833231584,
+            "renderFps": 240.47651117116828,
+            "newFps": 234.07791879397928,
+            "repeatRatio": 0.02822116458480095,
+            "presentIntervalP95Ms": 5.882099999999999,
+            "presentIntervalP99Ms": 7.9619,
+            "freshSnapshotIntervalP95Ms": 6.82175,
+            "freshSnapshotIntervalP99Ms": 8.72755
+          }
+        },
+        "candidateChange": {
+          "engineFps": {
+            "absolute": 53.95222760222185,
+            "percent": 22.694349279980198
+          },
+          "renderFps": {
+            "absolute": 1.6122288623016061,
+            "percent": 0.6749560238633379
+          },
+          "newFps": {
+            "absolute": 11.86114509621271,
+            "percent": 5.337646163626175
+          },
+          "repeatRatio": {
+            "absolute": -0.04147249794922614,
+            "percent": -59.5068424320184
+          },
+          "presentIntervalP95Ms": {
+            "absolute": -0.11525000000000052,
+            "percent": -1.9216820762503528
+          },
+          "presentIntervalP99Ms": {
+            "absolute": -0.22894999999999932,
+            "percent": -2.7951921961701043
+          },
+          "freshSnapshotIntervalP95Ms": {
+            "absolute": -0.9913000000000007,
+            "percent": -12.687746782626508
+          },
+          "freshSnapshotIntervalP99Ms": {
+            "absolute": -0.5407499999999992,
+            "percent": -5.834403288628975
+          }
+        }
+      },
+      "variants": {
+        "baseline": {
+          "measurementSeconds": 80.0073364,
+          "thresholdCounts": {
+            "16.667": 11,
+            "33.333": 2,
+            "50.0": 0,
+            "100.0": 0
+          },
+          "pooledFreshIntervalMs": {
+            "count": 17629,
+            "min": 0.954,
+            "median": 4.1816,
+            "p95": 7.91554,
+            "p99": 10.047636000000068,
+            "max": 39.2014
+          },
+          "javaCpuPercent": {
+            "count": 16,
+            "min": 10.98,
+            "median": 14.135,
+            "p95": 21.962500000000002,
+            "p99": 22.2325,
+            "max": 22.3
+          }
+        },
+        "candidate": {
+          "measurementSeconds": 80.01529009999999,
+          "thresholdCounts": {
+            "16.667": 3,
+            "33.333": 3,
+            "50.0": 0,
+            "100.0": 0
+          },
+          "pooledFreshIntervalMs": {
+            "count": 18666,
+            "min": 0.9923,
+            "median": 4.08915,
+            "p95": 6.8451249999999995,
+            "p99": 8.787429999999993,
+            "max": 43.6431
+          },
+          "javaCpuPercent": {
+            "count": 16,
+            "min": 15.77,
+            "median": 17.515,
+            "p95": 24.3475,
+            "p99": 24.461499999999997,
+            "max": 24.49
+          }
+        }
+      },
+      "limits": [
+        "Freshness is accepted generation/sequence change, not physical scanout or physical mouse input latency.",
+        "Ending intervals count once in the merged measured-window union, including left-boundary crossings and excluding unfinished right tails; original windows and overlap are retained.",
+        "Primary runner statistics are medians of the individual window values; pooled P95/P99 here use linearly interpolated percentiles and are a separate aggregation.",
+        "Resource samples count only when their endpoint timestamp is inside the merged windows. CPU percentages span the preceding approximately five seconds across all logical CPUs; boundary samples may include earlier work. Memory min/peak are observed samples, not continuous extrema.",
+        "Resource timestamps use Windows Python/HotSpot QPC when available; epoch-ms fallback has rounding uncertainty. No subframe cause can be inferred from these CPU samples.",
+        "Owner ThreadMXBean CPU is quantized: zero means unresolved CPU time. Positive-delta GCD is descriptive, not a calibrated timer resolution. Recorded owner CPU excludes the waiting/spin tail, which is assessed with process CPU samples.",
+        "Owner end-to-next-start includes unlogged postpublish offscreen work, UI publication, queued tasks, benchmark work and pacing; a blank interval is not proof of an OS park.",
+        "Long owner update/draw/snapshot wall durations or coincident spacing describe paths, not CPU/GPU/GC causes. No JFR or native wait trace is present. Short owner rows during a fresh gap do not establish GPU causation.",
+        "Owner gap details use complete boundary-crossing gaps and report measured overlap separately; stage durations are complete owner-row values, not clipped phase CPU times.",
+        "No pack workload equality gate is applied: this primary comparison does not trace per-texture packing. Same-Jar validation compares recorded diagnostic digests without rereading large jars."
+      ]
+    },
+    "textMeshReuseFogOff1280x720": {
+      "source": "build/map-pan-live-text-mesh-reuse-fast-no-fog-abba/text-mesh-reuse-cpu-tail-audit.json",
+      "validation": {
+        "validControlledComparison": true,
+        "sameRecordedRuntimeSha256": true,
+        "errors": []
+      },
+      "primaryMedianWindowComparison": {
+        "validComparison": true,
+        "matchingMeasuredViewports": true,
+        "measuredViewports": [
+          [
+            1280.0,
+            720.0
+          ]
+        ],
+        "aggregation": "median of measurement-window values; percentile medians are not pooled percentiles",
+        "variants": {
+          "baseline": {
+            "processCount": 2,
+            "windowCount": 4,
+            "allMeasurementsValid": true,
+            "engineFps": 294.7804832851201,
+            "renderFps": 239.19307665796057,
+            "newFps": 234.11934405134596,
+            "repeatRatio": 0.021194338007893013,
+            "presentIntervalP95Ms": 5.600899999999999,
+            "presentIntervalP99Ms": 7.98775,
+            "freshSnapshotIntervalP95Ms": 6.3256499999999996,
+            "freshSnapshotIntervalP99Ms": 8.6716
+          },
+          "candidate": {
+            "processCount": 2,
+            "windowCount": 4,
+            "allMeasurementsValid": true,
+            "engineFps": 294.7622470642075,
+            "renderFps": 241.0809105579169,
+            "newFps": 236.80712095152177,
+            "repeatRatio": 0.018006520904257486,
+            "presentIntervalP95Ms": 5.549099999999999,
+            "presentIntervalP99Ms": 7.8342,
+            "freshSnapshotIntervalP95Ms": 5.87435,
+            "freshSnapshotIntervalP99Ms": 8.4277
+          }
+        },
+        "candidateChange": {
+          "engineFps": {
+            "absolute": -0.018236220912626777,
+            "percent": -0.006186373232519582
+          },
+          "renderFps": {
+            "absolute": 1.8878338999563198,
+            "percent": 0.7892510629209593
+          },
+          "newFps": {
+            "absolute": 2.6877769001758054,
+            "percent": 1.148037088121323
+          },
+          "repeatRatio": {
+            "absolute": -0.0031878171036355263,
+            "percent": -15.04089017759529
+          },
+          "presentIntervalP95Ms": {
+            "absolute": -0.05180000000000007,
+            "percent": -0.9248513631737731
+          },
+          "presentIntervalP99Ms": {
+            "absolute": -0.15355000000000008,
+            "percent": -1.922318550280122
+          },
+          "freshSnapshotIntervalP95Ms": {
+            "absolute": -0.4512999999999998,
+            "percent": -7.134444681574226
+          },
+          "freshSnapshotIntervalP99Ms": {
+            "absolute": -0.2439,
+            "percent": -2.8126297338438078
+          }
+        }
+      },
+      "variants": {
+        "baseline": {
+          "measurementSeconds": 80.0168817,
+          "thresholdCounts": {
+            "16.667": 2,
+            "33.333": 0,
+            "50.0": 0,
+            "100.0": 0
+          },
+          "pooledFreshIntervalMs": {
+            "count": 18780,
+            "min": 0.8438,
+            "median": 4.07945,
+            "p95": 6.342949999999999,
+            "p99": 8.69651,
+            "max": 23.8395
+          },
+          "javaCpuPercent": {
+            "count": 16,
+            "min": 12.58,
+            "median": 15.945,
+            "p95": 18.515,
+            "p99": 19.079,
+            "max": 19.22
+          },
+          "pairedExternalCpuMedianPercent": 14.900000000000002,
+          "textMeshCache": {
+            "processCount": 2,
+            "wholeProcessLastByRun": [
+              {
+                "run": "01-baseline",
+                "sampleNanos": 180325345746700,
+                "textMeshCache": {
+                  "created": 1090,
+                  "exactHits": 491365,
+                  "reused": 0,
+                  "pruned": 1074,
+                  "scanCandidates": 0,
+                  "live": 16,
+                  "peak": 25
+                }
+              },
+              {
+                "run": "04-baseline",
+                "sampleNanos": 180620537954500,
+                "textMeshCache": {
+                  "created": 950,
+                  "exactHits": 470980,
+                  "reused": 0,
+                  "pruned": 934,
+                  "scanCandidates": 0,
+                  "live": 16,
+                  "peak": 25
+                }
+              }
+            ],
+            "measured": {
+              "counterDeltas": {
+                "created": 867,
+                "exactHits": 410733,
+                "reused": 0,
+                "pruned": 876,
+                "scanCandidates": 0
+              },
+              "pairCount": 14,
+              "measurementUnionSeconds": 80.0168817,
+              "coveredSeconds": 70.03592280000001,
+              "coverageFraction": 0.875264335625816
+            }
+          }
+        },
+        "candidate": {
+          "measurementSeconds": 80.0114633,
+          "thresholdCounts": {
+            "16.667": 0,
+            "33.333": 0,
+            "50.0": 0,
+            "100.0": 0
+          },
+          "pooledFreshIntervalMs": {
+            "count": 18908,
+            "min": 0.6479,
+            "median": 4.06675,
+            "p95": 5.858774999999997,
+            "p99": 8.400462000000001,
+            "max": 16.0595
+          },
+          "javaCpuPercent": {
+            "count": 16,
+            "min": 13.36,
+            "median": 16.285,
+            "p95": 19.07,
+            "p99": 19.406,
+            "max": 19.49
+          },
+          "pairedExternalCpuMedianPercent": 17.550000000000004,
+          "textMeshCache": {
+            "processCount": 2,
+            "wholeProcessLastByRun": [
+              {
+                "run": "02-candidate",
+                "sampleNanos": 180425483101700,
+                "textMeshCache": {
+                  "created": 9,
+                  "exactHits": 473273,
+                  "reused": 11548,
+                  "pruned": 0,
+                  "scanCandidates": 18450,
+                  "live": 9,
+                  "peak": 9
+                }
+              },
+              {
+                "run": "03-candidate",
+                "sampleNanos": 180523068772500,
+                "textMeshCache": {
+                  "created": 9,
+                  "exactHits": 473378,
+                  "reused": 11543,
+                  "pruned": 0,
+                  "scanCandidates": 18429,
+                  "live": 9,
+                  "peak": 9
+                }
+              }
+            ],
+            "measured": {
+              "counterDeltas": {
+                "created": 0,
+                "exactHits": 404239,
+                "reused": 9686,
+                "pruned": 0,
+                "scanCandidates": 15434
+              },
+              "pairCount": 14,
+              "measurementUnionSeconds": 80.0114633,
+              "coveredSeconds": 70.0314764,
+              "coverageFraction": 0.8752680367489292
+            }
+          }
+        }
+      },
+      "limits": [
+        "Cumulative counters count text mesh creation/reuse events, not allocated byte counts or directly measured GC savings.",
+        "The last cumulative sample is not the JVM shutdown total.",
+        "Do not extrapolate covered counter deltas into unobserved measurement boundaries.",
+        "Five-second CPU samples are not subframe causal evidence or direct energy measurements.",
+        "No JFR/native-wait trace is present in this primary performance cohort.",
+        "Scene timing, performance-HUD text and system load vary; small aggregate frame improvements should not be described as universal."
+      ],
+      "verdict": "retain-text-reuse-validated-in-builtin-and-original-replay"
+    }
+  },
+  "experimentalGuardFogOff1280x720": {
+    "source": "build/map-pan-live-owner-pacing-guard-repeat-no-fog-abba/owner-pacing-guard-cpu-tail-audit.json",
+    "validation": {
+      "validControlledComparison": true,
+      "sameRecordedRuntimeSha256": true,
+      "errors": []
+    },
+    "primaryMedianWindowComparison": {
+      "validComparison": true,
+      "matchingMeasuredViewports": true,
+      "measuredViewports": [
+        [
+          1280.0,
+          720.0
+        ]
+      ],
+      "aggregation": "median of measurement-window values; percentile medians are not pooled percentiles",
+      "variants": {
+        "baseline": {
+          "processCount": 2,
+          "windowCount": 4,
+          "allMeasurementsValid": true,
+          "engineFps": 294.22246176138106,
+          "renderFps": 238.5958780712499,
+          "newFps": 233.29708532010224,
+          "repeatRatio": 0.022209282725611075,
+          "presentIntervalP95Ms": 5.58675,
+          "presentIntervalP99Ms": 7.8401,
+          "freshSnapshotIntervalP95Ms": 6.09575,
+          "freshSnapshotIntervalP99Ms": 8.541250000000002
+        },
+        "candidate": {
+          "processCount": 2,
+          "windowCount": 4,
+          "allMeasurementsValid": true,
+          "engineFps": 298.12517181132546,
+          "renderFps": 237.4839747413273,
+          "newFps": 235.0346384822304,
+          "repeatRatio": 0.013104477556733015,
+          "presentIntervalP95Ms": 5.588850000000001,
+          "presentIntervalP99Ms": 7.6606000000000005,
+          "freshSnapshotIntervalP95Ms": 5.83235,
+          "freshSnapshotIntervalP99Ms": 8.21635
+        }
+      },
+      "candidateChange": {
+        "engineFps": {
+          "absolute": 3.902710049944403,
+          "percent": 1.3264487104691414
+        },
+        "renderFps": {
+          "absolute": -1.1119033299225975,
+          "percent": -0.4660195049935312
+        },
+        "newFps": {
+          "absolute": 1.7375531621281652,
+          "percent": 0.7447813416717519
+        },
+        "repeatRatio": {
+          "absolute": -0.00910480516887806,
+          "percent": -40.99549400746145
+        },
+        "presentIntervalP95Ms": {
+          "absolute": 0.002100000000000435,
+          "percent": 0.037588938112498305
+        },
+        "presentIntervalP99Ms": {
+          "absolute": -0.1794999999999991,
+          "percent": -2.2895116133722637
+        },
+        "freshSnapshotIntervalP95Ms": {
+          "absolute": -0.26339999999999986,
+          "percent": -4.321043349874909
+        },
+        "freshSnapshotIntervalP99Ms": {
+          "absolute": -0.3249000000000013,
+          "percent": -3.803892872823078
+        }
+      }
+    },
+    "variants": {
+      "baseline": {
+        "measurementSeconds": 80.0134755,
+        "thresholdCounts": {
+          "16.667": 14,
+          "33.333": 6,
+          "50.0": 1,
+          "100.0": 0
+        },
+        "pooledFreshIntervalMs": {
+          "count": 18577,
+          "min": 0.7318,
+          "median": 4.0991,
+          "p95": 6.506520000000003,
+          "p99": 8.8672,
+          "max": 58.7677
+        },
+        "javaCpuPercent": {
+          "count": 16,
+          "min": 13.28,
+          "median": 15.7,
+          "p95": 18.240000000000002,
+          "p99": 18.6,
+          "max": 18.69
+        },
+        "pairedExternalCpuMedianPercent": 21.25
+      },
+      "candidate": {
+        "measurementSeconds": 80.0153533,
+        "thresholdCounts": {
+          "16.667": 16,
+          "33.333": 4,
+          "50.0": 1,
+          "100.0": 0
+        },
+        "pooledFreshIntervalMs": {
+          "count": 18637,
+          "min": 0.7971,
+          "median": 4.1119,
+          "p95": 5.9998000000000005,
+          "p99": 8.573991999999993,
+          "max": 54.3791
+        },
+        "javaCpuPercent": {
+          "count": 16,
+          "min": 18.55,
+          "median": 20.0,
+          "p95": 21.505,
+          "p99": 21.901,
+          "max": 22.0
+        },
+        "pairedExternalCpuMedianPercent": 11.930000000000001
+      }
+    },
+    "limits": [
+      "CPU samples average preceding approximately5seconds and are normalized across all logical CPUs; they are not direct energy measurements.",
+      "CPUperengineHz is a rough ratio of independently aggregated medians, not per-frame isolated spin CPU.",
+      "Overlap and small counts do not identify CPU/GPU/GC/OS causes.",
+      "No claims of stall-free panning or guaranteed timely wakeups are supported by this cohort.",
+      "The specific old tiny-park request/oversleep evidence comes from prior calibrated JFR runs; do not substitute that for current same-cohort causal data."
+    ],
+    "verdict": "retain-short-coarse-park-guard-as-opt-in; keep-default-off",
+    "cpuTradeoff": {
+      "javaCpuMedianChangePercentagePoints": 4.300000000000001,
+      "javaCpuMedianChangeRelativePercent": 27.388535031847148,
+      "cpuPerEngineHzMedianRatioChangePercent": 25.720911620862164,
+      "pairedExternalCpuMedianPercent": {
+        "baseline": 21.25,
+        "candidate": 11.930000000000001
+      }
+    }
+  },
+  "originalReplayDiagnostic": {
+    "source": "build/map-pan-replay-text-mesh-reuse-15/normal-replay-gap-attribution.json",
+    "shortGapSource": "build/map-pan-replay-text-mesh-reuse-15/normal-short-gap-and-cache-review.json",
+    "backend": "vulkan",
+    "actualViewport": [
+      1280,
+      720
+    ],
+    "cameraMode": "pan",
+    "zoom": 1.0,
+    "cameraPeriodSeconds": 1,
+    "fogDisplayEnabled": false,
+    "worldDimensions": [
+      6400,
+      4000
+    ],
+    "jfrAndDetailedStageTracesEnabled": true,
+    "validMeasurement": true,
+    "clockCalibration": {
+      "validMarkerCount": 88,
+      "rejectedMarkerCount": 0,
+      "rejectedMarkers": [],
+      "markerThreads": [
+        "RWX-engine-owner"
+      ],
+      "markerPayloadRangeNanos": [
+        180905401928200,
+        180993038805300
+      ],
+      "betweenMarkerSlopeMin": 0.9957062420036035,
+      "betweenMarkerSlopeMedian": 0.9957088634623107,
+      "betweenMarkerSlopeMax": 0.995716689598808,
+      "leaveOneMarkerOutResidualMedianAbsMs": 0.000176,
+      "leaveOneMarkerOutResidualMaxAbsMs": 0.003848,
+      "method": "Pair marker JFR start/end with monoStart/monoEnd, piecewise linear integer interpolation. Map event start and end independently; label edge extrapolation."
+    },
+    "measurementSeconds": 40.0025027,
+    "measuredReloadEpochSeconds": 0.5013869,
+    "normalMeasuredSeconds": 39.5011158,
+    "normalFreshThresholdCounts": {
+      "33.333333": 0,
+      "50": 0,
+      "100": 0
+    },
+    "normalPooledFreshIntervalMs": {
+      "count": 9326,
+      "min": 0.9696,
+      "median": 4.10355,
+      "p95": 6.253725,
+      "p99": 8.324425,
+      "max": 26.6989
+    },
+    "presentationEpochChangedDuringRun": false,
+    "limits": [
+      "Reload exclusion starts at the owning load_map frame and ends at the first fresh acceptance after the actual map-reload completion; excludes any crossing fresh interval, never truncates it into an artificial shorter normal interval.",
+      "Presentation generation/sequence may remain monotonic through replay resync; actual owner loader and scenario reload markers define reload epochs here.",
+      "This is one diagnostic process, not an A/B performance comparison. Full JFR stacks are sample points, not continuous execution time or proof that the sampled method caused the entire gap.",
+      "Clock interpolation uses both JFR/mono marker endpoints; residuals and extrapolation flags are retained. Native and owner CSV spans already share QPC.",
+      "Owner phase and Vulkan overlaps are non-exclusive wall-time evidence; ThreadMXBean CPU is quantized, and unlogged between-row time includes tasks, cache work, UI and pacing."
+    ],
+    "normalGapsAbove16_667Ms": [
+      {
+        "scenarioEndSeconds": 32.5749762,
+        "durationMs": 26.6989,
+        "ownerTickRange": [
+          955,
+          956
+        ],
+        "longestOwnerFrames": [
+          {
+            "startNanos": 180937931666800,
+            "endNanos": 180937943588700,
+            "tick": 955,
+            "wallMs": 11.9219,
+            "cpuMs": 15.625,
+            "workMs": 11.815,
+            "updateMs": 3.3665,
+            "drawMs": 8.3478,
+            "layerRedrawMs": 0.0024,
+            "snapshotMs": 0.1045
+          },
+          {
+            "startNanos": 180937950738400,
+            "endNanos": 180937952258200,
+            "tick": 956,
+            "wallMs": 1.5198,
+            "cpuMs": 0.0,
+            "workMs": 1.4182,
+            "updateMs": 0.8646,
+            "drawMs": 0.5213,
+            "layerRedrawMs": 0.0024,
+            "snapshotMs": 0.0992
+          },
+          {
+            "startNanos": 180937955542700,
+            "endNanos": 180937956330800,
+            "tick": 956,
+            "wallMs": 0.7881,
+            "cpuMs": 0.0,
+            "workMs": 0.6861,
+            "updateMs": 0.0601,
+            "drawMs": 0.6081,
+            "layerRedrawMs": 0.002,
+            "snapshotMs": 0.1
+          }
+        ],
+        "cache": {
+          "count": 13,
+          "placementCounts": {
+            "withinOwnerRow": 5,
+            "outsideOwnerRow": 8
+          },
+          "overlapUnionMs": 17.4033,
+          "fullEventCpuSumMs": 31.25,
+          "longestCells": [
+            {
+              "startNanos": 180937935269800,
+              "endNanos": 180937937319900,
+              "wallMs": 2.0501,
+              "cpuMs": 0.0,
+              "placement": "withinOwnerRow",
+              "tick": 955,
+              "visible": 1
+            },
+            {
+              "startNanos": 180937938647700,
+              "endNanos": 180937940320800,
+              "wallMs": 1.6731,
+              "cpuMs": 0.0,
+              "placement": "withinOwnerRow",
+              "tick": 955,
+              "visible": 1
+            },
+            {
+              "startNanos": 180937947133500,
+              "endNanos": 180937948755400,
+              "wallMs": 1.6219,
+              "cpuMs": 0.0,
+              "placement": "outsideOwnerRow",
+              "tick": 955,
+              "visible": 0
+            },
+            {
+              "startNanos": 180937948811700,
+              "endNanos": 180937950356200,
+              "wallMs": 1.5445,
+              "cpuMs": 0.0,
+              "placement": "outsideOwnerRow",
+              "tick": 955,
+              "visible": 0
+            }
+          ]
+        },
+        "gcPauseOverlapUnionMs": 0.0,
+        "gcPauses": [],
+        "ownerSampleLeafCounts": [
+          [
+            "java.util.Arrays.equals",
+            1
+          ],
+          [
+            "kotlin.collections.CollectionsKt___CollectionsKt.toMutableList",
+            1
+          ]
+        ],
+        "rendererSampleLeafCounts": [
+          [
+            "org.lwjgl.system.JNI.callPPV",
+            1
+          ]
+        ],
+        "longestNativeCalls": [
+          {
+            "startNanos": 180937933016900,
+            "endNanos": 180937933164300,
+            "durationMs": 0.1474,
+            "overlapMs": 0.1474,
+            "stage": "submit"
+          },
+          {
+            "startNanos": 180937936591800,
+            "endNanos": 180937936717800,
+            "durationMs": 0.126,
+            "overlapMs": 0.126,
+            "stage": "submit"
+          },
+          {
+            "startNanos": 180937940477400,
+            "endNanos": 180937940573600,
+            "durationMs": 0.0962,
+            "overlapMs": 0.0962,
+            "stage": "submit"
+          },
+          {
+            "startNanos": 180937957799900,
+            "endNanos": 180937957883300,
+            "durationMs": 0.0834,
+            "overlapMs": 0.0834,
+            "stage": "submit"
+          }
+        ]
+      },
+      {
+        "scenarioEndSeconds": 52.6498101,
+        "durationMs": 21.2548,
+        "ownerTickRange": [
+          1558,
+          1558
+        ],
+        "longestOwnerFrames": [
+          {
+            "startNanos": 180958023613800,
+            "endNanos": 180958030657200,
+            "tick": 1558,
+            "wallMs": 7.0434,
+            "cpuMs": 0.0,
+            "workMs": 6.6524,
+            "updateMs": 0.029,
+            "drawMs": 6.6141,
+            "layerRedrawMs": 0.0026,
+            "snapshotMs": 0.3884
+          },
+          {
+            "startNanos": 180958014122700,
+            "endNanos": 180958017620000,
+            "tick": 1558,
+            "wallMs": 3.4973,
+            "cpuMs": 15.625,
+            "workMs": 3.3884,
+            "updateMs": 2.8591,
+            "drawMs": 0.5032,
+            "layerRedrawMs": 0.0015,
+            "snapshotMs": 0.1074
+          },
+          {
+            "startNanos": 180958030752700,
+            "endNanos": 180958031732900,
+            "tick": 1558,
+            "wallMs": 0.9802,
+            "cpuMs": 15.625,
+            "workMs": 0.8846,
+            "updateMs": 0.0475,
+            "drawMs": 0.8247,
+            "layerRedrawMs": 0.0015,
+            "snapshotMs": 0.0941
+          }
+        ],
+        "cache": {
+          "count": 5,
+          "placementCounts": {
+            "outsideOwnerRow": 5
+          },
+          "overlapUnionMs": 6.2949,
+          "fullEventCpuSumMs": 0.0,
+          "longestCells": [
+            {
+              "startNanos": 180958012331600,
+              "endNanos": 180958013988800,
+              "wallMs": 1.6572,
+              "cpuMs": 0.0,
+              "placement": "outsideOwnerRow",
+              "tick": 1557,
+              "visible": 0
+            },
+            {
+              "startNanos": 180958010699800,
+              "endNanos": 180958012277400,
+              "wallMs": 1.5776,
+              "cpuMs": 0.0,
+              "placement": "outsideOwnerRow",
+              "tick": 1557,
+              "visible": 0
+            },
+            {
+              "startNanos": 180958018934200,
+              "endNanos": 180958020237100,
+              "wallMs": 1.3029,
+              "cpuMs": 0.0,
+              "placement": "outsideOwnerRow",
+              "tick": 1558,
+              "visible": 0
+            },
+            {
+              "startNanos": 180958021121300,
+              "endNanos": 180958022406700,
+              "wallMs": 1.2854,
+              "cpuMs": 0.0,
+              "placement": "outsideOwnerRow",
+              "tick": 1558,
+              "visible": 0
+            }
+          ]
+        },
+        "gcPauseOverlapUnionMs": 5.210036,
+        "gcPauses": [
+          {
+            "startNanos": 180958024479172,
+            "endNanos": 180958029689208,
+            "durationMs": 5.210036,
+            "overlapMs": 5.210036,
+            "type": "jdk.GCPhasePause",
+            "thread": null,
+            "stack": [],
+            "clockExtrapolated": false
+          }
+        ],
+        "ownerSampleLeafCounts": [
+          [
+            "com.corrodinggames.rts.gameFramework.ui.GameInterfaceRenderer.a",
+            1
+          ],
+          [
+            "com.corrodinggames.rts.game.units.custom.LocaleString.resolveText",
+            1
+          ]
+        ],
+        "rendererSampleLeafCounts": [
+          [
+            "java.nio.ByteBuffer.putArray",
+            1
+          ],
+          [
+            "io.github.rwx.kool.vulkan.VulkanUploads.copyBuffer",
+            1
+          ]
+        ],
+        "longestNativeCalls": [
+          {
+            "startNanos": 180958032659000,
+            "endNanos": 180958032716000,
+            "durationMs": 0.057,
+            "overlapMs": 0.057,
+            "stage": "submit"
+          },
+          {
+            "startNanos": 180958032727400,
+            "endNanos": 180958032740700,
+            "durationMs": 0.0133,
+            "overlapMs": 0.0133,
+            "stage": "present"
+          },
+          {
+            "startNanos": 180958023074700,
+            "endNanos": 180958023080200,
+            "durationMs": 0.0055,
+            "overlapMs": 0.0055,
+            "stage": "acquire"
+          },
+          {
+            "startNanos": 180958023067200,
+            "endNanos": 180958023069000,
+            "durationMs": 0.0018,
+            "overlapMs": 0.0018,
+            "stage": "fence"
+          }
+        ]
+      },
+      {
+        "scenarioEndSeconds": 35.2249282,
+        "durationMs": 18.9056,
+        "ownerTickRange": [
+          1035,
+          1035
+        ],
+        "longestOwnerFrames": [
+          {
+            "startNanos": 180940598697800,
+            "endNanos": 180940607260100,
+            "tick": 1035,
+            "wallMs": 8.5623,
+            "cpuMs": 0.0,
+            "workMs": 0.3217,
+            "updateMs": 0.0256,
+            "drawMs": 0.2886,
+            "layerRedrawMs": 0.0008,
+            "snapshotMs": 8.2398
+          },
+          {
+            "startNanos": 180940588706400,
+            "endNanos": 180940589228000,
+            "tick": 1035,
+            "wallMs": 0.5216,
+            "cpuMs": 0.0,
+            "workMs": 0.4492,
+            "updateMs": 0.0331,
+            "drawMs": 0.4053,
+            "layerRedrawMs": 0.0017,
+            "snapshotMs": 0.0707
+          },
+          {
+            "startNanos": 180940595402000,
+            "endNanos": 180940595908200,
+            "tick": 1035,
+            "wallMs": 0.5062,
+            "cpuMs": 0.0,
+            "workMs": 0.4256,
+            "updateMs": 0.0559,
+            "drawMs": 0.3551,
+            "layerRedrawMs": 0.0005,
+            "snapshotMs": 0.0801
+          }
+        ],
+        "cache": {
+          "count": 0,
+          "placementCounts": {},
+          "overlapUnionMs": 0.0,
+          "fullEventCpuSumMs": 0.0,
+          "longestCells": []
+        },
+        "gcPauseOverlapUnionMs": 0.0,
+        "gcPauses": [],
+        "ownerSampleLeafCounts": [
+          [
+            "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$lambda$4",
+            1
+          ]
+        ],
+        "rendererSampleLeafCounts": [],
+        "longestNativeCalls": [
+          {
+            "startNanos": 180940607814200,
+            "endNanos": 180940607859600,
+            "durationMs": 0.0454,
+            "overlapMs": 0.0454,
+            "stage": "submit"
+          },
+          {
+            "startNanos": 180940607862800,
+            "endNanos": 180940607870500,
+            "durationMs": 0.0077,
+            "overlapMs": 0.0077,
+            "stage": "present"
+          },
+          {
+            "startNanos": 180940607304500,
+            "endNanos": 180940607308900,
+            "durationMs": 0.0044,
+            "overlapMs": 0.0044,
+            "stage": "acquire"
+          },
+          {
+            "startNanos": 180940607299600,
+            "endNanos": 180940607301200,
+            "durationMs": 0.0016,
+            "overlapMs": 0.0016,
+            "stage": "fence"
+          }
+        ]
+      }
+    ],
+    "normalOwnerThreadParks": [],
+    "normalOnlyWholeCounterPairs": {
+      "pairCount": 6,
+      "seconds": 30.016927600000002,
+      "deltas": {
+        "created": 0,
+        "exactHits": 351511,
+        "reused": 14194,
+        "pruned": 0,
+        "scanCandidates": 28490
+      }
+    },
+    "counterLimits": "Only adjacent cumulative samples with both endpoints inside measured union; no interpolation; normal-only excludes whole pair crossing reload. These cover less than40s. Counts monotonic per renderer; live gauge and peak high-water.",
+    "limit": "The 26.70 ms post-reload cache warmup tail is included in normal time. GC, uploads and snapshots overlap some gaps without establishing allocation causality. Earlier 1600x900 replay is not a matched baseline."
+  },
+  "implementationStatus": {
+    "defaultOn": [
+      "direct map-cell raster",
+      "immutable pixel snapshot sharing",
+      "scalar pixel mapping",
+      "opaque destination SourceOver",
+      "bounded CPU pixel pool",
+      "bounded ARGB host upload pool",
+      "frozen pixel mesh reuse",
+      "text mesh reuse",
+      "texture metadata cache-hit reuse",
+      "owner high-refresh hybrid pacing",
+      "post-poll pointer forwarding"
+    ],
+    "defaultMapCellPixels": 512,
+    "defaultOffExperiments": [
+      "native BGRA upload",
+      "short owner coarse-park guard",
+      "time-based map zoom cache cadence"
+    ],
+    "revertedOrNotAdopted": [
+      "normal fog final-pixel difference",
+      "64 KiB ARGB bulk rotate",
+      "256 pixel map-cell default",
+      "narrow Vulkan barriers"
+    ],
+    "notImplemented": [
+      "terrain base-layer cache",
+      "pre-acquire pending heap-array pool"
+    ],
+    "poolIdleCapsBytes": {
+      "cpuPixels": 67108864,
+      "argbHostUploads": 67108864,
+      "staticAtlasUploads": 33554432
+    },
+    "capsExcludeActiveLeasesAndGpuStaging": true,
+    "argbUploadPreallocationCalledInProduction": false,
+    "noFogDisplayStillEnsuresMapFogCacheAllocated": true,
+    "bgraGpuOraclesPassed": 7,
+    "bgraLimit": "Strict ABBA workload comparison failed due unequal packing counts. GPU sampling oracles do not validate every premultiplied blend scene. Default remains RGBA."
+  },
+  "regressionChecks": {
+    "runtime15Build": {
+      "canvasTests": 128,
+      "desktopTests": 104,
+      "failures": 0
+    },
+    "runtime16Build": {
+      "log": "build/map-pan-stage-runtime/europe-zoom-metadata-build-16.log",
+      "buildSuccessful": true,
+      "coreSelectedTests": 190,
+      "desktopTests": 108,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "allCoreTestsRun": false,
+      "newTests": {
+        "textureMetadata": 4,
+        "zoomCadence": 5,
+        "zoomBenchmark": 4
+      },
+      "selection": "Same affected core selection as documentationCommitCheck, plus all desktop tests.",
+      "note": "Runtime16 includes the new metadata reuse, default-off cadence experiment and continuous zoom benchmark; historical performance cohorts use runtime15 or earlier."
+    },
+    "documentationCommitCheck": {
+      "log": "build/map-pan-stage-runtime/documentation-commit-validation.log",
+      "buildSuccessful": true,
+      "coreSelectedTests": 181,
+      "desktopTests": 104,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "coreSelection": [
+        "io.github.rwx.render.canvas.*",
+        "io.github.rwx.app.KoolPointerForwardingTest",
+        "com.corrodinggames.rts.game.*",
+        "com.corrodinggames.rts.gameFramework.ReplayFog*",
+        "com.corrodinggames.rts.gameFramework.graphics.TextureImmutablePixelsTest",
+        "com.corrodinggames.rts.gameFramework.mission.MissionSavedTriggerRestoreTest",
+        "com.corrodinggames.rts.gameFramework.ui.ReplayVisionControlsTest"
+      ],
+      "allCoreTestsRun": false
+    },
+    "pythonTools": {
+      "command": "python -m unittest discover -s desktop/tools -p 'test_*.py'",
+      "tests": 35,
+      "failures": 0
+    },
+    "limitations": [
+      "ReplayTimelineIndexTest complete replay sample fixture limitation remains.",
+      "No current-runtime all-engine-class byte identity claim.",
+      "No all savegame, network interoperability or GPU image equivalence claim."
+    ]
+  },
+  "latestUserObservation": {
+    "status": "unresolved",
+    "date": "2026-10-04",
+    "description": "In a normal multiplayer Europe-map game, new-frame frequency drops sharply during manual panning, and more during zooming. Fog display was on; stutters also persist after death when fog disappears.",
+    "previousCoverageGap": "Original replay diagnostic held zoom=1, fog display off, 1280x720, central diagonal path; it does not cover continuous user zoom, full map edges, other viewport sizes or fog-on play.",
+    "sourceAudit": "Scale-threshold crossings invalidate the whole map-cell grid; visible redraws finish synchronously before publishing a CPU frame. Zooming out also increases tile traversal work per fixed-size output cell.",
+    "causality": "Code-path explanation awaiting measurements for the reported interaction; not yet a proved sole cause or implemented fix."
+  },
+  "interactiveNormalGameDiagnostic": {
+    "source": "build/europe-interactive-pan-zoom/profile.jfr",
+    "requestedRecordingSeconds": 70,
+    "runtimeLaunch": "Existing workspace classpath game, started before the new metadata and cadence candidates; not a frozen-jar ABBA run.",
+    "ownerExecutionAndNativeSampleCount": 5830,
+    "ownerSamplesIncludingMapCellRedraw": 2011,
+    "gcPauseEventCount": 107,
+    "gcPauseUnionMs": 826.111774,
+    "maximumGcPauseMsRounded": 22.15,
+    "allocationSamplingHotspots": [
+      "KoolGraphicsEngine.TexturePixelRegistration",
+      "Character boxing in text construction",
+      "canvas rect, paint, texture ref and commands",
+      "texture ID byte arrays and strings"
+    ],
+    "limits": [
+      "CPU sample ratios are not exact CPU-time fractions.",
+      "Allocation weights are sampled estimates, not exact allocated bytes.",
+      "No fresh-presentation trace was enabled in the already-running process, so individual visible stalls cannot be aligned.",
+      "This captures normal multiplayer-game work and is not a controlled replay comparison."
+    ]
+  },
+  "europeContinuousZoomMetadataComparison": {
+    "source": "build/map-pan-replay-europe-zoom-metadata-16-abba/summary.json",
+    "comparison": {
+      "validComparison": true,
+      "matchingMeasuredViewports": true,
+      "measuredViewports": [
+        [
+          1280.0,
+          720.0
+        ]
+      ],
+      "aggregation": "median of measurement-window values; percentile medians are not pooled percentiles",
+      "variants": {
+        "baseline": {
+          "processCount": 2,
+          "windowCount": 4,
+          "allMeasurementsValid": true,
+          "engineFps": 129.20540097919428,
+          "renderFps": 237.14983774397732,
+          "newFps": 100.88846797103345,
+          "repeatRatio": 0.5737944748565473,
+          "presentIntervalP95Ms": 6.06415,
+          "presentIntervalP99Ms": 9.5175,
+          "freshSnapshotIntervalP95Ms": 9.83985,
+          "freshSnapshotIntervalP99Ms": 272.81525
+        },
+        "candidate": {
+          "processCount": 2,
+          "windowCount": 4,
+          "allMeasurementsValid": true,
+          "engineFps": 133.61835499446568,
+          "renderFps": 238.23349561047536,
+          "newFps": 104.44481881727333,
+          "repeatRatio": 0.562684335435792,
+          "presentIntervalP95Ms": 5.91075,
+          "presentIntervalP99Ms": 9.0077,
+          "freshSnapshotIntervalP95Ms": 10.16415,
+          "freshSnapshotIntervalP99Ms": 238.22025
+        }
+      },
+      "candidateChange": {
+        "engineFps": {
+          "absolute": 4.412954015271396,
+          "percent": 3.415456305872233
+        },
+        "renderFps": {
+          "absolute": 1.0836578664980436,
+          "percent": 0.45695070964710816
+        },
+        "newFps": {
+          "absolute": 3.55635084623988,
+          "percent": 3.5250320653704037
+        },
+        "repeatRatio": {
+          "absolute": -0.011110139420755338,
+          "percent": -1.936257651057538
+        },
+        "presentIntervalP95Ms": {
+          "absolute": -0.15339999999999954,
+          "percent": -2.5296208042347113
+        },
+        "presentIntervalP99Ms": {
+          "absolute": -0.5098000000000003,
+          "percent": -5.356448647228795
+        },
+        "freshSnapshotIntervalP95Ms": {
+          "absolute": 0.32429999999999914,
+          "percent": 3.2957819478955486
+        },
+        "freshSnapshotIntervalP99Ms": {
+          "absolute": -34.595,
+          "percent": -12.68074273707207
+        }
+      }
+    },
+    "sameRuntimeConfirmed": true,
+    "sameReplayConfirmed": true,
+    "actualModesConfirmed": true,
+    "actualZoomRangeByWindow": [
+      {
+        "run": "01-baseline",
+        "windows": [
+          [
+            0.35190272,
+            1.4999996
+          ],
+          [
+            0.3521314,
+            1.5
+          ]
+        ]
+      },
+      {
+        "run": "02-candidate",
+        "windows": [
+          [
+            0.35024107,
+            1.4999998
+          ],
+          [
+            0.35068217,
+            1.5
+          ]
+        ]
+      },
+      {
+        "run": "03-candidate",
+        "windows": [
+          [
+            0.35019264,
+            1.4999998
+          ],
+          [
+            0.35000008,
+            1.5
+          ]
+        ]
+      },
+      {
+        "run": "04-baseline",
+        "windows": [
+          [
+            0.35000542,
+            1.5
+          ],
+          [
+            0.35,
+            1.4999999
+          ]
+        ]
+      }
+    ],
+    "protocol": {
+      "fog": "on",
+      "cameraMode": "pan",
+      "cameraModeRequested": "pan-zoom",
+      "cameraPeriodSeconds": 1,
+      "zoomMode": "cycle",
+      "zoomPeriodSeconds": 4,
+      "zoomMinimumRequested": 0.35,
+      "zoomMaximumRequested": 1.5,
+      "cameraTraceRequested": false,
+      "logicalWindowWidth": 1280,
+      "logicalWindowHeight": 720,
+      "perfWindowLogRequested": false,
+      "canvasStageTraceRequested": false,
+      "nativeBgraUploadsRequested": false,
+      "hybridOwnerPacingRequested": true,
+      "legacyShortOwnerParkRequested": true,
+      "shortParkGuardRequested": false,
+      "textMeshReuseRequested": true,
+      "textureMetadataReuseRequested": false,
+      "timeBasedMapZoomCacheRequested": false,
+      "vulkanStageTraceRequested": false,
+      "engineSectionTraceRequested": false,
+      "forceLegacyReloadGc": false
+    },
+    "limits": [
+      "Original replay includes resync; these raw window metrics include its interruption.",
+      "Actual viewports and zoom bounds, live unit counts, replay ticks and background load must be checked."
+    ],
+    "verdict": "Metadata reuse retained; 3.53 percent fresh rate gain and 12.68 percent P99 reduction do not resolve the roughly 238 ms continuous-zoom tail."
+  },
+  "europeContinuousZoomNormalAttribution": {
+    "source": "build/map-pan-replay-europe-zoom-16-diagnostic-baseline/normal-replay-gap-attribution.json",
+    "validMeasurement": true,
+    "normalMeasuredSeconds": 39.3167006,
+    "measuredReloadEpochSeconds": 0.6834234,
+    "normalFreshThresholdCounts": {
+      "33.333333": 101,
+      "50": 91,
+      "100": 63
+    },
+    "normalPooledFreshIntervalMs": {
+      "count": 4584,
+      "min": 1.0485,
+      "median": 4.179600000000001,
+      "p95": 8.970804999999997,
+      "p99": 220.36262100000002,
+      "max": 442.2692
+    },
+    "clockCalibration": {
+      "validMarkerCount": 81,
+      "rejectedMarkerCount": 3,
+      "leaveOneMarkerOutResidualMaxAbsMs": 0.011532,
+      "method": "Pair marker JFR start/end with monoStart/monoEnd, piecewise linear integer interpolation. Map event start and end independently; label edge extrapolation."
+    },
+    "representativeGap": {
+      "freshGapMs": 416.7064,
+      "ownerWallMs": 386.1976,
+      "ownerRecordedCpuMs": 359.375,
+      "drawMs": 223.3612,
+      "visibleDrainMs": 156.0976,
+      "cacheRedrawCount": 15,
+      "gcPauseOverlapMs": 0,
+      "longestOverlappingSubmitMs": 0.1035
+    },
+    "conclusion": "Synchronous visible map-cell redraw dominates representative normal zoom gaps. Not a complete diagnosis of all multiplayer stalls."
+  }
+}

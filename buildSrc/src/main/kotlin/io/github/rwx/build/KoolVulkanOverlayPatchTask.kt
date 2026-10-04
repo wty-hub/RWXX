@@ -116,6 +116,7 @@ abstract class KoolVulkanOverlayPatchTask : DefaultTask() {
         patchFrameRateLimit()
         patchGrowingBufferUploads()
         patchTextureUploads()
+        patchImageByteSizes()
         patchFrameLifecycle()
         patchNativePipelineCache()
         validateMappedAllocatorLayout()
@@ -177,6 +178,25 @@ abstract class KoolVulkanOverlayPatchTask : DefaultTask() {
             add(InsnNode(ARETURN))
         })
         writeNode("$owner.class", node)
+    }
+
+    /** Keep native BGRA image statistics consistent with the four bytes actually allocated. */
+    private fun patchImageByteSizes() {
+        val entry = "de/fabmax/kool/pipeline/backend/vk/ImageVk.class"
+        val node = loadNode(entry)
+        val method = node.methods.single {
+            it.name == "getBytesPerPx" && it.desc == "(Lde/fabmax/kool/pipeline/backend/vk/ImageInfo;)I"
+        }
+        val switch = method.instructions.toArray().filterIsInstance<LookupSwitchInsnNode>().single()
+        check(VK_FORMAT_R8G8B8A8_UNORM in switch.keys && VK_FORMAT_B8G8R8A8_UNORM !in switch.keys) {
+            "Expected Kool 0.19 RGBA byte-size entry without native BGRA"
+        }
+        val rgbaLabel = switch.labels[switch.keys.indexOf(VK_FORMAT_R8G8B8A8_UNORM)]
+        val insertAt = switch.keys.indexOfFirst { it > VK_FORMAT_B8G8R8A8_UNORM }
+            .let { if (it < 0) switch.keys.size else it }
+        switch.keys.add(insertAt, VK_FORMAT_B8G8R8A8_UNORM)
+        switch.labels.add(insertAt, rgbaLabel)
+        writeNode(entry, node)
     }
 
     private fun patchFrameLifecycle() {
@@ -354,6 +374,17 @@ abstract class KoolVulkanOverlayPatchTask : DefaultTask() {
         check(timestamp.opcode == LLOAD) { "Expected Kool frame-limit timestamp to be a local value" }
         method.instructions.set(timestamp, MethodInsnNode(INVOKESTATIC, "java/lang/System", "nanoTime", "()J", false))
 
+        val delay = classNode.methods.single { it.name == "delayFrameRender" && it.desc == "(JJ)V" }
+        delay.instructions.clear()
+        delay.tryCatchBlocks.clear()
+        delay.localVariables?.clear()
+        delay.instructions.add(VarInsnNode(ALOAD, 0))
+        delay.instructions.add(VarInsnNode(LLOAD, 1))
+        delay.instructions.add(VarInsnNode(LLOAD, 3))
+        delay.instructions.add(MethodInsnNode(INVOKESTATIC, "io/github/rwx/KoolFramePacerKt", "waitForKoolFrame",
+            "(Lde/fabmax/kool/platform/Lwjgl3Context;JJ)V", false))
+        delay.instructions.add(InsnNode(RETURN))
+
         val writer = ClassWriter(ClassWriter.COMPUTE_MAXS)
         classNode.accept(writer)
         writeClass(entryName, writer.toByteArray())
@@ -493,6 +524,8 @@ abstract class KoolVulkanOverlayPatchTask : DefaultTask() {
         private const val COLOR_BLEND_ATTACHMENT_OWNER =
             "org/lwjgl/vulkan/VkPipelineColorBlendAttachmentState"
         private const val VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA = 7
+        private const val VK_FORMAT_R8G8B8A8_UNORM = 37
+        private const val VK_FORMAT_B8G8R8A8_UNORM = 44
 
         /** 100ms: long enough not to fire on a healthy compositor, short enough to keep the loop alive. */
         private const val ACQUIRE_TIMEOUT_NANOS = 100_000_000L

@@ -466,8 +466,14 @@ public abstract class PlayerTeam extends Serializable implements Comparable<Play
             gameOutputStream.writeInt(this.fogOfWarWidth);
             gameOutputStream.writeInt(this.fogOfWarHeight);
             for (int i = 0; i < this.fogOfWarWidth; i++) {
-                for (int i2 = 0; i2 < this.fogOfWarHeight; i2++) {
-                    gameOutputStream.writeByte(this.fogOfWarData[i][i2]);
+                if (this.fogOfWarHeight > 0 && i < this.fogOfWarData.length
+                        && this.fogOfWarData[i] != null && this.fogOfWarData[i].length >= this.fogOfWarHeight) {
+                    gameOutputStream.writeBytesRaw(this.fogOfWarData[i], 0, this.fogOfWarHeight);
+                } else {
+                    // Preserve zero-height and malformed-grid behavior of the byte loop.
+                    for (int i2 = 0; i2 < this.fogOfWarHeight; i2++) {
+                        gameOutputStream.writeByte(this.fogOfWarData[i][i2]);
+                    }
                 }
             }
         }
@@ -490,9 +496,16 @@ public abstract class PlayerTeam extends Serializable implements Comparable<Play
                 }
             }
             this.fogOfWarData = new byte[i][i2];
-            for (int i3 = 0; i3 < this.fogOfWarWidth; i3++) {
-                for (int i4 = 0; i4 < this.fogOfWarHeight; i4++) {
-                    this.fogOfWarData[i3][i4] = gameInputStream.readByte();
+            if (this.fogOfWarWidth == i && this.fogOfWarHeight == i2) {
+                for (int column = 0; column < this.fogOfWarWidth; column++) {
+                    gameInputStream.readBytesRaw(this.fogOfWarData[column], 0, this.fogOfWarHeight);
+                }
+            } else {
+                // Retain the existing mismatch diagnostic and failure/stream-consumption order.
+                for (int i3 = 0; i3 < this.fogOfWarWidth; i3++) {
+                    for (int i4 = 0; i4 < this.fogOfWarHeight; i4++) {
+                        this.fogOfWarData[i3][i4] = gameInputStream.readByte();
+                    }
                 }
             }
             return;
