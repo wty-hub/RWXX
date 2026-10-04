@@ -26385,6 +26385,441 @@
         "Four fresh oracle runs each passed the same 148 checks; these are repetitions, not 592 distinct test cases.",
         "Passing targeted root-atlas binding/readback/lifetime checks does not reproduce or prove a fix for the rare Jar30 released ImageVK failure under the real fast-zoom scene. No performance result is inferred."
       ]
+    },
+    "meshPipelineOwnership34": {
+      "productionScope": "Main desktop Mesh / DrawPipeline CPU ownership only; no GPU map-cell cache, fog batching, simulator or fence policy migration.",
+      "primaryWorkspaceIntegrated": true,
+      "implementation": {
+        "helper": "desktop/src/main/kotlin/io/github/rwx/kool/vulkan/KoolMeshPipelineOwnership.kt",
+        "overlay": "buildSrc/src/main/kotlin/io/github/rwx/build/KoolVulkanOverlayPatchTask.kt:patchMeshPipelineOwnership",
+        "regression": "desktop/src/test/kotlin/io/github/rwx/kool/vulkan/KoolMeshPipelineOwnershipTest.kt",
+        "nativeOracle": "desktop/src/main/kotlin/io/github/rwx/kool/vulkan/VulkanSpriteAtlasOracle.kt",
+        "ownership": "Every nonnull Mesh.getOrCreatePipeline return immediately addUser(mesh). Existing captureData addUser remains idempotent; shader replacement and Mesh.release remove the Mesh.",
+        "controlFlow": "Nullable return helper preserves the original cached/new/null return and existing stack-map/control flow; build-time descriptors and removeUser sites are checked."
+      },
+      "beforeFix": {
+        "manifest": "build/map-pan-stage-runtime/gpu-pool-33-build-validation.json",
+        "runtimeSha256": "deb1c9db3c0c42d8e3937c79859d174ea293f39d84153e134a83827903629fba",
+        "nativeLog": "build/map-pan-stage-runtime/vulkan-sprite-atlas-oracle-33-seam.log",
+        "nativeExitCode": 1,
+        "marker": "RWXVulkanSpriteAtlasOracle pipelineSeam oldMeshReleased=true pipelineReleased=true newMeshPipelineSame=true shaderPipelineSame=false",
+        "failure": "before-readback-bind Sprite Mesh / Shader pipeline identity mismatch",
+        "pureApiRegression": "The first new-Mesh ownership assertion failed. The second test had a separate KoolSystem fixture initialization failure and is not counted as ownership evidence."
+      },
+      "prototypeAfterFix": {
+        "manifest": "build/map-pan-stage-runtime/gpu-pool-34-build-validation.json",
+        "runtimeSha256": "1a21dddad0802c75501b99a6e2a5dfebf660d604f6449934288c3580c0933822",
+        "core": {
+          "tests": 249,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "desktop": {
+          "tests": 121,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      },
+      "mainAfterFix": {
+        "manifest": "build/map-pan-stage-runtime/main-mesh-pipeline-ownership-34-build-validation.json",
+        "runtimeSha256": "4201446a41afc39b4e1ebc493ab381b97e1240b20c7c99b167c1b3ed924f911b",
+        "gpuMapCellExperiment": false,
+        "desktopTests": {
+          "tests": 110,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "persistedXmlDirectory": "build/map-pan-stage-runtime/main-mesh-pipeline-ownership-34-test-results",
+        "seamNativeLog": "build/map-pan-stage-runtime/main-mesh-pipeline-ownership-34-seam.log",
+        "seamNativeExitCode": 0,
+        "seamMarker": "RWXVulkanSpriteAtlasOracle pipelineSeam oldMeshReleased=true pipelineReleased=false newMeshPipelineSame=true shaderPipelineSame=true",
+        "seamSuccess": "RWXVulkanSpriteAtlasOracle seamSuccess checks=1 rootAtlas=true newUncapturedMesh=true realNativeFence=true actualFenceRelease=true retirementsRequested=129 retirementsCompleted=129",
+        "atlasNativeLog": "build/map-pan-stage-runtime/main-mesh-pipeline-ownership-34-atlas.log",
+        "atlasNativeExitCode": 0,
+        "atlasSuccess": "RWXVulkanSpriteAtlasOracle success checks=148 rootAtlas=true sharedMaterialBatches=130 growthFrames=65 dirtyPages=true filters=true multiplePages=true repeatedEnvelope=true idleExpiryFrames=61 frozenSourceLease=true actualFenceRelease=true observedTextureOwners=141 observedNativeImages=141 retirementsRequested=609 retirementsCompleted=609"
+      },
+      "seamCoverage": {
+        "ordinaryRootAtlas": true,
+        "previousNearestBatch": 1,
+        "newNearestBatch": 0,
+        "interveningNewLinearOnlyFrames": 60,
+        "actualFenceWaitBeforeRetirement": true,
+        "retirementDispatchedAfterCollectBeforeCapture": true,
+        "samePipelineStayedLiveAfterOldMeshRelease": true,
+        "newNearestPixelVerified": true,
+        "retirementsRequested": 129,
+        "retirementsCompleted": 129,
+        "nativeAcquireFailureInjected": false
+      },
+      "knownUnacceptedFogBatching": {
+        "defaultEnabled": false,
+        "primaryWorkspaceIntegrated": false,
+        "nativeLog": "build/map-pan-stage-runtime/europe-gpu-map-cell-oracle-34-pool-fog-batching.log",
+        "nativeExitCode": 1,
+        "failure": "Exception in thread \"kool-main-backend-thread\" java.lang.IllegalStateException: Fog batching differs scale=0.2 origin=-37 filter=Nearest background=0 pixel=7,7 channel=3 original=76 grouped=164",
+        "equivalenceAccepted": false
+      },
+      "separatePrototypeFastZoomDiagnostic34": {
+        "source": "build/map-pan-replay-europe-fast-zoom-gpu-pool-34-failure-diagnostic-memory-budget/normal-replay-gap-attribution.json",
+        "nativeCorrelationSource": "build/map-pan-replay-europe-fast-zoom-gpu-pool-34-failure-diagnostic-memory-budget/native-pipeline-create-gap-review.json",
+        "runtimeSha256": "1a21dddad0802c75501b99a6e2a5dfebf660d604f6449934288c3580c0933822",
+        "validMeasurement": true,
+        "formalComparison": false,
+        "gpuMapCellExperiment": true,
+        "logicalViewport": [
+          1280,
+          720
+        ],
+        "panPeriodSeconds": 1,
+        "zoomPeriodSeconds": 1,
+        "requestedZoomRange": [
+          0.2,
+          2.5
+        ],
+        "normalMeasuredSeconds": 39.1930702,
+        "normalFreshThresholdCounts": {
+          "33.333333": 137,
+          "50": 110,
+          "100": 63
+        },
+        "normalFreshIntervals": {
+          "count": 4420,
+          "min": 1.0452,
+          "median": 4.2424,
+          "p95": 18.144725,
+          "p99": 125.33586300000071,
+          "max": 650.7087
+        },
+        "clockValidMarkers": 89,
+        "clockMaximumLeaveOneOutResidualMs": 0.002342,
+        "normalTopFive": [
+          {
+            "freshGapMs": 650.7087,
+            "startNanos": 204482297652200,
+            "endNanos": 204482948360900,
+            "gcPauseOverlapUnionMs": 63.309382,
+            "nativeLongestCall": {
+              "stage": "graphics-pipeline-create",
+              "startNanos": 204482473539700,
+              "endNanos": 204482947660000,
+              "durationMs": 474.1203,
+              "value0": 1,
+              "value1": -1,
+              "value2": -1,
+              "intervalClassification": "normal-measured",
+              "gcPauseOverlapUnionMsFromCorrelatedGaps": 0.0,
+              "overlappingMainNativeSampleCount": 11
+            }
+          },
+          {
+            "freshGapMs": 612.6015,
+            "startNanos": 204471430606500,
+            "endNanos": 204472043208000,
+            "gcPauseOverlapUnionMs": 67.902801,
+            "nativeLongestCall": {
+              "stage": "submit",
+              "startNanos": 204471587112500,
+              "endNanos": 204472043029700,
+              "durationMs": 455.9172,
+              "value0": 0,
+              "value1": 5428,
+              "value2": -1,
+              "intervalClassification": "normal-measured",
+              "gcPauseOverlapUnionMsFromCorrelatedGaps": 0.0,
+              "overlappingMainNativeSampleCount": 11
+            }
+          },
+          {
+            "freshGapMs": 597.1074,
+            "startNanos": 204478539270400,
+            "endNanos": 204479136377800,
+            "gcPauseOverlapUnionMs": 49.277598,
+            "nativeLongestCall": {
+              "stage": "submit",
+              "startNanos": 204478627919700,
+              "endNanos": 204479136049500,
+              "durationMs": 508.1298,
+              "value0": 0,
+              "value1": 6321,
+              "value2": -1,
+              "intervalClassification": "normal-measured",
+              "gcPauseOverlapUnionMsFromCorrelatedGaps": 5.582936,
+              "overlappingMainNativeSampleCount": 13
+            }
+          },
+          {
+            "freshGapMs": 583.4797,
+            "startNanos": 204462447106800,
+            "endNanos": 204463030586500,
+            "gcPauseOverlapUnionMs": 5.473636,
+            "nativeLongestCall": {
+              "stage": "submit",
+              "startNanos": 204462549647500,
+              "endNanos": 204463030193200,
+              "durationMs": 480.5457,
+              "value0": 0,
+              "value1": 4439,
+              "value2": -1,
+              "intervalClassification": "normal-measured",
+              "gcPauseOverlapUnionMsFromCorrelatedGaps": 5.473636,
+              "overlappingMainNativeSampleCount": 11
+            }
+          },
+          {
+            "freshGapMs": 577.477,
+            "startNanos": 204467563026500,
+            "endNanos": 204468140503500,
+            "gcPauseOverlapUnionMs": 47.149698,
+            "nativeLongestCall": {
+              "stage": "submit",
+              "startNanos": 204467642720800,
+              "endNanos": 204468140186400,
+              "durationMs": 497.4656,
+              "value0": 0,
+              "value1": 4990,
+              "value2": -1,
+              "intervalClassification": "normal-measured",
+              "gcPauseOverlapUnionMsFromCorrelatedGaps": 6.870901,
+              "overlappingMainNativeSampleCount": 12
+            }
+          }
+        ],
+        "nativeCallsAtLeast50MsStatistics": {
+          "all-trace:submit": {
+            "count": 8,
+            "sumCallWallMs": 3846.7094,
+            "maxCallWallMs": 508.1298
+          },
+          "normal-measured:submit": {
+            "count": 4,
+            "sumCallWallMs": 1942.0583,
+            "maxCallWallMs": 508.1298
+          },
+          "all-trace:graphics-pipeline-create": {
+            "count": 3,
+            "sumCallWallMs": 1041.784,
+            "maxCallWallMs": 497.8027
+          },
+          "normal-measured:graphics-pipeline-create": {
+            "count": 2,
+            "sumCallWallMs": 543.9813,
+            "maxCallWallMs": 474.1203
+          }
+        },
+        "largestGapLongCreateStack": {
+          "count": 11,
+          "firstSampleNanos": 204482490777810,
+          "lastSampleNanos": 204482927069597,
+          "stack": [
+            "org.lwjgl.system.JNI.callPJPPPI",
+            "org.lwjgl.vulkan.VK10.nvkCreateGraphicsPipelines",
+            "org.lwjgl.vulkan.VK10.vkCreateGraphicsPipelines",
+            "io.github.rwx.kool.vulkan.VulkanPipelineCache.vkCreateGraphicsPipelines",
+            "de.fabmax.kool.pipeline.backend.vk.DeviceKt.createGraphicsPipeline",
+            "de.fabmax.kool.pipeline.backend.vk.DeviceKt.createGraphicsPipeline$default",
+            "de.fabmax.kool.pipeline.backend.vk.DrawPipelineVk.createPipeline-ITK29Pc",
+            "de.fabmax.kool.pipeline.backend.vk.DrawPipelineVk.bind",
+            "de.fabmax.kool.pipeline.backend.vk.PipelineManager.bindDrawPipeline",
+            "de.fabmax.kool.pipeline.backend.vk.RenderPassVk.renderView",
+            "de.fabmax.kool.pipeline.backend.vk.RenderPassVk.renderMipLevel",
+            "de.fabmax.kool.pipeline.backend.vk.RenderPassVk.render",
+            "de.fabmax.kool.pipeline.backend.vk.ScreenPassVk.renderScene",
+            "de.fabmax.kool.pipeline.backend.vk.RenderBackendVk.executePass",
+            "de.fabmax.kool.pipeline.backend.vk.RenderBackendVk.executePasses",
+            "de.fabmax.kool.pipeline.backend.vk.RenderBackendVk.renderFrame",
+            "de.fabmax.kool.platform.Lwjgl3Context.renderFrame$kool_core",
+            "de.fabmax.kool.platform.swing.SwingWindowSubsystem$unmanagedRenderLoop$1.invokeSuspend",
+            "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith",
+            "kotlinx.coroutines.DispatchedTask.run",
+            "kotlinx.coroutines.EventLoopImplBase.processNextEvent",
+            "kotlinx.coroutines.BlockingCoroutine.joinBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default",
+            "kotlinx.coroutines.BuildersKt.runBlocking$default",
+            "de.fabmax.kool.platform.swing.SwingWindowSubsystem.unmanagedRenderLoop",
+            "de.fabmax.kool.platform.swing.SwingWindowSubsystem.runRenderLoop",
+            "io.github.rwx.PacedSwingWindowSubsystem.runRenderLoop",
+            "de.fabmax.kool.platform.Lwjgl3Context.run",
+            "io.github.rwx.KoolDesktopMain$run$1.invokeSuspend",
+            "kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith",
+            "kotlinx.coroutines.DispatchedTask.run",
+            "kotlinx.coroutines.EventLoopImplBase.processNextEvent",
+            "kotlinx.coroutines.BlockingCoroutine.joinBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt.runBlockingImpl",
+            "kotlinx.coroutines.BuildersKt__Builders_concurrentKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt.runBlockingK",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt.runBlocking",
+            "kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default",
+            "kotlinx.coroutines.BuildersKt.runBlocking$default",
+            "io.github.rwx.KoolDesktopMain.run",
+            "io.github.rwx.KoolDesktopMain.main"
+          ]
+        },
+        "largestGapBudgetBracket": {
+          "before": [
+            {
+              "type": "sample",
+              "supported": true,
+              "reason": "interval",
+              "deviceHandle": 2208230241368,
+              "queueHandle": 2208229720120,
+              "sampleNanos": 204479980735300,
+              "queryStartNanos": 204479980735300,
+              "queryEndNanos": 204479980785200,
+              "queryDurationNanos": 49900,
+              "elapsedNanos": 60684737000,
+              "frameOrdinal": 6428,
+              "submitOrdinal": 6428,
+              "submitStartNanos": 204479980675900,
+              "submitEndNanos": 204479980727000,
+              "submitDurationNanos": 51100,
+              "submitResult": 0,
+              "querySucceeded": true,
+              "heapCount": 1,
+              "heaps": [
+                {
+                  "index": 0,
+                  "flags": 1,
+                  "sizeBytes": 8444735488,
+                  "budgetBytes": 7754063258,
+                  "usageBytes": 404914176
+                }
+              ]
+            }
+          ],
+          "inside": [],
+          "after": [
+            {
+              "type": "sample",
+              "supported": true,
+              "reason": "interval",
+              "deviceHandle": 2208230241368,
+              "queueHandle": 2208229720120,
+              "sampleNanos": 204484981062600,
+              "queryStartNanos": 204484981062600,
+              "queryEndNanos": 204484981119100,
+              "queryDurationNanos": 56500,
+              "elapsedNanos": 65685064300,
+              "frameOrdinal": 7024,
+              "submitOrdinal": 7024,
+              "submitStartNanos": 204484981011700,
+              "submitEndNanos": 204484981054800,
+              "submitDurationNanos": 43100,
+              "submitResult": 0,
+              "querySucceeded": true,
+              "heapCount": 1,
+              "heaps": [
+                {
+                  "index": 0,
+                  "flags": 1,
+                  "sizeBytes": 8444735488,
+                  "budgetBytes": 7754063258,
+                  "usageBytes": 405102592
+                }
+              ]
+            }
+          ]
+        },
+        "fluidityAccepted": false,
+        "improvementClaim": false
+      },
+      "limits": [
+        "The deterministic native failure-to-pass proves the uncaptured-Mesh pipeline ownership defect, not every cause of the rare30 released ImageVK error.",
+        "Main 110-test and native checks validate the isolated lifecycle migration, not FPS improvement or all-gameplay fluidity.",
+        "The separate34 diagnostic uses the experimental GPU map-cell branch, not the main jar; no causal cross-jar performance improvement is claimed.",
+        "Normal statistics exclude owner load_map epochs and crossing fresh gaps. Native call wall time includes driver/scheduling waits; JFR samples are not continuous CPU duration.",
+        "GC co-occurrence is not causality. The474.1203ms graphics-create call has no overlapping reported GC, whereas the entire650.7087ms fresh gap includes63.309382ms GC before that call.",
+        "Memory budget usage is a driver estimate, not resident or paging measurements; the long graphics-create only has sparse before/after budget records.",
+        "Fog batching is still default off and unaccepted after the same pixel-equivalence failure in34. No production fog behavior is changed by this ownership fix."
+      ]
+    },
+    "fogBatchNative35": {
+      "status": "native-image-equivalence-passed-after-oracle-frontend-warmup; gameplay-performance-not-yet-accepted",
+      "runtimeSha256": "bbec251d7cdc38d6747041d767a164ab1492c5b544c0cdbc46054cc6f1c2f32d",
+      "buildManifest": "build/map-pan-stage-runtime/gpu-pool-35-build-validation.json",
+      "sourceWorktree": "C:\\Users\\daerh\\.codex\\worktrees\\gpu-map-cell-cache\\RWXX",
+      "testResults": {
+        "core": {
+          "tests": 249,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        "desktop": {
+          "tests": 121,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      },
+      "changeScope": {
+        "changed": "Independent Vulkan fog batching Oracle initialization: wait one frontend frame before the original image-equivalence cases.",
+        "productionStartupPatch": false,
+        "productionExpectationsLoosened": false,
+        "originalRgbaExpectationsChanged": false,
+        "gpuMapCellOrFogPrototypeMigratedToMain": false
+      },
+      "originalRgbaOracle": {
+        "log": "build/map-pan-stage-runtime/europe-gpu-map-cell-oracle-35-pool-fog-batching.log",
+        "frontendWarmupBefore": 0,
+        "frontendWarmupAfter": 1,
+        "checks": 40,
+        "exactRgba": true,
+        "syntheticAtlas": true,
+        "masks": 256,
+        "scales": 5,
+        "origins": 2,
+        "filters": 2,
+        "backgrounds": 2,
+        "backendShutdownLogged": true
+      },
+      "retainedColdDiagnostic": {
+        "log": "build/map-pan-stage-runtime/europe-gpu-map-cell-oracle-35-pool-fog-diagnostic.log",
+        "firstSubmitFrame": 0,
+        "case": "cold-primitive-only",
+        "cameraUniformModCount": 0,
+        "modelUniformModCount": 0,
+        "actualAlpha": [
+          0,
+          0
+        ],
+        "expectedAlpha": 125,
+        "coldExpectedRgbaPassed": false,
+        "knownStartupFailureObserved": true,
+        "failureRetained": true,
+        "interpretation": "The frame-zero standalone Oracle did not initialize the expected camera/model uniform values. Its alpha-zero failure is retained rather than presented as a production startup fix."
+      },
+      "warmDiagnostic": {
+        "log": "build/map-pan-stage-runtime/europe-gpu-map-cell-oracle-35-pool-fog-diagnostic.log",
+        "checks": 3,
+        "warmPrimitiveAlpha": 125,
+        "warmTwoTileAlpha": 164,
+        "exactRgba": true,
+        "warmPrimitiveFrame": 4,
+        "warmOriginalTwoTileFrame": 8,
+        "warmGroupedTwoTileFrame": 12,
+        "backendShutdownLogged": true
+      },
+      "limits": [
+        "The34 failed comparison remains in the historical record. The35 result corrects standalone Oracle initialization, with the original40 RGBA expectations unchanged.",
+        "Only the Oracle changed for this followup; no production startup patch or fog behavior change is claimed.",
+        "Native pixel equivalence is correctness evidence, not in-game performance or overall fluidity acceptance.",
+        "The gameplay ABBA is still running when this checkpoint is documented. No provisional FPS/P99 figures or performance improvement claim are included.",
+        "The GPU map-cell and fog batching prototypes remain outside the isolated main pipeline-ownership migration."
+      ],
+      "gameplayAbbaCompleteAtCheckpoint": false,
+      "performanceImprovementClaim": false,
+      "fluidityAccepted": false
     }
   }
 }

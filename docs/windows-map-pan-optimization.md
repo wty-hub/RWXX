@@ -332,3 +332,21 @@ GPU 缓存验证工具已允许预热后仅命中数增长、创建数保持不�
 该压力试跑的 18 个资源组样本覆盖约 85.06 秒，全部采样账本闭合；累计实际分配从 14 增至 444 组、实际释放从 0 增至 410 组，预热后的各次采样仍持续增加。空闲数量与附件字节经常达到 32 组／32 MiB 上限，后半多数样本为活动 2／4 组加空闲 32／30 组，待完成退役采样均为 0。这些累计值和样本包含预热及主测量窗口以外的时间；32 MiB 只限制空闲附件，不是整个进程的内存上限。地图格网仍为 5×5；主测量区间记录 5,940 次格重绘和 230 次 reset，单 owner 行内最高重画九个可见格，五秒样本中的 live 最高为八组，两者都不是连续测得的 GPU 活动／在途版本峰值。
 
 当前资源组匹配键包含输出采样过滤方式，而 `LayerBufferManager` 在实际缩放低于 0.3 时切换地图格的采样设置。压力场景持续跨过该阈值，Near／Linear 两族无法互相复用，是这次空闲池饱和并反复创建／释放的具体候选。现有日志没有分别记录两族的活动和空闲数量，不能把每次创建或全部卡顿单独归因于 filter。后续应验证图像附件与 sampler 的独立复用及严格资源所有权，不能通过无限提高缓存上限宣称问题解决。来源为 `build/map-pan-replay-europe-fast-zoom-gpu-pool-27-trial/diagnostic-summary.json`、`replay-pan-frame.jsonl`、`map-cache.csv` 和 `engine.csv`；全部 18 个资源组样本及限制已追加到验证 JSON，此前 27 包记录保持不变。
+
+
+34 包补充：共享管线所有权修复（2026-10-05）。Kool 0.19 的 `Mesh.getOrCreatePipeline()` 已把共享 `DrawPipeline` 存入新 Mesh，但原先要到 `DrawCommand.captureData()` 才登记用户。Scene 已收集新 Mesh、尚未捕获命令时，Synced 退休任务若释放最后一个旧用户，会提前释放这条新 Mesh 仍持有的管线，并清空 Shader 的 `createdPipeline`。实际独立 Vulkan 用例用 Near 旧批次 1、60 个仅 Linear 的新画面及 Near 新批次 0，等待真实提交 fence 后，在 collect→capture 窗口执行退休；33 包确实出现 `oldMeshReleased=true pipelineReleased=true newMeshPipelineSame=true shaderPipelineSame=false`，随后原生 before-bind 身份检查失败，退出码为 1。
+
+34 包只在取得非空管线时立即 `addUser(mesh)`，原捕获阶段的 Set 登记保留，shader 替换和 Mesh／Scene 释放仍按原路径移除用户；不改变实际 GPU fence、上传、模拟或图集策略。该独立修复已迁入主目录，生产改动仅为 desktop helper 和版本校验的 overlay 方法；主目录包 SHA-256 为 `4201446a41afc39b4e1ebc493ab381b97e1240b20c7c99b167c1b3ed924f911b`，110 项 desktop 检查失败／错误／跳过均为 0。同一原生时序用例现在得到 `pipelineReleased=false newMeshPipelineSame=true shaderPipelineSame=true`，新批次像素正确，129 个真实 fence 退休回调全部完成；普通 Atlas 原生用例的 148 项检查通过，覆盖共享材质多批次、脏页／换页、Near／Linear、闲置 61 个新画面后返回、重复 envelope 和冻结源租约，609 个退休回调全部完成。这证明了这个管线所有权缺陷的修复，不能代表全部旧 ImageVK 异常或普通游戏短停顿都已消除。主目录未迁入 GPU 地图缓存实验。
+
+34 独立 GPU 地图原型仍有未通过的 fog batching 像素检查：首例 scale=0.2、origin=-37、Nearest、透明背景在像素 (7,7) 的 alpha 为原顺序 76、重分组 164，仍未验收、默认关闭，未迁入主目录。提前登记管线用户没有掩盖或放宽这个断言。
+
+34 原型另一次欧洲图 1 秒拖动与 0.2–2.5／1 秒缩放诊断，排除同步重载及跨界间隔后，普通区间为 39.1930702 秒；4,420 个新画面间隔中超过 33.333／50／100 毫秒的分别为 137／110／63 次，P95 为 18.144725 毫秒、P99 为 125.335863 毫秒、最大 650.7087 毫秒。最长一段主屏幕 pass 的 `vkCreateGraphicsPipelines` 原生调用为 474.1203 毫秒，11 个完整 JNI 栈采样对应 `ScreenPassVk.renderScene`；另一个早期极短 create 采样走 offscreen pass，不能把最长创建归为子 cell。整段另有 63.309382 毫秒 GC，但它结束于这次长 create 之前，create 本身未重叠该 GC。普通区间还记录四次至少 50 毫秒的原生 `submit`，分别为 455.9172／508.1298／480.5457／497.4656 毫秒，以及两次至少 50 毫秒的 graphics-create，分别为 474.1203／69.8610 毫秒。89 个有效时钟标记的最大留一校准残差为 2.342 微秒。
+
+这些是同一时钟下的原生调用墙钟跨度，含驱动及调度等待，不代表连续 CPU 执行时间；GC 重叠不等于因果。最长 create 前后的稀疏预算记录分别为 usage 404,914,176／405,102,592 字节、budget 7,754,063,258 字节，不能代替当时驻留或分页计数，也不能证明该长等待来自或不来自显存压力。该诊断使用独立原型包 `1a21dddad0802c75501b99a6e2a5dfebf660d604f6449934288c3580c0933822`，不是主目录包；不是同包 A B B A 对照，不宣称性能改善或卡顿已解决。完整堆栈、QPC 边界和预算关联保存在 `build/map-pan-replay-europe-fast-zoom-gpu-pool-34-failure-diagnostic-memory-budget/native-pipeline-create-gap-review.json`；构建与原生证据见验证 JSON 的 `followup2026-10-05.meshPipelineOwnership34`。
+
+
+35 包补充：fog batching 原生图像检查的初始化对照（2026-10-05）。独立 Oracle 在首次提交前等待一个 frontend 帧，日志记录 `frontendWarmup before=0 after=1`；原有 40 项 RGBA 比较保持相同期待并全部通过，覆盖 256 个 synthetic atlas mask、五个缩放、两个 origin、Nearest／Linear 和两种背景。冻结原型包 SHA-256 为 `bbec251d7cdc38d6747041d767a164ab1492c5b544c0cdbc46054cc6f1c2f32d`，249 项受影响 core、121 项 desktop 检查的失败／错误／跳过均为 0。这里只改变独立 Oracle 初始化，没有修改生产启动流程，也没有把 fog batching 或 GPU 地图原型迁入主目录。
+
+冷启动诊断仍明确保留失败：第 0 帧 primitive-only 的 CameraData／Model uniform modCount 均为 0，两个读取像素 alpha 都为 0，原期待为 125，`coldExpectedRgbaPassed=false`。预热后的 primitive alpha 为 125，两 tile 原顺序及重分组 alpha 为 164，三项诊断的完整 RGBA 比较通过。这澄清了 34 包首次对照受到 Oracle 初始化影响，不构成生产启动缺陷已修复的宣称，也没有放宽旧 RGBA 断言。实际日志为 `build/map-pan-stage-runtime/europe-gpu-map-cell-oracle-35-pool-fog-batching.log` 和 `europe-gpu-map-cell-oracle-35-pool-fog-diagnostic.log`，构建与冷／热结果在验证 JSON 的 `followup2026-10-05.fogBatchNative35`。
+
+此时正常游戏的同包 A B B A 仍在运行，本补充只记录原生图像正确性与测试初始化边界，不纳入未完成的帧率结果，不宣称批次游戏性能改善或快速拖动／缩放卡顿已经解决。

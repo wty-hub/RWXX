@@ -118,11 +118,45 @@ abstract class KoolVulkanOverlayPatchTask : DefaultTask() {
         patchTextureUploads()
         patchImageByteSizes()
         patchFrameLifecycle()
+        patchMeshPipelineOwnership()
         patchNativePipelineCache()
         validateMappedAllocatorLayout()
         patchNativeMemoryRetirement()
         patchNativeReleaseQueue()
         patchDeviceIdleResult()
+    }
+
+    /** Register a selected pipeline's CPU owner before collect -> capture retirement can run. */
+    private fun patchMeshPipelineOwnership() {
+        val owner = "de/fabmax/kool/scene/Mesh"
+        val pipelineOwner = "de/fabmax/kool/pipeline/DrawPipeline"
+        val node = loadNode("$owner.class")
+        check(node.fields.count { it.name == "pipeline" && it.desc == "L$pipelineOwner;" } == 1) {
+            "Expected one Kool 0.19 Mesh cached pipeline field"
+        }
+        val method = node.methods.single { it.name == "getOrCreatePipeline" &&
+            it.desc == "(Lde/fabmax/kool/KoolContext;Lde/fabmax/kool/scene/MeshInstanceList;)L$pipelineOwner;" }
+        check(method.instructions.toArray().filterIsInstance<MethodInsnNode>().count {
+            it.owner == "de/fabmax/kool/pipeline/DrawShader" && it.name == "getOrCreatePipeline"
+        } == 1) { "Expected one Kool 0.19 Mesh shader pipeline selection" }
+        listOf("setShader", "doRelease").forEach { name ->
+            check(node.methods.single { it.name == name }.instructions.toArray()
+                .filterIsInstance<MethodInsnNode>().count {
+                    it.owner == pipelineOwner && it.name == "removeUser" && it.desc == "(L$owner;)V"
+                } == 1) { "Expected Kool 0.19 Mesh.$name to balance its pipeline ownership" }
+        }
+        val returned = method.instructions.toArray().filter { it.opcode == ARETURN }
+        check(returned.isNotEmpty()) { "Expected Kool 0.19 Mesh pipeline return" }
+        returned.forEach { instruction ->
+            // The nullable helper leaves the return value unchanged. No new bytecode branches
+            // or stack-map frames: cached, newly selected and null returns all keep their shape.
+            method.instructions.insertBefore(instruction, InsnList().apply {
+                add(VarInsnNode(ALOAD, 0))
+                add(MethodInsnNode(INVOKESTATIC, "io/github/rwx/kool/vulkan/KoolMeshPipelineOwnership",
+                    "retain", "(L$pipelineOwner;L$owner;)L$pipelineOwner;", false))
+            })
+        }
+        writeNode("$owner.class", node)
     }
 
     /** Replace inline per-mesh VMA staging allocations; MixedBuffer.limit is already bytes. */
