@@ -5,7 +5,7 @@
 ```sh
 ./gradlew :desktop:platformFatJar
 python3 desktop/tools/vulkan_native_matrix.py \
-  --jar desktop/build/libs/RWXX-1.0.5-macos-arm64.jar \
+  --jar desktop/build/libs/RWXX-1.1.0-macos-arm64.jar \
   --java /path/to/jdk25/bin/java \
   --operating-state visible-unlocked
 ```
@@ -35,7 +35,7 @@ Kool 原有默认画质使用 4 倍 MSAA，继续保持该默认值。`--msaa-sa
 
 ```powershell
 python desktop/tools/windows_backend_comparison.py `
-  --jar desktop/build/libs/RWXX-1.0.5-windows-x64.jar `
+  --jar desktop/build/libs/RWXX-1.1.0-windows-x64.jar `
   --output build/rwx-benchmark/windows-comparison
 ```
 
@@ -49,7 +49,7 @@ python desktop/tools/windows_backend_comparison.py `
 
 ```powershell
 .\gradlew.bat :desktop:platformFatJar
-$jar = (Resolve-Path 'desktop/build/libs/RWXX-1.0.5-windows-x64.jar').Path
+$jar = (Resolve-Path 'desktop/build/libs/RWXX-1.1.0-windows-x64.jar').Path
 $java = (Get-Command java -ErrorAction Stop).Source
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 ```
@@ -87,7 +87,7 @@ python desktop/tools/analyze_owner_pacing_abba.py $guardOut --comparison guard
 原欧洲回放诊断使用单独进程和结果目录，运行器复制运行包及回放，并核对回放 SHA256。将 `$replay` 改为本机文件路径；以下保留本次问题所用文件名。
 
 ```powershell
-$replay = 'C:\Users\daerh\Desktop\RWXX-1.0.5-windows-x64-desktop\RWXX\app\replays\2080年欧洲回归🌎结盟15p城夺4.0(15p) [v1.15] (3 Oct 2026 16.42.58).replay'
+$replay = 'C:\Users\daerh\Desktop\RWXX-1.1.0-windows-x64-desktop\RWXX\app\replays\2080年欧洲回归🌎结盟15p城夺4.0(15p) [v1.15] (3 Oct 2026 16.42.58).replay'
 $replayOut = Join-Path 'build/rwx-benchmark' "europe-replay-diagnostic-$stamp"
 python desktop/tools/map_pan_replay.py `
   --jar $jar --java $java --replay $replay --output $replayOut `
