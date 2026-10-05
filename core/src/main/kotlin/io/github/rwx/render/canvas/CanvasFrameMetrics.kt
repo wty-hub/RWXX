@@ -39,6 +39,12 @@ object CanvasFrameMetrics {
     private var textCacheScanCandidates = 0L
     private var textCacheLive = 0
     private var textCachePeak = 0
+    internal class FreezeScratchRecord(val owner: Long, val pool: KoolCanvasFreezeScratchPool)
+    @Volatile private var freezeScratchRecorded: FreezeScratchRecord? = null
+
+    internal fun freezeScratchPool(record: FreezeScratchRecord) {
+        if (diagnostics != null) freezeScratchRecorded = record
+    }
 
     fun snapshot(): CanvasFrameRateSample? = published
 
@@ -77,7 +83,13 @@ object CanvasFrameMetrics {
         val sample = counter.sample(now, 5_000_000_000L) ?: return
         val textCache = if (!textCacheRecorded) "" else
             ",\"textMeshCache\":{\"created\":$textCacheCreated,\"exactHits\":$textCacheExactHits,\"reused\":$textCacheReused,\"pruned\":$textCachePruned,\"scanCandidates\":$textCacheScanCandidates,\"live\":$textCacheLive,\"peak\":$textCachePeak}"
-        val line = "{\"sampleNanos\":$now,\"seconds\":%.3f,\"acceptedPresentFps\":%.2f,\"presentFps\":%.2f,\"producedSnapshotHz\":%.2f,\"freshSnapshotHz\":%.2f,\"simulationTicksPerSecond\":%.2f,\"repeatRatio\":%.5f,\"p95Ms\":%.3f,\"p99Ms\":%.3f$textCache}".format(
+        val freezeScratch = freezeScratchRecorded?.let { record -> record.pool.stats().let {
+            ",\"freezeScratchPool\":{\"owner\":${record.owner},\"enabled\":${it.enabled}," +
+                "\"borrows\":${it.borrows},\"reused\":${it.reused},\"created\":${it.created},\"discarded\":${it.discarded}," +
+                "\"idle\":${it.idle},\"active\":${it.active},\"peakMemoEntries\":${it.peakMemoEntries}," +
+                "\"peakVisitingEntries\":${it.peakVisitingEntries},\"peakSeenAllocations\":${it.peakSeenAllocations},\"closed\":${it.closed}}"
+        } } ?: ""
+        val line = "{\"sampleNanos\":$now,\"seconds\":%.3f,\"acceptedPresentFps\":%.2f,\"presentFps\":%.2f,\"producedSnapshotHz\":%.2f,\"freshSnapshotHz\":%.2f,\"simulationTicksPerSecond\":%.2f,\"repeatRatio\":%.5f,\"p95Ms\":%.3f,\"p99Ms\":%.3f$textCache$freezeScratch}".format(
             Locale.ROOT, sample.seconds, sample.acceptedPresentFps, sample.acceptedPresentFps,
             sample.producedSnapshotHz, sample.freshSnapshotHz, sample.simulationTicksPerSecond,
             sample.repeatRatio, sample.p95Ms, sample.p99Ms)

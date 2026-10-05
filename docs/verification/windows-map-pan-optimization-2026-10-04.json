@@ -28889,6 +28889,61 @@
         "No production/build/game was launched by this read; Java JFRReader completed exit0."
       ],
       "sourceReport": "build/map-pan-replay-europe-fast-zoom-gpu-pool-35-failure-diagnostic-fog-batching-memory-budget/normal-allocation-sample-review-35.json"
+    },
+    "replayDerivedLocal37": {
+      "runtimeSha256": "78c96cf5de9a117891b83c96095a49c767f3835d596fa55dda4a508c916d23b8",
+      "artifact": "build/map-pan-europe-replay-derived-local-37-trial/diagnostic-summary.json",
+      "validMeasurement": true,
+      "sourceTeamId": 0,
+      "initialEligibleSourceUnits": 38,
+      "restoredObjects": 497,
+      "orderableObjects": 324,
+      "eligibleTeams": 12,
+      "teamCount": 15,
+      "actualAiControllerTeams": 0,
+      "serializedAiTeamFlagTeams": 0,
+      "legacyDerivedControlledByAiTeams": 15,
+      "fog": {
+        "width": 320,
+        "height": 200,
+        "tileCount": 64000,
+        "initialNonzeroTiles": 55136,
+        "enabled": true,
+        "periodicMaintenance": true,
+        "renderActive": true,
+        "displayEnabled": true
+      },
+      "worldHashBeforeClose": "4987ec1379c501a4496b9769af1d80aaddc0bb77ccc7c1e06325f35d406a77ba",
+      "worldHashAfterClose": "4987ec1379c501a4496b9769af1d80aaddc0bb77ccc7c1e06325f35d406a77ba",
+      "windows": [
+        {"movingFrames": 5385, "maximumMovingUnits": 38, "freshSnapshotIntervalP99Ms": 28.4885, "freshSnapshotIntervalMaxMs": 190.9446},
+        {"movingFrames": 5448, "maximumMovingUnits": 36, "freshSnapshotIntervalP99Ms": 24.9053, "freshSnapshotIntervalMaxMs": 160.4669}
+      ],
+      "acceptanceLimits": ["offline imported local world", "not multiplayer", "not AI progression", "not death or spectator acceptance"]
+    },
+    "meshBindings37Abba": {
+      "artifact": "build/map-pan-builtin-fast-zoom-gpu-pool-37-mesh-bindings-abba/comparison.json",
+      "runtimeSha256": "78c96cf5de9a117891b83c96095a49c767f3835d596fa55dda4a508c916d23b8",
+      "order": ["baseline", "candidate", "candidate", "baseline"],
+      "onlyChangedEnvironment": "RWX_GPU_MAP_CELL_MESH_TEXTURE_BINDINGS",
+      "fixedEnvironment": {"RWX_GPU_MAP_CELL_FOG_BATCHING": "1", "RWX_CANVAS_FREEZE_SCRATCH_POOL": "0"},
+      "baseline": {"processCount": 2, "windowCount": 4, "newFps": 186.70393602359684, "freshP95Ms": 10.7246, "freshP99Ms": 35.04055},
+      "candidate": {"processCount": 2, "windowCount": 4, "newFps": 187.72452775676078, "freshP95Ms": 10.9035, "freshP99Ms": 35.1784},
+      "candidateChange": {"newFpsPercent": 0.5466, "freshP99Percent": 0.3934},
+      "conclusion": "No long-frame improvement; default remains off"
+    },
+    "freezeScratch37Abba": {
+      "artifact": "build/map-pan-builtin-fast-zoom-gpu-pool-37-freeze-scratch-abba/comparison.json",
+      "runtimeSha256": "78c96cf5de9a117891b83c96095a49c767f3835d596fa55dda4a508c916d23b8",
+      "order": ["baseline", "candidate", "candidate", "baseline"],
+      "onlyChangedEnvironment": "RWX_CANVAS_FREEZE_SCRATCH_POOL",
+      "fixedEnvironment": {"RWX_GPU_MAP_CELL_FOG_BATCHING": "1", "RWX_GPU_MAP_CELL_MESH_TEXTURE_BINDINGS": "0"},
+      "baseline": {"processCount": 2, "windowCount": 4, "newFps": 181.43723226572342, "freshP95Ms": 11.7214, "freshP99Ms": 38.7712, "presentP99Ms": 30.3742},
+      "candidate": {"processCount": 2, "windowCount": 4, "newFps": 186.32218070189222, "freshP95Ms": 11.38105, "freshP99Ms": 31.9353, "presentP99Ms": 26.77085},
+      "candidateChange": {"newFpsPercent": 2.6924, "freshP95Percent": -2.9037, "freshP99Percent": -17.6314, "presentP99Percent": -11.8632},
+      "actualPath": "candidate scratch borrow/reuse counters increased; disabled runs reported zero",
+      "productionDefault": "enabled; set RWX_CANVAS_FREEZE_SCRATCH_POOL=0 to disable",
+      "conclusion": "Best current short-stall candidate; still not a no-stutter acceptance"
     }
   }
 }

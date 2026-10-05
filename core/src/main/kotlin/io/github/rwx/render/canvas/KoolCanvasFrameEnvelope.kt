@@ -80,11 +80,12 @@ internal sealed interface FrozenCanvasResource {
 class KoolCanvasResourceLease internal constructor(
     resources: Map<KoolCanvasTextureId, FrozenCanvasResource>,
     internal val fonts: KoolCanvasFontSnapshot,
+    pixelDedup: IdentityHashMap<KoolCanvasPixelPool.Allocation, Boolean>? = null,
 ) : AutoCloseable {
     private val references = AtomicInteger(1)
     private var ownedResources: Map<KoolCanvasTextureId, FrozenCanvasResource>? =
         Collections.unmodifiableMap(resources.toMap())
-    private var ownedPixels: List<KoolCanvasPixelPool.PixelOwner>? = retainPixels(resources)
+    private var ownedPixels: List<KoolCanvasPixelPool.PixelOwner>? = retainPixels(resources, pixelDedup)
     val isReleased: Boolean get() = references.get() == 0
     val resourceCount: Int get() = synchronized(this) { ownedResources?.size ?: 0 }
 
@@ -117,8 +118,9 @@ class KoolCanvasResourceLease internal constructor(
         }
     }
 
-    private fun retainPixels(resources: Map<KoolCanvasTextureId, FrozenCanvasResource>): List<KoolCanvasPixelPool.PixelOwner> {
-        val seen = IdentityHashMap<KoolCanvasPixelPool.Allocation, Boolean>()
+    private fun retainPixels(resources: Map<KoolCanvasTextureId, FrozenCanvasResource>,
+                             pixelDedup: IdentityHashMap<KoolCanvasPixelPool.Allocation, Boolean>?): List<KoolCanvasPixelPool.PixelOwner> {
+        val seen = pixelDedup ?: IdentityHashMap()
         val retained = ArrayList<KoolCanvasPixelPool.PixelOwner>(resources.size)
         try {
             for (resource in resources.values) {
@@ -140,6 +142,7 @@ class KoolCanvasResourceLease internal constructor(
 class KoolCanvasCpuTextureStore internal constructor(
     private val pixelPool: KoolCanvasPixelPool,
     internal val rasterPixelPoolEnabled: Boolean,
+    freezeScratchPoolEnabled: Boolean = System.getenv("RWX_CANVAS_FREEZE_SCRATCH_POOL") != "0",
 ) : KoolCanvasTextureStore, KoolCanvasFrameSnapshotRetainer,
     KoolCanvasTextureRevisionStore, KoolCanvasFrameTextureRevisionStore, AutoCloseable {
     constructor() : this(KoolCanvasPixelPool(), System.getenv("RWX_CANVAS_PIXEL_POOL") != "0")
@@ -151,12 +154,17 @@ class KoolCanvasCpuTextureStore internal constructor(
     private val sources = mutableMapOf<KoolCanvasTextureId, Source>()
     private val retainedFrames = mutableMapOf<KoolCanvasTextureId, Int>()
     private val ownerId = NEXT_OWNER.incrementAndGet()
+    private val freezeScratchPool = KoolCanvasFreezeScratchPool(freezeScratchPoolEnabled)
+    private val freezeScratchMetrics = if (FREEZE_SCRATCH_DIAGNOSTICS)
+        CanvasFrameMetrics.FreezeScratchRecord(ownerId, freezeScratchPool) else null
     private var revision = 0
     private var frozenFrameSerial = 0L
     private val preallocatedPixelSizes = mutableSetOf<Int>()
     private var closed = false
     override val textureRevision: Int get() = revision
     override val frameTextureRevision: Int get() = revision
+
+    internal fun freezeScratchPoolStats() = freezeScratchPool.stats()
 
     override fun register(id: KoolCanvasTextureId, texture: Texture2d): Nothing =
         error("GPU textures cannot be registered by the engine recording thread")
@@ -378,72 +386,84 @@ class KoolCanvasCpuTextureStore internal constructor(
     ): FrameEnvelope {
         check(!closed) { "CPU texture store is closed" }
         val freezeStart = CanvasRenderStageTrace.start()
-        val resources = linkedMapOf<KoolCanvasTextureId, FrozenCanvasResource>()
-        val visiting = mutableSetOf<KoolCanvasTextureId>()
-        val resolvedIds = mutableMapOf<KoolCanvasTextureId, KoolCanvasTextureId>()
-        lateinit var freeze: (KoolCanvasFrame) -> KoolCanvasFrame
-        fun texture(ref: KoolCanvasTextureRef): KoolCanvasTextureRef {
-            val source = sources[ref.id]
-            val id = source?.versionId ?: KoolCanvasTextureId("${ref.id.value}/cpu-$ownerId-missing")
-            // This identity is explicit metadata, never inferred from a revision-id string. It
-            // reuses renderer geometry without sharing or overwriting immutable pixel versions.
-            val pixelIdentity = (source?.resource as? FrozenCanvasResource.Pixels)?.let {
-                KoolCanvasFrozenPixelIdentity(ownerId, ref.id)
-            }
-            resolvedIds[id]?.let { return ref.copy(id = it, frozenPixelIdentity = pixelIdentity) }
-            if (id in visiting) {
-                val cycleId = KoolCanvasTextureId("${id.value}/cycle")
-                resources[cycleId] = FrozenCanvasResource.Missing
-                return ref.copy(id = cycleId, frozenPixelIdentity = null)
-            }
-            visiting += id
-            val resource = source?.resource
-            val resolvedId = if (resource is FrozenCanvasResource.Frame) {
-                val frozen = freeze(resource.frame)
-                if (source.frozenFrame != frozen) {
-                    source.frozenFrame = frozen
-                    source.frozenVersionId = KoolCanvasTextureId("${id.value}/frozen-${++frozenFrameSerial}")
+        val scratch = freezeScratchPool.borrow()
+        try {
+            val resources = linkedMapOf<KoolCanvasTextureId, FrozenCanvasResource>()
+            val visiting = scratch?.visiting ?: mutableSetOf<KoolCanvasTextureId>()
+            val resolvedIds = scratch?.resolvedIds ?: mutableMapOf<KoolCanvasTextureId, KoolCanvasTextureId>()
+            val frozenReferences = scratch?.frozenReferences ?: IdentityHashMap<KoolCanvasTextureRef, KoolCanvasTextureRef>()
+            lateinit var freeze: (KoolCanvasFrame) -> KoolCanvasFrame
+            fun texture(ref: KoolCanvasTextureRef): KoolCanvasTextureRef {
+                frozenReferences[ref]?.let { return it }
+                val source = sources[ref.id]
+                val resource = source?.resource
+                val id = source?.versionId ?: KoolCanvasTextureId("${ref.id.value}/cpu-$ownerId-missing")
+                val pixelIdentity = (resource as? FrozenCanvasResource.Pixels)?.let {
+                    KoolCanvasFrozenPixelIdentity(ownerId, ref.id)
                 }
-                checkNotNull(source.frozenVersionId).also { resources[it] = FrozenCanvasResource.Frame(frozen) }
-            } else {
-                resources[id] = resource ?: FrozenCanvasResource.Missing
-                id
-            }
-            visiting -= id
-            resolvedIds[id] = resolvedId
-            return ref.copy(id = resolvedId, frozenPixelIdentity = pixelIdentity)
-        }
-        fun paint(paint: KoolCanvasPaint): KoolCanvasPaint {
-            val displacement = paint.textureEffect as? KoolCanvasTextureEffect.Displacement ?: return paint
-            return paint.copy(textureEffect = displacement.copy(screenBase = texture(displacement.screenBase)))
-        }
-        freeze = { source ->
-            source.copy(commands = Collections.unmodifiableList(source.commands.map { command ->
-                when (command) {
-                    is KoolCanvasCommand.DrawTexture -> command.copy(texture = texture(command.texture), paint = paint(command.paint))
-                    is KoolCanvasCommand.DrawRect -> command.copy(paint = paint(command.paint))
-                    is KoolCanvasCommand.DrawLine -> command.copy(paint = paint(command.paint))
-                    is KoolCanvasCommand.DrawCircle -> command.copy(paint = paint(command.paint))
-                    is KoolCanvasCommand.DrawText -> command.copy(paint = paint(command.paint))
-                    is KoolCanvasCommand.Clear -> command
+                resolvedIds[id]?.let { resolvedId ->
+                    return ref.copy(id = resolvedId, frozenPixelIdentity = pixelIdentity).also {
+                        if (resource != null && resource !== FrozenCanvasResource.Missing) frozenReferences[ref] = it
+                    }
                 }
-            }))
+                if (id in visiting) {
+                    val cycleId = KoolCanvasTextureId("${id.value}/cycle")
+                    resources[cycleId] = FrozenCanvasResource.Missing
+                    return ref.copy(id = cycleId, frozenPixelIdentity = null)
+                }
+                visiting += id
+                val resolvedId = if (resource is FrozenCanvasResource.Frame) {
+                    val frozen = freeze(resource.frame)
+                    if (source.frozenFrame != frozen) {
+                        source.frozenFrame = frozen
+                        source.frozenVersionId = KoolCanvasTextureId("${id.value}/frozen-${++frozenFrameSerial}")
+                    }
+                    checkNotNull(source.frozenVersionId).also { resources[it] = FrozenCanvasResource.Frame(frozen) }
+                } else {
+                    resources[id] = resource ?: FrozenCanvasResource.Missing
+                    id
+                }
+                visiting -= id
+                resolvedIds[id] = resolvedId
+                return ref.copy(id = resolvedId, frozenPixelIdentity = pixelIdentity).also {
+                    if (resource != null && resource !== FrozenCanvasResource.Missing) frozenReferences[ref] = it
+                }
+            }
+            fun paint(paint: KoolCanvasPaint): KoolCanvasPaint {
+                val displacement = paint.textureEffect as? KoolCanvasTextureEffect.Displacement ?: return paint
+                return paint.copy(textureEffect = displacement.copy(screenBase = texture(displacement.screenBase)))
+            }
+            freeze = { source ->
+                source.copy(commands = Collections.unmodifiableList(source.commands.map { command ->
+                    when (command) {
+                        is KoolCanvasCommand.DrawTexture -> command.copy(texture = texture(command.texture), paint = paint(command.paint))
+                        is KoolCanvasCommand.DrawRect -> command.copy(paint = paint(command.paint))
+                        is KoolCanvasCommand.DrawLine -> command.copy(paint = paint(command.paint))
+                        is KoolCanvasCommand.DrawCircle -> command.copy(paint = paint(command.paint))
+                        is KoolCanvasCommand.DrawText -> command.copy(paint = paint(command.paint))
+                        is KoolCanvasCommand.Clear -> command
+                    }
+                }))
+            }
+            val immutableFrame = freeze(frame)
+            val fonts = KoolCanvasFontRegistry.snapshot()
+            val lease = try {
+                KoolCanvasResourceLease(resources, fonts, scratch?.seenPixels)
+            } catch (failure: Throwable) {
+                KoolCanvasFontRegistry.releaseSnapshot(fonts)
+                throw failure
+            }
+            return try {
+                FrameEnvelope(sequence, generation, simulationTick, viewportRevision, immutableFrame, lease, camera)
+            } catch (failure: Throwable) {
+                lease.close()
+                throw failure
+            }
+                .also { CanvasRenderStageTrace.record("engine-freeze", freezeStart, frame.commands.size.toLong(), resources.size.toLong()) }
+        } finally {
+            freezeScratchPool.release(scratch)
+            freezeScratchMetrics?.let(CanvasFrameMetrics::freezeScratchPool)
         }
-        val immutableFrame = freeze(frame)
-        val fonts = KoolCanvasFontRegistry.snapshot()
-        val lease = try {
-            KoolCanvasResourceLease(resources, fonts)
-        } catch (failure: Throwable) {
-            KoolCanvasFontRegistry.releaseSnapshot(fonts)
-            throw failure
-        }
-        return try {
-            FrameEnvelope(sequence, generation, simulationTick, viewportRevision, immutableFrame, lease, camera)
-        } catch (failure: Throwable) {
-            lease.close()
-            throw failure
-        }
-            .also { CanvasRenderStageTrace.record("engine-freeze", freezeStart, frame.commands.size.toLong(), resources.size.toLong()) }
     }
 
     @Synchronized
@@ -465,6 +485,7 @@ class KoolCanvasCpuTextureStore internal constructor(
         retainedFrames.clear()
         preallocatedPixelSizes.clear()
         revision++
+        freezeScratchPool.close()
         pixelPool.close()
     }
 
@@ -479,7 +500,11 @@ class KoolCanvasCpuTextureStore internal constructor(
         require(count <= Int.MAX_VALUE / 4L && pixels.size >= count) { "Incomplete or oversized ARGB image" }
     }
 
-    private companion object { val NEXT_OWNER = AtomicLong() }
+    private companion object {
+        val NEXT_OWNER = AtomicLong()
+        val FREEZE_SCRATCH_DIAGNOSTICS = System.getenv("RWX_FRAME_METRICS") != null ||
+            System.getenv("RWX_FRAME_TRACE") != null || System.getenv("RWX_ENGINE_FRAME_TRACE") != null
+    }
 }
 
 /** Render-thread resource owners; fence retirement retains old versions until their last reader. */
