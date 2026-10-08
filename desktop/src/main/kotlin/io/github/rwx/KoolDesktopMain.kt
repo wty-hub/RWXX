@@ -72,6 +72,7 @@ object KoolDesktopMain : KoinComponent {
         bridge.filePickerHost=swingHost
         val context = createContext(createKoolConfig(swingHost, renderBackend))
         context.onRender += { io.github.rwx.render.canvas.CanvasFramePresentation.beginFrame() }
+        io.github.rwx.benchmark.ReplayNormalInputProbe.install(context) { get<io.github.rwx.session.GameSession>() }
         swingHost.scheduleVisibilityProbe(context)
         context.onShutdown += { io.github.rwx.render.canvas.CanvasFrameMetrics.close() }
         // Kool only reads its frame-rate limits once, from the config, so keep them in step with the
@@ -85,7 +86,11 @@ object KoolDesktopMain : KoinComponent {
             val exitAt = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(seconds)
             var requested = false
             context.onRender += {
-                if (!requested && System.nanoTime() >= exitAt) { requested = true; swingHost.requestClose() }
+                val completed = io.github.rwx.benchmark.ReplayPanBenchmark.completedAtNanos
+                val now = System.nanoTime()
+                if (!requested && (now >= exitAt || completed > 0 && now - completed >= 500_000_000L)) {
+                    requested = true; swingHost.requestClose()
+                }
             }
         }
         val app = KoolApplication(context)
@@ -98,13 +103,22 @@ object KoolDesktopMain : KoinComponent {
                 options = options,
                 onQuit = swingHost::requestClose,
                 configureGameSession = { gameSession ->
+                    (gameSession as? io.github.rwx.kool.KoolDesktopGameSession)?.let { independent ->
+                        installKoolFrameAvailability(independent::hasUnpresentedFrame)
+                        context.onShutdown += { installKoolFrameAvailability(null) }
+                    }
                     io.github.rwx.compatibility.GameCompatibilityProbe.install(gameSession)?.let { probe ->
                         context.onShutdown += { probe.close() }
                     }
                 },
                 configureCanvasHost = { host ->
                     if (renderBackend === RenderBackendVk.Companion) {
+                        host.setGpuOffscreenPassesAvailable(true)
                         host.setGpuRetirementSink(io.github.rwx.kool.vulkan.VulkanFrameLifecycle::retainUntilFrameComplete)
+                        host.setGpuRetirementPendingCounter(
+                            io.github.rwx.kool.vulkan.VulkanFrameLifecycle::pendingRetirements,
+                        )
+                        io.github.rwx.kool.vulkan.KoolCanvasRealSceneOracle.install(context, host)
                     }
                 },
             )
@@ -128,6 +142,16 @@ object KoolDesktopMain : KoinComponent {
         renderBackend = renderBackend,
         windowSubsystem = swingHost.windowSubsystem,
         numSamples = desktopKoolMsaaSamples(),
+        // Off, and this was tested rather than inherited: `asyncSceneUpdate` is Kool's mechanism for
+        // overlapping frame N's presentation with frame N+1's scene work, which is exactly where this
+        // renderer spends its time (measured ~62% of the render thread's span sits between replays, against
+        // ~36% inside them). Kool's own default is true.
+        //
+        // Enabling it was rejected: the pan+zoom arms stopped completing inside the harness timeout (the
+        // static arm was fine), and machine load rose from ~20% to ~70-100%. A scene-update coroutine
+        // running beside the game while it mutates its own state is a correctness risk, not merely a
+        // slowdown. Overlapping the two remains the right goal, but it needs a design that keeps game state
+        // single-threaded.
         asyncSceneUpdate = false,
         // The host provides a different AWT canvas type for Vulkan and OpenGL. Falling back to
         // OpenGL after creating a regular Vulkan canvas cannot produce a working window.

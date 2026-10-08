@@ -45,6 +45,142 @@ final class MapCacheTrace {
         } catch (RuntimeException ignored) { INSTANCE.close(); }
     }
 
+    /**
+     * One `renderPendingRedraws` call.
+     *
+     * The zoom step rescales {@code cellWorldStepSize}, and every cell is re-scattered onto new world
+     * coordinates, so a single zoom change can invalidate the whole 5x5 grid. This row states how many
+     * cells one call actually rasterised and how long the call took, which is the quantity the cell
+     * policy has to keep bounded.
+     */
+    static void recordRedrawBatch(boolean visibleOnly, boolean offscreenOnly, int renderedCount,
+                                  int redrawsSinceLastCall, long elapsedNanos, int step, int gridCells) {
+        if (!INSTANCE.enabled) return;
+        try {
+            long now = System.nanoTime();
+            String mode = offscreenOnly ? "offscreen" : (visibleOnly ? "visible" : "all");
+            INSTANCE.writeBatch(now - elapsedNanos, now, renderedCount, redrawsSinceLastCall, elapsedNanos,
+                    step, gridCells, mode);
+        } catch (RuntimeException ignored) { INSTANCE.close(); }
+    }
+
+    /**
+     * One display frame's cell-invalidation demand.
+     *
+     * A fog change marks a 3x3 tile neighbourhood per changed tile, and `cellWorldStepSize` is
+     * `cellInnerBufferPixelSize / renderScale`, so at low zoom each cell covers fewer world units and the
+     * same fog activity marks more cells. This row states the demand independently of how it was served.
+     */
+    /**
+     * One visible cell's per-frame block in the draw loop.
+     *
+     * This block always runs for a visible cell; `redrawn` distinguishes the frames where it also
+     * rasterised the cell. The difference is what a redraw actually costs against the per-frame floor.
+     */
+    static void recordVisibleCell(boolean redrawn, long elapsedNanos, int step, float renderScale) {
+        if (!INSTANCE.enabled) return;
+        try {
+            long now = System.nanoTime();
+            INSTANCE.writeVisibleCell(now - elapsedNanos, now, redrawn, elapsedNanos, step, renderScale);
+        } catch (RuntimeException ignored) { INSTANCE.close(); }
+    }
+
+    /**
+     * A coverage assertion row: does the grid still cover the visible world?
+     *
+     * `cellWorldExtent = cellBufferPixelSize / renderScale` and each cell is composited one-to-one with
+     * the screen, so `gridCells * cellWorldStepSize` must be at least the visible world extent. A
+     * render-scale floor that is higher than the zoom makes each cell cover less world, so the grid can
+     * stop covering the viewport -- the map then renders zoomed in and the missing cells cost nothing,
+     * which a frame-rate measurement rewards. This row makes that failure explicit.
+     */
+    static void recordCoverage(int gridCells, int step, float renderScale, float visibleWorldWidth,
+                               float visibleWorldHeight, float zoom) {
+        if (!INSTANCE.enabled) return;
+        try {
+            long now = System.nanoTime();
+            INSTANCE.writeCoverage(gridCells, step, renderScale, visibleWorldWidth, visibleWorldHeight, zoom, now);
+        } catch (RuntimeException ignored) { INSTANCE.close(); }
+    }
+
+    private synchronized void writeCoverage(int gridCells, int step, float renderScale, float visibleWorldWidth,
+                                            float visibleWorldHeight, float zoom, long now) {
+        if (!enabled) return;
+        try {
+            long span = (long) gridCells * step;
+            boolean coversX = span >= visibleWorldWidth;
+            boolean coversY = span >= visibleWorldHeight;
+            writer.append(Long.toString(now)).append(',').append(Long.toString(now)).append(",0,")
+                    .append("coverage").append(',')
+                    .append(Integer.toString(coversX && coversY ? 1 : 0)).append(',')
+                    .append(Integer.toString(coversX ? 1 : 0)).append(',').append(Integer.toString(coversY ? 1 : 0))
+                    .append(",0,0.0,0.0,0,0,")
+                    .append(Integer.toString(step)).append(',').append(Float.toString(renderScale)).append(",0,cover,")
+                    .append(Long.toString(span)).append(',').append(Float.toString(visibleWorldWidth)).append(',')
+                    .append(Float.toString(visibleWorldHeight)).append(',').append(Float.toString(zoom))
+                    .append(",0,0,0,0,0,0,0.0,0.0,0,0").append('\n');
+        } catch (IOException | RuntimeException error) {
+            close();
+        }
+    }
+
+    private synchronized void writeVisibleCell(long start, long end, boolean redrawn, long elapsedNanos,
+                                               int step, float renderScale) {
+        if (!enabled) return;
+        try {
+            writer.append(Long.toString(start)).append(',').append(Long.toString(end)).append(',')
+                    .append(Long.toString(elapsedNanos)).append(',').append("visibleCell").append(',')
+                    .append(redrawn ? "1" : "0").append(",0,0,0,0.0,0.0,0,0,")
+                    .append(Integer.toString(step)).append(',').append(Float.toString(renderScale)).append(",0,x,")
+                    .append(redrawn ? "redrawn" : "cached").append(",0,0,0,0,0,")
+                    .append(redrawn ? "1" : "0").append(",0,0,0,0.0,0.0,0,0").append('\n');
+        } catch (IOException | RuntimeException error) {
+            close();
+        }
+    }
+
+    static void recordInvalidationFrame(int invalidations, long elapsedNanos, int step, int gridCells, int renderScale) {        if (!INSTANCE.enabled) return;
+        try {
+            long now = System.nanoTime();
+            INSTANCE.writeInvalidation(now - elapsedNanos, now, invalidations, elapsedNanos, step, gridCells, renderScale);
+        } catch (RuntimeException ignored) { INSTANCE.close(); }
+    }
+
+    private synchronized void writeInvalidation(long start, long end, int invalidations, long elapsedNanos,
+                                                int step, int gridCells, int renderScale) {
+        if (!enabled) return;
+        try {
+            writer.append(Long.toString(start)).append(',').append(Long.toString(end)).append(',')
+                    .append(Long.toString(elapsedNanos)).append(',').append("invalidateFrame").append(',')
+                    .append(Integer.toString(invalidations)).append(",0,0,0,0.0,0.0,0,0,")
+                    .append(Integer.toString(step)).append(",0.0,0,frame,")
+                    .append(Integer.toString(renderScale)).append(',').append(Integer.toString(gridCells))
+                    .append(",0,0,0,0,0,").append(Integer.toString(invalidations))
+                    .append(",0,0,0,0.0,0.0,0,0").append('\n');
+        } catch (IOException | RuntimeException error) {
+            close();
+        }
+    }
+
+    private synchronized void writeBatch(long start, long end, int renderedCount, int redrawsSinceLastCall,
+                                         long elapsedNanos, int step, int gridCells, String mode) {
+        if (!enabled) return;
+        try {
+            // Reuses the cell row shape so the existing analyzers keep working: `direction` carries the
+            // batch size and `axis` the mode string.
+            writer.append(Long.toString(start)).append(',').append(Long.toString(end)).append(',')
+                    .append(Long.toString(elapsedNanos)).append(',').append("redrawBatch").append(',')
+                    .append(Integer.toString(renderedCount)).append(',').append(Integer.toString(redrawsSinceLastCall)).append(',')
+                    .append("0,0,0.0,0.0,0,0,")
+                    .append(Integer.toString(step)).append(",0.0,0,").append(mode).append(',')
+                    .append(Integer.toString(renderedCount)).append(',').append(Integer.toString(gridCells))
+                    .append(",0,0,0,0,0,").append(Integer.toString(renderedCount))
+                    .append(",0,0,0,0.0,0.0,0,0").append('\n');
+        } catch (IOException | RuntimeException error) {
+            close();
+        }
+    }
+
     private long cpuTime() {
         if (cpuClock == null) return -1;
         try { return cpuClock.getCurrentThreadCpuTime(); }

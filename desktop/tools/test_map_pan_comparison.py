@@ -97,7 +97,7 @@ class MapPanComparisonTest(unittest.TestCase):
         self.assertEqual(env["RWX_REPLAY_PAN_REPETITIONS"], "2")
         self.assertEqual(env["PATH"], "test")
 
-    def test_static_scenario_fails_validation_even_with_frame_data(self):
+    def test_static_scenario_is_rejected_when_pan_was_requested(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory)
             setup = {"kind": "scenario", "cameraMode": "static", "warmupSeconds": 20, "sampleSeconds": 20, "repetitions": 2}
@@ -109,7 +109,19 @@ class MapPanComparisonTest(unittest.TestCase):
             (output / "test-trace.csv").write_text("acceptedPresentNanos,generation,sequence\n0,1,1\n20000000000,1,2\n40000000000,1,3\n", encoding="utf-8")
             result = analyze_run(output, {"name": "test", "exitCode": 0, "timedOut": False})
             self.assertFalse(result["validMeasurement"])
-            self.assertTrue(any("camera movement" in reason for reason in result["invalidReasons"]))
+            self.assertTrue(any("cameraMode" in reason for reason in result["invalidReasons"]))
+
+    def test_fresh_long_frames_are_preserved_with_repeated_presentations(self):
+        trace = [(0, 1, 1), (5_000_000, 1, 1), (20_000_000, 1, 2), (75_000_000, 1, 3)]
+        result = fresh_intervals(trace, {"sampleStartNanos": 0, "sampleEndNanos": 80_000_000})
+        self.assertEqual(result["freshSnapshotIntervalsOver16_667Ms"], 2)
+        self.assertEqual(result["freshSnapshotIntervalsOver33_333Ms"], 1)
+        self.assertEqual(result["freshSnapshotIntervalsOver50Ms"], 1)
+        self.assertEqual(result["freshSnapshotIntervalsOver100Ms"], 0)
+        self.assertEqual(result["freshSnapshotLongFrames"], [
+            {"acceptedPresentNanos": 20_000_000, "intervalMs": 20},
+            {"acceptedPresentNanos": 75_000_000, "intervalMs": 55},
+        ])
 
     def test_uncaught_render_exception_invalidates_otherwise_complete_measurements(self):
         with tempfile.TemporaryDirectory() as directory:

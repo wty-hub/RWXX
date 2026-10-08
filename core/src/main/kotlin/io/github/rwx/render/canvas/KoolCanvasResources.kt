@@ -1,4 +1,4 @@
-package io.github.rwx.render.canvas
+﻿package io.github.rwx.render.canvas
 
 import de.fabmax.kool.Assets
 import de.fabmax.kool.pipeline.*
@@ -57,6 +57,19 @@ interface KoolCanvasTextureStore : KoolCanvasTextureResolver {
     fun registerAssetSnapshot(id: KoolCanvasTextureId, assetPath: String, encodedBytes: ByteArray?) =
         registerAsset(id, assetPath)
     fun registerFrame(id: KoolCanvasTextureId, frame: KoolCanvasFrame)
+
+    /**
+     * Records an offscreen target whose contents are only ever sampled by later draws, never read
+     * back as CPU pixels.
+     *
+     * A store that can hand the target to a real GPU offscreen pass overrides this and keeps it out
+     * of `frame(id)`: [KoolCanvasTextureResolver.resolve] then serves the pass image and the replay
+     * renderer draws it as an ordinary texture instead of expanding its command list at every
+     * sampling point. The default body preserves the legacy "recorded frame texture" behaviour.
+     */
+    fun registerGpuTargetFrame(id: KoolCanvasTextureId, frame: KoolCanvasFrame, width: Int, height: Int) =
+        registerFrame(id, frame)
+
     fun unregister(id: KoolCanvasTextureId)
     fun frame(id: KoolCanvasTextureId): KoolCanvasFrame?
     fun argbImage(id: KoolCanvasTextureId): KoolCanvasArgbImage? = null
@@ -101,6 +114,62 @@ object KoolCanvasTextureRegistry :
     private val staticArgbIds = mutableSetOf<KoolCanvasTextureId>()
     private val registeredAssets = mutableMapOf<KoolCanvasTextureId, String>()
     private val registeredFrames = mutableMapOf<KoolCanvasTextureId, KoolCanvasFrame>()
+
+    /**
+     * Images of GPU offscreen targets, keyed by content version.
+     *
+     * A canvas texture reference carries a filter, and the Vulkan backend takes its sampler from the
+     * bound `Texture` object (`BindGroupDataVk` uses `binding.sampler ?: tex.samplerSettings`), so one
+     * filter per attachment is not enough. [nearest] is a sampler-only view sharing [linear]'s image;
+     * the offscreen pass owns the image and releases it, the registry never releases either view.
+     */
+    private class GpuTargetTextures(val linear: Texture2d, val nearest: Texture2d) {
+        /**
+         * The sampler view only has an image once the backend created the pass attachment, and a
+         * fresh attachment has none until its pass has drawn once. Returning [fallback] in that window
+         * keeps every draw bindable instead of handing kool an unloaded texture.
+         */
+        fun forFilter(filter: KoolCanvasTextureFilter, fallback: () -> Texture2d): Texture2d = when {
+            linear.gpuTexture == null -> fallback()
+            filter == KoolCanvasTextureFilter.Nearest && nearest.gpuTexture != null -> nearest
+            else -> linear
+        }
+
+        /** The attachment image exists, so a draw can actually sample this target. */
+        fun hasImage(): Boolean = linear.gpuTexture != null
+    }
+
+    private val gpuTargetTextures = mutableMapOf<KoolCanvasTextureId, GpuTargetTextures>()
+
+    /**
+     * Draws that actually sampled a live GPU offscreen target image. This is the quantitative evidence
+     * that a target is rendered once and sampled many times, and it is what
+     * `desktop/tools/map_pan_builtin_comparison.py` reads back from the frame metrics.
+     */
+    private var gpuTargetResolveHits = 0L
+
+    /**
+     * Total `resolve` calls.
+     *
+     * The renderer caches resolved textures and only calls back on a miss, so this count divided by the
+     * replayed command count *is* the cache miss rate 鈥?the number that decides whether a fog-driven
+     * revision bump is invalidating the whole per-frame resolve cache.
+     */
+    private var resolveCalls = 0L
+
+    @Synchronized
+    fun resolveCallCount(): Long = resolveCalls
+
+    @Synchronized
+    fun gpuTargetResolveHitCount(): Long = gpuTargetResolveHits
+
+    /** Registry sizes for `RWX_CANVAS_MEMORY_DIAGNOSTICS=1`; see `KoolCanvasGpuTargetPasses`. */
+    @Synchronized
+    fun diagnosticCounts(): String =
+        "textures[argb=${argbTextures.size} slots=${argbTextureUploadSlots.size} " +
+            "registered=${registeredTextures.size} argbImages=${registeredArgbImages.size} " +
+            "assets=${registeredAssets.size} gpuTargets=${gpuTargetTextures.size} " +
+            "retiring=${retiringTextures.size}]"
     private val argbTextures = mutableMapOf<Pair<KoolCanvasTextureId, KoolCanvasTextureFilter>, Texture2d>()
     private val argbTextureUploadSlots = mutableMapOf<Pair<KoolCanvasTextureId, KoolCanvasTextureFilter>, Int>()
     private class ArgbUploadBuffers(val contextGeneration: Long) : AutoCloseable {
@@ -327,7 +396,13 @@ object KoolCanvasTextureRegistry :
             }
             return
         }
-        registeredTextures.remove(id)?.retireTexture()
+        if (gpuTargetTextures.remove(id) != null) {
+            // The offscreen pass owns this attachment image; releasing the Texture2d here would free
+            // the image the pass still renders into. The pass itself is retired by its owner.
+            registeredTextures.remove(id)
+        } else {
+            registeredTextures.remove(id)?.retireTexture()
+        }
         if (id.value == COMPLETE_SLICK_FRAME_TEXTURE_ID) {
             completeFrameArgbBuffers.fill(null)
             completeFrameArgbSlot = -1
@@ -339,6 +414,28 @@ object KoolCanvasTextureRegistry :
         releaseCachedTextures(id)
         frameTextureRevisionValue++
     }
+
+    /**
+     * Publishes one content version of a GPU offscreen target. [linear] is the pass attachment;
+     * [nearest] only borrows its image. Replacing an existing version drops the old references
+     * without releasing them, because the caller retires whole passes through
+     * [KoolCanvasGpuRetirement] once the frame that sampled them has completed.
+     */
+    @Synchronized
+    fun registerGpuTargetTexture(id: KoolCanvasTextureId, linear: Texture2d, nearest: Texture2d) {
+        registeredTextures[id] = linear
+        registeredArgbImages.remove(id)
+        staticArgbIds -= id
+        registeredAssets.remove(id)
+        registeredFrames.remove(id)
+        gpuTargetTextures[id] = GpuTargetTextures(linear, nearest)
+        releaseCachedTextures(id)
+        frameTextureRevisionValue++
+    }
+
+    /** True when [id] is a published GPU offscreen target version. */
+    @Synchronized
+    fun isGpuTargetTexture(id: KoolCanvasTextureId): Boolean = gpuTargetTextures.containsKey(id)
 
     @Synchronized
     override fun retainFrameSnapshot(id: KoolCanvasTextureId) {
@@ -404,11 +501,19 @@ object KoolCanvasTextureRegistry :
     }
 
     @Synchronized
-    override fun resolve(texture: KoolCanvasTextureRef, filter: KoolCanvasTextureFilter): Texture2d =
-        registeredTextures[texture.id]
+    override fun resolve(texture: KoolCanvasTextureRef, filter: KoolCanvasTextureFilter): Texture2d {
+        resolveCalls++
+        val gpuTarget = gpuTargetTextures[texture.id]
+        if (gpuTarget != null) {
+            // Only a live image counts as a hit; the placeholder fallback is not a sample of the target.
+            if (gpuTarget.hasImage()) gpuTargetResolveHits++
+            return gpuTarget.forFilter(filter) { placeholderTexture(filter) }
+        }
+        return registeredTextures[texture.id]
             ?: registeredArgbImages[texture.id]?.let { argbTexture(texture.id, it, filter) }
             ?: registeredAssets[texture.id]?.let { assetTexture(texture.id, it, filter) }
             ?: placeholderTexture(filter)
+    }
 
     private fun argbTexture(
         id: KoolCanvasTextureId,

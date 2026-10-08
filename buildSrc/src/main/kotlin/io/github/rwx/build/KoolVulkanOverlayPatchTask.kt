@@ -19,6 +19,7 @@ import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.VarInsnNode
 import org.objectweb.asm.tree.InsnNode
 import org.objectweb.asm.tree.MethodNode
+import org.objectweb.asm.tree.TypeInsnNode
 import java.util.zip.ZipFile
 
 abstract class KoolVulkanOverlayPatchTask : DefaultTask() {
@@ -113,17 +114,62 @@ abstract class KoolVulkanOverlayPatchTask : DefaultTask() {
         writeClass(SWAPCHAIN_CLASS_ENTRY, writer.toByteArray())
 
         patchDrawPipeline()
+        patchDrawQueueGroupHint()
         patchFrameRateLimit()
         patchGrowingBufferUploads()
         patchTextureUploads()
         patchImageByteSizes()
+        patchSampledImageStageMasks()
         patchFrameLifecycle()
         patchMeshPipelineOwnership()
         patchNativePipelineCache()
         validateMappedAllocatorLayout()
         patchNativeMemoryRetirement()
+        patchBufferAllocationDiagnostics()
         patchNativeReleaseQueue()
         patchDeviceIdleResult()
+    }
+
+    /** An empty group can be pruned while prevQueue still points into that detached container. */
+    private fun patchDrawQueueGroupHint() {
+        val owner = "de/fabmax/kool/pipeline/DrawQueue"
+        val entry = "$owner.class"
+        val node = loadNode(entry)
+        val reset = node.methods.single { it.name == "reset" &&
+            it.desc == "(Lde/fabmax/kool/pipeline/RenderPass\$View;)V" }
+        check(node.fields.any { it.name == "prevQueue" && it.desc == "L$owner\$OrderedQueue;" })
+        check(node.fields.any { it.name == "orderedQueues" && it.desc == "Ljava/util/List;" })
+        val returned = reset.instructions.toArray().filter { it.opcode == RETURN }.single()
+        // Group zero is permanent. Reset the fast lookup along with drawGroupId, after pruning;
+        // subsequent additions can no longer bypass orderedQueues through an orphaned group.
+        reset.instructions.insertBefore(returned, InsnList().apply {
+            add(VarInsnNode(ALOAD, 0))
+            add(VarInsnNode(ALOAD, 0))
+            add(FieldInsnNode(GETFIELD, owner, "orderedQueues", "Ljava/util/List;"))
+            add(InsnNode(ICONST_0))
+            add(MethodInsnNode(INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;", true))
+            add(TypeInsnNode(CHECKCAST, "$owner\$OrderedQueue"))
+            add(FieldInsnNode(PUTFIELD, owner, "prevQueue", "L$owner\$OrderedQueue;"))
+        })
+        val writer = ClassWriter(ClassWriter.COMPUTE_MAXS)
+        node.accept(writer)
+        writeClass(entry, writer.toByteArray())
+    }
+
+    /** Vertex-fetched label data needs the same transfer visibility as fragment-fetched sprites. */
+    private fun patchSampledImageStageMasks() {
+        val entry = "de/fabmax/kool/pipeline/backend/vk/ImageVk\$Companion.class"
+        val node = loadNode(entry)
+        for (name in listOf("srcStageMaskForLayout", "dstStageMaskForLayout")) {
+            val method = node.methods.single { it.name == name && it.desc == "(I)J" }
+            val fragment = method.instructions.toArray().filterIsInstance<LdcInsnNode>().filter { it.cst == 128L }
+            check(fragment.size == 1) { "Expected one fragment sampled-image stage in $name" }
+            // VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT.
+            fragment.single().cst = 136L
+        }
+        val writer = ClassWriter(ClassWriter.COMPUTE_MAXS)
+        node.accept(writer)
+        writeClass(entry, writer.toByteArray())
     }
 
     /** Register a selected pipeline's CPU owner before collect -> capture retirement can run. */
@@ -269,6 +315,34 @@ abstract class KoolVulkanOverlayPatchTask : DefaultTask() {
                 add(MethodInsnNode(INVOKESTATIC, LIFECYCLE_OWNER, "deviceIdle", "(L$backendOwner;Z)V", false))
             })
         }
+        // Split backend CPU recording from native waits; capture completed calls without changing
+        // control flow inside the pinned dependency. Failed frames cannot become valid measurements.
+        listOf("preparePipelines" to "backend-prepare-pipelines", "executePasses" to "backend-execute-passes",
+            "renderFrame" to "backend-frame").forEach { (methodName, stage) ->
+            val original = backend.methods.single { it.name == methodName }
+            check(original.desc.endsWith(")V") && original.access and ACC_STATIC == 0) {
+                "Expected non-static void Kool 0.19 $methodName for diagnostic wrapper"
+            }
+            original.name = methodName + "\$rwxMeasured"
+            val wrapper = MethodNode(original.access, methodName, original.desc, original.signature,
+                original.exceptions.toTypedArray())
+            val arguments = org.objectweb.asm.Type.getArgumentTypes(original.desc)
+            val timerLocal = 1 + arguments.sumOf { it.size }
+            wrapper.instructions.apply {
+                add(MethodInsnNode(INVOKESTATIC, LIFECYCLE_OWNER, "diagnosticStageStart", "()J", false))
+                add(VarInsnNode(LSTORE, timerLocal))
+                add(VarInsnNode(ALOAD, 0))
+                var local = 1
+                for (argument in arguments) {
+                    add(VarInsnNode(argument.getOpcode(ILOAD), local)); local += argument.size
+                }
+                add(MethodInsnNode(INVOKESPECIAL, backendOwner, original.name, original.desc, false))
+                add(LdcInsnNode(stage)); add(VarInsnNode(LLOAD, timerLocal))
+                add(MethodInsnNode(INVOKESTATIC, LIFECYCLE_OWNER, "diagnosticStageEnd", "(Ljava/lang/String;J)V", false))
+                add(InsnNode(RETURN))
+            }
+            backend.methods.add(wrapper)
+        }
         writeNode("$backendOwner.class", backend)
 
         val queue = loadNode("de/fabmax/kool/pipeline/backend/vk/KoolVkExtensionsKt.class")
@@ -344,6 +418,31 @@ abstract class KoolVulkanOverlayPatchTask : DefaultTask() {
         writeNode("$owner.class", node)
     }
 
+    /** Separate UBO / staging / geometry allocation from their surrounding render spans. */
+    private fun patchBufferAllocationDiagnostics() {
+        val owner = "de/fabmax/kool/pipeline/backend/vk/MemoryManager"
+        val node = loadNode("$owner.class")
+        val info = "de/fabmax/kool/pipeline/backend/vk/MemoryInfo"
+        val descriptor = "(L$info;)Lde/fabmax/kool/pipeline/backend/vk/VkBuffer;"
+        val original = node.methods.single { it.name == "createBuffer" && it.desc == descriptor }
+        check(original.access and ACC_STATIC == 0)
+        original.name = "createBuffer\$rwxMeasured"
+        val wrapper = MethodNode(original.access, "createBuffer", descriptor, original.signature,
+            original.exceptions.toTypedArray())
+        wrapper.instructions.apply {
+            add(MethodInsnNode(INVOKESTATIC, LIFECYCLE_OWNER, "diagnosticStageStart", "()J", false))
+            add(VarInsnNode(LSTORE, 2))
+            add(VarInsnNode(ALOAD, 0)); add(VarInsnNode(ALOAD, 1))
+            add(MethodInsnNode(INVOKESPECIAL, owner, original.name, descriptor, false))
+            // Keep the exact VkBuffer return value beneath the diagnostic arguments.
+            add(VarInsnNode(ALOAD, 1)); add(VarInsnNode(LLOAD, 2))
+            add(MethodInsnNode(INVOKESTATIC, LIFECYCLE_OWNER, "diagnosticBufferCreateEnd", "(L$info;J)V", false))
+            add(InsnNode(ARETURN))
+        }
+        node.methods.add(wrapper)
+        writeNode("$owner.class", node)
+    }
+
     private fun patchNativeReleaseQueue() {
         val owner = "de/fabmax/kool/pipeline/backend/vk/ReleaseQueue"
         val node = loadNode("$owner.class")
@@ -403,10 +502,18 @@ abstract class KoolVulkanOverlayPatchTask : DefaultTask() {
             it.opcode == PUTFIELD && it.name == "prevFrameTime" && it.desc == "J"
         }
         check(stores.size == 1) { "Expected one Kool frame-limit timestamp store, found ${stores.size}" }
-        val store = stores.single()
-        val timestamp = store.previous
-        check(timestamp.opcode == LLOAD) { "Expected Kool frame-limit timestamp to be a local value" }
-        method.instructions.set(timestamp, MethodInsnNode(INVOKESTATIC, "java/lang/System", "nanoTime", "()J", false))
+        check(classNode.fields.single { it.name == "prevFrameTime" }.desc == "J")
+        method.instructions.clear()
+        method.tryCatchBlocks.clear()
+        method.localVariables?.clear()
+        method.instructions.add(VarInsnNode(ALOAD, 0))
+        method.instructions.add(VarInsnNode(ALOAD, 0))
+        method.instructions.add(VarInsnNode(ALOAD, 0))
+        method.instructions.add(FieldInsnNode(GETFIELD, classNode.name, "prevFrameTime", "J"))
+        method.instructions.add(MethodInsnNode(INVOKESTATIC, "io/github/rwx/KoolFramePacerKt", "checkKoolFrameRateLimits",
+            "(Lde/fabmax/kool/platform/Lwjgl3Context;J)J", false))
+        method.instructions.add(FieldInsnNode(PUTFIELD, classNode.name, "prevFrameTime", "J"))
+        method.instructions.add(InsnNode(RETURN))
 
         val delay = classNode.methods.single { it.name == "delayFrameRender" && it.desc == "(JJ)V" }
         delay.instructions.clear()
@@ -519,6 +626,14 @@ abstract class KoolVulkanOverlayPatchTask : DefaultTask() {
             add(MethodInsnNode(INVOKESTATIC, UPLOAD_OWNER, "prepareTextures",
                 "(Lde/fabmax/kool/pipeline/DrawCommand;Lde/fabmax/kool/pipeline/backend/vk/PassEncoderState;)V", false))
         })
+        val bind = classNode.methods.single { it.name == "bind" }
+        bind.instructions.toArray().filter { it.opcode == IRETURN }.forEach { returned ->
+            bind.instructions.insertBefore(returned, InsnList().apply {
+                add(InsnNode(DUP)); add(VarInsnNode(ALOAD, 1)); add(VarInsnNode(ALOAD, 2))
+                add(MethodInsnNode(INVOKESTATIC, "io/github/rwx/kool/vulkan/VulkanGpuTargetDrawDiagnostics", "record",
+                    "(ZLde/fabmax/kool/pipeline/DrawCommand;Lde/fabmax/kool/pipeline/backend/vk/PassEncoderState;)V", false))
+            })
+        }
 
         val writer = ClassWriter(ClassWriter.COMPUTE_MAXS)
         classNode.accept(writer)

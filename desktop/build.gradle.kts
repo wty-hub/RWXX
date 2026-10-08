@@ -184,6 +184,143 @@ tasks.register<JavaExec>("headless") {
     jvmArgs("-Djava.awt.headless=true")
 }
 
+/**
+ * Pixel oracle for the GPU map cell path (`RenderTargetMode.GPU_TARGET`). Readback waits for the
+ * queue, so this is a functional check and must never be used for performance measurement.
+ */
+tasks.register<JavaExec>("runGpuMapCellOracle") {
+    group = "verification"
+    description = "Runs the standalone Vulkan check for GPU offscreen map cell targets."
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass.set("io.github.rwx.kool.vulkan.KoolCanvasGpuMapCellOracle")
+    workingDir = project.file("..")
+    environment("RWX_GPU_MAP_CELL_TARGETS", "1")
+    environment("RWX_RUN_VULKAN_GPU_MAP_CELL_ORACLE", "1")
+    jvmArgs(
+        "-Dorg.lwjgl.opengl.contextAPI=native",
+        "-Dorg.lwjgl.system.stackSize=512",
+        "--enable-native-access=ALL-UNNAMED",
+        "--sun-misc-unsafe-memory-access=allow",
+    )
+}
+
+/**
+ * Colour-correctness gate for the native BGRA upload path.
+ *
+ * That path uploads texture pixels as BGRA instead of converting them on the CPU, and it is off by
+ * default. Measured under pan+zoom it is worth about 9% frame rate and 13% off the P99 present
+ * interval, which is why it should not stay off on a suspicion - but a channel-order mistake would be a
+ * visible colour bug that no frame-rate number can catch, so it needs its own pixel oracle.
+ */
+tasks.register<JavaExec>("runBgraSamplingOracle") {
+    group = "verification"
+    description = "Runs the standalone Vulkan BGRA sampling check for the native BGRA upload path."
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass.set("io.github.rwx.kool.vulkan.VulkanBgraSamplingOracle")
+    workingDir = project.file("..")
+    environment("RWX_NATIVE_BGRA_UPLOAD", "1")
+    environment("RWX_RUN_VULKAN_BGRA_ORACLE", "1")
+    jvmArgs(
+        "-Dorg.lwjgl.opengl.contextAPI=native",
+        "-Dorg.lwjgl.system.stackSize=512",
+        "--enable-native-access=ALL-UNNAMED",
+        "--sun-misc-unsafe-memory-access=allow",
+    )
+}
+
+tasks.register<JavaExec>("runTextGlyphOracle") {
+    group = "verification"
+    description = "Compares instanced glyphs with production MSDF text on Vulkan, including clipping and ordering."
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass.set("io.github.rwx.kool.vulkan.KoolCanvasGpuMapCellOracle")
+    workingDir = project.file("..")
+    environment("RWX_GPU_MAP_CELL_TARGETS", "1")
+    environment("RWX_RUN_VULKAN_GPU_MAP_CELL_ORACLE", "1")
+    environment("RWX_GPU_TEXT_ORACLE", "1")
+    jvmArgs("-Dorg.lwjgl.opengl.contextAPI=native", "-Dorg.lwjgl.system.stackSize=512",
+        "--enable-native-access=ALL-UNNAMED", "--sun-misc-unsafe-memory-access=allow")
+}
+
+tasks.register<JavaExec>("runTextLabelOracle") {
+    group = "verification"
+    description = "Compares immutable whole-label geometry generations with production MSDF text on Vulkan."
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass.set("io.github.rwx.kool.vulkan.KoolCanvasGpuMapCellOracle")
+    workingDir = project.file("..")
+    environment("RWX_GPU_MAP_CELL_TARGETS", "1")
+    environment("RWX_RUN_VULKAN_GPU_MAP_CELL_ORACLE", "1")
+    environment("RWX_GPU_TEXT_ORACLE", "1")
+    environment("RWX_GPU_TEXT_LABEL_ORACLE", "1")
+    jvmArgs("-Dorg.lwjgl.opengl.contextAPI=native", "-Dorg.lwjgl.system.stackSize=512",
+        "--enable-native-access=ALL-UNNAMED", "--sun-misc-unsafe-memory-access=allow")
+}
+
+tasks.register<JavaExec>("runSpriteAppendOracle") {
+    group = "verification"
+    description = "Compares incremental Vulkan sprite atlas appends against individual textures."
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass.set("io.github.rwx.kool.vulkan.KoolCanvasGpuMapCellOracle")
+    workingDir = project.file("..")
+    environment("RWX_GPU_MAP_CELL_TARGETS", "1")
+    environment("RWX_RUN_VULKAN_GPU_MAP_CELL_ORACLE", "1")
+    environment("RWX_GPU_SPRITE_APPEND_ORACLE", "1")
+    environment("RWX_INCREMENTAL_SPRITE_ATLAS", "1")
+    environment("RWX_PROJECTED_SPRITE_ATLAS", "1")
+    jvmArgs("-Dorg.lwjgl.opengl.contextAPI=native", "-Dorg.lwjgl.system.stackSize=512",
+        "--enable-native-access=ALL-UNNAMED", "--sun-misc-unsafe-memory-access=allow")
+}
+
+tasks.register<JavaExec>("runMapGridOracle") {
+    group = "verification"
+    description = "Compares actual rolling map grids through pan, zoom, edges, fog and atlas updates on Vulkan."
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass.set("io.github.rwx.kool.vulkan.KoolCanvasGpuMapCellOracle")
+    workingDir = project.file("..")
+    environment("RWX_GPU_MAP_CELL_TARGETS", "1")
+    environment("RWX_RUN_VULKAN_GPU_MAP_CELL_ORACLE", "1")
+    environment("RWX_REAL_MAP_CELL_ORACLE", "1")
+    environment("RWX_MAP_TEXTURE_BATCHES", "1")
+    environment("RWX_MAP_FOG_BATCHES", "1")
+    environment("RWX_GPU_MAP_GRID_ORACLE", "1")
+    jvmArgs("-Dorg.lwjgl.opengl.contextAPI=native", "-Dorg.lwjgl.system.stackSize=512",
+        "--enable-native-access=ALL-UNNAMED", "--sun-misc-unsafe-memory-access=allow")
+}
+
+tasks.register<JavaExec>("runRealMapCellOracle") {
+    group = "verification"
+    description = "Checks real MapLayer tiles and changing atlas versions through the Vulkan map-cell batch path."
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass.set("io.github.rwx.kool.vulkan.KoolCanvasGpuMapCellOracle")
+    workingDir = project.file("..")
+    environment("RWX_GPU_MAP_CELL_TARGETS", "1")
+    environment("RWX_RUN_VULKAN_GPU_MAP_CELL_ORACLE", "1")
+    environment("RWX_REAL_MAP_CELL_ORACLE", "1")
+    environment("RWX_MAP_TEXTURE_BATCHES", "1")
+    environment("RWX_MAP_FOG_BATCHES", "1")
+    environment("RWX_GPU_FOG_ORACLE", "1")
+    environment("RWX_GPU_TEXT_SHADER_ORACLE", "1")
+    jvmArgs("-Dorg.lwjgl.opengl.contextAPI=native", "-Dorg.lwjgl.system.stackSize=512",
+        "--enable-native-access=ALL-UNNAMED", "--sun-misc-unsafe-memory-access=allow")
+}
+
+/**
+ * Control for the GPU map cell check: the pre-existing sprite atlas oracle. If this also fails on the
+ * current driver, an offscreen pass in a scene is the problem rather than the map cell code. */
+tasks.register<JavaExec>("runSpriteAtlasOracle") {
+    group = "verification"
+    description = "Runs the pre-existing standalone Vulkan sprite atlas oracle as a driver control."
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass.set("io.github.rwx.kool.vulkan.VulkanSpriteAtlasOracle")
+    workingDir = project.file("..")
+    environment("RWX_RUN_VULKAN_SPRITE_ATLAS_ORACLE", "1")
+    jvmArgs(
+        "-Dorg.lwjgl.opengl.contextAPI=native",
+        "-Dorg.lwjgl.system.stackSize=512",
+        "--enable-native-access=ALL-UNNAMED",
+        "--sun-misc-unsafe-memory-access=allow",
+    )
+}
+
 tasks.named("runShadow") {
     group = null
     enabled = false

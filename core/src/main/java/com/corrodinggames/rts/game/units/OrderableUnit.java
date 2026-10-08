@@ -959,6 +959,12 @@ public abstract class OrderableUnit extends UnitBase {
     /* JADX INFO: renamed from: a */
     private void applyPositionChange(float f, GameEngine gameEngine, float f2, float f3) {
         TileMap tileMap = gameEngine.tileMap;
+        if (tileMap == null) {
+            // The map can be released from inside a tick (level end or reload), which used to abort the
+            // engine owner loop with "Cannot read field tileScaleX because tileMap is null". There is no
+            // tile grid to resolve movement against without a map, so this tick applies no movement.
+            return;
+        }
         float f4 = tileMap.tileScaleX;
         float f5 = tileMap.tileScaleY;
         float f6 = this.posX * f4;

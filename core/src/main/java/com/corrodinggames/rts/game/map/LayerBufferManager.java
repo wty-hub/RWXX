@@ -20,9 +20,42 @@ import java.util.IdentityHashMap;
 /* JADX INFO: renamed from: com.corrodinggames.rts.game.b.c */
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/game/b/c.class */
 public final class LayerBufferManager {
+    /** Legacy refresh counts expressed in monotonic time at 60 Hz, independent of owner frame rate.
+     * Enabled by default; RWX_TIME_BASED_MAP_ZOOM_CACHE=0 restores frame-count cadence.
+     * Historical load-adjusted ratios are not current acceptance evidence; see docs/NEXT-SESSION.md. */
     private static final boolean TIME_BASED_ZOOM_CACHE_REQUESTED =
-            "1".equals(System.getenv("RWX_TIME_BASED_MAP_ZOOM_CACHE"));
+            !"0".equals(System.getenv("RWX_TIME_BASED_MAP_ZOOM_CACHE"));
+    /** Experimental cache resolution floor. A cell spans pixels/renderScale world units and is
+     * composited at zoom/renderScale screen units per texel; low zoom alone does not imply
+     * oversampling. Raising this floor also reduces world coverage. Unset preserves original scale. */
+    private static final float MIN_RENDER_SCALE = minRenderScaleFromEnvironment();
+    /** `RWX_MAP_CELL_COVERAGE_ASSERT=1` logs every grid reset that leaves part of the viewport uncovered. */
+    private static final boolean COVERAGE_ASSERT = "1".equals(System.getenv("RWX_MAP_CELL_COVERAGE_ASSERT"));
+
+    /** Experimental increase threshold for the legacy zoom cache. Unset preserves the original
+     * PC threshold 0.1. Quality is determined by zoom/renderScale; changing the threshold does
+     * not prove a quality or performance improvement without actual image and frame-time checks. */
+    private static final float ZOOM_ENLARGE_STEP = zoomEnlargeStepFromEnvironment();
+
+    private static float zoomEnlargeStepFromEnvironment() {
+        String requested = System.getenv("RWX_MAP_CELL_ZOOM_ENLARGE_STEP");
+        if (requested == null || requested.isBlank()) return -1f;
+        try {
+            float value = Float.parseFloat(requested.trim());
+            return Float.isFinite(value) && value > 0f ? value : -1f;
+        } catch (NumberFormatException ignored) {
+            GameEngine.logWarningAndStack("RWX_MAP_CELL_ZOOM_ENLARGE_STEP is not a number: " + requested);
+            return -1f;
+        }
+    }
     private GraphicsEngine graphicsBackend;
+    private boolean zoomGenerationEnabled;
+    private long zoomRedrawBudgetNanos = 2_000_000L;
+    private MapZoomCacheGeneration previousZoomGeneration;
+    private final MapZoomCacheGeneration.Stability zoomStability = new MapZoomCacheGeneration.Stability();
+    private final Rect previousZoomSource = new Rect();
+    private final RectF previousZoomDestination = new RectF();
+    private final RectF previousZoomClip = new RectF();
     private boolean smoothFogFadingEnabled;
     private boolean timeBasedZoomCacheEnabled;
     private final ZoomCacheCadence zoomCacheCadence = new ZoomCacheCadence();
@@ -31,6 +64,11 @@ public final class LayerBufferManager {
     private long prewarmCameraSampleNanos;
     private float prewarmCameraX, prewarmCameraY;
     private double prewarmVelocityX, prewarmVelocityY;
+    /** Diagnostic counter: how many cell rasterisations this manager has performed in total. */
+    private int totalCellRedraws;
+    private int totalCellInvalidations;
+    private int tracedInvalidations;
+    private long traceFrameStartNanos;
 
     /* JADX INFO: renamed from: f */
     int gridOriginWorldX;
@@ -89,6 +127,10 @@ public final class LayerBufferManager {
         this.smoothFogFadingEnabled = TileMap.softFogFadingEnabled
                 && graphicsEngine.backendCapabilities().getSupportsSmoothFogLayerBuffers();
         this.timeBasedZoomCacheEnabled = TIME_BASED_ZOOM_CACHE_REQUESTED && graphicsEngine instanceof KoolGraphicsEngine;
+        this.zoomGenerationEnabled = graphicsEngine instanceof KoolGraphicsEngine
+                && !this.smoothFogFadingEnabled
+                && "1".equals(System.getenv("RWX_MAP_ZOOM_GENERATION"));
+        this.zoomStability.reset();
         if (System.getenv("RWX_FRAME_METRICS") != null || System.getenv("RWX_MAP_CACHE_TRACE") != null) {
             System.out.println("RWXMapZoomCache timeBased=" + this.timeBasedZoomCacheEnabled
                     + " referenceFps=60 stableNanos=" + ZoomCacheCadence.STABLE_NANOS);
@@ -103,6 +145,12 @@ public final class LayerBufferManager {
         GraphicsEngine previousBackend = this.graphicsBackend;
         IdentityHashMap<Texture, Boolean> releasedTextures = new IdentityHashMap<>();
         Texture fallbackTexture = previousBackend != null ? previousBackend.r() : null;
+        if (previousZoomGeneration != null) {
+            releasePreviousZoomGrid(fallbackTexture, releasedTextures);
+            previousZoomGeneration = null;
+        }
+        zoomGenerationEnabled = false;
+        zoomStability.reset();
         releaseTarget(this.bufferLayerGraphics, this.bufferLayerTexture, fallbackTexture, releasedTextures);
         if (this.gridCells != null) {
             for (int i = 0; i < this.gridCells.length; i++) {
@@ -165,12 +213,133 @@ public final class LayerBufferManager {
         return this.graphicsBackend;
     }
 
+    /**
+     * Cells are the dominant map redraw cost: 49 targets of 512x512 per grid, re-rasterised whenever
+     * the view crosses a cache threshold. A backend with real GPU render targets renders each cell
+     * into an offscreen pass ("render once, sample many times"); every other backend keeps the legacy
+     * immediate bitmap, so the cell cache semantics stay identical.
+     */
+    private RenderTargetMode layerBufferRenderTargetMode() {
+        boolean supported = resourceBackend().backendCapabilities().getSupportsGpuRenderTargets();
+        RenderTargetMode mode = supported ? RenderTargetMode.GPU_TARGET : RenderTargetMode.IMMEDIATE;
+        reportCellTargetDecision(this.cellBufferPixelSize, resourceBackend(), mode);
+        return mode;
+    }
+
+    private static final boolean backendDiagnostics =
+        "1".equals(System.getenv("RWX_MAP_BACKEND_DIAG"));
+    private static long backendDiagnosticCalls;
+
+    /** Diagnostic: every distinct cell size / backend / resolved mode the manager decides on. */
+    private static void reportCellTargetDecision(int cellSize, GraphicsEngine backend, RenderTargetMode mode) {
+        if (!backendDiagnostics) return;
+        String key = cellSize + "px/" + backend.getClass().getSimpleName() + "/" + mode
+            + "/capability=" + backend.backendCapabilities().getSupportsGpuRenderTargets();
+        if (backendDecisionKeys.add(key)) {
+            System.out.println("[RWX map] cellTargetDecision " + key);
+        }
+    }
+
+    private static final java.util.Set<String> backendDecisionKeys = new java.util.HashSet<>();
+
+    private void releasePreviousZoomGrid(Texture fallback, IdentityHashMap<Texture, Boolean> released) {
+        for (LayerBufferCell[] column : previousZoomGeneration.cells) for (LayerBufferCell cell : column) {
+            if (cell == null) continue;
+            releaseTarget(cell.cellGraphicsCopy, cell.cellLayerTexture, fallback, released);
+            releaseTarget(cell.fadeOutGraphics, cell.fadeOutTexture, fallback, released);
+        }
+    }
+
+    private void rotateZoomGeneration() {
+        LayerBufferCell[][] recycled = previousZoomGeneration == null ? null : previousZoomGeneration.cells;
+        if (recycled != null && recycled.length != gridCellsPerAxis) {
+            releasePreviousZoomGrid(resourceBackend().r(), new IdentityHashMap<>());
+            recycled = null;
+        }
+        previousZoomGeneration = new MapZoomCacheGeneration(gridCells, gridOriginWorldX, gridOriginWorldY,
+                cellWorldStepSize, cellBufferPixelSize, renderScale, System.nanoTime());
+        this.gridCells = recycled != null ? recycled : new LayerBufferCell[gridCellsPerAxis][gridCellsPerAxis];
+        if (recycled == null) {
+            // Allocation happens only for the second grid or a changed grid size. GPU attachments
+            // remain under the existing version lease / fence protocol when the two grids swap.
+            initMissingLayerBufferImages();
+            previousZoomGeneration.active = true;
+        }
+        updateCellIndices();
+        for (LayerBufferCell[] column : gridCells) for (LayerBufferCell cell : column) {
+            cell.fadeProgressRatio = 0;
+            cell.enableSmoothFade = false;
+            cell.fadeFrameCount = 0;
+        }
+    }
+
+    private boolean previousZoomCoversVisibleCell(LayerBufferCell cell, GameEngine engine, float desiredScale) {
+        double left = Math.max(Math.max(cell.getWorldLeft() + 1.0 / renderScale, engine.viewpointXSnapped), 0);
+        double top = Math.max(Math.max(cell.getWorldTop() + 1.0 / renderScale, engine.viewpointYSnapped), 0);
+        double right = Math.min(Math.min(cell.getWorldLeft() + (cellBufferPixelSize - 2.0) / renderScale,
+                engine.viewpointXSnapped + engine.visibleWorldWidth), engine.tileMap.getWorldWidth());
+        double bottom = Math.min(Math.min(cell.getWorldTop() + (cellBufferPixelSize - 2.0) / renderScale,
+                engine.viewpointYSnapped + engine.visibleWorldHeight), engine.tileMap.getWorldHeight());
+        return previousZoomGeneration.covers(left, top, right, bottom, desiredScale);
+    }
+
+    private void drawPreviousZoomGeneration(GameEngine engine, float desiredScale, LayerBufferCell pendingCell,
+                                           float currentOffsetX, float currentOffsetY,
+                                           float currentSnappedX, float currentSnappedY) {
+        MapZoomCacheGeneration generation = previousZoomGeneration;
+        if (generation == null || !generation.active || !generation.compatibleScale(desiredScale)) return;
+        GraphicsEngine graphics = engine.renderGraphicsEngine;
+        // Called inside the current grid's zoom/renderScale transform. Only the deferred cell's
+        // destination may sample the old generation: an unconditional base leaves old pixels at a
+        // differently rounded map edge even in the first completely rebuilt frame.
+        float factor = renderScale / generation.scale;
+        float offsetX = (generation.originX - engine.viewpointXSnapped) * generation.scale;
+        float offsetY = (generation.originY - engine.viewpointYSnapped) * generation.scale;
+        float snappedX = (int) offsetX, snappedY = (int) offsetY;
+        graphics.k();
+        try {
+            graphics.a(factor, factor);
+            previousZoomClip.a(
+                    (pendingCell.screenDstRect.a - currentSnappedX + currentOffsetX) / factor,
+                    (pendingCell.screenDstRect.b - currentSnappedY + currentOffsetY) / factor,
+                    (pendingCell.screenDstRect.c - currentSnappedX + currentOffsetX) / factor,
+                    (pendingCell.screenDstRect.d - currentSnappedY + currentOffsetY) / factor);
+            graphics.a(previousZoomClip);
+            for (int x = 0; x < generation.cells.length; x++) for (int y = 0; y < generation.cells[x].length; y++) {
+                if (!generation.valid[x][y]) continue;
+                LayerBufferCell cell = generation.cells[x][y];
+                int px = (int) (snappedX + x * generation.step * generation.scale);
+                int py = (int) (snappedY + y * generation.step * generation.scale);
+                int left = Math.max(px + 1, (int) ((0f - engine.viewpointXSnapped) * generation.scale));
+                int top = Math.max(py + 1, (int) ((0f - engine.viewpointYSnapped) * generation.scale));
+                int right = Math.min(px + generation.pixels - 2,
+                        (int) ((engine.tileMap.getWorldWidth() - engine.viewpointXSnapped) * generation.scale));
+                int bottom = Math.min(py + generation.pixels - 2,
+                        (int) ((engine.tileMap.getWorldHeight() - engine.viewpointYSnapped) * generation.scale));
+                if (right <= left || bottom <= top
+                        || right - snappedX + offsetX <= previousZoomClip.a
+                        || bottom - snappedY + offsetY <= previousZoomClip.b
+                        || left - snappedX + offsetX >= previousZoomClip.c
+                        || top - snappedY + offsetY >= previousZoomClip.d) continue;
+                previousZoomSource.a(left - px, top - py, right - px, bottom - py);
+                previousZoomDestination.a(left - snappedX + offsetX, top - snappedY + offsetY,
+                        right - snappedX + offsetX, bottom - snappedY + offsetY);
+                graphics.a(cell.cellLayerTexture, previousZoomSource, previousZoomDestination, copyBlitPaint);
+            }
+        } finally { graphics.l(); }
+    }
+
     /* JADX INFO: renamed from: a */
     public void updateGridParams() {
         updateGridParams("");
     }
 
     private void updateGridParams(String resetReason) {
+        if (zoomGenerationEnabled && resetReason.startsWith("zoom") && this.gridCells != null) {
+            rotateZoomGeneration();
+        } else if (previousZoomGeneration != null) {
+            previousZoomGeneration.active = false;
+        }
         prewarmCameraSampleValid = false;
         zoomCacheCadence.reset();
         GameEngine gameEngine = GameEngine.getInstance();
@@ -193,6 +362,24 @@ public final class LayerBufferManager {
             }
         }
         if (MapCacheTrace.isEnabled()) MapCacheTrace.recordGrid("reset", this, resetReason, 0);
+        // The grid must still cover the viewport: each cell is composited one-to-one with the screen, so
+        // `gridCells * cellWorldStepSize` has to reach the visible world extent. A render-scale floor that
+        // exceeds the zoom shrinks each cell's world extent and breaks this, which renders the map zoomed
+        // in while the missing cells cost nothing -- a frame-rate measurement would reward that.
+        float span = (float) this.gridCellsPerAxis * this.cellWorldStepSize;
+        float visibleWidth = gameEngine.visibleWorldWidth;
+        float visibleHeight = gameEngine.visibleWorldHeight;
+        if (span + 1.0f < visibleWidth || span + 1.0f < visibleHeight) {
+            if (MapCacheTrace.isEnabled()) {
+                MapCacheTrace.recordCoverage(this.gridCellsPerAxis, this.cellWorldStepSize, this.renderScale,
+                        visibleWidth, visibleHeight, gameEngine.zoom);
+            }
+            if (COVERAGE_ASSERT) {
+                GameEngine.logWarningAndStack("layerBuffer grid does not cover the viewport: span=" + span
+                        + " visible=" + visibleWidth + "x" + visibleHeight + " renderScale=" + this.renderScale
+                        + " zoom=" + gameEngine.zoom);
+            }
+        }
     }
 
     /* JADX INFO: renamed from: b */
@@ -291,6 +478,23 @@ public final class LayerBufferManager {
         } else {
             layerBufferCell.needsRedraw = true;
         }
+        this.totalCellInvalidations++;
+    }
+
+    /**
+     * Diagnostic only: the redraw cadence is what scales the map cost, so the trace states how many cell
+     * invalidations one frame requested. A fog change invalidates a 3x3 tile neighbourhood per tile, and
+     * at low zoom each cell covers fewer world units, so the same fog activity marks more cells.
+     */
+    void traceInvalidationFrame(long elapsedNanos) {
+        if (!MapCacheTrace.isEnabled()) {
+            this.tracedInvalidations = this.totalCellInvalidations;
+            return;
+        }
+        int delta = this.totalCellInvalidations - this.tracedInvalidations;
+        this.tracedInvalidations = this.totalCellInvalidations;
+        MapCacheTrace.recordInvalidationFrame(delta, elapsedNanos, this.cellWorldStepSize,
+                this.gridCellsPerAxis, (int) this.renderScale);
     }
 
     /* JADX INFO: renamed from: a */
@@ -313,6 +517,7 @@ public final class LayerBufferManager {
 
     /* JADX INFO: renamed from: c */
     public void invalidateAllCells() {
+        if (previousZoomGeneration != null) previousZoomGeneration.active = false;
         if (this.gridCells != null) {
             for (int i = 0; i < this.gridCellsPerAxis; i++) {
                 for (int i2 = 0; i2 < this.gridCellsPerAxis; i2++) {
@@ -338,6 +543,9 @@ public final class LayerBufferManager {
 
     /* JADX INFO: renamed from: a */
     public void invalidateWorldRect(int i, int i2, int i3, int i4, boolean z) {
+        if (previousZoomGeneration != null) previousZoomGeneration.invalidate(
+                (double) i + gridOriginWorldX, (double) i2 + gridOriginWorldY,
+                (double) i + gridOriginWorldX + i3, (double) i2 + gridOriginWorldY + i4);
         LayerBufferCell cellAt;
         LayerBufferCell cellAt2;
         LayerBufferCell cellAt3;
@@ -369,6 +577,7 @@ public final class LayerBufferManager {
     /* JADX INFO: renamed from: a */
     public void applyScorchToCells(ScorchMark scorchMark) {
         RectF rectFC = scorchMark.c();
+        if (previousZoomGeneration != null) previousZoomGeneration.invalidate(rectFC.a, rectFC.b, rectFC.c, rectFC.d);
         for (int i = 0; i < this.gridCellsPerAxis; i++) {
             for (int i2 = 0; i2 < this.gridCellsPerAxis; i2++) {
                 if (this.gridCells != null) {
@@ -794,7 +1003,7 @@ public final class LayerBufferManager {
                         layerBufferCell.cellLayerTexture.b(true);
                     }
                     try {
-                        layerBufferCell.cellGraphicsCopy = resourceBackend.b(layerBufferCell.cellLayerTexture, RenderTargetMode.IMMEDIATE);
+                        layerBufferCell.cellGraphicsCopy = resourceBackend.b(layerBufferCell.cellLayerTexture, layerBufferRenderTargetMode());
                     } catch (OutOfMemoryError e) {
                         if (!z) {
                             GameEngine.reportOOM(AssetType.gameImageCreate, e);
@@ -802,7 +1011,7 @@ public final class LayerBufferManager {
                         z = true;
                         layerBufferCell.cellLayerTexture = resourceBackend.r();
                         layerBufferCell.cellLayerTexture.b(true);
-                        layerBufferCell.cellGraphicsCopy = resourceBackend.b(layerBufferCell.cellLayerTexture, RenderTargetMode.IMMEDIATE);
+                        layerBufferCell.cellGraphicsCopy = resourceBackend.b(layerBufferCell.cellLayerTexture, layerBufferRenderTargetMode());
                     }
                     if (arrayList == null) {
                         arrayList = new ArrayList();
@@ -831,12 +1040,24 @@ public final class LayerBufferManager {
     }
 
     /* JADX INFO: renamed from: g */
+    /** Original cache scale, capped at 1. A scale floor is experimental because it changes both
+     * raster resolution and cell world extents; the default preserves the original mapping. */
     public float computeRenderScale() {
         GameEngine gameEngine = GameEngine.getInstance();
-        if (gameEngine.zoom > 1.0f) {
-            return 1.0f;
+        float scale = gameEngine.zoom > 1.0f ? 1.0f : gameEngine.zoom;
+        return Math.max(scale, MIN_RENDER_SCALE);
+    }
+
+    private static float minRenderScaleFromEnvironment() {
+        String requested = System.getenv("RWX_MAP_CELL_MIN_RENDER_SCALE");
+        if (requested == null || requested.isBlank()) return 0.0f;
+        try {
+            float value = Float.parseFloat(requested.trim());
+            return Float.isFinite(value) ? Math.min(Math.max(value, 0.0f), 1.0f) : 0.0f;
+        } catch (NumberFormatException ignored) {
+            GameEngine.logWarningAndStack("RWX_MAP_CELL_MIN_RENDER_SCALE is not a number: " + requested);
+            return 0.0f;
         }
-        return gameEngine.zoom;
     }
 
     public boolean hasVisiblePendingRedraws() {
@@ -1005,6 +1226,8 @@ public final class LayerBufferManager {
         }
         GameEngine gameEngine = GameEngine.getInstance();
         long deadlineNanos = budgetMs == Integer.MAX_VALUE ? Long.MAX_VALUE : System.nanoTime() + (budgetMs * 1000000L);
+        long redrawStartNanos = MapCacheTrace.isEnabled() ? System.nanoTime() : 0L;
+        int redrawsBefore = this.totalCellRedraws;
         int renderedCount = 0;
         boolean lockedFogAtlas = false;
         try {
@@ -1038,12 +1261,20 @@ public final class LayerBufferManager {
                     renderCell(i, i2);
                     gameEngine.renderGraphicsEngine.j();
                     renderedCount++;
+                    this.totalCellRedraws++;
                 }
             }
             return renderedCount;
         } finally {
             if (lockedFogAtlas) {
                 TileMap.releaseFogAtlasLock();
+            }
+            if (redrawStartNanos != 0L) {
+                // Diagnostic only: a zoom step re-scales the grid, and the per-call totals say how much
+                // rasterisation that costs. 5x5 cells x a zoom step is 25 redraws, not one.
+                MapCacheTrace.recordRedrawBatch(visibleOnly, offscreenOnly, renderedCount,
+                        this.totalCellRedraws - redrawsBefore, System.nanoTime() - redrawStartNanos,
+                        this.cellWorldStepSize, this.gridCellsPerAxis);
             }
         }
     }
@@ -1109,6 +1340,20 @@ public final class LayerBufferManager {
         float fComputeRenderScale = computeRenderScale();
         boolean z2 = false;
         String resetReason = "";
+        if (MapCacheTrace.isEnabled()) {
+            long now = System.nanoTime();
+            if (this.traceFrameStartNanos != 0L) {
+                traceInvalidationFrame(now - this.traceFrameStartNanos);
+            }
+            this.traceFrameStartNanos = now;
+        }
+        if (zoomGenerationEnabled) {
+            float ratio = fComputeRenderScale / this.renderScale;
+            boolean stable = zoomStability.observe(System.nanoTime(), gameEngine.targetZoom);
+            z2 = ratio > 1.10f || ratio < 1f / 1.10f
+                    || (stable && Utility.abs(fComputeRenderScale - this.renderScale) > 0.001f);
+            if (z2) resetReason = stable ? "zoom-generation-stable" : "zoom-generation-step";
+        } else {
         float f2 = fComputeRenderScale / this.renderScale;
         if (Utility.abs(f2 - 1.0f) < 0.01f) {
             f2 = 1.0f;
@@ -1116,7 +1361,7 @@ public final class LayerBufferManager {
         if (fComputeRenderScale > 0.6d) {
             float f3 = 0.3f;
             if (GameEngine.isPC()) {
-                f3 = 0.1f;
+                f3 = ZOOM_ENLARGE_STEP > 0f ? ZOOM_ENLARGE_STEP : 0.1f;
             }
             if (fComputeRenderScale - this.renderScale > f3) {
                 z2 = true;
@@ -1174,6 +1419,7 @@ public final class LayerBufferManager {
         } else if (timeBasedZoomCacheEnabled) {
             zoomCacheCadence.reset();
         }
+        }
         int preloadWorldMargin = Math.max(
                 0,
                 resourceBackend().backendCapabilities().getLayerBufferScrollPreloadWorldMargin()
@@ -1188,6 +1434,7 @@ public final class LayerBufferManager {
         if (z2) {
             updateGridParams(resetReason);
         }
+        long zoomRedrawDeadline = System.nanoTime() + zoomRedrawBudgetNanos;
         float f5 = gameEngine.zoom / this.renderScale;
         if (Utility.abs(f5 - 1.0f) < 1.0E-4f) {
             f5 = 1.0f;
@@ -1252,6 +1499,20 @@ public final class LayerBufferManager {
                         if (!layerBufferCell.screenDstRect.a()) {
                             boolean z5 = false;
                             boolean z6 = true;
+                            boolean traceVisibleRedraw = MapCacheTrace.isEnabled();
+                            long visibleRedrawStart = traceVisibleRedraw ? System.nanoTime() : 0L;
+                            try {
+                            if (layerBufferCell.needsRedraw && previousZoomGeneration != null
+                                    && previousZoomGeneration.active
+                                    && System.nanoTime() - previousZoomGeneration.startedAtNanos < MapZoomCacheGeneration.VISIBLE_DEADLINE_NANOS
+                                    && System.nanoTime() >= zoomRedrawDeadline
+                                    && previousZoomCoversVisibleCell(layerBufferCell, gameEngine, fComputeRenderScale)) {
+                                // Keep literal cell ordering and clip old samples to this deferred
+                                // destination. Fresh cells never receive an unconditional old base.
+                                drawPreviousZoomGeneration(gameEngine, fComputeRenderScale, layerBufferCell,
+                                        f8, f9, f10, f11);
+                                continue;
+                            }
                             if (layerBufferCell.needsRedraw) {
                                 z5 = true;
                                 z6 = false;
@@ -1281,7 +1542,7 @@ public final class LayerBufferManager {
                                     if (this.useFogBlitComposite) {
                                         i10 = 30;
                                     }
-                                    if (PerformanceProfiler.a(lValueOf.longValue(), jA) > i10) {
+                                    if (!zoomGenerationEnabled && PerformanceProfiler.a(lValueOf.longValue(), jA) > i10) {
                                         z7 = true;
                                         this.useFogBlitComposite = true;
                                     }
@@ -1365,6 +1626,12 @@ public final class LayerBufferManager {
                             } else {
                                 gameEngine.renderGraphicsEngine.a(layerBufferCell.cellLayerTexture, layerBufferCell.tileSrcRect, layerBufferCell.screenDstRectF, this.copyBlitPaint);
                             }
+                            } finally {
+                                if (traceVisibleRedraw) {
+                                    MapCacheTrace.recordVisibleCell(z5, System.nanoTime() - visibleRedrawStart,
+                                            this.cellWorldStepSize, this.renderScale);
+                                }
+                            }
                         }
                     } else {
                         // A cached cell wholly left or above the viewport is not visible either.
@@ -1380,6 +1647,12 @@ public final class LayerBufferManager {
         }
         if (f5 != 1.0f) {
             gameEngine.renderGraphicsEngine.l();
+        }
+        if (previousZoomGeneration != null && previousZoomGeneration.active) {
+            boolean visibleDirty = false;
+            for (LayerBufferCell[] column : gridCells) for (LayerBufferCell cell : column)
+                if (!cell.screenDstRect.a() && cell.needsRedraw) visibleDirty = true;
+            if (!visibleDirty) previousZoomGeneration.active = false;
         }
         if (!z) {
             this.useFogBlitComposite = false;

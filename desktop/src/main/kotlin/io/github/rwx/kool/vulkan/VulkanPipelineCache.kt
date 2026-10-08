@@ -23,7 +23,11 @@ object VulkanPipelineCache {
         createInfo: VkGraphicsPipelineCreateInfo.Buffer,
         allocator: VkAllocationCallbacks?,
         pipelines: LongBuffer,
-    ): Int = VK10.vkCreateGraphicsPipelines(device, cache(device).handle, createInfo, allocator, pipelines)
+    ): Int {
+        val start = VulkanBackendMetrics.stageStart()
+        try { return VK10.vkCreateGraphicsPipelines(device, cache(device).handle, createInfo, allocator, pipelines) }
+        finally { VulkanBackendMetrics.stageEnd("graphics-pipeline-create", start, createInfo.remaining().toLong()) }
+    }
 
     @JvmStatic
     fun vkCreateComputePipelines(
@@ -32,7 +36,11 @@ object VulkanPipelineCache {
         createInfo: VkComputePipelineCreateInfo.Buffer,
         allocator: VkAllocationCallbacks?,
         pipelines: LongBuffer,
-    ): Int = VK10.vkCreateComputePipelines(device, cache(device).handle, createInfo, allocator, pipelines)
+    ): Int {
+        val start = VulkanBackendMetrics.stageStart()
+        try { return VK10.vkCreateComputePipelines(device, cache(device).handle, createInfo, allocator, pipelines) }
+        finally { VulkanBackendMetrics.stageEnd("compute-pipeline-create", start, createInfo.remaining().toLong()) }
+    }
 
     internal fun release(device: VkDevice) {
         val cache = devices.remove(device) ?: return

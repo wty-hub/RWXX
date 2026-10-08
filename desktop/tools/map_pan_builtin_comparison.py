@@ -24,7 +24,7 @@ from analyze_vulkan_matrix import read_json_lines
 
 def add_camera_arguments(parser, period_default=20):
     parser.add_argument('--camera-period-seconds', type=int, default=period_default)
-    parser.add_argument('--camera-mode', choices=('pan', 'jump', 'pan-zoom'), default='pan')
+    parser.add_argument('--camera-mode', choices=('pan', 'jump', 'edge-jump', 'pan-zoom'), default='pan')
     parser.add_argument('--zoom-mode', choices=('none', 'cycle'), default=None)
     parser.add_argument('--zoom-period-seconds', type=int, default=4)
     parser.add_argument('--zoom-min', type=float, default=.35)
@@ -273,9 +273,11 @@ def main():
     parser.add_argument('--window-height', type=int, default=1080)
     parser.add_argument('--parallel-cell-raster', action='store_true')
     parser.add_argument('--primitive-text-metrics', action='store_true')
+    parser.add_argument('--heap-mb', type=int, default=1000, help='Maximum heap in MiB, matching the pinned original probe')
     parser.add_argument('--disable-native-bgra-upload', action='store_true')
     parser.add_argument('--no-perf-window-log', action='store_true')
     args=parser.parse_args()
+    if args.heap_mb < 256: parser.error('--heap-mb must be at least 256')
     try:
         camera = camera_protocol(args)
     except ValueError as error:
@@ -286,7 +288,7 @@ def main():
     original=output/'europe.replay'; shutil.copy2(args.replay,original)
     report={'runtimeSha256':digest,'mode':args.mode,'builtInMap':args.map,'recording':None,'runs':[],
             'protocol':{'units':args.units,'teams':15,'msaa':4,'targetFps':300,'vsync':False, **camera,
-                        'fog':args.fog, 'parallelCellRasterRequested':args.parallel_cell_raster,
+                        'fog':args.fog, 'heapMiB':args.heap_mb, 'parallelCellRasterRequested':args.parallel_cell_raster,
                         'primitiveTextMetricsRequested':args.primitive_text_metrics,
                         'logicalWindowWidth':args.window_width,'logicalWindowHeight':args.window_height,
                         'warmupSeconds':20,'sampleSeconds':20,'windowsPerProcess':2,
@@ -297,7 +299,7 @@ def main():
     (sandbox/'preferences.toml').write_text(isolated_seed(),encoding='utf-8')
     command=java_command(args.java,jar,PROJECT/'desktop/build/slick-natives')
     command[1:1]=[f'-Dlaunch.dir={sandbox}',f'-Drwx.assetsDir={PROJECT / "assets"}',
-                   '-Drwx.kool.backend=vulkan',f'-Drwx.benchmark.map={args.map}','-Xms512m','-Xmx2g']
+                   '-Drwx.kool.backend=vulkan',f'-Drwx.benchmark.map={args.map}','-Xms512m',f'-Xmx{args.heap_mb}M']
     env=run_environment(output,sandbox,name)
     env.pop('RWX_REPLAY_PAN_OUTPUT')
     env.update(camera_environment(camera))
@@ -332,7 +334,7 @@ def main():
         command=[a for a in command if a not in ('--screen=battleroom','--auto-start-battleroom')]
         command.append(f'--replay={REPLAY_ALIAS}')
         command[1:1]=[f'-Dlaunch.dir={sandbox}',f'-Drwx.assetsDir={PROJECT / "assets"}',
-                       '-Drwx.kool.backend=vulkan','-Xms512m','-Xmx2g']
+                       '-Drwx.kool.backend=vulkan','-Xms512m',f'-Xmx{args.heap_mb}M']
         env = run_environment(output,sandbox,name)
         env.update(camera_environment(camera))
         env.update({'RWX_WINDOW_WIDTH':str(args.window_width),'RWX_WINDOW_HEIGHT':str(args.window_height)})
@@ -349,7 +351,7 @@ def main():
         confirm_camera_zoom(result,camera)
         confirm_dynamic_activity(result)
         confirm_experimental_modes(result,(output/f'{name}.log').read_text(encoding='utf-8',errors='replace'),
-                                   args.parallel_cell_raster,args.primitive_text_metrics)
+                                   args.parallel_cell_raster,args.primitive_text_metrics,gpu_map_cell_cache=True)
         report['runs'].append(result)
         write_json(output/'summary.json',report)
         print('DONE '+json.dumps({'variant':variant,'valid':result['validMeasurement'],

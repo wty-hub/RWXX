@@ -33,6 +33,28 @@ class KoolCanvasTextMeshReuseTest {
         return List(mesh.geometry.numVertices * data.strideBytes / 4) { data.buffer.getFloat32(it * 4).toRawBits() }
     }
 
+    @Test fun `lookup probes preserve canonical keys across order shifts clips HUD and material changes`() {
+        val controls = listOf(false, true).map { keys ->
+            KoolCanvasFrameRenderer(reuseTextMeshKeys = keys, prepareText = false) to Scene("text-key-$keys")
+        }
+        repeat(12) { frame ->
+            val commands = listOf(text("A"), text("BBBB", paint = KoolCanvasPaint(blendMode = KoolCanvasBlendMode.Add)),
+                text("AA", state = KoolCanvasState(transform = KoolCanvasTransform.Identity.translate(frame.toFloat(), -3f),
+                    clip = if (frame % 3 == 0) KoolCanvasRect(1000f, 1000f, 1100f, 1100f) else KoolCanvasRect(0f, 0f, 120f, 80f))),
+                text("8", paint = KoolCanvasPaint(typefaceKey = "fallback-key")),
+                text("A", state = KoolCanvasState(drawRole = KoolCanvasDrawRole.PerformanceHud)))
+            controls.forEach { (renderer, scene) ->
+                render(renderer, scene, *(if (frame % 2 == 0) listOf(barrier()) + commands else commands).toTypedArray())
+            }
+            fun picture(scene: Scene) = visible(scene).map { mesh ->
+                listOf(mesh.drawGroupId, mesh.geometry.numVertices, mesh.geometry.numIndices) + vertices(mesh) +
+                    List(mesh.geometry.numIndices) { mesh.geometry.indices[it] }
+            }
+            assertEquals(picture(controls[0].second), picture(controls[1].second), "frame=$frame")
+            assertEquals(controls[0].first.textMeshCacheSnapshot(), controls[1].first.textMeshCacheSnapshot())
+        }
+    }
+
     @Test fun `shifted preceding batches retain real text mesh shader and buffer owners`() {
         for (enabled in listOf(false, true)) {
             val scene = Scene("text-shift-$enabled")

@@ -81,7 +81,10 @@ class KoolGeneratedTargetInitializationTest {
                 committed = current
                 assertNotEquals(textureId(pending.frame), textureId(current.frame))
                 when (mode) {
-                    RenderTargetMode.IMMEDIATE -> {
+                    // GPU_TARGET is the same commit contract: no replay frame, CPU pixels only as the
+                    // fallback. Without a render-thread owner (this test) it must rasterise exactly
+                    // like IMMEDIATE; the GPU pass path is covered by KoolCanvasGpuTargetTest.
+                    RenderTargetMode.IMMEDIATE, RenderTargetMode.GPU_TARGET -> {
                         assertNull(store.frame(id))
                         val pixels = assertIs<FrozenCanvasResource.Pixels>(current.resourceLease.resources().values.single())
                         assertContentEquals(IntArray(12) { 0xff123456.toInt() }, pixels.image.pixels)

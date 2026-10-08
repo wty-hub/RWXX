@@ -9,7 +9,11 @@ class CompactJfr {
     private static final Set<String> EVENTS = Set.of("jdk.ExecutionSample", "jdk.NativeMethodSample",
         "jdk.GarbageCollection", "jdk.GCPhasePause", "jdk.ThreadPark", "jdk.ThreadSleep",
         "jdk.JavaMonitorEnter", "jdk.JavaMonitorWait", "jdk.FileWrite", "jdk.FileRead", "jdk.SafepointBegin",
-        "jdk.SystemGC", "jdk.DirectBufferStatistics", "rwx.ClockSync");
+        "jdk.SystemGC", "jdk.DirectBufferStatistics", "jdk.ObjectAllocationSample", "rwx.ClockSync",
+        // Per-thread CPU is the load-independent metric: wall clock on a busy desktop measures the
+        // machine, not the build, and this session measured the same jar swinging between 66 and 231
+        // presents per second.
+        "jdk.ThreadCPULoad", "jdk.CPULoad");
     private static String quote(String value) {
         if (value == null) return "null";
         StringBuilder out = new StringBuilder("\"");
@@ -57,6 +61,9 @@ class CompactJfr {
                 if (type.equals("jdk.GarbageCollection")) {
                     row.append("],\"name\":").append(quote(event.getString("name")))
                        .append(",\"cause\":").append(quote(event.getString("cause"))).append('}');
+                } else if (type.equals("jdk.ObjectAllocationSample")) {
+                    row.append("],\"objectClass\":").append(quote(event.getClass("objectClass").getName()))
+                       .append(",\"weight\":").append(event.getLong("weight")).append('}');
                 } else if (type.equals("rwx.ClockSync")) {
                     row.append(']');
                     for (String field : new String[] {"monoStart", "monoEnd", "epochMillis"}) {
@@ -69,6 +76,13 @@ class CompactJfr {
                         row.append(',').append(quote(field)).append(':').append(event.getLong(field));
                     }
                     row.append('}');
+                } else if (type.equals("jdk.ThreadCPULoad")) {
+                    row.append("],\"user\":").append(event.getFloat("user"))
+                       .append(",\"system\":").append(event.getFloat("system")).append('}');
+                } else if (type.equals("jdk.CPULoad")) {
+                    row.append("],\"jvmUser\":").append(event.getFloat("jvmUser"))
+                       .append(",\"jvmSystem\":").append(event.getFloat("jvmSystem"))
+                       .append(",\"machineTotal\":").append(event.getFloat("machineTotal")).append('}');
                 } else if (type.equals("jdk.ThreadPark")) {
                     row.append("],\"requestedTimeoutNanos\":").append(event.getLong("timeout"))
                        .append(",\"until\":").append(event.getLong("until")).append('}');

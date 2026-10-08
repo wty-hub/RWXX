@@ -6,6 +6,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.vk.*
 import de.fabmax.kool.util.*
 import io.github.rwx.render.canvas.KoolCanvasBgraImageData
+import io.github.rwx.render.canvas.KoolCanvasAtlasAppend
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.util.vma.Vma.vmaFlushAllocation
 import org.lwjgl.vulkan.VK10.*
@@ -18,6 +19,16 @@ import java.nio.ByteOrder
 
 /** Main-command-buffer transfers, called from the version-checked Kool 0.19 overlay. */
 object VulkanUploads {
+    internal var atlasRegionBytes = 0L
+        private set
+    internal fun recordedAtlasRegion(bytes: Int) { atlasRegionBytes += bytes }
+    fun appendAtlasRegions(texture: Texture2d, regions: List<KoolCanvasAtlasAppend>): Boolean {
+        val image = texture.gpuTexture as? ImageVk ?: return false
+        if (texture.isReleased || image.isReleased || texture.mipMapping != MipMapping.Off ||
+            image.depth != 1 || image.arrayLayers != 1 || image.format != VK_FORMAT_R8G8B8A8_UNORM) return false
+        if (regions.any { it.x.toLong() + it.width > image.width || it.y.toLong() + it.height > image.height }) return false
+        return VulkanFrameLifecycle.stateFor(image.backend).appendAtlasRegions(texture, image, regions)
+    }
     @JvmStatic
     fun prepareTextures(command: DrawCommand, encoder: PassEncoderState) {
         val pipeline = command.pipeline
@@ -228,11 +239,13 @@ object VulkanUploads {
 }
 
 internal data class PendingImageUpload(val owner: Texture<*>, val image: ImageVk, val payload: ByteArray, val mipMapped: Boolean)
+internal data class PendingAtlasUpload(val owner: Texture2d, val image: ImageVk, val regions: List<KoolCanvasAtlasAppend>)
 internal data class UploadSlice(val buffer: VkBuffer, val offset: Int, val mapped: ByteBuffer)
 
 internal class VulkanUploadState(val backend: RenderBackendVk) {
     val retirement = FrameFenceRetirementQueue(Swapchain.MAX_FRAMES_IN_FLIGHT)
     val pendingImages = ArrayList<PendingImageUpload>()
+    private val pendingAtlasRegions = ArrayList<PendingAtlasUpload>()
     private val slots = Array(Swapchain.MAX_FRAMES_IN_FLIGHT) { ArrayList<UploadChunk>() }
     private var frameIndex = -1
     private var lastSubmittedSlot: Int? = null
@@ -279,6 +292,46 @@ internal class VulkanUploadState(val backend: RenderBackendVk) {
         uploads.filterNot { it.owner.isReleased || it.image.isReleased }.forEach { upload ->
             recordImage(upload.image, upload.payload.size, upload.mipMapped) { it.put(upload.payload) }
         }
+        val atlasUploads = pendingAtlasRegions.toList()
+        pendingAtlasRegions.clear()
+        atlasUploads.filterNot { it.owner.isReleased || it.image.isReleased }.forEach { upload ->
+            upload.regions.forEach { recordAtlasRegion(upload.image, it) }
+        }
+    }
+
+    fun appendAtlasRegions(owner: Texture2d, image: ImageVk, regions: List<KoolCanvasAtlasAppend>): Boolean {
+        // Frontend preparation normally precedes acquire. Payloads stay immutable until the acquired
+        // frame's persistent staging slot is protected by its fence. Late pass updates fall back.
+        val active = encoder
+        if (active?.isPassActive == true) return false
+        if (active == null) pendingAtlasRegions += PendingAtlasUpload(owner, image, regions.toList())
+        else regions.forEach { recordAtlasRegion(image, it) }
+        return true
+    }
+
+    private fun recordAtlasRegion(image: ImageVk, region: KoolCanvasAtlasAppend) {
+        val started = VulkanBackendMetrics.stageStart()
+        val encoder = checkNotNull(encoder)
+        check(!encoder.isPassActive)
+        val slice = allocate(region.byteCount)
+        region.copyTo(slice.mapped); flush(slice)
+        MemoryStack.stackPush().use { stack ->
+            val command = encoder.commandBuffer
+            // Same queue: the whole-image layout barrier waits for prior readers. The append itself
+            // touches only a new, disjoint slot; old frames retain exactly their published pixels.
+            image.transitionLayout(image.lastKnownLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, command, stack = stack)
+            val copy = VkBufferImageCopy.calloc(1, stack)
+            copy[0].bufferOffset(slice.offset.toLong()).bufferRowLength(0).bufferImageHeight(0)
+            copy[0].imageSubresource().set(image.imageInfo.aspectMask, 0, 0, 1)
+            copy[0].imageOffset().set(region.x, region.y, 0)
+            copy[0].imageExtent().set(region.width, region.height, 1)
+            vkCmdCopyBufferToImage(command, slice.buffer.handle, image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, copy)
+            image.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, command, stack = stack)
+        }
+        textureUploadBytes += region.byteCount
+        VulkanUploads.recordedAtlasRegion(region.byteCount)
+        if (started != 0L) uploadNanos += System.nanoTime() - started
+        VulkanBackendMetrics.stageEnd("atlas-region-upload", started, region.byteCount.toLong(), region.width.toLong(), region.height.toLong())
     }
 
     fun submitted(slot: Int) {
@@ -369,7 +422,7 @@ internal class VulkanUploadState(val backend: RenderBackendVk) {
             chunks.forEach { backend.memManager.freeBuffer(it.buffer, deferTicks = 0) }
             chunks.clear()
         }
-        if (destroying) pendingImages.clear()
+        if (destroying) { pendingImages.clear(); pendingAtlasRegions.clear() }
     }
 
     private class UploadChunk(val buffer: VkBuffer, val cursor: UploadChunkCursor) {

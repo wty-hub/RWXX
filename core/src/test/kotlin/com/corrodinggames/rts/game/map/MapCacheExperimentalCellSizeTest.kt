@@ -213,4 +213,51 @@ class MapCacheExperimentalCellSizeTest {
             }
         }
     }
+
+    /**
+     * Upper bound on what "re-mark only cells that changed" could save.
+     *
+     * `updateGridParams` marks *every* cell dirty on any reset, and a zoom step is what causes a reset.
+     * Interaction regenerates cells at roughly 78/s against 1/s while static, so this count is the shape of
+     * the interaction cost. A cell whose world anchor is unchanged and whose pixel-per-world ratio moved
+     * little still describes the same terrain, so this measures how many of those there are - the headroom
+     * before any behavioural change is attempted, and the harness any such change has to satisfy.
+     */
+    @Test fun `grid reset marks every cell and reports how many anchors actually moved`() {
+        val zoomSteps = listOf(0.35f to 0.40f, 0.55f to 0.60f, 0.65f to 0.70f, 0.35f to 0.70f)
+        for (size in listOf(256, 384, 512)) for ((from, to) in zoomSteps) {
+            engine.zoom = from
+            val manager = grid(size)
+            makeClean(manager)
+            val anchorsBefore = manager.gridCells.map { column -> column.map { it.worldLeft to it.worldTop } }
+            val stepBefore = manager.cellWorldStepSize
+
+            engine.zoom = to
+            manager.updateGridParams()
+
+            val total = manager.gridCellsPerAxis * manager.gridCellsPerAxis
+            var dirty = 0
+            var anchorMoved = 0
+            val deltasX = mutableSetOf<Int>()
+            val deltasY = mutableSetOf<Int>()
+            for (i in 0 until manager.gridCellsPerAxis) for (j in 0 until manager.gridCellsPerAxis) {
+                val cell = manager.gridCells[i][j]
+                if (cell.needsRedraw) dirty++
+                val (prevLeft, prevTop) = anchorsBefore[i][j]
+                if ((prevLeft to prevTop) != (cell.worldLeft to cell.worldTop)) anchorMoved++
+                deltasX += cell.worldLeft - prevLeft
+                deltasY += cell.worldTop - prevTop
+            }
+            // A uniform shift means the grid moved as a whole rather than each cell being invalidated on its
+            // own: the content is still right, just offset, and the offset is the same everywhere.
+            val uniform = deltasX.size == 1 && deltasY.size == 1
+            println(
+                "CELLRESET size=$size zoom=$from->$to grid=$total dirty=$dirty anchorMoved=$anchorMoved " +
+                    "dX=$deltasX dY=$deltasY uniform=$uniform step=$stepBefore->${manager.cellWorldStepSize} " +
+                    "renderScale=${manager.renderScale}",
+            )
+            assertEquals(total, dirty, "updateGridParams currently marks every cell")
+            assertTrue(anchorMoved <= total)
+        }
+    }
 }

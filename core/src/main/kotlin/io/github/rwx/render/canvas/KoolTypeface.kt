@@ -2,14 +2,15 @@ package io.github.rwx.render.canvas
 
 class KoolTypeface private constructor(
     private val nativeHandle: Int,
+    private val style: Int = defaultStyle(nativeHandle),
+    private val family: String? = null,
 ) {
-    private var style: Int = defaultStyle(nativeHandle)
-    private var family: String? = null
+    private val stableKey = if (reuseTypefaceKeys) (family ?: "default") + ":" + style else null
 
     fun a(): Boolean = (style and 1) != 0
 
     val koolKey: String
-        get() = (family ?: "default") + ":" + style
+        get() = stableKey ?: ((family ?: "default") + ":" + style)
 
     override fun equals(other: Any?): Boolean =
         this === other || (other is KoolTypeface && style == other.style && nativeHandle == other.nativeHandle)
@@ -22,6 +23,9 @@ class KoolTypeface private constructor(
     }
 
     companion object {
+        private val reuseTypefaceKeys = (System.getenv("RWX_REUSE_TYPEFACE_KEYS") == "1").also {
+            println("[RWX canvas] reuseTypefaceKeys=$it")
+        }
         private val cache = mutableMapOf<Int, MutableMap<Int, KoolTypeface>>()
 
         @JvmField
@@ -43,11 +47,7 @@ class KoolTypeface private constructor(
         val f: Array<KoolTypeface> = arrayOf(a, b, a(null as String?, 2), a(null as String?, 3))
 
         @JvmStatic
-        fun a(family: String?, style: Int): KoolTypeface =
-            KoolTypeface(0).apply {
-                this.style = style
-                this.family = family
-            }
+        fun a(family: String?, style: Int): KoolTypeface = KoolTypeface(0, style, family)
 
         @JvmStatic
         fun a(typeface: KoolTypeface?, style: Int): KoolTypeface {
@@ -61,9 +61,7 @@ class KoolTypeface private constructor(
             val typefaceCache = cache.getOrPut(nativeHandle) { HashMap(4) }
             typefaceCache[style]?.let { return it }
 
-            return KoolTypeface(0).apply {
-                this.style = style
-                this.family = typeface?.family
+            return KoolTypeface(0, style, typeface?.family).apply {
                 typefaceCache[style] = this
             }
         }

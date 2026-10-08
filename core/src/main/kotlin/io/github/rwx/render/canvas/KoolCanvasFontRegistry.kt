@@ -41,9 +41,16 @@ object KoolCanvasFontRegistry {
 
     /** Renderer only. Derived fonts have private scale fields; the shared font owner is never scaled. */
     fun font(sizePts: Float, key: String? = null): MsdfFont {
+        return selectedFont(key).derive(sizePts.coerceAtLeast(1f))
+    }
+
+    /** Cache belongs to one renderer; public font() continues to return a private mutable view. */
+    internal fun font(sizePts: Float, key: String?, views: KoolCanvasRenderFonts): MsdfFont =
+        views.font(selectedFont(key), sizePts.coerceAtLeast(1f))
+
+    private fun selectedFont(key: String?): MsdfFont {
         val snapshot = renderSnapshot.get() ?: publication.snapshot
-        val selected = fontForVersion(key?.let(snapshot.keyedVersions::get) ?: snapshot.baseVersion) ?: defaultFont()
-        return selected.derive(sizePts.coerceAtLeast(1f))
+        return fontForVersion(key?.let(snapshot.keyedVersions::get) ?: snapshot.baseVersion) ?: defaultFont()
     }
 
     /** Pins font versions once per CPU resource lease. This only changes CPU reference counters. */

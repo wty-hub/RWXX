@@ -41,6 +41,11 @@ internal class KoolDesktopGameSession(
     private val mailbox = LatestFrameMailbox()
     override val canvasPresentationTracker = CanvasFramePresentationTracker()
     @Volatile private var selectedEnvelope: FrameEnvelope? = null
+    @Volatile private var newestPublishedCamera: GameCameraSnapshot? = null
+    @Volatile private var livePresentationRequested = false
+    private val postInputFrameWait = System.getenv("RWX_POST_INPUT_FRAME_WAIT") == "1"
+    private val inputPublication = InputPublicationFence()
+    private var reportedPostInputWait = false
     private var sequence = 0L
     private var viewportRevision = 0L
     private var nextUiPublication = 0L
@@ -226,6 +231,21 @@ internal class KoolDesktopGameSession(
     }
 
     override fun currentFrame(): KoolCanvasFrame {
+        if (postInputFrameWait && livePresentationRequested && !pausedForResumeBackground && loopFailure == null) {
+            val requested = inputPublication.currentRequest()
+            if (!hasUnpresentedFrame() || !inputPublication.isPublished(requested)) {
+                if (!reportedPostInputWait) {
+                    reportedPostInputWait = true
+                    println("RWXPostInputFrameWait active=true maxWaitNanos=1500000")
+                }
+                val start = io.github.rwx.kool.vulkan.VulkanBackendMetrics.stageStart()
+                val deadline = System.nanoTime() + 1_500_000L
+                try {
+                    while (System.nanoTime() < deadline && loopFailure == null &&
+                        (!hasUnpresentedFrame() || !inputPublication.isPublished(requested))) Thread.onSpinWait()
+                } finally { io.github.rwx.kool.vulkan.VulkanBackendMetrics.stageEnd("post-input-frame-wait", start, requested) }
+            }
+        }
         mailbox.poll()?.let { completed ->
             selectedEnvelope?.close()
             selectedEnvelope = completed
@@ -256,7 +276,13 @@ internal class KoolDesktopGameSession(
         frameTimeLog?.beginFrame()
         graphicsEngine.beginFrame(viewport.width, viewport.height)
         engine.renderGraphicsEngine = graphicsEngine
-        runGameLoop(engine, deltaSeconds)
+        // Units resolve their movement through `engine.tileMap`, and the outer loop still runs before a
+        // map exists and after it is released. Ticking there dereferences a null map and stops the owner
+        // loop ("OrderableUnit.applyPositionChange: tileMap is null"), which is what killed a measured
+        // fog-enabled benchmark run; the neighbouring layer-buffer work guards on the same condition.
+        if (engine.hasLoadedLevel && engine.tileMap != null) {
+            runGameLoop(engine, deltaSeconds)
+        }
         frameTimeLog?.endGameWork()
         if (drainLayerBuffers || (engine.hasLoadedLevel && engine.tileMap != null &&
                 TileMap.layerBufferManager.hasVisiblePendingRedraws())) {
@@ -293,9 +319,21 @@ internal class KoolDesktopGameSession(
         lastFrame = envelope.frame
         CanvasFrameMetrics.produced(envelope)
         mailbox.publish(envelope)
+        newestPublishedCamera = camera
+        if (postInputFrameWait) inputPublication.published()
+    }
+
+    /** Read-only publication metadata; presentation neither calls the engine nor changes its clock. */
+    internal fun hasUnpresentedFrame(): Boolean {
+        if (!livePresentationRequested || pausedForResumeBackground || loopFailure != null) return true
+        val publication = newestPublishedCamera ?: return true
+        val presented = canvasPresentationTracker.cameraSnapshot() ?: return true
+        return publication.generation > presented.generation ||
+            publication.generation == presented.generation && publication.revision > presented.revision
     }
 
     override fun setGameVisible(visible: Boolean, viewport: KoolCanvasViewport, koolOverlay: Boolean, pausedBackground: Boolean) {
+        livePresentationRequested = visible && !pausedBackground
         requestViewport(viewport)
         owner.submit {
             val engine = activeEngineLocked()
@@ -318,7 +356,12 @@ internal class KoolDesktopGameSession(
         screenX: Float, screenY: Float, isDown: Boolean, pointerId: Int, frameContext: GamePointerFrameContext,
     ) {
         val camera = frameContext.camera
+        val responseKind = if (io.github.rwx.benchmark.ReplayNormalInputProbe.activatingDrag)
+            "pointer/activation" else "pointer/$pointerId"
+        val responseId = CanvasFrameMetrics.inputSampled(responseKind, if (isDown) 1 else 0)
+        val inputTicket = if (postInputFrameWait) inputPublication.request() else 0L
         owner.submitInput("pointer", isDown) {
+            if (postInputFrameWait) inputPublication.adopted(inputTicket)
             if (isDown && camera != null && camera.generation != loadState.mapLoadGeneration) return@submitInput
             val engine = gameEngine
             val screenRelative = engine?.settingsEngine?.let {
@@ -326,6 +369,8 @@ internal class KoolDesktopGameSession(
             } ?: true
             val (x, y) = mapPointer(engine, frameContext, screenX, screenY, screenRelative)
             view.submitPointer(x, y, isDown, pointerId)
+            CanvasFrameMetrics.inputApplied(responseId, engine?.viewpointXSnapped ?: Float.NaN,
+                engine?.viewpointYSnapped ?: Float.NaN, engine?.zoom ?: Float.NaN)
         }
     }
 
@@ -334,9 +379,15 @@ internal class KoolDesktopGameSession(
     }
 
     override fun movePointer(screenX: Float, screenY: Float, frameContext: GamePointerFrameContext) {
+        val responseId = CanvasFrameMetrics.inputSampled("pointer-move", 0)
+        val inputTicket = if (postInputFrameWait) inputPublication.request() else 0L
         owner.submit {
+            if (postInputFrameWait) inputPublication.adopted(inputTicket)
             val (x, y) = mapPointer(gameEngine, frameContext, screenX, screenY, screenRelative = true)
             view.movePointer(x, y)
+            val engine = gameEngine
+            CanvasFrameMetrics.inputApplied(responseId, engine?.viewpointXSnapped ?: Float.NaN,
+                engine?.viewpointYSnapped ?: Float.NaN, engine?.zoom ?: Float.NaN)
         }
     }
 
@@ -349,9 +400,37 @@ internal class KoolDesktopGameSession(
             frameContext.surfaceViewport, screenRelative)
     }
 
-    override fun clearInputState() { owner.submitInput("pointer", false) { view.submitPointer(0f, 0f, false, -1) } }
+    override fun clearInputState() {
+        val inputTicket = if (postInputFrameWait) inputPublication.request() else 0L
+        owner.submitInput("pointer", false) {
+            if (postInputFrameWait) inputPublication.adopted(inputTicket)
+            view.submitPointer(0f, 0f, false, -1)
+        }
+    }
     override fun submitKey(androidKeyCode: Int, isDown: Boolean) {
-        owner.submitInput("key/$androidKeyCode", isDown) { gameEngine?.setKeyState(androidKeyCode, isDown) }
+        val responseId = CanvasFrameMetrics.inputSampled("key/$androidKeyCode", if (isDown) 1 else 0)
+        val inputTicket = if (postInputFrameWait) inputPublication.request() else 0L
+        owner.submitInput("key/$androidKeyCode", isDown) {
+            if (postInputFrameWait) inputPublication.adopted(inputTicket)
+            val engine = gameEngine
+            engine?.setKeyState(androidKeyCode, isDown)
+            CanvasFrameMetrics.inputApplied(responseId, engine?.viewpointXSnapped ?: Float.NaN,
+                engine?.viewpointYSnapped ?: Float.NaN, engine?.zoom ?: Float.NaN)
+        }
+    }
+
+    override fun submitMouseWheel(amount: Int) {
+        if (amount == 0) return
+        val responseId = CanvasFrameMetrics.inputSampled("wheel", amount)
+        val inputTicket = if (postInputFrameWait) inputPublication.request() else 0L
+        owner.submit {
+            if (postInputFrameWait) inputPublication.adopted(inputTicket)
+            super.runEngineCommand("mouse wheel") { engine ->
+                engine.queueMouseWheelDelta(amount)
+                CanvasFrameMetrics.inputApplied(responseId, engine.viewpointXSnapped, engine.viewpointYSnapped, engine.zoom)
+            }
+            publishUiState(force = true)
+        }
     }
 
     override fun prepareMenuBackgroundAsync(viewport: KoolCanvasViewport) {

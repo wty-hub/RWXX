@@ -26,6 +26,11 @@ object CanvasFrameMetrics {
     }
     private val target = System.getenv("RWX_FRAME_METRICS")?.takeIf { it.isNotBlank() }
         ?: if (trace != null) "1" else null
+    // Keep the diagnostic file open and buffered, like the presentation trace. Reopening and
+    // flushing it on the render owner every five seconds can manufacture a measurement stall.
+    private val metricsWriter = target?.takeUnless { it == "1" }?.let { path ->
+        File(path).also { it.absoluteFile.parentFile?.mkdirs() }.bufferedWriter(bufferSize = 65_536)
+    }
     private val hud = CanvasFrameRateCounter(System.nanoTime())
     private val diagnostics = target?.let { CanvasFrameRateCounter(System.nanoTime(), collectIntervals = true) }
     private var chosenSequence = -1L
@@ -41,12 +46,59 @@ object CanvasFrameMetrics {
     private var textCachePeak = 0
     internal class FreezeScratchRecord(val owner: Long, val pool: KoolCanvasFreezeScratchPool)
     @Volatile private var freezeScratchRecorded: FreezeScratchRecord? = null
+    private var gpuCellRecorded = false
+    private var gpuCellCreated = 0L
+    private var gpuCellHits = 0L
+    private var gpuCellRetired = 0L
+    private var gpuCellLive = 0
+    private var gpuCellPending = 0
 
     internal fun freezeScratchPool(record: FreezeScratchRecord) {
         if (diagnostics != null) freezeScratchRecorded = record
     }
 
+    /**
+     * Count of actually replayed frames, and the duration of the most recent one.
+     *
+     * Exposed because the engine-owner loop advances far more often than a frame is rendered (measured
+     * ~610 owner iterations per second against ~120 rendered frames), so a host tracing owner iterations
+     * cannot tell a rendering row from a non-rendering one without this. Its per-frame trace needs it to
+     * derive a meaningful frame budget.
+     */
+    val replaySequence: Long get() = KoolCanvasRenderProbe.sequence
+
+    val lastReplayNanos: Long get() = KoolCanvasRenderProbe.lastReplayNanos
+
+    /** Gap between the end of one replay and the start of the next; see the probe. */
+    val lastReplayGapNanos: Long get() = KoolCanvasRenderProbe.lastReplayGapNanos
+
+    /** Gap before the replay was entered: the render loop had nothing to render. */
+    val lastCallbackEntryGapNanos: Long get() = KoolCanvasRenderProbe.lastCallbackEntryGapNanos
+
+    /** Gap after the previous replay returned: scene render, present and swapchain. */
+    val lastCallbackExitGapNanos: Long get() = KoolCanvasRenderProbe.lastCallbackExitGapNanos
+
+    /**
+     * GPU offscreen target counters, published once per render frame.
+     *
+     * `desktop/tools/map_pan_builtin_comparison.py` requires these in every frame-metrics record and
+     * refuses a run whose measured windows show no `hits` growth, so a GPU map cell path that never
+     * samples its own images cannot be reported as a passing A/B.
+     */
+    internal fun gpuMapCellCache(created: Long, hits: Long, retired: Long, live: Int, pending: Int) {
+        if (diagnostics == null) return
+        gpuCellRecorded = true
+        gpuCellCreated = created
+        gpuCellHits = hits
+        gpuCellRetired = retired
+        gpuCellLive = live
+        gpuCellPending = pending
+    }
+
     fun snapshot(): CanvasFrameRateSample? = published
+
+    /** True when per-sample counters are being written; avoids hot-path work in unmeasured runs. */
+    internal val gpuCountersEnabled: Boolean get() = diagnostics != null
 
     /** Render-thread counters; the existing diagnostic sample writes them without per-mesh I/O. */
     internal fun textMeshCache(created: Long, exactHits: Long, reused: Long, pruned: Long,
@@ -63,6 +115,7 @@ object CanvasFrameMetrics {
     }
 
     @Synchronized fun produced(envelope: FrameEnvelope) {
+        CanvasInputResponseTrace.produced(envelope)
         hud.produced(envelope.simulationTick, envelope.generation)
         diagnostics?.produced(envelope.simulationTick, envelope.generation)
     }
@@ -71,10 +124,14 @@ object CanvasFrameMetrics {
         chosenSequence = sequence; chosenGeneration = generation
     }
 
+    fun inputSampled(kind: String, value: Int): Long = CanvasInputResponseTrace.sampled(kind, value)
+    fun inputApplied(id: Long, x: Float, y: Float, zoom: Float) = CanvasInputResponseTrace.applied(id, x, y, zoom)
+
     /** Invoked after an accepted Vulkan present or a visible OpenGL swap, including repeated snapshots. */
     @JvmStatic @Synchronized fun presented() {
         if (chosenSequence < 0) return
         val now = System.nanoTime()
+        CanvasInputResponseTrace.presented(chosenSequence, chosenGeneration, now)
         hud.presented(chosenSequence, chosenGeneration, now)
         hud.sample(now, 1_000_000_000L)?.let { published = it }
         val counter = diagnostics ?: return
@@ -89,15 +146,21 @@ object CanvasFrameMetrics {
                 "\"idle\":${it.idle},\"active\":${it.active},\"peakMemoEntries\":${it.peakMemoEntries}," +
                 "\"peakVisitingEntries\":${it.peakVisitingEntries},\"peakSeenAllocations\":${it.peakSeenAllocations},\"closed\":${it.closed}}"
         } } ?: ""
-        val line = "{\"sampleNanos\":$now,\"seconds\":%.3f,\"acceptedPresentFps\":%.2f,\"presentFps\":%.2f,\"producedSnapshotHz\":%.2f,\"freshSnapshotHz\":%.2f,\"simulationTicksPerSecond\":%.2f,\"repeatRatio\":%.5f,\"p95Ms\":%.3f,\"p99Ms\":%.3f$textCache$freezeScratch}".format(
+        val gpuCells = if (!gpuCellRecorded) "" else
+            ",\"gpuMapCellCache\":{\"created\":$gpuCellCreated,\"hits\":$gpuCellHits," +
+                "\"retired\":$gpuCellRetired,\"live\":$gpuCellLive,\"pending\":$gpuCellPending}"
+        val line = "{\"sampleNanos\":$now,\"seconds\":%.3f,\"acceptedPresentFps\":%.2f,\"presentFps\":%.2f,\"producedSnapshotHz\":%.2f,\"freshSnapshotHz\":%.2f,\"simulationTicksPerSecond\":%.2f,\"repeatRatio\":%.5f,\"p95Ms\":%.3f,\"p99Ms\":%.3f$textCache$freezeScratch$gpuCells}".format(
             Locale.ROOT, sample.seconds, sample.acceptedPresentFps, sample.acceptedPresentFps,
             sample.producedSnapshotHz, sample.freshSnapshotHz, sample.simulationTicksPerSecond,
             sample.repeatRatio, sample.p95Ms, sample.p99Ms)
-        if (target == "1") logger.info("RWXFrameMetrics") { line } else File(target!!).appendText(line + "\n")
-        trace?.flush()
+        if (target == "1") logger.info("RWXFrameMetrics") { line }
+        else metricsWriter?.apply { write(line); newLine() }
     }
 
-    @JvmStatic @Synchronized fun close() { trace?.close() }
+    @JvmStatic @Synchronized fun close() {
+        CanvasInputResponseTrace.close()
+        try { trace?.close() } finally { metricsWriter?.close() }
+    }
 }
 
 /** Callers provide synchronization; deterministic clock input makes the rate contract testable. */
@@ -153,8 +216,7 @@ internal class CanvasFrameRateCounter(startNanos: Long, collectIntervals: Boolea
 }
 
 /** Only the explicitly tagged original FPS draw is replaced; arbitrary unit or UI text is untouched. */
-internal object CanvasPerformanceHud {
-    fun command(command: KoolCanvasCommand.DrawText, sample: CanvasFrameRateSample?): KoolCanvasCommand.DrawText {
+internal object CanvasPerformanceHud {    fun command(command: KoolCanvasCommand.DrawText, sample: CanvasFrameRateSample?): KoolCanvasCommand.DrawText {
         if (command.state.drawRole != KoolCanvasDrawRole.PerformanceHud) return command
         val text = if (sample == null) "${command.text} (engine)" else
             "render ${sample.acceptedPresentFps.roundToInt()} FPS / new ${sample.freshSnapshotHz.roundToInt()}/s / " +

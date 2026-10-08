@@ -18,7 +18,7 @@ import subprocess
 import time
 
 
-PROJECT = Path(__file__).resolve().parents[2]
+PROJECT = Path(os.environ.get('RWX_BENCHMARK_PROJECT_ROOT', Path(__file__).resolve().parents[2]))
 UNIT_COUNTS = (661, 1000, 2000)
 MIXES = ("land-air", "sea-air", "all")
 

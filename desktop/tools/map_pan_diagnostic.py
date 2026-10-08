@@ -32,7 +32,8 @@ def export_jfr(java, recording, output, compact=False):
     executable = Path(shutil.which(java) or java).resolve()
     if compact:
         target = output / "compact-profile.ndjson"
-        command = [str(executable), "--source", "25", str(PROJECT / "desktop/tools/CompactJfr.java"), str(recording), str(target)]
+        tool_root = Path(os.environ.get('RWX_BENCHMARK_TOOL_ROOT', PROJECT / 'desktop/tools'))
+        command = [str(executable), "--source", "25", str(tool_root / 'CompactJfr.java'), str(recording), str(target)]
         print("EXPORT COMPACT JFR", flush=True)
         try:
             result = subprocess.run(command, capture_output=True, text=True, timeout=120, creationflags=NO_CONSOLE)

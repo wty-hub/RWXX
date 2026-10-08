@@ -36,8 +36,15 @@ internal fun resolveDesktopTargetFrameRate(
     ?: SettingsEngine.normalizeMaxFrameRate(maxFrameRate).takeIf { it > 0 }
     ?: legacyDesktopTargetFrameRate(highRefreshRate)
 
-internal fun legacyDesktopTargetFrameRate(highRefreshRate: Boolean): Int =
-    if (highRefreshRate) MAX_HIGH_REFRESH_TARGET_FPS else MAX_STANDARD_TARGET_FPS
+/**
+ * Fallback when neither the environment override nor the game's `maxFrameRate` setting applies.
+ *
+ * 300 rather than 120: the software pacer throttles the whole loop, and the original build reaches about
+ * 228 frames/s on this replay, so a 120 default made RWX's own interaction measurements a comparison
+ * against a cap rather than against the workload (`docs/original-benchmark.md` §6.7 round 49). Pacing
+ * stays in place so a fast machine does not spin; it just no longer sits below what the game can do.
+ */
+internal fun legacyDesktopTargetFrameRate(highRefreshRate: Boolean): Int = MAX_TARGET_FPS
 
 /** Software pacing also honours vertical sync when the GL canvas swaps without waiting. */
 internal fun desktopFramePeriodNanos(targetFrameRate: Int, vsync: Boolean, refreshRate: Int): Long {
@@ -49,5 +56,15 @@ internal fun desktopFramePeriodNanos(targetFrameRate: Int, vsync: Boolean, refre
 internal fun desktopNextFrameDelayNanos(frameStartNanos: Long, nowNanos: Long, periodNanos: Long): Long =
     (frameStartNanos + periodNanos - nowNanos).coerceAtLeast(0L)
 
-private const val MAX_STANDARD_TARGET_FPS = 120
-private const val MAX_HIGH_REFRESH_TARGET_FPS = 300
+/** Correct small wake-up drift; a missed interval starts a fresh schedule, without catch-up ticks. */
+internal fun desktopScheduledFrameStartNanos(scheduledNanos: Long, actualNanos: Long, periodNanos: Long): Long =
+    if (periodNanos > 0 && actualNanos >= scheduledNanos && actualNanos - scheduledNanos < periodNanos / 2)
+        scheduledNanos else actualNanos
+
+/**
+ * Ceiling for the software pacer in both the standard and high-refresh paths.
+ *
+ * Kept as one constant so the two paths cannot drift: the distinction used to cap the common path at 120,
+ * which measured RWX against its own cap rather than against the workload.
+ */
+private const val MAX_TARGET_FPS = 300

@@ -44,6 +44,12 @@ class KoolGraphicsEngine private constructor(
     private val textureMetadata: MutableMap<Texture, TextureMetadata> = WeakHashMap(),
     private val assetBytes: (String) -> ByteArray? = ::readAssetBytesFromFileSystem,
     private val enableTextureAtlas: Boolean = false,
+    /**
+     * True for a [RenderTargetMode.GPU_TARGET]: the frame is replayed by the GPU render thread instead
+     * of being rasterised on the CPU, so recording must not bake CPU pixel/frame snapshots of nested
+     * targets into it (see [freezeTextureForOffscreenDraw]).
+     */
+    private val gpuReplayTarget: Boolean = false,
 ) : GraphicsEngine {
     override fun backendCapabilities(): GraphicsBackendCapabilities = BACKEND_CAPABILITIES
 
@@ -82,6 +88,41 @@ class KoolGraphicsEngine private constructor(
     private var textureAtlas: TextureAtlas? = null
     private var generatedTextureSerial = 0
     private var lastCommittedFrameSnapshot: FrameSnapshot? = null
+    /** Diagnostic: 0 = GPU offscreen pass path taken, 1 = raster/other path taken. */
+    private var gpuTargetPathCounts = LongArray(2)
+    /** Diagnostic: 0 = mode is not GPU_TARGET, 1 = GPU_TARGET but no installer, 2 = GPU pass taken. */
+    private var gpuTargetModality = LongArray(3)
+    /** Diagnostic: commits per `RenderTargetMode` ordinal (DEFAULT, IMMEDIATE, GPU_TARGET, ...). */
+    private val gpuTargetModeTotals = LongArray(RenderTargetMode.entries.size)
+    /** Diagnostic: commits per "WxH/MODE" key, to name which target is actually being flushed. */
+    private val gpuTargetShapeKeys = HashMap<String, Long>()
+    private var gpuTargetFlushCalls = 0L
+    /** Diagnostic: the commit-path counters below are only maintained while the canvas trace is on. */
+    private val gpuTargetDiagnostics: Boolean get() = CanvasRenderStageTrace.enabled
+    /** Diagnostic: `p()` routes - 0 = no target texture, 1 = target texture. */
+    private val commitRouteCounts = LongArray(2)
+    private val commitRouteKeys = HashMap<String, Long>()
+    private var commitRouteCalls = 0L
+
+    /** Recorded-content signature of the last GPU-target commit, used to skip re-freezing identical content. */
+    private var lastFrozenSignature: Int = 0
+    private var lastFrozenViewport: KoolCanvasViewport? = null
+    private var lastFrozenFrame: KoolCanvasFrame? = null
+    private var lastFrozenAuxiliaryIds: List<KoolCanvasTextureId> = emptyList()
+    /** Diagnostic: how often the recorded signature allowed skipping a GPU-target freeze. */
+    internal var flushSkipChecks: Long = 0L
+        private set
+    internal fun reportGpuTargetPaths() {
+        if (!CanvasRenderStageTrace.enabled) return
+        if (gpuTargetPathCounts[0] == 0L && gpuTargetPathCounts[1] == 0L) return
+        println("[RWX canvas] gpuTargetPathsSummary offscreenPass=" + gpuTargetPathCounts[0] +
+                " rasterOrOther=" + gpuTargetPathCounts[1])
+        println("[RWX canvas] gpuTargetModality modeNotGpuTarget=" + gpuTargetModality[0] +
+                " gpuTargetNoInstaller=" + gpuTargetModality[1] +
+                " gpuPassTaken=" + gpuTargetModality[2])
+    }
+    internal var flushSkipHits: Long = 0L
+        private set
 
     /**
      * Pixels of the newest commit of an [RenderTargetMode.IMMEDIATE] target. A commit that
@@ -123,6 +164,9 @@ class KoolGraphicsEngine private constructor(
 
     fun snapshot(): KoolCanvasFrame = commandBuffer.snapshot()
 
+    /** Order-sensitive signature of this engine's pending recording; see [KoolCanvasCommandBuffer.signature]. */
+    internal val pendingCommandSignature: Int get() = commandBuffer.signature
+
     override fun b(texture: Texture?): GraphicsEngine = b(texture, RenderTargetMode.DEFAULT)
 
     override fun b(texture: Texture?, mode: RenderTargetMode): GraphicsEngine {
@@ -136,14 +180,24 @@ class KoolGraphicsEngine private constructor(
             )
         }
         val offscreen = KoolGraphicsEngine(
-            commandBuffer = KoolCanvasCommandBuffer(),
+            commandBuffer = KoolCanvasCommandBuffer(textureBatches =
+                mode == RenderTargetMode.GPU_TARGET && System.getenv("RWX_MAP_TEXTURE_BATCHES") == "1",
+                rectBatches = mode == RenderTargetMode.GPU_TARGET &&
+                    System.getenv("RWX_MAP_TEXTURE_BATCHES") == "1" && System.getenv("RWX_MAP_RECT_BATCHES") != "0",
+                fogBatches = mode == RenderTargetMode.GPU_TARGET && System.getenv("RWX_MAP_FOG_BATCHES") == "1"),
             targetTexture = texture,
             targetMode = mode,
             textureStore = textureStore,
             targetStates = targetStates,
             textureMetadata = textureMetadata,
             assetBytes = assetBytes,
-            enableTextureAtlas = false,
+            // Offscreen cells draw terrain one tile at a time (measured: ~6 570 `drawTexture` commands per
+            // 512x512 cell, i.e. ~40 screen pixels per draw). Textures packed into one atlas share a single
+            // canvas texture id, which is what lets the renderer's instanced run merge the consecutive
+            // draws instead of issuing one command each. `RWX_OFFSCREEN_TEXTURE_ATLAS=0` restores the
+            // previous behaviour.
+            enableTextureAtlas = OFFSCREEN_TEXTURE_ATLAS,
+            gpuReplayTarget = mode == RenderTargetMode.GPU_TARGET,
         )
         targetStates.remove(texture)?.releaseAuxiliaryTextures(textureStore)
         targetStates[texture] = KoolTargetState(offscreen, mode)
@@ -252,6 +306,23 @@ class KoolGraphicsEngine private constructor(
     }
 
     override fun p() {
+        if (CanvasRenderStageTrace.enabled) {
+            // `p()` is the commit entry point on the engine that owns the target. Which of the two commit
+            // routes it takes, and with which mode, is exactly what decides whether a cell ever reaches the
+            // GPU offscreen pass.
+            commitRouteCounts[if (targetTexture == null) 0 else 1]++
+            if (targetTexture != null) {
+                val key = targetTexture!!.width().toString() + "x" + targetTexture!!.height() + "/" +
+                    targetMode.name
+                commitRouteKeys[key] = (commitRouteKeys[key] ?: 0L) + 1L
+            }
+            if (commitRouteCalls++ % 500L == 0L) {
+                println("[RWX canvas] commitRoutes pNoTarget=" + commitRouteCounts[0] +
+                        " pWithTarget=" + commitRouteCounts[1] + " top=" +
+                        commitRouteKeys.entries.sortedByDescending { it.value }.take(4)
+                            .joinToString(" ") { it.key + "x" + it.value })
+            }
+        }
         commitTargetTextureFrame()
     }
 
@@ -459,6 +530,21 @@ class KoolGraphicsEngine private constructor(
         a(texture, rect, rect2, paint)
     }
 
+    override fun a(texture: Texture?, source: Rect?, destination: RectF?, paint: KoolPaint?, repeat: Int) {
+        if (texture == null || source == null || destination == null) return
+        if (repeat <= 1) {
+            a(texture, source, destination, paint)
+            return
+        }
+        drawTextureRepeat(
+            texture = texture,
+            source = source.toCanvasRect(),
+            destination = destination.toCanvasRect(),
+            repeat = repeat,
+            paint = paint,
+        )
+    }
+
     override fun a(texture: Texture?, rect: Rect?, rectF: RectF?, paint: KoolPaint?) {
         if (texture == null || rect == null || rectF == null) return
         drawTexture(texture, rectF.toCanvasRect(), rect.toCanvasRect(), paint)
@@ -594,10 +680,63 @@ class KoolGraphicsEngine private constructor(
     private fun flushTargetTextureFrame(): TargetTextureCommit? {
         return targetTexture?.let { texture ->
             val id = texture.toCanvasTextureId()
+            // A GPU target re-records the same content on most commits: the freeze content check reported
+            // `same` 100 728 against `changed` 3 134 (97%) on a low-zoom run, but that check runs *after*
+            // the frozen copy, so `engine-freeze` still cost 44.8 s of a 94 s run. The recorded signature
+            // makes the same decision from O(1) state before the copy.
+            if (targetMode == RenderTargetMode.GPU_TARGET &&
+                FrozenCanvasGpuResources.gpuTargetInstaller != null
+            ) {
+                flushSkipChecks++
+                if (lastFrozenSignature == commandBuffer.signature &&
+                    lastFrozenViewport == commandBuffer.viewport &&
+                    lastFrozenFrame != null
+                ) {
+                    flushSkipHits++
+                    if (flushSkipHits == 1L) println("[RWX canvas] gpuTargetFreezeSkip first hit after " + flushSkipChecks + " checks")
+                    return@let TargetTextureCommit(id, lastFrozenAuxiliaryIds)
+                }
+            }
+            // The caller re-flushes every sampled target on every draw, and almost all of those flushes
+            // find nothing recorded (measured on the europe-15p replay: 2 264 189 of 2 275 257, costing
+            // 3.0 s of snapshot time in one pan run). An empty commit takes the same branch as an empty
+            // snapshot, so it can be built without copying the command list into a new frame; the
+            // `registerFrame` call is kept so the stored revision still advances exactly as before.
+            if (commandBuffer.isEmpty) {
+                releasePendingImmediateFrameSnapshots()
+                val previous = lastCommittedFrameSnapshot ?: return@let null
+                if (targetMode != RenderTargetMode.GPU_TARGET ||
+                    FrozenCanvasGpuResources.gpuTargetInstaller == null
+                ) {
+                    textureStore.registerFrame(id, previous.frame)
+                    if (textureStore is KoolCanvasCpuTextureStore && targetMode == RenderTargetMode.IMMEDIATE) {
+                        val published = registeredImmediateFrames[id]
+                        val registeredFrame = textureStore.frame(id)
+                        if (published != null && registeredFrame != null) {
+                            registeredImmediateFrames[id] = published.copy(frame = WeakReference(registeredFrame))
+                        }
+                    }
+                }
+                return@let TargetTextureCommit(id, previous.auxiliaryIds)
+            }
+            val snapshotStart = if (KoolCanvasCommandProfile.enabled) System.nanoTime() else 0L
             val frame = snapshot()
+            if (snapshotStart != 0L) {
+                KoolCanvasCommandProfile.offscreenFlush(
+                    id.value, frame.commands.size, System.nanoTime() - snapshotStart,
+                )
+            }
             if (frame.commands.isEmpty()) {
                 releasePendingImmediateFrameSnapshots()
                 val previous = lastCommittedFrameSnapshot ?: return@let null
+                if (targetMode == RenderTargetMode.GPU_TARGET &&
+                    FrozenCanvasGpuResources.gpuTargetInstaller != null
+                ) {
+                    // An empty re-commit means "content unchanged". Re-registering the previous frame
+                    // here would replace the sampleable GPU version with a replay frame and send the
+                    // renderer back to the per-sampling-point expansion this target exists to avoid.
+                    return@let TargetTextureCommit(id, previous.auxiliaryIds)
+                }
                 textureStore.registerFrame(id, previous.frame)
                 if (textureStore is KoolCanvasCpuTextureStore && targetMode == RenderTargetMode.IMMEDIATE) {
                     // An empty re-commit changes the stored Frame object, but must retain the
@@ -611,7 +750,54 @@ class KoolGraphicsEngine private constructor(
                 }
                 return@let TargetTextureCommit(id, previous.auxiliaryIds)
             }
-            val raster = if (targetMode == RenderTargetMode.IMMEDIATE) {
+            // A GPU target keeps the same recorded frame but hands it to an offscreen pass instead of
+            // rasterising it. Without a render-thread owner (headless runs, tests, other backends) the
+            // CPU raster still applies, so the target stays correct everywhere.
+            val gpuTarget = targetMode == RenderTargetMode.GPU_TARGET &&
+                FrozenCanvasGpuResources.gpuTargetInstaller != null
+            if (CanvasRenderStageTrace.enabled) {
+                gpuTargetPathCounts[if (gpuTarget) 0 else 1]++
+            }
+            // Diagnostic: the GPU offscreen pass is the structural fix for the cell cost, so when it does
+            // not engage, record which half of its guard failed. `modeNotGpuTarget` means the game asked
+            // for a CPU target; `noInstaller` means the host never wired the render-thread installer.
+            // Gated on the trace: these counters and the string key below otherwise cost work on the commit
+            // path of every render target, which is not a diagnostic worth paying for by default.
+            if (gpuTargetDiagnostics) {
+                val modalityIndex = when {
+                    targetMode != RenderTargetMode.GPU_TARGET -> 0
+                    FrozenCanvasGpuResources.gpuTargetInstaller == null -> 1
+                    else -> 2
+                }
+                gpuTargetModality[modalityIndex]++
+                gpuTargetModeTotals[targetMode.ordinal]++
+                gpuTargetFlushCalls++
+                // Identify commits by real dimensions and mode. The cell texture is sized from
+                // `cellBufferPixelSize`, so assuming 512 was wrong and hid which target these are.
+                val key = texture.width().toString() + "x" + texture.height() + "/" + targetMode.name
+                gpuTargetShapeKeys[key] = (gpuTargetShapeKeys[key] ?: 0L) + 1L
+            }
+            if (gpuTargetDiagnostics && gpuTargetFlushCalls % 500L == 0L) {
+                // Rows carry this engine's identity and its own mode/size. The counters are per instance, and
+                // reading one instance's numbers as the whole process is twice what sent this investigation
+                // the wrong way (round 28's "500 IMMEDIATE" came from a different engine than the cells).
+                val instance = System.identityHashCode(this)
+                CanvasRenderStageTrace.recordCompleted(
+                    "gpu-target-modality@" + instance, 0L, 0L,
+                    gpuTargetModality[0], gpuTargetModality[1], gpuTargetModality[2],
+                )
+                CanvasRenderStageTrace.recordCompleted(
+                    "gpu-target-mode@" + instance, 0L, 0L,
+                    targetMode.ordinal.toLong(),
+                    (targetTexture?.width() ?: 0).toLong(),
+                    (targetTexture?.height() ?: 0).toLong(),
+                )
+            }
+            // Any non-GPU target replaces the sampled content, so the skip cache must stop applying.
+            if (!gpuTarget) lastFrozenFrame = null
+            val raster = if (targetMode == RenderTargetMode.IMMEDIATE ||
+                (targetMode == RenderTargetMode.GPU_TARGET && !gpuTarget)
+            ) {
                 rasterizeTargetFrame(texture, frame, visiting = setOf(id))
             } else {
                 null
@@ -669,6 +855,32 @@ class KoolGraphicsEngine private constructor(
                 TargetTextureCommit(id, emptyList())
             } finally {
                 raster.owner?.close()
+            } else if (gpuTarget) {
+                // A GPU target is replayed by the render thread, so it never needs the CPU pixel
+                // snapshots that `snapshotFrameDependencies` builds: those exist so a CPU raster can
+                // read a nested target's pixels, and their pin/release pairing lives in the raster
+                // path. Wiring them up here left the snapshots referenced by in-flight frames but
+                // unreleasable (measured: the candidate A/B run died with
+                // "Texture2d .../snapshot-1172/... is already released").
+                val recorded = frame.withPersistedTargetContents(lastCommittedFrameSnapshot?.frame)
+                textureStore.registerGpuTargetFrame(
+                    id,
+                    recorded,
+                    texture.width().coerceAtLeast(1),
+                    texture.height().coerceAtLeast(1),
+                )
+                // Keep the plain recording for a later incremental commit; snapshot ids would drag the
+                // raster-specific lifetime back into this path.
+                lastCommittedFrameSnapshot = FrameSnapshot(recorded, emptyList())
+                lastFrozenSignature = commandBuffer.signature
+                lastFrozenViewport = frame.viewport
+                lastFrozenFrame = recorded
+                lastFrozenAuxiliaryIds = emptyList()
+                pendingFrameDependencySnapshotIds.clear()
+                pendingFrameDependencySnapshots.clear()
+                pendingPixelDependencySnapshots.clear()
+                commandBuffer.beginFrame(frame.viewport)
+                TargetTextureCommit(id, emptyList())
             } else {
                 val committedFrame = frame.withPersistedTargetContents(lastCommittedFrameSnapshot?.frame)
                 val snapshot = snapshotFrameDependencies(committedFrame)
@@ -1093,6 +1305,38 @@ class KoolGraphicsEngine private constructor(
                 is KoolCanvasCommand.DrawCircle,
                 is KoolCanvasCommand.DrawText -> {
                     return null
+                }
+
+                // The CPU raster paths expand one command into one quad and have no repeat handling yet.
+                // Bailing out keeps the raster correct (the caller falls back to the frame-texture path)
+                // rather than drawing a single stretched quad, which is the tearing bug of round 24.
+                is KoolCanvasCommand.DrawTextureRepeat -> {
+                    return null
+                }
+                is KoolCanvasCommand.DrawTextureBatch -> {
+                    var success = true
+                    command.quads.forEachDraw(command.texture, command.paint, command.state) {
+                        if (success) success = rasterizeTextureCommand(it, pixels, width, height, visiting, profile)
+                    }
+                    if (!success) return null
+                }
+                is KoolCanvasCommand.DrawRectBatch -> {
+                    var success = true
+                    command.rects.forEachDraw(command.paint, command.state) {
+                        if (success) success = rasterizeRectCommand(it, pixels, width, height)
+                    }
+                    if (!success) return null
+                }
+                is KoolCanvasCommand.DrawFogBatch -> {
+                    var success = true
+                    command.masks.forEachDraw(command.texture, command.filter, command.state, command.paint) {
+                        if (success) success = when (it) {
+                            is KoolCanvasCommand.DrawRect -> rasterizeRectCommand(it, pixels, width, height)
+                            is KoolCanvasCommand.DrawTexture -> rasterizeTextureCommand(it, pixels, width, height, visiting, profile)
+                            else -> error("Unexpected fog mask")
+                        }
+                    }
+                    if (!success) return null
                 }
             }
         }
@@ -2140,6 +2384,44 @@ class KoolGraphicsEngine private constructor(
         textureMetadata.remove(texture)
     }
 
+    /**
+     * One texture source rect tiled [repeat] times across [destination].
+     *
+     * Two candidate causes for the black runs it produces have been tested and **both disproven**:
+     *
+     *  - missing `toAtlasDraw` remap: adding it changed the black share from 37% to 33% (baseline with the
+     *    caller's merge off is 0.9%), so the source rect was not the problem;
+     *  - double advancement of the caller's row loop: gating the merge off the fog pass changed 37% to 30%.
+     *
+     * What is established: the **covered area is correct** (drawing only the first tile of each run makes
+     * the black share worse, 58% against 37%), so the geometry is right and the wrong thing is the sampled
+     * content or the per-tile expansion. The caller stays disabled until that is pinned down.
+     */
+    private fun drawTextureRepeat(
+        texture: Texture,
+        source: KoolCanvasRect,
+        destination: KoolCanvasRect,
+        repeat: Int,
+        paint: KoolPaint?,
+    ) {
+        flushPendingTarget(texture)
+        val resolvedTexture = texture.resolveForKool()
+        registerTexturePixels(resolvedTexture)
+        val textureRef = freezeTextureForOffscreenDraw(resolvedTexture, resolvedTexture.toCanvasTextureRef())
+        val canvasPaint = paint.toCanvasPaint()
+        val texturePaint = canvasPaint
+            .withDirectBlitTextureBlend(resolvedTexture)
+            .asCanonicalTexturePaint()
+        commandBuffer.drawTextureRepeat(
+            texture = textureRef,
+            source = source,
+            destination = destination,
+            repeat = repeat,
+            paint = texturePaint,
+            state = commandBuffer.state,
+        )
+    }
+
     private fun drawTexture(
         texture: Texture,
         destination: KoolCanvasRect,
@@ -2160,8 +2442,7 @@ class KoolGraphicsEngine private constructor(
         registerTexturePixels(resolvedTexture)
         val textureRef = freezeTextureForOffscreenDraw(resolvedTexture, resolvedTexture.toCanvasTextureRef())
         val canvasPaint = paint.toCanvasPaint()
-        val texturePaint = canvasPaint
-            .copy(textureEffect = teamColorEffect ?: canvasPaint.textureEffect)
+        val texturePaint = KoolCanvasPaintOperations.textureEffect(canvasPaint, teamColorEffect, AVOID_TEXTURE_PAINT_COPIES)
             .withDirectBlitTextureBlend(resolvedTexture)
             .asCanonicalTexturePaint()
         commandBuffer.drawTexture(
@@ -2257,8 +2538,7 @@ class KoolGraphicsEngine private constructor(
         registerTexturePixels(resolvedTexture)
         val textureRef = freezeTextureForOffscreenDraw(resolvedTexture, resolvedTexture.toCanvasTextureRef())
         val basePaint = paint.toCanvasPaint()
-        val canvasPaint = basePaint
-            .copy(textureEffect = teamColorEffect ?: basePaint.textureEffect)
+        val canvasPaint = KoolCanvasPaintOperations.textureEffect(basePaint, teamColorEffect, AVOID_TEXTURE_PAINT_COPIES)
             .withDirectBlitTextureBlend(resolvedTexture)
             .asCanonicalTexturePaint()
         var tileLeft = destination.left - normalizedOffsetX
@@ -2311,6 +2591,13 @@ class KoolGraphicsEngine private constructor(
         texture: Texture,
         textureRef: KoolCanvasTextureRef
     ): KoolCanvasTextureRef {
+        // A GPU-replay target is never rasterised on the CPU, so it must not bake pixel/frame snapshots
+        // of the nested targets it samples into its recorded commands. The frame lease already pins the
+        // exact source pixel revision, while the snapshot registers/unregisters those pixels on a
+        // lifetime that the CPU raster path owns; following it here made kool bind an already released
+        // texture inside the cell pass (measured: the A/B candidate died with
+        // "Texture2d .../snapshot-N/... is already released").
+        if (gpuReplayTarget) return textureRef
         val targetId = targetTexture?.toCanvasTextureId() ?: return textureRef
         val sourceId = textureRef.id
         if (sourceId == targetId) return textureRef
@@ -2589,26 +2876,40 @@ class KoolGraphicsEngine private constructor(
         } else {
             KoolCanvasTextureFilter.Nearest
         }
+        val style = when (style()) {
+            KoolPaint.Style.STROKE -> KoolCanvasPaintStyle.Stroke
+            KoolPaint.Style.FILL_AND_STROKE -> KoolCanvasPaintStyle.FillAndStroke
+            else -> KoolCanvasPaintStyle.Fill
+        }
+        val width = strokeWidth().coerceAtLeast(1f)
+        val blend = getBlendMode() ?: colorFilter.legacyKoolBlendMode() ?: KoolCanvasBlendMode.SourceOver
+        val size = textSize().coerceAtLeast(1f)
+        val align = when (textAlign()) {
+            KoolPaint.Align.CENTER -> KoolCanvasTextAlign.Center
+            KoolPaint.Align.RIGHT -> KoolCanvasTextAlign.Right
+            else -> KoolCanvasTextAlign.Left
+        }
+        val typeface = typefaceKey()
+        if (REUSE_PAINT_SNAPSHOTS) canvasSnapshot?.let { previous ->
+            // Public legacy fields and overridden getters bypass stateRevision. Compare every
+            // normalized recorded value, including effects, instead of trusting that revision.
+            if (previous.color.argb == color && previous.style == style && previous.strokeWidth == width &&
+                previous.textureFilter == textureFilter && previous.blendMode == blend &&
+                previous.textSize == size && previous.textAlign == align && previous.typefaceKey == typeface &&
+                previous.textureEffect == textureEffect) return previous
+        }
         return KoolCanvasPaint(
             color = KoolCanvasColor(color),
             alphaMultiplier = 1f,
-            style = when (style()) {
-                KoolPaint.Style.STROKE -> KoolCanvasPaintStyle.Stroke
-                KoolPaint.Style.FILL_AND_STROKE -> KoolCanvasPaintStyle.FillAndStroke
-                else -> KoolCanvasPaintStyle.Fill
-            },
-            strokeWidth = strokeWidth().coerceAtLeast(1f),
+            style = style,
+            strokeWidth = width,
             textureFilter = textureFilter,
-            blendMode = getBlendMode() ?: colorFilter.legacyKoolBlendMode() ?: KoolCanvasBlendMode.SourceOver,
-            textSize = textSize().coerceAtLeast(1f),
-            textAlign = when (textAlign()) {
-                KoolPaint.Align.CENTER -> KoolCanvasTextAlign.Center
-                KoolPaint.Align.RIGHT -> KoolCanvasTextAlign.Right
-                else -> KoolCanvasTextAlign.Left
-            },
-            typefaceKey = typefaceKey(),
+            blendMode = blend,
+            textSize = size,
+            textAlign = align,
+            typefaceKey = typeface,
             textureEffect = textureEffect,
-        )
+        ).also { if (REUSE_PAINT_SNAPSHOTS) canvasSnapshot = it }
     }
 
     private fun KoolPaint.legacyTextureFilteringEnabled(): Boolean =
@@ -2817,12 +3118,56 @@ class KoolGraphicsEngine private constructor(
     }
 
     internal companion object {
+        private val AVOID_TEXTURE_PAINT_COPIES = System.getenv("RWX_AVOID_TEXTURE_PAINT_COPIES") == "1"
+        private val REUSE_PAINT_SNAPSHOTS = System.getenv("RWX_REUSE_PAINT_SNAPSHOTS") == "1"
+        /**
+         * Pack offscreen-cell textures into one atlas so consecutive tile draws share a texture id.
+         *
+         * `RWX_OFFSCREEN_TEXTURE_ATLAS=0` restores the previous per-texture behaviour.
+         */
+        internal val OFFSCREEN_TEXTURE_ATLAS = System.getenv("RWX_OFFSCREEN_TEXTURE_ATLAS") != "0"
         private val PARALLEL_CELL_RASTER_ENABLED = (System.getenv("RWX_PARALLEL_CELL_RASTER") == "1")
             .also { println("[RWX canvas] parallelCellRaster=$it") }
         private val ADAPTIVE_CELL_RASTER_ENABLED = adaptiveCellRasterEnabled(System.getenv())
             .also { println("[RWX canvas] adaptiveCellRaster=$it") }
         private val TEXTURE_METADATA_REUSE_ENABLED = (System.getenv("RWX_DISABLE_TEXTURE_METADATA_REUSE") != "1")
             .also { println("[RWX canvas] textureMetadataReuse=$it") }
+
+        /**
+         * Map cells become real GPU offscreen passes instead of CPU-rasterised bitmaps.
+         *
+         * Accepted switches, in precedence order:
+         *  - `RWX_GPU_MAP_CELL_TARGETS=0` forces the legacy CPU raster path and wins over everything,
+         *    so the verified A/B comparison stays available;
+         *  - `RWX_GPU_MAP_CELL_TARGETS=1`, `rwx.kool.gpuMapCellTargets=true`, or the existing
+         *    `RWX_GPU_MAP_CELL_CACHE=1` used by `desktop/tools/map_pan_replay.py --gpu-map-cell-cache`.
+         */
+        internal val GPU_RENDER_TARGETS_ENABLED = gpuRenderTargetsEnabled(
+            System.getenv(), System.getProperty("rwx.kool.gpuMapCellTargets"),
+        ).also {
+            println("[RWX canvas] gpuMapCellTargets=$it")
+            if (it) {
+                // Verified pixel-exact by :desktop:runGpuMapCellOracle, but the performance A/B and the
+                // long-run memory check are still open (see docs/gpu-map-cell-targets.md).
+                println("[RWX canvas] WARNING: gpuMapCellTargets overridden by " + "RWX_GPU_MAP_CELL_TARGETS/RWX_GPU_MAP_CELL_CACHE")
+            }
+        }
+
+        internal fun gpuRenderTargetsEnabled(environment: Map<String, String>, property: String?): Boolean {
+            // Default off. Flipping this to `return true` is not a one-line change: hosts that live
+            // outside a Vulkan context (the scene-host failure-path tests, and any headless use) then
+            // enter the GPU target path and break, so they have to opt out first. The measured results
+            // behind the decision are in docs/gpu-map-cell-targets.md.
+            if (environment["RWX_GPU_MAP_CELL_TARGETS"] == "0") return false
+            if (environment["RWX_GPU_MAP_CELL_TARGETS"] == "1") return true
+            if (environment["RWX_GPU_MAP_CELL_CACHE"] == "1") return true
+            if (property == "true") return true
+            if (property == "false") return false
+            // Default on. Activation additionally requires the host to report a live kool backend
+            // (setGpuOffscreenPassesAvailable, wired in the DI host factory).
+            return true
+        }
+
         private val IMMUTABLE_PIXEL_SNAPSHOT_REUSE_ENABLED =
             System.getenv("RWX_DISABLE_IMMUTABLE_PIXEL_SNAPSHOT_REUSE") != "1"
         private val RASTER_SCALAR_MAPPING_ENABLED = System.getenv("RWX_DISABLE_RASTER_SCALAR_MAPPING") != "1"
@@ -2837,6 +3182,8 @@ class KoolGraphicsEngine private constructor(
             supportsSmoothFogLayerBuffers = false,
             requiresFogAtlasLock = false,
             requiresImageTintColorFilter = false,
+            // Map cells render into a real offscreen pass; see KoolCanvasGpuTargetPasses.
+            supportsGpuRenderTargets = GPU_RENDER_TARGETS_ENABLED,
         )
         val FRAME_SNAPSHOT_SERIAL = AtomicInteger()
         const val CPU_TARGET_PROFILE_PROPERTY: String = "rwx.kool.cpuTargetProfile"

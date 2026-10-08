@@ -5,6 +5,7 @@ import com.corrodinggames.rts.game.map.TileMap
 import com.corrodinggames.rts.gameFramework.GameEngine
 import com.corrodinggames.rts.gameFramework.PerformanceProfiler
 import io.github.rwx.logger
+import io.github.rwx.render.canvas.CanvasFrameMetrics
 import java.io.BufferedWriter
 import java.io.File
 import java.lang.management.ManagementFactory
@@ -22,7 +23,7 @@ internal class KoolFrameTimeLog private constructor(private val output: File?, p
     private val traceWriter: BufferedWriter? = traceOutput?.let { file ->
         file.parentFile?.mkdirs()
         file.bufferedWriter().also { writer ->
-            writer.write("frameStartNanos,frameEndNanos,epochMillisAtEnd,intervalNanos,workNanos,updateNanos,drawNanos,layerRedrawNanos,snapshotNanos,tick,cameraX,cameraY,zoom,ownerCpuNanos,visiblePendingRedraws")
+            writer.write("frameStartNanos,frameEndNanos,epochMillisAtEnd,intervalNanos,workNanos,updateNanos,drawNanos,layerRedrawNanos,snapshotNanos,tick,cameraX,cameraY,zoom,ownerCpuNanos,visiblePendingRedraws,renderedFrame,replayNanos,replayGapNanos,callbackEntryGapNanos,callbackExitGapNanos")
             writer.newLine()
         }
     }
@@ -36,6 +37,7 @@ internal class KoolFrameTimeLog private constructor(private val output: File?, p
     private var lastFrameStart = 0L
     private var phaseStart = 0L
     private var windowStart = System.nanoTime()
+    private var lastReplaySequence = 0L
     private val cpuClock = if (traceWriter != null) ManagementFactory.getThreadMXBean().takeIf {
         it.isCurrentThreadCpuTimeSupported && it.isThreadCpuTimeEnabled
     } else null
@@ -79,6 +81,13 @@ internal class KoolFrameTimeLog private constructor(private val output: File?, p
         traceWriter?.let { writer ->
             val epochMillisAtEnd = System.currentTimeMillis()
             val engine = GameEngine.getInstance()
+            // Was this owner iteration actually replayed, and how long did the replay take? The owner loop
+            // advances far more often than a frame is rendered (measured ~610 against ~120 per second), so
+            // without these two columns a row cannot be told apart from a non-rendering iteration and any
+            // frame budget derived from this file is wrong by a large factor.
+            val replaySequence = CanvasFrameMetrics.replaySequence
+            val renderedNow = if (replaySequence != lastReplaySequence) 1 else 0
+            lastReplaySequence = replaySequence
             writer.append(lastFrameStart.toString()).append(',').append(phaseStart.toString()).append(',')
                 .append(epochMillisAtEnd.toString()).append(',').append(intervals[slot].toString()).append(',')
                 .append(works[slot].toString()).append(',').append(updates[slot].toString()).append(',')
@@ -90,6 +99,11 @@ internal class KoolFrameTimeLog private constructor(private val output: File?, p
                 .append(if (cpuStart >= 0L) (cpuClock!!.currentThreadCpuTime - cpuStart).toString() else "-1")
                 .append(',').append(if (engine?.hasLoadedLevel == true && engine.tileMap != null &&
                     TileMap.layerBufferManager.hasVisiblePendingRedraws()) "1" else "0")
+                .append(',').append(renderedNow.toString())
+                .append(',').append(if (renderedNow == 1) CanvasFrameMetrics.lastReplayNanos.toString() else "-1")
+                .append(',').append(if (renderedNow == 1) CanvasFrameMetrics.lastReplayGapNanos.toString() else "-1")
+                .append(',').append(if (renderedNow == 1) CanvasFrameMetrics.lastCallbackEntryGapNanos.toString() else "-1")
+                .append(',').append(if (renderedNow == 1) CanvasFrameMetrics.lastCallbackExitGapNanos.toString() else "-1")
             writer.newLine()
         }
         if (count < MAX_SAMPLES) count++

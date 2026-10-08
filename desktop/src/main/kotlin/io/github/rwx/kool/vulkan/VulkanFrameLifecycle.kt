@@ -8,6 +8,7 @@ import org.lwjgl.vulkan.VK10.VK_SUCCESS
 import io.github.rwx.render.canvas.CanvasFrameMetrics
 import io.github.rwx.render.canvas.CanvasFramePresentation
 import io.github.rwx.render.canvas.KoolCanvasTextureRegistry
+import io.github.rwx.render.canvas.KoolCanvasAtlasUpdates
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VkFormatProperties
 import org.lwjgl.vulkan.VK10.VK_FORMAT_B8G8R8A8_UNORM
@@ -39,15 +40,20 @@ object VulkanFrameLifecycle {
     fun created(backend: RenderBackendVk) {
         completedShutdown = false
         current = states.getOrPut(backend) { VulkanUploadState(backend) }
+        KoolCanvasAtlasUpdates.install(VulkanUploads::appendAtlasRegions)
         val nativeBgraSupported = MemoryStack.stackPush().use { stack ->
             val properties = VkFormatProperties.calloc(stack)
             vkGetPhysicalDeviceFormatProperties(backend.physicalDevice.vkPhysicalDevice,
                 VK_FORMAT_B8G8R8A8_UNORM, properties)
             supportsNativeBgraUploads(properties.optimalTilingFeatures(),
-                // Conversion is faster, but controlled live runs have not demonstrated fewer stalls.
-                // Keep this format experiment explicit until normal-game frame tails improve.
-                disabled = System.getenv("RWX_NATIVE_BGRA_UPLOAD") != "1" ||
-                    System.getenv("RWX_DISABLE_NATIVE_BGRA_UPLOAD") == "1")
+                // On by default. It was previously opt-in on the note that "controlled live runs have not
+                // demonstrated fewer stalls", so it was re-measured against exactly that - the present
+                // interval tail under pan+zoom. It is about 9% frame rate (122.1 against 114.5/s) and about
+                // 13% off the P99 present interval (50.1-60.5 ms against 53.5-57.2 ms), and its colour path
+                // is verified by :desktop:runBgraSamplingOracle (7 checks) plus the GPU cell oracle's 1537
+                // pixel checks with the path forced on. `RWX_DISABLE_NATIVE_BGRA_UPLOAD=1` restores the
+                // CPU-conversion path for comparison.
+                disabled = System.getenv("RWX_DISABLE_NATIVE_BGRA_UPLOAD") == "1")
         }
         KoolCanvasTextureRegistry.configureNativeBgraUploads(nativeBgraSupported)
         if (VulkanBackendMetrics.enabled || System.getenv("RWX_FRAME_METRICS") != null) {
@@ -84,6 +90,7 @@ object VulkanFrameLifecycle {
                     current = null
                     completedShutdown = true
                     KoolCanvasTextureRegistry.configureNativeBgraUploads(false)
+                    KoolCanvasAtlasUpdates.install(null)
                 }
             }
         }
@@ -105,6 +112,9 @@ object VulkanFrameLifecycle {
     internal fun stateFor(backend: RenderBackendVk): VulkanUploadState =
         states.getOrPut(backend) { VulkanUploadState(backend) }
 
+    /** Fence-scoped releases still queued on every live backend; see `KoolCanvasGpuRetirement`. */
+    fun pendingRetirements(): Int = states.values.sumOf { it.retirement.pendingCount }
+
     internal fun activeCommandBuffer(backend: RenderBackendVk): VkCommandBuffer? = states[backend]?.commandBuffer
 
     internal fun retireNative(backend: RenderBackendVk, release: () -> Unit) {
@@ -119,6 +129,22 @@ object VulkanFrameLifecycle {
     }
 
     @JvmStatic fun beforeSubmit() { VulkanDelayInjection.submit.pause() }
+    @JvmStatic fun diagnosticStageStart(): Long = VulkanBackendMetrics.stageStart()
+    @JvmStatic fun diagnosticStageEnd(stage: String, start: Long) { VulkanBackendMetrics.stageEnd(stage, start) }
+    @JvmStatic fun diagnosticBufferCreateEnd(info: de.fabmax.kool.pipeline.backend.vk.MemoryInfo, start: Long) {
+        if (start != 0L) VulkanBackendMetrics.stageEnd(bufferAllocationStage(info.usage), start,
+            info.size, info.usage.toLong(), (if (info.createMapped) 1L else 0L) or (if (info.isReadback) 2L else 0L))
+    }
+
+    internal fun bufferAllocationStage(usage: Int): String = when (usage) {
+        org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_TRANSFER_SRC_BIT -> "staging-buffer-create"
+        org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT -> "uniform-buffer-create"
+        else -> when {
+            usage and org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_VERTEX_BUFFER_BIT != 0 -> "vertex-buffer-create"
+            usage and org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_INDEX_BUFFER_BIT != 0 -> "index-buffer-create"
+            else -> "other-buffer-create"
+        }
+    }
     @JvmStatic fun beforePresent() { VulkanDelayInjection.present.pause() }
     @JvmStatic fun selectedPresentMode(mode: Int) { presentMode = mode }
     @JvmStatic fun presented(accepted: Boolean) {
@@ -126,14 +152,14 @@ object VulkanFrameLifecycle {
         if (accepted) CanvasFrameMetrics.presented()
     }
     @JvmStatic fun measuredFenceWait(device: VkDevice, fence: Long, waitAll: Boolean, timeout: Long): Int =
-        VulkanBackendMetrics.measureFenceWait { vkWaitForFences(device, fence, waitAll, timeout) }
+        VulkanBackendMetrics.measureFenceWait(fence) { vkWaitForFences(device, fence, waitAll, timeout) }
     @JvmStatic fun measuredAcquireImage(device: VkDevice, swapchain: Long, timeout: Long, semaphore: Long,
         fence: Long, image: IntBuffer): Int =
         VulkanBackendMetrics.measureAcquire { vkAcquireNextImageKHR(device, swapchain, timeout, semaphore, fence, image) }
     @JvmStatic fun measuredQueuePresent(queue: VkQueue, info: VkPresentInfoKHR): Int =
         VulkanBackendMetrics.measurePresent { vkQueuePresentKHR(queue, info) }
     @JvmStatic fun measuredQueueSubmit(queue: VkQueue, info: VkSubmitInfo, fence: Long): Int =
-        VulkanBackendMetrics.measureSubmit { vkQueueSubmit(queue, info, fence) }
+        VulkanBackendMetrics.measureSubmit(fence) { vkQueueSubmit(queue, info, fence) }
     @JvmStatic fun checkedFenceWait(result: Int) {
         check(result == VK_SUCCESS) { "Vulkan frame fence wait failed: $result" }
     }

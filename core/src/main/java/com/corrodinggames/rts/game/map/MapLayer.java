@@ -44,7 +44,6 @@ public class MapLayer {
 
     /* JADX INFO: renamed from: d */
     static GamePaint groundTexturePaint;
-
     /* JADX INFO: renamed from: e */
     static GamePaint groundScaledTexturePaint;
 
@@ -56,6 +55,124 @@ public class MapLayer {
 
     /* JADX INFO: renamed from: h */
     static GamePaint[] lightingPaints;
+
+    /**
+     * Fold a row run of tiles into one tiled draw.
+     *
+     * **Off: it covers the map with black bands.** Measured with `desktop/tools/tilerun_repro.py`, which
+     * repeats a configuration and reports the share of near-black pixels over the map area only:
+     *
+     *   run off - 0.9%, 0.9%, 1.0%   (3 runs)
+     *   run on  - 37.3%, 32.5%, 49.8%, 38.1%, 29.0%   (5 runs)
+     *
+     * The two distributions do not overlap, so this is deterministic and reproducible, not a race. The
+     * original build on the same replay shows no such bands.
+     *
+     * An earlier note here called it non-deterministic on the strength of one clean single-shot capture.
+     * Eight samples against a quantitative measure refute that: a lone clean capture was a sampling
+     * artifact, so the defect must be found by reasoning about the geometry rather than by re-running.
+     *
+     * The tiling primitive itself is pixel-exact (`DrawTextureRepeat`, oracle 1537 checks, 0/768), and the
+     * widened destination and the repeat count now change together in one branch, so the stretched
+     * single-quad shape can no longer come from those two drifting apart.
+     *
+     * **Cause: not yet established**, but the search space is now tightly bounded. Four candidates have
+     * been tested and excluded, each against the same criterion (share of near-black pixels over the map
+     * area; `desktop/tools/tilerun_repro.py`; baseline with this merge off is 0.9%):
+     *
+     *  - missing coverage: drawing only the first tile of each run makes it worse (58% against 37%), so the
+     *    runs are covered;
+     *  - vanilla's smooth-fog merge below also advancing `i7`: gating this merge off the fog pass moved it
+     *    from 37% to 30%;
+     *  - the tiling draw skipping `toAtlasDraw`: adding the remap moved it from 37% to 33%;
+     *  - inconsistent vertical extent within a run: `i7` drives only `f15`/`f17` and `i6` is constant across
+     *    the inner loop, so every tile of a run necessarily shares one y span.
+     *
+     * What remains is the horizontal geometry accumulated while expanding `repeat` into quads: the command's
+     * total width is `N * f12 + f13` while the expansion divides it into `N` equal parts of `f12 + f13/N`.
+     * That is sub-pixel and cannot explain 30% black on its own, so the next step is to measure the expanded
+     * width against the destination width rather than to guess another hypothesis.
+     *
+     * `RWX_MAP_TILE_RUN_TILE=1` re-enables this merge to continue on that.
+     */
+    private static final boolean MAP_CELL_TILE_RUN_TILE =
+        "1".equals(System.getenv("RWX_MAP_TILE_RUN_TILE"));
+
+    /**
+     * Longest row run that may be folded into one tiled draw.
+     *
+     * Runs average 9.40 tiles and reach 74, and folding them removes about 38.6% of the terrain commands, so
+     * the merge is worth finishing. This bound only guards against a pathological full-row run producing one
+     * enormous quad.
+     */
+    private static final int MAX_TILE_RUN = 256;
+
+    /** Diagnostic: tiles visited and how many were folded into a merged run. */
+    private static final boolean traceTileRuns = "1".equals(System.getenv("RWX_MAP_TILE_RUN_TRACE"));
+    public static long tileRunTiles;
+    public static long tileRunMerged;
+    public static long tileRunSingles;
+    public static long tileRunNonAtlas;
+    /** Diagnostic: total tiles covered by merged runs, and the longest run seen. */
+    public static long tileRunMergedLengthSum;
+    public static long tileRunMaxLength;
+
+    static {
+        if (traceTileRuns) {
+            String path = System.getenv("RWX_MAP_CACHE_TRACE");
+            if (path != null && !path.isEmpty()) {
+                try {
+                    java.nio.file.Files.writeString(java.nio.file.Path.of(path + ".tileruns"),
+                        "traceTileRuns=" + traceTileRuns + " tileRun=on maxRun=" + MAX_TILE_RUN + "\n");
+                } catch (Throwable ignored) {
+                    // Diagnostics only.
+                }
+            }
+        }
+    }
+
+    /**
+     * Emits the run counters into the canvas stage trace, which the harness already writes to a file.
+     *
+     * A shutdown hook cannot report them: the benchmark force-kills the game process, so hooks never run
+     * (measured - the counters printed nothing). Called from the render path, where the trace is live.
+     */
+    public static void reportTileRunsIfTracing(long frameSequence) {
+        // Counted before any gate, and written straight to a file. Every trace-based attempt at these
+        // counters produced nothing while the file marker proved the switch had arrived, so the report no
+        // longer depends on the canvas trace being enabled or on a call-site gate being reached.
+        reportCalls++;
+        if (traceTileRuns && reportCalls % 5000L == 0L) {
+            String path = System.getenv("RWX_MAP_CACHE_TRACE");
+            if (path != null && !path.isEmpty()) {
+                try {
+                    java.nio.file.Files.writeString(java.nio.file.Path.of(path + ".tilehist"),
+                        "reportCalls=" + reportCalls
+                            + " visited=" + tileRunTiles
+                            + " mergedRuns=" + tileRunMerged
+                            + " singles=" + tileRunSingles
+                            + " mergedTiles=" + tileRunMergedLengthSum
+                            + " maxRun=" + tileRunMaxLength
+                            + " nonAtlas=" + tileRunNonAtlas + "\n");
+                } catch (Throwable ignored) {
+                    // Diagnostics only.
+                }
+            }
+        }
+        if (!traceTileRuns) {
+            return;
+        }
+        if (!reportedFirstCall || (frameSequence % 200) != 0) {
+            return;
+        }
+        reportedFirstCall = true;
+        io.github.rwx.render.canvas.CanvasStageTraceBridge.recordTileRuns(
+            tileRunTiles, tileRunMerged + tileRunSingles, tileRunMerged);
+        io.github.rwx.render.canvas.CanvasStageTraceBridge.recordTileRunPaths(tileRunNonAtlas, reportCalls);
+    }
+
+    public static long reportCalls;
+    private static boolean reportedFirstCall;
 
     /* JADX INFO: renamed from: i */
     public TileMap tileMap;
@@ -198,6 +315,15 @@ public class MapLayer {
 
     /* JADX INFO: renamed from: a */
     public void renderLayerRegion(GraphicsEngine graphicsEngine, float f, float f2, float f3, float f4, float f5, float f6, float f7, float f8, boolean z, boolean z2, boolean z3) {
+        if (z3) graphicsEngine.beginDrawRole(GraphicsEngine.DRAW_ROLE_MAP_FOG, -1L);
+        try {
+            renderLayerRegionContents(graphicsEngine, f, f2, f3, f4, f5, f6, f7, f8, z, z2, z3);
+        } finally {
+            if (z3) graphicsEngine.endDrawRole();
+        }
+    }
+
+    private void renderLayerRegionContents(GraphicsEngine graphicsEngine, float f, float f2, float f3, float f4, float f5, float f6, float f7, float f8, boolean z, boolean z2, boolean z3) {
         GamePaint gamePaint;
         TileAtlasCache tileAtlasCache;
         GamePaint gamePaint2;
@@ -298,6 +424,9 @@ public class MapLayer {
                         b2 = bArr[i6][i7];
                     }
                     if (b2 != b) {
+                        if (traceTileRuns) {
+                            tileRunTiles++;
+                        }
                         float f14 = (i6 * f11) + 0.0f;
                         float f15 = (i7 * f12) + 0.0f;
                         float f16 = ((i6 + 1) * f11) + f13;
@@ -311,8 +440,62 @@ public class MapLayer {
                             Tileset tileset = mapTile.tileset;
                             if (!z6) {
                                 if (mapTile.atlasSlotIndex >= 0) {
-                                    graphicsEngine.a(tileAtlasCache.getAtlasTextureForIndex(mapTile.atlasSlotIndex), tileAtlasCache.getRectForIndex(mapTile.atlasSlotIndex), rectF, gamePaint6);
+                                    // Merge a run of the row that shares this tile's atlas slot and fog state
+                                    // into one tiled draw, the way vanilla's own smooth-fog block scans a row
+                                    // (`rectF.d += (i9 - i7) * f12; i7 = i9;`). Without it every visible tile
+                                    // is its own command: measured 5,000-6,000 draws per 512x512 layer cell.
+                                    //
+                                    // The destination is widened to the whole run, but the source rect is NOT:
+                                    // the engine tiles that one source rect across the widened destination, so
+                                    // the pixels equal N single-tile draws.
+                                    //
+                                    // `!z3` keeps this off the fog pass: vanilla's smooth-fog merge below also
+                                    // advances `i7` in the same iteration, and only one of them may own it.
+                                    // Only the main screen's fog pass sets `z3`; the offscreen cell recording,
+                                    // where the terrain command count actually hurts, keeps the merge.
+                                    int runEnd = i7;
+                                    if (MAP_CELL_TILE_RUN_TILE && !z3 && z && b2 >= 5) {
+                                        int limit = Math.min(i4 + 1, i7 + MAX_TILE_RUN);
+                                        int candidate = i7 + 1;
+                                        while (candidate < limit) {
+                                            MapTile next = mapTileArr[tileIds[(i6 * i5) + candidate]];
+                                            if (next == null || next.atlasSlotIndex != mapTile.atlasSlotIndex
+                                                || bArr[i6][candidate] != b2) {
+                                                break;
+                                            }
+                                            candidate++;
+                                        }
+                                        runEnd = candidate - 1;
+                                    }
+                                    int repeatCount = runEnd - i7 + 1;
+                                    if (repeatCount > 1) {
+                                        rectF.c = ((runEnd + 1) * f12) + f13 - f10;
+                                        if (z5 && !z3) {
+                                            rectF.b = (int) rectF.b;
+                                            rectF.a = (int) rectF.a;
+                                        }
+                                    }
+                                    graphicsEngine.a(
+                                        tileAtlasCache.getAtlasTextureForIndex(mapTile.atlasSlotIndex),
+                                        tileAtlasCache.getRectForIndex(mapTile.atlasSlotIndex),
+                                        rectF,
+                                        gamePaint6,
+                                        repeatCount);
+                                    if (traceTileRuns) {
+                                        if (runEnd > i7) {
+                                            tileRunMerged++;
+                                            long runLength = runEnd - i7 + 1L;
+                                            tileRunMergedLengthSum += runLength;
+                                            if (runLength > tileRunMaxLength) tileRunMaxLength = runLength;
+                                        } else {
+                                            tileRunSingles++;
+                                        }
+                                    }
+                                    i7 = runEnd;
                                 } else {
+                                    if (traceTileRuns) {
+                                        tileRunNonAtlas++;
+                                    }
                                     mapTile.renderTile(graphicsEngine, rectF, f7, gamePaint6);
                                 }
                             } else {

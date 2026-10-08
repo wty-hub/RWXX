@@ -1,7 +1,7 @@
 package io.github.rwx.render.canvas
 
 /** Explicit display-only semantics. Unknown and mod drawing stays [Generic]. */
-enum class KoolCanvasDrawRole { Generic, SelectionRing, Waypoint, UnitShadow, PerformanceHud }
+enum class KoolCanvasDrawRole { Generic, SelectionRing, Waypoint, UnitShadow, PerformanceHud, MapFog }
 
 data class KoolCanvasState(
     val transform: KoolCanvasTransform = KoolCanvasTransform.Identity,
@@ -16,6 +16,26 @@ data class KoolCanvasState(
 }
 
 sealed interface KoolCanvasCommand {
+    data class DrawFogBatch(
+        val texture: KoolCanvasTextureRef?,
+        val masks: KoolCanvasFogBatch,
+        val filter: KoolCanvasTextureFilter,
+        val state: KoolCanvasState,
+        val paint: KoolCanvasPaint = KoolCanvasPaint.Default,
+    ) : KoolCanvasCommand
+    data class DrawRectBatch(
+        val rects: KoolCanvasRectBatch,
+        val paint: KoolCanvasPaint,
+        val state: KoolCanvasState,
+    ) : KoolCanvasCommand
+    /** Ordered independent quads with one material; geometry is immutable across frame publication. */
+    data class DrawTextureBatch(
+        val texture: KoolCanvasTextureRef,
+        val quads: KoolCanvasTextureBatch,
+        val paint: KoolCanvasPaint,
+        val state: KoolCanvasState,
+    ) : KoolCanvasCommand
+
     data class Clear(
         val color: KoolCanvasColor,
         val blendMode: KoolCanvasBlendMode = KoolCanvasBlendMode.SourceOver,
@@ -38,6 +58,28 @@ sealed interface KoolCanvasCommand {
         val sourceV0: Float = if (sourceIsFullTexture) 0f else source.top * texture.inverseSafeHeight
         val sourceU1: Float = if (sourceIsFullTexture) 1f else source.right * texture.inverseSafeWidth
         val sourceV1: Float = if (sourceIsFullTexture) 1f else source.bottom * texture.inverseSafeHeight
+    }
+
+    /**
+     * One texture source rect drawn [repeat] times across [destination], side by side horizontally.
+     *
+     * Terrain is issued one draw per tile, and adjacent tiles routinely share a tile image: measured on a
+     * low-zoom run, a horizontal run averages 9.40 tiles (max 74) and folding runs into repeats removes
+     * about 38.6% of the terrain commands. A repeat cannot be expressed by stretching one source rect -
+     * that samples whatever sits beside it in the atlas page and tears the map - so the tiling has to be a
+     * property of the command, expanded into [repeat] quads when the renderer builds geometry.
+     */
+    data class DrawTextureRepeat(
+        val texture: KoolCanvasTextureRef,
+        val source: KoolCanvasRect,
+        val destination: KoolCanvasRect,
+        val repeat: Int,
+        val paint: KoolCanvasPaint,
+        val state: KoolCanvasState,
+    ) : KoolCanvasCommand {
+        init {
+            require(repeat >= 1) { "Texture repeat count must be at least 1" }
+        }
     }
 
     data class DrawRect(

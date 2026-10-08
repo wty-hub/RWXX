@@ -205,10 +205,10 @@ class MapPanCameraTest(unittest.TestCase):
                 def fake_launch(command, environment, out, name, timeout):
                     invoked.update(command=command, environment=environment)
                     (out / f'{name}.log').write_text(
-                        '[RWX canvas] parallelCellRaster=true\nRWXPrimitiveTextMetrics enabled=true' +
+                        'RWXVulkanConfiguration gpuMapCellSupported=true\n[RWX canvas] parallelCellRaster=true\nRWXPrimitiveTextMetrics enabled=true' +
                         ('\n[RWX canvas] adaptiveCellRaster=true' if adaptive else ''), encoding='utf-8')
                     return {'name': name}
-                run = self.cycle_run()
+                run = self.gpu_run()
                 for window in run['windows']:
                     window['maximumMovingUnits'] = 661
                 fixture = [{'kind': 'scenario', 'requestedUnits': 661, 'mode': 'moving', 'teams': 15,
@@ -238,8 +238,10 @@ class MapPanCameraTest(unittest.TestCase):
                 self.assertNotIn('RWX_NATIVE_BGRA_UPLOAD', environment)
                 self.assertNotIn('RWX_PERF_LOG', environment)
                 self.assertIn('-Drwx.koolRasterThreads=8', invoked['command'])
+                self.assertIn('-Xmx1000M', invoked['command'])
                 summary = json.loads((output / 'diagnostic-summary.json').read_text(encoding='utf-8'))
                 self.assertEqual(summary['protocol']['adaptiveCellRasterRequested'], adaptive)
+                self.assertTrue(summary['protocol']['gpuMapCellCacheRequested'])
 
     def test_adaptive_cli_rejects_missing_parallel_before_creating_output(self):
         cases = ((map_pan_live, ['--jar', 'unused.jar', '--adaptive-cell-raster']),
@@ -267,21 +269,23 @@ class MapPanCameraTest(unittest.TestCase):
             def fake_launch(command, environment, out, name, timeout):
                 invoked.update(command=command, environment=environment)
                 (out / f'{name}.log').write_text(
-                    '[RWX canvas] parallelCellRaster=true\n[RWX canvas] adaptiveCellRaster=true', encoding='utf-8')
+                    'RWXVulkanConfiguration gpuMapCellSupported=true\n[RWX canvas] parallelCellRaster=true\n[RWX canvas] adaptiveCellRaster=true', encoding='utf-8')
                 return {'name': name}
             arguments = ['map_pan_replay.py', '--jar', str(jar), '--replay', str(replay), '--java', 'unused-java',
                          '--output', str(output), '--parallel-cell-raster', '--adaptive-cell-raster',
                          '--raster-threads', '8', '--cpu-target-profile', '--camera-mode', 'pan-zoom']
             with patch('sys.argv', arguments), patch.object(map_pan_replay, 'java_command', return_value=['unused-java']), \
                     patch.object(map_pan_replay, 'launch', side_effect=fake_launch), \
-                    patch.object(map_pan_replay, 'analyze_run', return_value=self.cycle_run()), patch('builtins.print'):
+                    patch.object(map_pan_replay, 'analyze_run', return_value=self.gpu_run()), patch('builtins.print'):
                 self.assertEqual(map_pan_replay.main(), 0)
             self.assertEqual(invoked['environment']['RWX_ADAPTIVE_CELL_RASTER'], '1')
             self.assertEqual(invoked['environment']['RWX_PARALLEL_CELL_RASTER'], '1')
             self.assertIn('-Drwx.koolRasterThreads=8', invoked['command'])
             self.assertIn('-Drwx.kool.cpuTargetProfile=true', invoked['command'])
+            self.assertIn('-Xmx1000M', invoked['command'])
             summary = json.loads((output / 'diagnostic-summary.json').read_text(encoding='utf-8'))
             self.assertTrue(summary['protocol']['adaptiveCellRasterRequested'])
+            self.assertTrue(summary['protocol']['gpuMapCellCacheRequested'])
             self.assertTrue(summary['diagnosticOnly'])
 
     def test_comparison_passes_adaptive_only_to_matching_parallel_cases_without_java(self):
@@ -340,9 +344,11 @@ class MapPanCameraTest(unittest.TestCase):
                 self.assertTrue(summary['run']['gpuMapCellCacheEvidence']['actualActivityConfirmed'])
 
     def test_comparison_passes_gpu_flag_only_to_requested_variants_without_java(self):
-        for flag, expected in (('--candidate-gpu-map-cell-cache', [False, True, True, False]),
-                               ('--gpu-map-cell-cache', [True, True, True, True])):
-            with self.subTest(flag=flag), tempfile.TemporaryDirectory() as directory:
+        for flags, expected in ((['--candidate-gpu-map-cell-cache'], [False, True, True, False]),
+                                (['--gpu-map-cell-cache'], [True, True, True, True]),
+                                ([], [True, True, True, True]),
+                                (['--cpu-cell-raster'], [False, False, False, False])):
+            with self.subTest(flags=flags), tempfile.TemporaryDirectory() as directory:
                 output = Path(directory) / 'measurement'; invoked = []
                 def fake_run(command, check):
                     invoked.append(command)
@@ -350,19 +356,54 @@ class MapPanCameraTest(unittest.TestCase):
                     (target / 'diagnostic-summary.json').write_text(json.dumps({'run': {
                         'validMeasurement': True, 'windows': [], 'setup': {'viewportWidth': 1280, 'viewportHeight': 720}}}), encoding='utf-8')
                 arguments = ['map_pan_live_comparison.py', '--baseline', 'unused.jar', '--candidate', 'unused.jar',
-                             '--java', 'unused-java', '--output', str(output), flag]
+                             '--java', 'unused-java', '--output', str(output), *flags]
                 with patch('sys.argv', arguments), patch.object(map_pan_live_comparison.subprocess, 'run', side_effect=fake_run), patch('builtins.print'):
                     map_pan_live_comparison.main()
                 self.assertEqual(['--gpu-map-cell-cache' in command for command in invoked], expected)
+                self.assertEqual(['--cpu-cell-raster' in command for command in invoked], [not gpu for gpu in expected])
                 summary = json.loads((output / 'summary.json').read_text(encoding='utf-8'))
                 self.assertEqual(summary['protocol']['gpuMapCellCacheRequested'], {'baseline': expected[0], 'candidate': expected[1]})
 
-    def test_gpu_pass_reuse_cli_requires_gpu_before_creating_output(self):
+    def test_default_gpu_and_explicit_cpu_match_environment_protocol_and_counters(self):
+        for module in (map_pan_live, map_pan_replay):
+            for cpu in (False, True):
+                with self.subTest(module=module.__name__, cpu=cpu), tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    jar = root / 'frozen.jar'; jar.write_bytes(b'frozen runtime test fixture')
+                    replay = root / 'europe.replay'; replay.write_bytes(b'replay test fixture')
+                    output = root / 'measurement'; invoked = {}
+                    def fake_launch(command, environment, out, name, timeout):
+                        invoked['environment'] = environment
+                        (out / f'{name}.log').write_text('RWXVulkanConfiguration gpuMapCellSupported=true', encoding='utf-8')
+                        return {'name': name}
+                    arguments = [module.__name__, '--jar', str(jar), '--java', 'unused-java', '--output', str(output),
+                                 '--camera-mode', 'pan-zoom']
+                    if module is map_pan_replay:
+                        arguments.extend(['--replay', str(replay)])
+                    if cpu:
+                        arguments.append('--cpu-cell-raster')
+                    run = self.gpu_run()
+                    if cpu:
+                        for frame in run['frameWindows']:
+                            frame['gpuMapCellCache'].update(created=0, hits=0)
+                    fixture = [{'kind': 'scenario', 'requestedUnits': 500, 'mode': 'moving', 'teams': 15, 'fogEnabled': False}]
+                    with patch('sys.argv', arguments), patch.object(module, 'java_command', return_value=['unused-java']), \
+                            patch.object(module, 'launch', side_effect=fake_launch), \
+                            patch.object(module, 'analyze_run', return_value=run), \
+                            patch.object(module, 'read_json_lines', return_value=fixture, create=True), patch('builtins.print'):
+                        self.assertEqual(module.main(), 0)
+                    self.assertEqual(invoked['environment'].get('RWX_GPU_MAP_CELL_TARGETS', '1'), '0' if cpu else '1')
+                    summary = json.loads((output / 'diagnostic-summary.json').read_text(encoding='utf-8'))
+                    self.assertEqual(summary['protocol']['gpuMapCellCacheRequested'], not cpu)
+                    self.assertEqual(summary['run']['gpuMapCellCacheEvidence']['actualActivityConfirmed'], not cpu)
+                    self.assertTrue(summary['run']['validMeasurement'])
+
+    def test_gpu_pass_reuse_cli_rejects_explicit_cpu_before_creating_output(self):
         for module in (map_pan_live, map_pan_replay):
             with self.subTest(module=module.__name__), tempfile.TemporaryDirectory() as directory:
                 output = Path(directory) / 'must-not-exist'
                 arguments = [module.__name__, '--jar', 'unused.jar', '--java', 'unused-java', '--output', str(output),
-                             '--disable-gpu-map-cell-pass-reuse']
+                             '--cpu-cell-raster', '--disable-gpu-map-cell-pass-reuse']
                 if module is map_pan_replay:
                     arguments.extend(['--replay', 'unused.replay'])
                 with patch('sys.argv', arguments), patch('sys.stderr'), self.assertRaises(SystemExit) as failure:

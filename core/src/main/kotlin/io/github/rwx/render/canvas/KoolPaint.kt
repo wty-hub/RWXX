@@ -20,6 +20,8 @@ open class KoolPaint {
     private var subpixelTextEnabled: Boolean = false
     private var filterBitmapEnabled: Boolean = false
     private var stateRevision: Int = 0
+    /** Recording-owner cache only; published commands retain this immutable value, never this paint. */
+    internal var canvasSnapshot: KoolCanvasPaint? = null
 
     @JvmField
     var b: Boolean = false

@@ -4,9 +4,56 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
+import com.corrodinggames.rts.gameFramework.network.GameInputStream
+import java.nio.file.Files
 
 class ReplayPanBenchmarkTest {
     private val enabled = mapOf("RWX_REPLAY_PAN_OUTPUT" to "replay-pan.ndjson")
+
+    @Test fun `embedded map export preserves stream position and refuses overwrites`() {
+        val directory = Files.createTempDirectory("rwx-map-export").toFile()
+        try {
+            val bytes = "<map width=\"320\" height=\"200\"/>".toByteArray()
+            val stream = GameInputStream(bytes)
+            stream.activeInputStream.skipNBytes(7)
+            val destination = directory.resolve("europe.tmx")
+            val (size, digest) = ReplayPanBenchmark.exportMap(stream, destination)
+            assertEquals(bytes.size, size)
+            assertTrue(bytes.contentEquals(destination.readBytes()))
+            assertEquals(64, digest.length)
+            assertEquals(bytes.size - 7, stream.activeInputStream.available())
+            assertEquals(bytes[7].toInt() and 255, stream.activeInputStream.read())
+            assertFailsWith<java.nio.file.FileAlreadyExistsException> { ReplayPanBenchmark.exportMap(stream, destination) }
+            assertEquals(bytes.size - 8, stream.activeInputStream.available())
+            assertTrue(bytes.contentEquals(destination.readBytes()))
+            assertFailsWith<IllegalArgumentException> {
+                ReplayPanBenchmark.options(mapOf("RWX_MAP_PAN_OUTPUT" to "local.ndjson", "RWX_EXPORT_REPLAY_MAP" to destination.path))
+            }
+        } finally { directory.deleteRecursively() }
+    }
+
+    @Test fun `edge camera spans the true map and oversized viewports keep native centering`() {
+        val edge = ReplayPanBenchmark.options(enabled + ("RWX_REPLAY_PAN_CAMERA_MODE" to "edge-jump"))!!
+        assertEquals("edge-jump", edge.cameraMode)
+        assertEquals(0f, ReplayPanBenchmark.edgePosition(6400f, 1280f, false))
+        assertEquals(5120f, ReplayPanBenchmark.edgePosition(6400f, 1280f, true))
+        assertEquals(-100f, ReplayPanBenchmark.edgePosition(6400f, 6600f, false))
+        assertEquals(-100f, ReplayPanBenchmark.edgePosition(6400f, 6600f, true))
+    }
+
+    @Test fun `death stimulus requires a fog enabled ordinary local map without injected units`() {
+        val local = mapOf("RWX_MAP_PAN_OUTPUT" to "local.ndjson", "RWX_BENCHMARK_FOG" to "on",
+            "RWX_BENCHMARK_PLAYER_DEATH_SECONDS" to "20")
+        val valid = ReplayPanBenchmark.options(local)!!
+        assertEquals(20, valid.playerDeathSeconds)
+        assertEquals(2, valid.localFogMode)
+        assertEquals(0, ReplayPanBenchmark.options(local - "RWX_BENCHMARK_PLAYER_DEATH_SECONDS" + ("RWX_BENCHMARK_FOG" to "off"))!!.localFogMode)
+        for (invalid in listOf(local + ("RWX_BENCHMARK_UNITS" to "500"), local + ("RWX_BENCHMARK_FOG" to "off"),
+            local + ("RWX_BENCHMARK_PLAYER_DEATH_SECONDS" to "0"),
+            enabled + ("RWX_BENCHMARK_PLAYER_DEATH_SECONDS" to "20"))) {
+            assertFailsWith<IllegalArgumentException> { ReplayPanBenchmark.options(invalid) }
+        }
+    }
 
     @Test fun `ordinary pan and jump never opt into zoom`() {
         assertEquals(null, ReplayPanBenchmark.options(emptyMap()))

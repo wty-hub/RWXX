@@ -21,6 +21,79 @@ class KoolCanvasFrameEnvelopeTest {
         freezeFrame(frame, sequence, generation, 42, 3)
 
     @Test
+    fun `cached frame and GPU targets restore transitive resources without unrelated sibling dependencies`() {
+        for (gpu in listOf(false, true)) {
+            val store = KoolCanvasCpuTextureStore(KoolCanvasPixelPool(), true, reuseFrozenContent = true)
+            val sprite = KoolCanvasTextureId("closure-sprite-$gpu")
+            val inner = KoolCanvasTextureId("closure-inner-$gpu")
+            val target = KoolCanvasTextureId("closure-target-$gpu")
+            val sibling = KoolCanvasTextureId("closure-sibling-$gpu")
+            store.registerArgb(sprite, 1, 1, intArrayOf(0xff123456.toInt()), false)
+            store.registerArgb(sibling, 1, 1, intArrayOf(0xff654321.toInt()), false)
+            store.registerFrame(inner, frame(draw(sprite)))
+            val recorded = frame(draw(inner), draw(sprite))
+            if (gpu) store.registerGpuTargetFrame(target, recorded, 100, 100)
+            else store.registerFrame(target, recorded)
+            // Resolve the shared leaf first: the enclosing cache must account for memo-hit resources.
+            val root = frame(draw(sibling), draw(sprite), draw(target))
+            fun nested(envelope: FrameEnvelope): KoolCanvasFrame {
+                val id = (envelope.frame.commands.last() as KoolCanvasCommand.DrawTexture).texture.id
+                return when (val resource = envelope.resourceLease.resources().getValue(id)) {
+                    is FrozenCanvasResource.Frame -> resource.frame
+                    is FrozenCanvasResource.GpuTarget -> resource.frame
+                    else -> error("Expected recorded target")
+                }
+            }
+            val first = store.freeze(root)
+            store.registerArgb(sibling, 1, 1, intArrayOf(0xff987654.toInt()), false)
+            val second = store.freeze(root, 2)
+            assertSame(nested(first), nested(second), "A changed unrelated sibling cannot invalidate this target")
+            assertEquals(4, second.resourceLease.resourceCount)
+            // A hit on the enclosing target must restore both the nested target and its leaf image.
+            val third = store.freeze(frame(draw(target)), 3)
+            assertSame(nested(second), nested(third))
+            assertEquals(3, third.resourceLease.resourceCount)
+            assertEquals(0xff123456.toInt(), third.resourceLease.resources().values
+                .filterIsInstance<FrozenCanvasResource.Pixels>().single().image.pixels[0])
+            store.registerArgb(sprite, 1, 1, intArrayOf(0xffabcdef.toInt()), false)
+            val fourth = store.freeze(frame(draw(target)), 4)
+            assertFalse(nested(third) === nested(fourth), "Descendant updates must invalidate every enclosing cached target")
+            assertEquals(0xffabcdef.toInt(), fourth.resourceLease.resources().values
+                .filterIsInstance<FrozenCanvasResource.Pixels>().single().image.pixels[0])
+            assertEquals(0xff123456.toInt(), third.resourceLease.resources().values
+                .filterIsInstance<FrozenCanvasResource.Pixels>().single().image.pixels[0], "An old lease keeps old pixels")
+            listOf(first, second, third, fourth).forEach(FrameEnvelope::close)
+            store.close()
+        }
+    }
+
+    @Test
+    fun `frozen reuse preserves displacement resources and invalidates late or cyclic sources`() {
+        val store = KoolCanvasCpuTextureStore(KoolCanvasPixelPool(), true, reuseFrozenContent = true)
+        val target = KoolCanvasTextureId("closure-effect")
+        val screen = KoolCanvasTextureId("closure-screen")
+        val late = KoolCanvasTextureId("closure-late")
+        val paint = KoolCanvasPaint(textureEffect = KoolCanvasTextureEffect.Displacement(KoolCanvasTextureRef(screen, 1, 1), 2f))
+        store.registerArgb(screen, 1, 1, intArrayOf(0xff010203.toInt()), true)
+        store.registerFrame(target, frame(draw(late, paint)))
+        val first = store.freeze(frame(draw(target)))
+        val second = store.freeze(frame(draw(target)), 2)
+        assertEquals(3, second.resourceLease.resourceCount)
+        assertEquals(1, second.resourceLease.resources().values.count { it === FrozenCanvasResource.Missing })
+        store.registerArgb(late, 1, 1, intArrayOf(0xff040506.toInt()), true)
+        val third = store.freeze(frame(draw(target)), 3)
+        assertEquals(0, third.resourceLease.resources().values.count { it === FrozenCanvasResource.Missing })
+        assertEquals(3, third.resourceLease.resourceCount)
+        store.registerFrame(target, frame(draw(target)))
+        val fourth = store.freeze(frame(draw(target)), 4)
+        val fifth = store.freeze(frame(draw(target)), 5)
+        assertEquals(2, fifth.resourceLease.resourceCount)
+        assertEquals(1, fifth.resourceLease.resources().values.count { it === FrozenCanvasResource.Missing })
+        listOf(first, second, third, fourth, fifth).forEach(FrameEnvelope::close)
+        store.close()
+    }
+
+    @Test
     fun `asset fallback owns encoded file version across reload and delayed consumption`() {
         val file = File.createTempFile("rwx-frame-asset", ".png")
         val firstBytes = byteArrayOf(1, 2, 3, 4)

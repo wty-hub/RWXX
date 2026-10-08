@@ -1,13 +1,17 @@
 package io.github.rwx.render.canvas
 
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.PipelineConfig
+import de.fabmax.kool.pipeline.DrawPipeline
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.VertexLayouts
+import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.instanceAttrib
 import de.fabmax.kool.scene.vertexAttrib
 import de.fabmax.kool.util.Color
@@ -29,8 +33,20 @@ class KoolCanvasInstancedTextureShader(
     pipelineConfig: PipelineConfig,
     premultipliedAlpha: Boolean = false,
     val multipliesRgbByAlpha: Boolean = false,
-) : KslShader(Model(premultipliedAlpha, multipliesRgbByAlpha), pipelineConfig) {
+) : KslShader(KoolCanvasShaderTemplates.program("Canvas Instanced Texture Shader") {
+    Model(premultipliedAlpha, multipliesRgbByAlpha)
+}, pipelineConfig) {
     var colorMap: Texture2d? by texture2d(TEXTURE_UNIFORM, noTexture)
+    private val cachedTemplates = KoolCanvasShaderTemplates.enabledForNewShader
+    private val templatePremultiplied = premultipliedAlpha
+
+    override fun createPipeline(mesh: Mesh<*>, instances: MeshInstanceList<*>?, ctx: KoolContext): DrawPipeline =
+        KoolCanvasShaderTemplates.pipeline(cachedTemplates, "Canvas Instanced Texture Shader", templatePremultiplied,
+            multipliesRgbByAlpha, pipelineConfig, mesh, instances, ctx) {
+            if (cachedTemplates) KoolCanvasShaderTemplates.build(pipelineConfig, mesh, instances, ctx) {
+                Model(templatePremultiplied, multipliesRgbByAlpha)
+            } else super.createPipeline(mesh, instances, ctx)
+        }
 
     private class Model(
         premultipliedAlpha: Boolean,
@@ -84,8 +100,20 @@ class KoolCanvasAffineInstancedTextureShader(
     pipelineConfig: PipelineConfig,
     premultipliedAlpha: Boolean = false,
     val multipliesRgbByAlpha: Boolean = false,
-) : KslShader(Model(premultipliedAlpha, multipliesRgbByAlpha), pipelineConfig) {
+) : KslShader(KoolCanvasShaderTemplates.program("Canvas Affine Instanced Texture Shader") {
+    Model(premultipliedAlpha, multipliesRgbByAlpha)
+}, pipelineConfig) {
     var colorMap: Texture2d? by texture2d(TEXTURE_UNIFORM, noTexture)
+    private val cachedTemplates = KoolCanvasShaderTemplates.enabledForNewShader
+    private val templatePremultiplied = premultipliedAlpha
+
+    override fun createPipeline(mesh: Mesh<*>, instances: MeshInstanceList<*>?, ctx: KoolContext): DrawPipeline =
+        KoolCanvasShaderTemplates.pipeline(cachedTemplates, "Canvas Affine Instanced Texture Shader", templatePremultiplied,
+            multipliesRgbByAlpha, pipelineConfig, mesh, instances, ctx) {
+            if (cachedTemplates) KoolCanvasShaderTemplates.build(pipelineConfig, mesh, instances, ctx) {
+                Model(templatePremultiplied, multipliesRgbByAlpha)
+            } else super.createPipeline(mesh, instances, ctx)
+        }
 
     private class Model(
         premultipliedAlpha: Boolean,

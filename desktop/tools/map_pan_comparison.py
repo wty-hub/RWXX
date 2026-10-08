@@ -29,8 +29,8 @@ import subprocess
 import sys
 import time
 
-PROJECT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(PROJECT / "desktop/tools"))
+PROJECT = Path(os.environ.get('RWX_BENCHMARK_PROJECT_ROOT', Path(__file__).resolve().parents[2]))
+sys.path.insert(0, os.environ.get('RWX_BENCHMARK_TOOL_ROOT', str(PROJECT / "desktop/tools")))
 from analyze_vulkan_matrix import percentile, presentation_window, read_json_lines
 from vulkan_native_matrix import java_command
 from windows_backend_comparison import system_state, write_json
@@ -75,8 +75,17 @@ def fresh_intervals(trace: list[tuple[int, int, int]], sample: dict) -> dict:
     return {
         "freshSnapshotIntervalP95Ms": percentile(intervals, .95),
         "freshSnapshotIntervalP99Ms": percentile(intervals, .99),
+        "freshSnapshotIntervalP999Ms": percentile(intervals, .999),
         "freshSnapshotIntervalMaxMs": max(intervals) if intervals else None,
         "freshSnapshotIntervalCount": len(intervals),
+        "freshSnapshotIntervalsOver16_667Ms": sum(value > 16.667 for value in intervals),
+        "freshSnapshotIntervalsOver33_333Ms": sum(value > 33.333 for value in intervals),
+        "freshSnapshotIntervalsOver50Ms": sum(value > 50 for value in intervals),
+        "freshSnapshotIntervalsOver100Ms": sum(value > 100 for value in intervals),
+        "freshSnapshotLongFrames": [
+            {"acceptedPresentNanos": times[i], "intervalMs": (times[i] - times[i - 1]) / 1e6}
+            for i in range(max(first, 1), last) if times[i] - times[i - 1] > 16_667_000
+        ],
         "freshIntervalLeftBoundaryCrossings": int(crosses_left),
         "previousFreshAcceptanceNanos": previous,
         "firstFreshAcceptanceNanos": times[first] if first < last else None,
@@ -87,12 +96,16 @@ def fresh_intervals(trace: list[tuple[int, int, int]], sample: dict) -> dict:
 
 def camera_evidence(setup: dict, window: dict) -> dict:
     spans = {axis: window.get(f"cameraSpan{axis}") for axis in ("X", "Y")}
-    confirmed = (setup.get("cameraMode") in ("pan", "jump") and window.get("cameraMode") == setup.get("cameraMode")
+    confirmed = (setup.get("cameraMode") in ("pan", "jump", "edge-jump") and window.get("cameraMode") == setup.get("cameraMode")
                  and all(isinstance(value, (int, float)) and value > 0 for value in spans.values()))
     return {"cameraMovementConfirmed": confirmed, "measuredCameraSpans": spans}
 
 
 def analyze_run(output: Path, run: dict) -> dict:
+    protocol = run.get("measurementProtocol", {})
+    warmup_seconds = protocol.get("warmupSeconds", WARMUP_SECONDS)
+    sample_seconds = protocol.get("sampleSeconds", SAMPLE_SECONDS)
+    repetitions = protocol.get("repetitions", REPETITIONS)
     name = run["name"]
     scenario_path, trace_path = output / f"{name}-scenario.ndjson", output / f"{name}-trace.csv"
     scenario = read_json_lines(scenario_path) if scenario_path.exists() else []
@@ -113,8 +126,8 @@ def analyze_run(output: Path, run: dict) -> dict:
     if run.get("exitCode") != 0 or run.get("timedOut"):
         reasons.append("process did not exit normally")
     required = {"cameraMode": run.get("cameraModeExpected", "pan"), "replaySuccess": True, "replaySpeed": 1, "replayRate": 1,
-                "warmupSeconds": WARMUP_SECONDS,
-                "sampleSeconds": SAMPLE_SECONDS, "repetitions": REPETITIONS}
+                "warmupSeconds": warmup_seconds,
+                "sampleSeconds": sample_seconds, "repetitions": repetitions}
     if run.get("localMapExpected"):
         required.update({"replaySuccess": False, "localMapFixture": True})
     if "mapFogExpected" in run and setup.get("mapFogEnabled") != run["mapFogExpected"]:
@@ -126,10 +139,13 @@ def analyze_run(output: Path, run: dict) -> dict:
         reasons.append("replay fog display state differs from requested case")
     if len(setups) != 1:
         reasons.append("expected exactly one scenario setup")
-    if [window.get("repetition") for window in windows] != list(range(1, REPETITIONS + 1)):
-        reasons.append(f"expected {REPETITIONS} consecutive measurement windows")
+    if [window.get("repetition") for window in windows] != list(range(1, repetitions + 1)):
+        reasons.append(f"expected {repetitions} consecutive measurement windows")
     for window in windows:
-        if not window["cameraMovementConfirmed"]:
+        # A static camera is a legitimate configuration: it is how this harness is matched against the
+        # original build playing the same replay with its own camera, because the original cannot be
+        # scripted without taking over the mouse and keyboard. Only scripted modes must show movement.
+        if setup.get("cameraMode") != "static" and not window["cameraMovementConfirmed"]:
             reasons.append(f"window {window.get('repetition')}: no measured camera movement")
         if window.get("replaySpeed") != 1 or window.get("replayRate") != 1:
             reasons.append(f"window {window.get('repetition')}: replay speed is not 1x")
@@ -137,7 +153,7 @@ def analyze_run(output: Path, run: dict) -> dict:
             reasons.append(f"window {window.get('repetition')}: no fresh accepted presentations")
         if not isinstance(window.get("sampleStartTick"), int) or not isinstance(window.get("sampleEndTick"), int) or window["sampleEndTick"] <= window["sampleStartTick"]:
             reasons.append(f"window {window.get('repetition')}: replay simulation did not advance")
-        if not SAMPLE_SECONDS <= window["sampleSecondsMeasured"] <= SAMPLE_SECONDS + 2:
+        if not sample_seconds <= window["sampleSecondsMeasured"] <= sample_seconds + 2:
             reasons.append(f"window {window.get('repetition')}: sample duration outside expected range")
     log_path = output / f"{name}.log"
     log = log_path.read_text(encoding="utf-8", errors="replace") if log_path.exists() else ""

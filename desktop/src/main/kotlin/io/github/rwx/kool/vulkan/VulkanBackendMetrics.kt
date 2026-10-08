@@ -26,13 +26,25 @@ internal object VulkanBackendMetrics {
     private var acquireNanos = 0L
     private var presentNanos = 0L
     private var submitNanos = 0L
+    private val fenceSubmissions = mutableMapOf<Long, Long>()
 
-    inline fun measureSubmit(call: () -> Int): Int {
-        return measureNative("submit", call) { submitNanos += it }
+    inline fun measureSubmit(fence: Long, call: () -> Int): Int {
+        return measureNative("submit", call) { submitNanos += it }.also { result ->
+            // Record the exact native submission argument, before any swapchain index advances.
+            if (stageTrace.enabled && result == 0 && fence != 0L) fenceSubmissions[fence] = frameOrdinal + 1
+        }
     }
 
-    inline fun measureFenceWait(call: () -> Int): Int {
-        return measureNative("fence", call) { fenceWaitNanos += it }
+    inline fun measureFenceWait(fence: Long, call: () -> Int): Int {
+        if (!enabled) return call()
+        val started = System.nanoTime()
+        var result = Int.MIN_VALUE
+        return try { call().also { result = it } } finally {
+            val ended = System.nanoTime()
+            fenceWaitNanos += ended - started
+            stageTrace.recordCompleted("fence", started, ended, result.toLong(), frameOrdinal + 1,
+                fenceSubmissions[fence] ?: -1L)
+        }
     }
 
     inline fun measureAcquire(call: () -> Int): Int {
@@ -56,6 +68,14 @@ internal object VulkanBackendMetrics {
 
     fun submitted(state: VulkanUploadState) {
         frameOrdinal++
+        if (stageTrace.enabled) {
+            // Diagnostic linkage: the fence row names the submission that it is actually waiting for.
+            stageTrace.record("submission-work", stageTrace.start(), frameOrdinal,
+                BackendStats.numDrawCommands.toLong(), BackendStats.pipelines.size.toLong())
+            // Observed backend GPU query, which may belong to an earlier in-flight frame.
+            stageTrace.record("submission-observed-gpu", stageTrace.start(), frameOrdinal,
+                state.backend.frameGpuTime.inWholeNanoseconds, BackendStats.totalBufferSize)
+        }
         val traceStart = stageTrace.start()
         stageTrace.record("submission-summary", traceStart, state.bufferUploadBytes, state.textureUploadBytes, state.uploadNanos)
         val output = target ?: return

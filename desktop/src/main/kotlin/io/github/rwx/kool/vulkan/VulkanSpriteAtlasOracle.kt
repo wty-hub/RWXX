@@ -1,4 +1,4 @@
-package io.github.rwx.kool.vulkan
+﻿package io.github.rwx.kool.vulkan
 
 import de.fabmax.kool.KoolConfigJvm
 import de.fabmax.kool.createContext
@@ -69,7 +69,8 @@ object VulkanSpriteAtlasOracle {
         val pipelineSeam = System.getenv("RWX_RUN_VULKAN_SPRITE_ATLAS_PIPELINE_SEAM") == "1"
         var holdRetirements = false
         val heldRetirements = ArrayList<() -> Unit>()
-        host.setGpuRetirementSink { release ->
+        host.setGpuOffscreenPassesAvailable(true)
+    host.setGpuRetirementSink { release ->
             requestedRetirements++
             val countedRelease = {
                 completedRetirements++

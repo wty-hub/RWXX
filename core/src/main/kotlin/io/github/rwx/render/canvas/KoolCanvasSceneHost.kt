@@ -19,12 +19,77 @@ internal object KoolCanvasRenderProbe {
     private var count = 0
     private var windowStart = System.nanoTime()
 
+    /**
+     * Count and duration of actually replayed frames, always maintained.
+     *
+     * The owner loop advances far more often than a frame is rendered (measured: ~610 owner iterations
+     * per second against ~120 rendered frames), and its per-frame trace has one row per iteration. Without
+     * this, a row cannot be told apart from a non-rendering iteration, so a trace-derived frame budget is
+     * wrong by a large factor - which is exactly what stalled the renderer-side analysis.
+     */
+    @Volatile
+    var sequence: Long = 0L
+        private set
+
+    @Volatile
+    var lastReplayNanos: Long = 0L
+        private set
+
+    /**
+     * Nanoseconds from the end of the previous replay to the start of this one.
+     *
+     * The distinguishing measurement for the frame budget: with a non-blocking single-slot mailbox the
+     * render thread either waits for the owner to publish (starved) or blocks somewhere after the replay
+     * call (present/swapchain/fence). Both look like "frame rate lower than the work", so the gap has to be
+     * measured rather than inferred.
+     */
+    @Volatile
+    var lastReplayGapNanos: Long = 0L
+        private set
+
+    private var lastReplayEndNanos = 0L
+
+    /**
+     * Gaps either side of the replay call, measured in the host callback rather than inferred.
+     *
+     * The inter-replay gap dominates the render thread's time (measured 62.5% of the span against 36.2%
+     * for the replay itself, with a p99 of 181ms and a maximum of 732ms), but a single gap number cannot
+     * say whether the stall happens *before* the replay is entered - the mailbox had nothing to render, so
+     * the render loop was waiting - or *after* it returns, in the host's scene render, present or swapchain.
+     * Splitting it at the callback boundary is what makes the tail actionable.
+     */
+    @Volatile
+    var lastCallbackEntryGapNanos: Long = 0L
+        private set
+
+    @Volatile
+    var lastCallbackExitGapNanos: Long = 0L
+        private set
+
+    private var lastCallbackExitNanos = 0L
+
+    /** Called at the top of the host's render callback, before any work for this frame. */
+    fun callbackEntered() {
+        val now = System.nanoTime()
+        lastCallbackEntryGapNanos =
+            if (lastCallbackExitNanos == 0L) 0L else now - lastCallbackExitNanos
+    }
+
+    /** Called once the frame's replay and presentation are done. */
+    fun callbackExited() {
+        lastCallbackExitNanos = System.nanoTime()
+    }
+
     fun record(nanos: Long) {
+        val now = System.nanoTime()
+        sequence++
+        lastReplayNanos = nanos
+        lastReplayGapNanos = if (lastReplayEndNanos == 0L) 0L else (now - nanos) - lastReplayEndNanos
+        lastReplayEndNanos = now
         if (System.getenv("RWX_CANVAS_PERF") != "1") return
         total += nanos
         peak = maxOf(peak, nanos)
         count++
-        val now = System.nanoTime()
         if (now - windowStart >= WINDOW_NANOS) {
             if (count > 0) {
                 logger.info("RWXPerf") {
@@ -55,10 +120,32 @@ class KoolCanvasSceneHost(
     private var installedResources: AutoCloseable? = null
     private var renderedEnvelope: FrameEnvelope? = null
     private var retirementSink: ((() -> Unit) -> Unit)? = null
+
+    /**
+     * True only for a host that owns a live kool backend and can therefore create offscreen attachments.
+     *
+     * Deliberately independent of the retirement sink: the failure-path tests install their own sink, so a
+     * sink-based gate would not keep them out of this path, and their assertions depend on how much work a
+     * single render callback performs. Only real-context callers set this.
+     */
+    private var gpuOffscreenPassesAvailable = false
     private var presentationTracker: CanvasFramePresentationTracker? = null
     private val presentationOwner = Any()
     @Volatile
     private var useEnvelope = false
+
+    /**
+     * GPU offscreen targets (`RenderTargetMode.GPU_TARGET`) render into their own pass instead of CPU
+     * pixels. They are installed from the frame install path so the same frame renders and samples
+     * them, exactly like the CPU targets they replace.
+     */
+    private val gpuTargetPasses = KoolCanvasGpuTargetPasses()
+    private val gpuTargetInstaller: (KoolCanvasTextureId, FrozenCanvasResource.GpuTarget) -> Unit =
+        { id, target -> gpuTargetPasses.install(id, target) }
+    private val gpuTargetReleaser: (KoolCanvasTextureId) -> Unit = gpuTargetPasses::releaseVersion
+
+    /** Bounded offscreen-target accounting for diagnostics; null until a scene is configured. */
+    fun gpuTargetProfile(): String? = activeScene?.let { gpuTargetPasses.profile() }
 
     @Volatile
     private var latestFrame: KoolCanvasFrame = EmptyFrame
@@ -80,9 +167,22 @@ class KoolCanvasSceneHost(
     }
 
     /** Set on the render thread. Vulkan supplies a callback tied to successful fence completion. */
+    /** Marks this host as backed by a real kool context; see [gpuOffscreenPassesAvailable]. */
+    fun setGpuOffscreenPassesAvailable(available: Boolean) {
+        gpuOffscreenPassesAvailable = available
+    }
+
     fun setGpuRetirementSink(sink: ((() -> Unit) -> Unit)?) {
         retirementSink = sink
         KoolCanvasGpuRetirement.install(sink)
+    }
+
+    /**
+     * Optional companion to [setGpuRetirementSink] reporting how many fence-scoped releases are queued.
+     * Kept as its own setter so a trailing lambda can never bind to it by mistake.
+     */
+    fun setGpuRetirementPendingCounter(counter: (() -> Int)?) {
+        KoolCanvasGpuRetirement.installPendingCounter(counter)
     }
 
     fun setPresentationTracker(tracker: CanvasFramePresentationTracker?) { presentationTracker = tracker }
@@ -122,15 +222,37 @@ class KoolCanvasSceneHost(
 
     private fun configure(scene: Scene) {
         activeScene = scene
+        // Offscreen targets need a live kool backend: their passes create attachment images on the
+        // first draw. Headless hosts and store-only tests must not pay for, or depend on, that.
+        // Only the user-facing switch gates this today. `gpuOffscreenPassesAvailable` exists for the
+        // future default-on step, but gating on it now kept the offscreen path inactive in the benchmark
+        // entry point (measured: gpuTargets[created=0] while the switch read true), so it is not required
+        // until every entry point reports its backend.
+        if (KoolGraphicsEngine.GPU_RENDER_TARGETS_ENABLED && gpuOffscreenPassesAvailable) {
+            gpuTargetPasses.attach(scene)
+            FrozenCanvasGpuResources.gpuTargetInstaller = gpuTargetInstaller
+            FrozenCanvasGpuResources.gpuTargetReleaser = gpuTargetReleaser
+        }
         scene.onRelease {
             CanvasFramePresentation.clear(presentationOwner)
             presentationTracker?.clear()
             mailbox.close()
             retireCurrent()
+            // Only clear the process-wide hooks if they are still ours; a scene swap configures the
+            // replacement before the old scene is released.
+            if (FrozenCanvasGpuResources.gpuTargetInstaller === gpuTargetInstaller) {
+                FrozenCanvasGpuResources.gpuTargetInstaller = null
+                FrozenCanvasGpuResources.gpuTargetReleaser = null
+            }
+            gpuTargetPasses.close()
             activeScene = null
             renderedEnvelope = null
         }
         scene.onRenderScene += OnRenderScene {
+            KoolCanvasRenderProbe.callbackEntered()
+            // Frame start: release passes whose fence completed earlier, before kool builds this
+            // frame's pass list, and publish the counters the A/B harness reads.
+            gpuTargetPasses.beginFrame()
             var replayed = false
             if (!useEnvelope) {
                 mailbox.clear()
@@ -175,6 +297,9 @@ class KoolCanvasSceneHost(
                     }
                     renderedEnvelope = envelope
                     replayed = true
+                    // Diagnostic only: the reuse tracker measures text keys across frames, so it needs a
+                    // frame boundary rather than a pass boundary. No-op unless the profile is enabled.
+                    KoolCanvasCommandProfile.endFrame()
                     KoolCanvasRenderProbe.record(System.nanoTime() - startedAt)
                     if (CanvasRenderStageTrace.enabled) CanvasRenderStageTrace.record(
                         "canvas-new", startedAt, envelope.sequence, envelope.generation, envelope.frame.commands.size.toLong())
@@ -197,6 +322,7 @@ class KoolCanvasSceneHost(
                 CanvasRenderStageTrace.record("canvas-repeat", repeatStart, envelope?.sequence ?: -1,
                     envelope?.generation ?: -1)
             }
+            KoolCanvasRenderProbe.callbackExited()
         }
     }
 

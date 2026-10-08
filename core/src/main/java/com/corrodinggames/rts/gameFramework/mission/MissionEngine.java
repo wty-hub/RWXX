@@ -1308,7 +1308,10 @@ public class MissionEngine extends Serializable {
         }
         if (this.showIntro) {
             this.showIntro = false;
-            if (this.introText != null) {
+            // A replay is a recording, not a mission start, so a modal briefing over the map is both
+            // pointless and actively harmful: it blocks the map, and a benchmark replay would then capture
+            // and measure a window that is mostly dialog. The map is also what a viewer wants to see.
+            if (this.introText != null && !gameEngine.replayEngine.j()) {
                 gameEngine.showMessageBox("Briefing", this.introText);
             }
         }

@@ -38,7 +38,11 @@ internal class KoolCanvasAdaptiveVisuals {
 
 internal fun KoolCanvasCommand.stateOrNull(): KoolCanvasState? = when (this) {
     is KoolCanvasCommand.DrawTexture -> state
+    is KoolCanvasCommand.DrawTextureBatch -> state
+    is KoolCanvasCommand.DrawTextureRepeat -> state
     is KoolCanvasCommand.DrawRect -> state
+    is KoolCanvasCommand.DrawRectBatch -> state
+    is KoolCanvasCommand.DrawFogBatch -> state
     is KoolCanvasCommand.DrawLine -> state
     is KoolCanvasCommand.DrawCircle -> state
     is KoolCanvasCommand.DrawText -> state

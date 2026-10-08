@@ -40,7 +40,10 @@ def main():
     p.add_argument('--candidate-parallel-cell-raster', action='store_true', help='Enable whole-cell raster stripes in candidate only')
     p.add_argument('--adaptive-cell-raster', action='store_true', help='Select costly texture cells in both variants; requires common parallel stripes')
     p.add_argument('--candidate-adaptive-cell-raster', action='store_true', help='Select costly texture cells in candidate only; requires candidate parallel stripes')
-    p.add_argument('--gpu-map-cell-cache', action='store_true', help='Enable Vulkan map cell rendering in both variants')
+    p.add_argument('--gpu-map-cell-cache', action='store_true', help='Deprecated: GPU map targets are already the default in both variants')
+    p.add_argument('--cpu-cell-raster', action='store_true', help='Explicit CPU control in both variants, or baseline only with --candidate-gpu-map-cell-cache')
+    p.add_argument('--run-timeout-seconds', type=int, default=None,
+                   help='Per-process wall-clock budget; fog-enabled runs are slower than real time and need more than the default')
     p.add_argument('--candidate-gpu-map-cell-cache', action='store_true', help='Enable Vulkan map cell rendering in candidate only')
     p.add_argument('--primitive-text-metrics', action='store_true', help='Enable primitive text metrics in both variants')
     p.add_argument('--candidate-primitive-text-metrics', action='store_true', help='Enable primitive text metrics in candidate only')
@@ -49,6 +52,8 @@ def main():
     p.add_argument('--baseline-layer-buffer-pixels', type=int, choices=(256, 384, 512))
     p.add_argument('--candidate-layer-buffer-pixels', type=int, choices=(256, 384, 512))
     args = p.parse_args()
+    if args.cpu_cell_raster and args.gpu_map_cell_cache:
+        p.error('--cpu-cell-raster is incompatible with common --gpu-map-cell-cache')
     if args.adaptive_cell_raster and not args.parallel_cell_raster:
         p.error('--adaptive-cell-raster requires --parallel-cell-raster in both variants')
     if args.candidate_adaptive_cell_raster and not (args.parallel_cell_raster or args.candidate_parallel_cell_raster):
@@ -66,8 +71,9 @@ def main():
                     'candidate': args.parallel_cell_raster or args.candidate_parallel_cell_raster},
                 'adaptiveCellRasterRequested': {'baseline': args.adaptive_cell_raster,
                     'candidate': args.adaptive_cell_raster or args.candidate_adaptive_cell_raster},
-                'gpuMapCellCacheRequested': {'baseline': args.gpu_map_cell_cache,
-                    'candidate': args.gpu_map_cell_cache or args.candidate_gpu_map_cell_cache},
+                'gpuMapCellCacheRequested': {
+                    'baseline': args.gpu_map_cell_cache or (not args.cpu_cell_raster and not args.candidate_gpu_map_cell_cache),
+                    'candidate': args.gpu_map_cell_cache or args.candidate_gpu_map_cell_cache or not args.cpu_cell_raster},
                 'primitiveTextMetricsRequested': {'baseline': args.primitive_text_metrics,
                     'candidate': args.primitive_text_metrics or args.candidate_primitive_text_metrics}}
     runs = []
@@ -107,6 +113,8 @@ def main():
             command.append('--guard-short-owner-park')
         if variant == 'baseline' and args.baseline_disable_text_mesh_reuse:
             command.append('--disable-text-mesh-reuse')
+        if args.run_timeout_seconds is not None:
+            command.extend(['--run-timeout-seconds', str(args.run_timeout_seconds)])
         if args.no_perf_window_log:
             command.append('--no-perf-window-log')
         if args.canvas_stage_trace:
@@ -117,6 +125,8 @@ def main():
             command.append('--adaptive-cell-raster')
         if protocol['gpuMapCellCacheRequested'][variant]:
             command.append('--gpu-map-cell-cache')
+        else:
+            command.append('--cpu-cell-raster')
         if protocol['primitiveTextMetricsRequested'][variant]:
             command.append('--primitive-text-metrics')
         raster_threads = getattr(args, variant + '_raster_threads')

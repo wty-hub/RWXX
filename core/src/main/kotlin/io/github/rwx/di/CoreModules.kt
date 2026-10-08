@@ -31,7 +31,10 @@ val coreModule = module {
         KoolCanvasSceneHost(
             frameRenderer = KoolCanvasFrameRenderer(textureStore = get()),
             sceneName = parameters.getOrNull<String>() ?: KoolCanvasSceneHost.DEFAULT_SCENE_NAME,
-        )
+        // Every application entry point builds its host here, so this is where a host learns that it owns a
+        // live kool backend. configureCanvasHost alone did not cover the benchmark entry point, which left
+        // the offscreen path inactive there while the switch read true (measured: gpuTargets[created=0]).
+        ).also { it.setGpuOffscreenPassesAvailable(true) }
     }
     single<LevelSelectViewModelFactory> {
         val storage = get<PlatformStorage>()

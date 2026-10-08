@@ -4,6 +4,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.LockSupport
+import io.github.rwx.desktopScheduledFrameStartNanos
 
 /** One owner for the legacy engine; presentation never supplies its clock or waits for it. */
 internal class EngineOwnerLoop(
@@ -13,6 +14,7 @@ internal class EngineOwnerLoop(
     private val legacyPacing: Boolean = System.getenv("RWX_LEGACY_OWNER_PACING") == "1",
     private val legacyShortOwnerPark: Boolean = System.getenv("RWX_GUARD_SHORT_OWNER_PARK") != "1" ||
         System.getenv("RWX_LEGACY_SHORT_OWNER_PARK") == "1",
+    private val stableFrameDeadlines: Boolean = System.getenv("RWX_STABLE_FRAME_DEADLINES") == "1",
 ) : AutoCloseable {
     private data class InputTransition(val identity: String, val down: Boolean)
     private data class Task(val transition: InputTransition?, val execute: () -> Unit)
@@ -56,7 +58,8 @@ internal class EngineOwnerLoop(
     private fun run() {
         if (System.getenv("RWX_FRAME_METRICS") != null || System.getenv("RWX_ENGINE_FRAME_TRACE") != null) {
             println("RWXOwnerPacing hybrid=${!legacyPacing} spinBudgetNanos=$SPIN_BUDGET_NANOS maxHybridPeriodNanos=$MAX_HYBRID_PERIOD_NANOS " +
-                "shortParkGuard=${!legacyPacing && !legacyShortOwnerPark} minCoarseParkNanos=$MIN_COARSE_PARK_NANOS")
+                "shortParkGuard=${!legacyPacing && !legacyShortOwnerPark} minCoarseParkNanos=$MIN_COARSE_PARK_NANOS " +
+                "stableFrameDeadlines=$stableFrameDeadlines")
         }
         var previous = System.nanoTime()
         var deadline = previous
@@ -95,8 +98,11 @@ internal class EngineOwnerLoop(
             try { tick(delta) } catch (error: Throwable) { onFailure(error) }
             transitionsObserved.clear()
             // This is the original outer throttle, not a fixed simulation accumulator.
+            val previousPeriod = pacingPeriod
             pacingPeriod = periodNanos().coerceAtLeast(1L)
-            deadline = now + pacingPeriod
+            val pacingStart = if (stableFrameDeadlines && previousPeriod == pacingPeriod)
+                desktopScheduledFrameStartNanos(deadline, now, pacingPeriod) else now
+            deadline = pacingStart + pacingPeriod
         }
     }
 

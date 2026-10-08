@@ -69,6 +69,7 @@ internal class BattleRoomController(
             ),
         )
         newConfig.room.options.apply {
+            localBenchmarkFogMode(System.getenv())?.let { fogMode = it }
             if (map.isSavedGame) gameModeType = GameModeType.savedGame
             if (sandbox) {
                 fogMode = 0
@@ -197,4 +198,15 @@ internal class BattleRoomController(
         }.onFailure { error ->
             logger.warn(error) { "Unable to select sandbox map" }
         }.getOrNull()
+}
+
+/** Diagnostic launch configuration only; ordinary rooms keep their existing fog options. */
+internal fun localBenchmarkFogMode(environment: Map<String, String>): Int? {
+    if (environment["RWX_MAP_PAN_OUTPUT"].isNullOrBlank()) return null
+    return when (environment["RWX_BENCHMARK_FOG"]) {
+        null -> null
+        "off" -> 0
+        "on" -> 2
+        else -> error("Local benchmark fog must be off or on")
+    }
 }
