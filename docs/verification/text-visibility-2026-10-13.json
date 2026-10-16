@@ -1,0 +1,746 @@
+{
+  "date": "2026-10-13",
+  "baseCommit": "d270192",
+  "status": "candidate-only",
+  "defaultEnabled": false,
+  "switch": "RWX_CULL_OFFSCREEN_TEXT=1",
+  "overallAcceptance": false,
+  "endToEndImprovementEstablished": false,
+  "implementation": "Bounded renderer-private glyph bounds and alignment width; no generated geometry for visibility; original visible-text rendering retained. Single-line non-HUD non-projected text only. One pixel conservative viewport margin.",
+  "tests": {
+    "core": {
+      "tests": 208,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "desktop": {
+      "tests": 119,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "pythonToolTests": 80,
+    "scope": "core canvas tests and all desktop tests; not the full core test suite"
+  },
+  "gpuChecks": {
+    "log": "build/text-visibility-v2-gpu-gates-20261013a.log",
+    "passed": true,
+    "tasks": [
+      "runTextGlyphOracle",
+      "runTextLabelOracle",
+      "runRealMapCellOracle",
+      "runMapGridOracle"
+    ],
+    "channelTolerance": 3
+  },
+  "realScene": {
+    "report": "build/rwx-benchmark/text-visibility-pixels-20261013v2a/run/real-scene-oracle/summary.json",
+    "passed": true,
+    "frames": 12,
+    "cells": 74,
+    "cellPixels": 19398656,
+    "compositePixels": 33177600,
+    "mismatches": 0,
+    "fog": "on",
+    "ordinaryMapAndAI": true,
+    "diagnosticOnly": true,
+    "heapMiB": 2000,
+    "runtimeSha256": "7b8d9a4a4000867306a224bf30fb5a429b8a81b50dfadb8ad2817b71708ed4b6"
+  },
+  "screenings": [
+    {
+      "runtimeSha256": "3ec45e84a2f5f21b2251e012952085c73c0b56e0ebebc0c7abf6ac9bc65dacdf",
+      "replaySha256": "2cf22c67c1b1b91a97838671f9808fd8ef9b95d5914e3a1284af30b0aee163db",
+      "toolingSha256": "8c6d5a5cc393a3e2b6ef60c64d32342b16498557c72c81d0f942a0bf7ed247fd",
+      "baseFlags": [
+        "--frozen-reuse",
+        "--map-texture-batches",
+        "--map-fog-batches",
+        "--single-map-cell-render",
+        "--incremental-sprite-atlas",
+        "--projected-sprite-atlas",
+        "--instanced-text-labels",
+        "--text-shader-reuse",
+        "--guard-short-render-park",
+        "--stable-frame-deadlines",
+        "--wait-for-fresh-frame",
+        "--cache-canvas-shader-templates",
+        "--reuse-map-mesh-slots"
+      ],
+      "candidateFlags": [
+        "--cull-offscreen-text"
+      ],
+      "completeScreening": true,
+      "medianWindowMetrics": {
+        "control": {
+          "newFps": 194.23863933864365,
+          "p99Ms": 31.6933,
+          "p999Ms": 73.31245,
+          "over16_667PerSecond": 4.975
+        },
+        "candidate": {
+          "newFps": 282.35423763474716,
+          "p99Ms": 8.01175,
+          "p999Ms": 21.390500000000003,
+          "over16_667PerSecond": 0.5125
+        }
+      },
+      "maximumIntervalMs": {
+        "control": 265.7365,
+        "candidate": 132.6871
+      },
+      "sourceReport": "build/rwx-benchmark/text-visibility-zoom-20261013a/report.json",
+      "implementation": "v1-geometry-preparation-replaced",
+      "records": [
+        {
+          "arm": "control",
+          "valid": true,
+          "metrics": {
+            "newFps": 236.88909421832494,
+            "p99Ms": 16.1466,
+            "p999Ms": 38.7383,
+            "maxMs": 77.845,
+            "over16_667PerSecond": 2.225,
+            "sampleSeconds": 40,
+            "fogDisplayEnabled": false,
+            "simulationEvidence": {
+              "initialTick": 0,
+              "initialGameTimeMillis": 0,
+              "startTick": 732,
+              "endTick": 1933,
+              "startGameTimeMillis": 19549,
+              "endGameTimeMillis": 59182
+            }
+          },
+          "longFrameCount": 89,
+          "wholeRunMinimumAvailablePhysicalMemoryMiB": 1134.7
+        },
+        {
+          "arm": "candidate",
+          "valid": true,
+          "metrics": {
+            "newFps": 285.5865724333306,
+            "p99Ms": 7.4998,
+            "p999Ms": 18.7784,
+            "maxMs": 34.1966,
+            "over16_667PerSecond": 0.475,
+            "sampleSeconds": 40,
+            "fogDisplayEnabled": false,
+            "simulationEvidence": {
+              "initialTick": 0,
+              "initialGameTimeMillis": 0,
+              "startTick": 734,
+              "endTick": 1934,
+              "startGameTimeMillis": 19615,
+              "endGameTimeMillis": 59215
+            }
+          },
+          "longFrameCount": 19,
+          "wholeRunMinimumAvailablePhysicalMemoryMiB": 1223.6
+        },
+        {
+          "arm": "candidate",
+          "valid": true,
+          "metrics": {
+            "newFps": 279.12190283616366,
+            "p99Ms": 8.5237,
+            "p999Ms": 24.0026,
+            "maxMs": 132.6871,
+            "over16_667PerSecond": 0.55,
+            "sampleSeconds": 40,
+            "fogDisplayEnabled": false,
+            "simulationEvidence": {
+              "initialTick": 0,
+              "initialGameTimeMillis": 0,
+              "startTick": 728,
+              "endTick": 1928,
+              "startGameTimeMillis": 19417,
+              "endGameTimeMillis": 59017
+            }
+          },
+          "longFrameCount": 22,
+          "wholeRunMinimumAvailablePhysicalMemoryMiB": 1244.3
+        },
+        {
+          "arm": "control",
+          "valid": true,
+          "metrics": {
+            "newFps": 151.58818445896236,
+            "p99Ms": 47.24,
+            "p999Ms": 107.8866,
+            "maxMs": 265.7365,
+            "over16_667PerSecond": 7.725,
+            "sampleSeconds": 40,
+            "fogDisplayEnabled": false,
+            "simulationEvidence": {
+              "initialTick": 0,
+              "initialGameTimeMillis": 0,
+              "startTick": 723,
+              "endTick": 1919,
+              "startGameTimeMillis": 19252,
+              "endGameTimeMillis": 58720
+            }
+          },
+          "longFrameCount": 309,
+          "wholeRunMinimumAvailablePhysicalMemoryMiB": 442.6
+        }
+      ]
+    },
+    {
+      "runtimeSha256": "3ec45e84a2f5f21b2251e012952085c73c0b56e0ebebc0c7abf6ac9bc65dacdf",
+      "replaySha256": "2cf22c67c1b1b91a97838671f9808fd8ef9b95d5914e3a1284af30b0aee163db",
+      "toolingSha256": "8c6d5a5cc393a3e2b6ef60c64d32342b16498557c72c81d0f942a0bf7ed247fd",
+      "baseFlags": [],
+      "candidateFlags": [
+        "--cull-offscreen-text"
+      ],
+      "completeScreening": true,
+      "medianWindowMetrics": {
+        "control": {
+          "newFps": 155.83245752765833,
+          "p99Ms": 29.11985,
+          "p999Ms": 90.13555,
+          "over16_667PerSecond": 4.375
+        },
+        "candidate": {
+          "newFps": 165.90364048866527,
+          "p99Ms": 32.3446,
+          "p999Ms": 109.68325,
+          "over16_667PerSecond": 4.975
+        }
+      },
+      "maximumIntervalMs": {
+        "control": 388.753,
+        "candidate": 430.3415
+      },
+      "sourceReport": "build/rwx-benchmark/text-visibility-default-zoom-20261013a/report.json",
+      "implementation": "v1-geometry-preparation-replaced",
+      "records": [
+        {
+          "arm": "control",
+          "valid": true,
+          "metrics": {
+            "newFps": 164.97194348231713,
+            "p99Ms": 29.8726,
+            "p999Ms": 101.0938,
+            "maxMs": 385.2142,
+            "over16_667PerSecond": 4.0,
+            "sampleSeconds": 40,
+            "fogDisplayEnabled": false,
+            "simulationEvidence": {
+              "initialTick": 0,
+              "initialGameTimeMillis": 0,
+              "startTick": 722,
+              "endTick": 1920,
+              "startGameTimeMillis": 19219,
+              "endGameTimeMillis": 58753
+            }
+          },
+          "longFrameCount": 160,
+          "wholeRunMinimumAvailablePhysicalMemoryMiB": 64.4
+        },
+        {
+          "arm": "candidate",
+          "valid": true,
+          "metrics": {
+            "newFps": 162.99534322304413,
+            "p99Ms": 35.3964,
+            "p999Ms": 112.2442,
+            "maxMs": 136.972,
+            "over16_667PerSecond": 5.15,
+            "sampleSeconds": 40,
+            "fogDisplayEnabled": false,
+            "simulationEvidence": {
+              "initialTick": 0,
+              "initialGameTimeMillis": 0,
+              "startTick": 730,
+              "endTick": 1928,
+              "startGameTimeMillis": 19483,
+              "endGameTimeMillis": 59017
+            }
+          },
+          "longFrameCount": 206,
+          "wholeRunMinimumAvailablePhysicalMemoryMiB": 289.7
+        },
+        {
+          "arm": "candidate",
+          "valid": true,
+          "metrics": {
+            "newFps": 168.81193775428642,
+            "p99Ms": 29.2928,
+            "p999Ms": 107.1223,
+            "maxMs": 430.3415,
+            "over16_667PerSecond": 4.8,
+            "sampleSeconds": 40,
+            "fogDisplayEnabled": false,
+            "simulationEvidence": {
+              "initialTick": 0,
+              "initialGameTimeMillis": 0,
+              "startTick": 723,
+              "endTick": 1920,
+              "startGameTimeMillis": 19252,
+              "endGameTimeMillis": 58753
+            }
+          },
+          "longFrameCount": 192,
+          "wholeRunMinimumAvailablePhysicalMemoryMiB": 670.0
+        },
+        {
+          "arm": "control",
+          "valid": true,
+          "metrics": {
+            "newFps": 146.6929715729995,
+            "p99Ms": 28.3671,
+            "p999Ms": 79.1773,
+            "maxMs": 388.753,
+            "over16_667PerSecond": 4.75,
+            "sampleSeconds": 40,
+            "fogDisplayEnabled": false,
+            "simulationEvidence": {
+              "initialTick": 0,
+              "initialGameTimeMillis": 0,
+              "startTick": 727,
+              "endTick": 1927,
+              "startGameTimeMillis": 19384,
+              "endGameTimeMillis": 58984
+            }
+          },
+          "longFrameCount": 190,
+          "wholeRunMinimumAvailablePhysicalMemoryMiB": 389.6
+        }
+      ]
+    },
+    {
+      "runtimeSha256": "3ec45e84a2f5f21b2251e012952085c73c0b56e0ebebc0c7abf6ac9bc65dacdf",
+      "replaySha256": "2cf22c67c1b1b91a97838671f9808fd8ef9b95d5914e3a1284af30b0aee163db",
+      "toolingSha256": "8c6d5a5cc393a3e2b6ef60c64d32342b16498557c72c81d0f942a0bf7ed247fd",
+      "baseFlags": [
+        "--frozen-reuse",
+        "--map-texture-batches",
+        "--map-fog-batches",
+        "--single-map-cell-render",
+        "--incremental-sprite-atlas",
+        "--projected-sprite-atlas",
+        "--instanced-text-labels",
+        "--text-shader-reuse",
+        "--guard-short-render-park",
+        "--stable-frame-deadlines",
+        "--wait-for-fresh-frame",
+        "--cache-canvas-shader-templates",
+        "--reuse-map-mesh-slots"
+      ],
+      "candidateFlags": [
+        "--cull-offscreen-text"
+      ],
+      "completeScreening": true,
+      "medianWindowMetrics": {
+        "control": {
+          "newFps": 247.37032042486084,
+          "p99Ms": 13.556450000000002,
+          "p999Ms": 36.3556,
+          "over16_667PerSecond": 1.5
+        },
+        "candidate": {
+          "newFps": 254.73237038907507,
+          "p99Ms": 12.7645,
+          "p999Ms": 40.3589,
+          "over16_667PerSecond": 1.45
+        }
+      },
+      "maximumIntervalMs": {
+        "control": 117.6559,
+        "candidate": 222.0202
+      },
+      "sourceReport": "build/rwx-benchmark/text-visibility-pan-zoom-20261013a/report.json",
+      "implementation": "v1-geometry-preparation-replaced",
+      "records": [
+        {
+          "arm": "control",
+          "valid": true,
+          "metrics": {
+            "newFps": 275.46986455305006,
+            "p99Ms": 9.1804,
+            "p999Ms": 20.106,
+            "maxMs": 48.3548,
+            "over16_667PerSecond": 0.5,
+            "sampleSeconds": 40,
+            "fogDisplayEnabled": false,
+            "simulationEvidence": {
+              "initialTick": 0,
+              "initialGameTimeMillis": 0,
+              "startTick": 733,
+              "endTick": 1933,
+              "startGameTimeMillis": 19582,
+              "endGameTimeMillis": 59182
+            }
+          },
+          "longFrameCount": 20,
+          "wholeRunMinimumAvailablePhysicalMemoryMiB": 1493.7
+        },
+        {
+          "arm": "candidate",
+          "valid": true,
+          "metrics": {
+            "newFps": 274.8408265003135,
+            "p99Ms": 8.8326,
+            "p999Ms": 22.2114,
+            "maxMs": 60.8554,
+            "over16_667PerSecond": 0.525,
+            "sampleSeconds": 40,
+            "fogDisplayEnabled": false,
+            "simulationEvidence": {
+              "initialTick": 0,
+              "initialGameTimeMillis": 0,
+              "startTick": 732,
+              "endTick": 1931,
+              "startGameTimeMillis": 19549,
+              "endGameTimeMillis": 59116
+            }
+          },
+          "longFrameCount": 21,
+          "wholeRunMinimumAvailablePhysicalMemoryMiB": 1886.7
+        },
+        {
+          "arm": "candidate",
+          "valid": true,
+          "metrics": {
+            "newFps": 234.62391427783666,
+            "p99Ms": 16.6964,
+            "p999Ms": 58.5064,
+            "maxMs": 222.0202,
+            "over16_667PerSecond": 2.375,
+            "sampleSeconds": 40,
+            "fogDisplayEnabled": false,
+            "simulationEvidence": {
+              "initialTick": 0,
+              "initialGameTimeMillis": 0,
+              "startTick": 723,
+              "endTick": 1922,
+              "startGameTimeMillis": 19252,
+              "endGameTimeMillis": 58819
+            }
+          },
+          "longFrameCount": 95,
+          "wholeRunMinimumAvailablePhysicalMemoryMiB": 1975.4
+        },
+        {
+          "arm": "control",
+          "valid": true,
+          "metrics": {
+            "newFps": 219.27077629667158,
+            "p99Ms": 17.9325,
+            "p999Ms": 52.6052,
+            "maxMs": 117.6559,
+            "over16_667PerSecond": 2.5,
+            "sampleSeconds": 40,
+            "fogDisplayEnabled": false,
+            "simulationEvidence": {
+              "initialTick": 0,
+              "initialGameTimeMillis": 0,
+              "startTick": 732,
+              "endTick": 1932,
+              "startGameTimeMillis": 19549,
+              "endGameTimeMillis": 59149
+            }
+          },
+          "longFrameCount": 100,
+          "wholeRunMinimumAvailablePhysicalMemoryMiB": 1739.3
+        }
+      ]
+    },
+    {
+      "runtimeSha256": "7b8d9a4a4000867306a224bf30fb5a429b8a81b50dfadb8ad2817b71708ed4b6",
+      "replaySha256": "2cf22c67c1b1b91a97838671f9808fd8ef9b95d5914e3a1284af30b0aee163db",
+      "toolingSha256": "8c6d5a5cc393a3e2b6ef60c64d32342b16498557c72c81d0f942a0bf7ed247fd",
+      "baseFlags": [],
+      "candidateFlags": [
+        "--cull-offscreen-text"
+      ],
+      "completeScreening": true,
+      "medianWindowMetrics": {
+        "control": {
+          "newFps": 107.87091084436632,
+          "p99Ms": 55.8958,
+          "p999Ms": 181.1059,
+          "over16_667PerSecond": 7.75
+        },
+        "candidate": {
+          "newFps": 141.32766026578946,
+          "p99Ms": 56.41460000000001,
+          "p999Ms": 162.2407,
+          "over16_667PerSecond": 6.6875
+        }
+      },
+      "maximumIntervalMs": {
+        "control": 638.9164,
+        "candidate": 572.772
+      },
+      "sourceReport": "build/rwx-benchmark/text-visibility-default-zoom-20261013v2a/report.json",
+      "implementation": "v2-bounds-only",
+      "records": [
+        {
+          "arm": "control",
+          "valid": true,
+          "metrics": {
+            "newFps": 94.49469979228866,
+            "p99Ms": 66.4197,
+            "p999Ms": 243.2637,
+            "maxMs": 638.9164,
+            "over16_667PerSecond": 9.5,
+            "sampleSeconds": 40,
+            "fogDisplayEnabled": false,
+            "simulationEvidence": {
+              "initialTick": 0,
+              "initialGameTimeMillis": 0,
+              "startTick": 707,
+              "endTick": 1885,
+              "startGameTimeMillis": 18724,
+              "endGameTimeMillis": 57598
+            }
+          },
+          "longFrameCount": 380,
+          "wholeRunMinimumAvailablePhysicalMemoryMiB": 427.7
+        },
+        {
+          "arm": "candidate",
+          "valid": true,
+          "metrics": {
+            "newFps": 169.43553317058905,
+            "p99Ms": 33.4164,
+            "p999Ms": 126.4107,
+            "maxMs": 572.772,
+            "over16_667PerSecond": 4.625,
+            "sampleSeconds": 40,
+            "fogDisplayEnabled": false,
+            "simulationEvidence": {
+              "initialTick": 0,
+              "initialGameTimeMillis": 0,
+              "startTick": 641,
+              "endTick": 1841,
+              "startGameTimeMillis": 16546,
+              "endGameTimeMillis": 56146
+            }
+          },
+          "longFrameCount": 185,
+          "wholeRunMinimumAvailablePhysicalMemoryMiB": 489.9
+        },
+        {
+          "arm": "candidate",
+          "valid": true,
+          "metrics": {
+            "newFps": 113.2197873609899,
+            "p99Ms": 79.4128,
+            "p999Ms": 198.0707,
+            "maxMs": 407.7512,
+            "over16_667PerSecond": 8.75,
+            "sampleSeconds": 40,
+            "fogDisplayEnabled": false,
+            "simulationEvidence": {
+              "initialTick": 0,
+              "initialGameTimeMillis": 0,
+              "startTick": 722,
+              "endTick": 1919,
+              "startGameTimeMillis": 19219,
+              "endGameTimeMillis": 58720
+            }
+          },
+          "longFrameCount": 350,
+          "wholeRunMinimumAvailablePhysicalMemoryMiB": 356.0
+        },
+        {
+          "arm": "control",
+          "valid": true,
+          "metrics": {
+            "newFps": 121.24712189644399,
+            "p99Ms": 45.3719,
+            "p999Ms": 118.9481,
+            "maxMs": 473.5903,
+            "over16_667PerSecond": 6.0,
+            "sampleSeconds": 40,
+            "fogDisplayEnabled": false,
+            "simulationEvidence": {
+              "initialTick": 0,
+              "initialGameTimeMillis": 0,
+              "startTick": 673,
+              "endTick": 1871,
+              "startGameTimeMillis": 17602,
+              "endGameTimeMillis": 57136
+            }
+          },
+          "longFrameCount": 240,
+          "wholeRunMinimumAvailablePhysicalMemoryMiB": 1024.6
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "All four arms and all long frames retained; no load correction or exclusions.",
+    "System memory and CPU varied substantially; these screening medians do not establish a stable speedup.",
+    "V2 default-only P99 did not improve; candidate remains disabled.",
+    "No original comparison, ten-minute continuity pass, or physical OS input acceptance is claimed."
+  ],
+  "inputComparison": {
+    "status": "complete-not-passed",
+    "kind": "RWX default control versus RWX with only text culling; callback-to-picture diagnostic",
+    "physicalOsInputResponseVerified": false,
+    "pairs": [
+      {
+        "source": "build/text-visibility-input-v2-20261013a.json",
+        "records": [
+          {
+            "arm": "control",
+            "exitCode": 0,
+            "validTrace": true,
+            "invalidReasons": [],
+            "sampledEvents": 150,
+            "presentedEvents": 150,
+            "cameraChangedEvents": 68,
+            "missingCameraEffects": [],
+            "cameraResponsesByKind": {
+              "pointer": {
+                "events": 10,
+                "p99Ms": 44.5978,
+                "p999Ms": 44.5978,
+                "maxMs": 51.9316
+              },
+              "key": {
+                "events": 40,
+                "p99Ms": 26.1629,
+                "p999Ms": 26.1629,
+                "maxMs": 37.3241
+              },
+              "wheel": {
+                "events": 18,
+                "p99Ms": 17.0376,
+                "p999Ms": 17.0376,
+                "maxMs": 18.4367
+              }
+            },
+            "source": "build/rwx-benchmark/text-visibility-input-v2-control-20261013a/run/input-response-summary.json"
+          },
+          {
+            "arm": "candidate",
+            "exitCode": 1,
+            "validTrace": false,
+            "invalidReasons": [
+              "1 camera-driving inputs never produced an observed camera response"
+            ],
+            "sampledEvents": 703,
+            "presentedEvents": 703,
+            "cameraChangedEvents": 69,
+            "missingCameraEffects": [
+              {
+                "stage": "sampled",
+                "id": "169",
+                "kind": "pointer/3",
+                "value": "1",
+                "sampledNanos": "69693599891700",
+                "appliedNanos": "0",
+                "producedNanos": "0",
+                "acceptedPresentNanos": "0",
+                "generation": "-1",
+                "sequence": "-1",
+                "cameraX": "NaN",
+                "cameraY": "NaN",
+                "zoom": "NaN",
+                "expectsCamera": "true"
+              }
+            ],
+            "cameraResponsesByKind": {
+              "pointer": {
+                "events": 9,
+                "p99Ms": 56.7811,
+                "p999Ms": 56.7811,
+                "maxMs": 76.8183
+              },
+              "key": {
+                "events": 40,
+                "p99Ms": 22.8545,
+                "p999Ms": 22.8545,
+                "maxMs": 54.6641
+              },
+              "wheel": {
+                "events": 20,
+                "p99Ms": 24.128,
+                "p999Ms": 24.128,
+                "maxMs": 32.7088
+              }
+            },
+            "source": "build/rwx-benchmark/text-visibility-input-v2-candidate-20261013a/run/input-response-summary.json"
+          }
+        ],
+        "validComparison": false
+      },
+      {
+        "source": "build/text-visibility-input-v2-20261013b.json",
+        "records": [
+          {
+            "arm": "control",
+            "exitCode": 0,
+            "validTrace": true,
+            "invalidReasons": [],
+            "sampledEvents": 150,
+            "presentedEvents": 150,
+            "cameraChangedEvents": 70,
+            "missingCameraEffects": [],
+            "cameraResponsesByKind": {
+              "pointer": {
+                "events": 10,
+                "p99Ms": 17.3611,
+                "p999Ms": 17.3611,
+                "maxMs": 26.5866
+              },
+              "key": {
+                "events": 40,
+                "p99Ms": 18.7698,
+                "p999Ms": 18.7698,
+                "maxMs": 19.3065
+              },
+              "wheel": {
+                "events": 20,
+                "p99Ms": 17.6671,
+                "p999Ms": 17.6671,
+                "maxMs": 21.9128
+              }
+            },
+            "source": "build/rwx-benchmark/text-visibility-input-v2-control-20261013b/run/input-response-summary.json"
+          },
+          {
+            "arm": "candidate",
+            "exitCode": 0,
+            "validTrace": true,
+            "invalidReasons": [],
+            "sampledEvents": 150,
+            "presentedEvents": 150,
+            "cameraChangedEvents": 70,
+            "missingCameraEffects": [],
+            "cameraResponsesByKind": {
+              "pointer": {
+                "events": 10,
+                "p99Ms": 14.2258,
+                "p999Ms": 14.2258,
+                "maxMs": 20.4963
+              },
+              "key": {
+                "events": 40,
+                "p99Ms": 17.4832,
+                "p999Ms": 17.4832,
+                "maxMs": 19.3477
+              },
+              "wheel": {
+                "events": 20,
+                "p99Ms": 18.878,
+                "p999Ms": 18.878,
+                "maxMs": 21.3968
+              }
+            },
+            "source": "build/rwx-benchmark/text-visibility-input-v2-candidate-20261013b/run/input-response-summary.json"
+          }
+        ],
+        "validComparison": true
+      }
+    ],
+    "conclusion": "First pair invalid (150 versus 703 sampled events and one missing camera effect). Repeat pair valid; pointer/key P99 lower but wheel P99 higher. No all-input tail acceptance or original comparison."
+  }
+}

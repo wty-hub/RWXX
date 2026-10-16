@@ -1,5 +1,24 @@
 # Vulkan 本机验收工具
 
+## 视口外文字剔除候选（2026-10-13）
+
+`map_pan_replay.py` 与 `map_pan_live.py` 的 `--cull-offscreen-text` 对应默认关闭的
+`RWX_CULL_OFFSCREEN_TEXT=1`。运行器要求日志确认实际剔除了文字，避免把未生效的开关当作对照。
+当前实现仅缓存字形边界和对齐宽度；可见文字保留原绘制流程，多行文字、性能 HUD 和嵌套投影不参与剔除。
+
+普通默认配置的独立四轮筛选命令如下，`--tag` 每次须使用新值：
+
+```powershell
+python desktop/tools/candidate_interaction_abba.py --tag text-visibility-new-run `
+  --mode zoom --fog off --candidate-flag=--cull-offscreen-text
+```
+
+这只是候选筛选，不是原版比较或最终验收。第二版默认对照未改善 P99，因此继续默认关闭。
+测试范围、实景像素结果和冻结指纹见
+[文字可见性验证数据](../../docs/verification/text-visibility-2026-10-13.json)。
+
+## 构建与运行
+
 先构建当前平台的完整运行包，再执行测试。运行器把运行包复制到新的结果目录，避免构建期间修改正在运行的类文件；游戏使用正常退出流程。
 
 ```sh

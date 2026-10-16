@@ -119,6 +119,8 @@ def main():
     parser.add_argument('--share-map-texture-materials', action='store_true', help='Candidate: share immutable instanced materials between map target slots, retaining independent mesh/view data and existing GPU fences')
     parser.add_argument('--reuse-frozen-texture-references', action='store_true', help='Candidate: cache CPU-only immutable versioned references after restoring each full resource closure')
     parser.add_argument('--reuse-map-mesh-slots', action='store_true', help='Candidate: re-key compatible unused map meshes while retaining their buffers and existing target frame fences')
+    parser.add_argument('--cull-offscreen-text', action='store_true', help='Candidate: reject wholly offscreen glyph quads before allocating text meshes')
+    parser.add_argument('--compact-texture-instances', action='store_true', help='Candidate: size unordered texture instance buffers to actual batches instead of preallocating 8192 entries')
     parser.add_argument('--direct-target-textures', action='store_true', help='Candidate: map/offscreen targets sample leased source textures without creating a per-slot sprite atlas')
     parser.add_argument('--avoid-texture-paint-copies', action='store_true', help='Candidate: retain an immutable texture paint when the resolved team effect is unchanged')
     parser.add_argument('--reuse-text-mesh-keys', action='store_true', help='Candidate: allocation-free lookups while retaining immutable canonical text mesh identities')
@@ -213,6 +215,10 @@ def main():
         env['RWX_REUSE_FROZEN_TEXTURE_REFERENCES'] = '1'
     if args.reuse_map_mesh_slots:
         env['RWX_REUSE_MAP_MESH_SLOTS'] = '1'
+    if args.cull_offscreen_text:
+        env['RWX_CULL_OFFSCREEN_TEXT'] = '1'
+    if args.compact_texture_instances:
+        env['RWX_COMPACT_TEXTURE_INSTANCES'] = '1'
     if args.direct_target_textures:
         env['RWX_DIRECT_TARGET_TEXTURES'] = '1'
     if args.avoid_texture_paint_copies:
@@ -461,6 +467,12 @@ def main():
         report['run']['validMeasurement'] = False
     if args.reuse_map_mesh_slots and 'RWXMapMeshSlots reuseConfirmed=true' not in actual_log:
         report['run']['invalidReasons'].append('map mesh slot reuse did not confirm a compatible unused mesh')
+        report['run']['validMeasurement'] = False
+    if args.cull_offscreen_text and 'RWXOffscreenText cullConfirmed=true' not in actual_log:
+        report['run']['invalidReasons'].append('offscreen text rejection was not exercised')
+        report['run']['validMeasurement'] = False
+    if args.compact_texture_instances and 'RWXCompactTextureInstances allocationConfirmed=true' not in actual_log:
+        report['run']['invalidReasons'].append('compact unordered texture instance allocation was not exercised')
         report['run']['validMeasurement'] = False
     if args.direct_target_textures and 'directTargetTextures=true' not in actual_log:
         report['run']['invalidReasons'].append('direct offscreen source texture sampling was not confirmed by the runtime')

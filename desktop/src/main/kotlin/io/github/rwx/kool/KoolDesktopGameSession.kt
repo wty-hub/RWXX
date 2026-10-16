@@ -231,6 +231,7 @@ internal class KoolDesktopGameSession(
     }
 
     override fun currentFrame(): KoolCanvasFrame {
+        val selectionStart = io.github.rwx.kool.vulkan.VulkanBackendMetrics.stageStart()
         if (postInputFrameWait && livePresentationRequested && !pausedForResumeBackground && loopFailure == null) {
             val requested = inputPublication.currentRequest()
             if (!hasUnpresentedFrame() || !inputPublication.isPublished(requested)) {
@@ -246,10 +247,16 @@ internal class KoolDesktopGameSession(
                 } finally { io.github.rwx.kool.vulkan.VulkanBackendMetrics.stageEnd("post-input-frame-wait", start, requested) }
             }
         }
-        mailbox.poll()?.let { completed ->
+        val completed = mailbox.poll()
+        completed?.let {
             selectedEnvelope?.close()
             selectedEnvelope = completed
         }
+        // Includes post-input-frame-wait when enabled; the chosen sequence joins the later
+        // envelope-install / canvas-new rows. It is selection, not presentation acknowledgment.
+        if (selectionStart != 0L) io.github.rwx.kool.vulkan.VulkanBackendMetrics.stageEnd(
+            "session-current-frame", selectionStart, selectedEnvelope?.sequence ?: -1L,
+            selectedEnvelope?.generation ?: -1L, if (completed != null) 1L else 0L)
         return selectedEnvelope?.frame ?: KoolCanvasFrame(lastViewport, emptyList())
     }
 

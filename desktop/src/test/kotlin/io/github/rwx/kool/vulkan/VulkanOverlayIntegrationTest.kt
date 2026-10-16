@@ -5,6 +5,7 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodInsnNode
 import org.objectweb.asm.tree.LookupSwitchInsnNode
+import org.objectweb.asm.tree.LdcInsnNode
 import org.lwjgl.vulkan.VK10.VK_FORMAT_B8G8R8A8_UNORM
 import org.lwjgl.vulkan.VK10.VK_FORMAT_R8G8B8A8_UNORM
 import kotlin.test.*
@@ -12,9 +13,45 @@ import kotlin.test.*
 /** Verifies runtime classpath ordering as well as the pinned native overlay's bytecode contracts. */
 class VulkanOverlayIntegrationTest {
     private fun klass(name: String): ClassNode {
-        val path = "/de/fabmax/kool/pipeline/backend/vk/$name.class"
+        return classAt("de/fabmax/kool/pipeline/backend/vk/$name")
+    }
+
+    private fun classAt(name: String): ClassNode {
+        val path = "/$name.class"
         val stream = checkNotNull(javaClass.getResourceAsStream(path)) { "Missing runtime class $path" }
         return stream.use { ClassNode().also { node -> ClassReader(it).accept(node, 0) } }
+    }
+
+    @Test
+    fun `frontend stage diagnostics preserve synchronous collection and pipeline bodies`() {
+        val descriptors = listOf(
+            listOf("de/fabmax/kool/KoolContext", "updatePipelineData", "(Lde/fabmax/kool/FrameData;)V", "frontend-pipeline-data"),
+            listOf("de/fabmax/kool/KoolContext", "syncData", "(Lde/fabmax/kool/FrameData;)V", "frontend-sync-data"),
+            listOf("de/fabmax/kool/pipeline/GpuPass", "collect", "(Lde/fabmax/kool/PassData;Lde/fabmax/kool/KoolContext;)V", "scene-pass-collect"),
+            listOf("de/fabmax/kool/scene/Scene", "sortGpuPassesByDependencies", "()V", "scene-pass-sort"),
+        )
+        val lifecycle = "io/github/rwx/kool/vulkan/VulkanFrameLifecycle"
+        for ((owner, name, descriptor, stage) in descriptors) {
+            val node = classAt(owner)
+            val wrapper = node.methods.single { it.name == name && it.desc == descriptor }
+            val original = node.methods.single { it.name == "$name\$rwxMeasured" && it.desc == descriptor }
+            assertEquals(original.access, wrapper.access, "$owner.$name must preserve method visibility and dispatch")
+            val calls = wrapper.instructions.toArray().filterIsInstance<MethodInsnNode>()
+            assertEquals(listOf("diagnosticStageStart", original.name, "diagnosticStageEnd"), calls.map { it.name })
+            assertEquals(lifecycle, calls.first().owner)
+            assertEquals(lifecycle, calls.last().owner)
+            assertEquals(owner, calls[1].owner)
+            assertEquals(Opcodes.INVOKESPECIAL, calls[1].opcode)
+            assertEquals(descriptor, calls[1].desc)
+            assertEquals(listOf(stage), wrapper.instructions.toArray().filterIsInstance<LdcInsnNode>().map { it.cst })
+            assertFalse(original.instructions.toArray().filterIsInstance<MethodInsnNode>().any { it.owner == lifecycle })
+            // Resolving methods also asks the JVM to verify the emitted wrappers, not only ASM to read them.
+            assertTrue(Class.forName(owner.replace('/', '.')).declaredMethods.any { it.name == original.name })
+        }
+        val collectScene = classAt("de/fabmax/kool/scene/Scene").methods.single { it.name.startsWith("collectScene") }
+        assertTrue(collectScene.desc.contains("kotlin/coroutines/Continuation"))
+        assertFalse(collectScene.instructions.toArray().filterIsInstance<MethodInsnNode>().any { it.owner == lifecycle },
+            "Suspending callbacks must not be recorded as completed scene collections")
     }
 
     @Test

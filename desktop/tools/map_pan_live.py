@@ -25,6 +25,8 @@ CANDIDATES = {
     'share-map-texture-materials': 'RWX_SHARE_MAP_TEXTURE_MATERIALS',
     'reuse-frozen-texture-references': 'RWX_REUSE_FROZEN_TEXTURE_REFERENCES',
     'reuse-map-mesh-slots': 'RWX_REUSE_MAP_MESH_SLOTS',
+    'cull-offscreen-text': 'RWX_CULL_OFFSCREEN_TEXT',
+    'compact-texture-instances': 'RWX_COMPACT_TEXTURE_INSTANCES',
     'direct-target-textures': 'RWX_DIRECT_TARGET_TEXTURES',
     'avoid-texture-paint-copies': 'RWX_AVOID_TEXTURE_PAINT_COPIES',
     'reuse-text-mesh-keys': 'RWX_REUSE_TEXT_MESH_KEYS',
@@ -308,6 +310,16 @@ def main():
         log = (out / f'{name}.log').read_text(encoding='utf-8', errors='replace')
         if 'RWXFrozenTextureReferences reuseConfirmed=true' not in log:
             report['run']['invalidReasons'].append('frozen texture reference reuse was not confirmed by actual source versions')
+            report['run']['validMeasurement'] = False
+    if args.cull_offscreen_text:
+        log = (out / f'{name}.log').read_text(encoding='utf-8', errors='replace')
+        if 'RWXOffscreenText cullConfirmed=true' not in log:
+            report['run']['invalidReasons'].append('offscreen text rejection was not exercised')
+            report['run']['validMeasurement'] = False
+    if args.compact_texture_instances:
+        log = (out / f'{name}.log').read_text(encoding='utf-8', errors='replace')
+        if 'RWXCompactTextureInstances allocationConfirmed=true' not in log:
+            report['run']['invalidReasons'].append('compact unordered texture instance allocation was not exercised')
             report['run']['validMeasurement'] = False
     if args.reuse_map_mesh_slots:
         log = (out / f'{name}.log').read_text(encoding='utf-8', errors='replace')

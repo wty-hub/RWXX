@@ -58,10 +58,29 @@ class KoolCanvasFrameRenderer(
     private val useSpriteAtlas: Boolean = true,
     /** Only GPU-target renderers can recycle compatible empty meshes between fence-protected slots. */
     private val reuseMapMeshSlots: Boolean = System.getenv("RWX_REUSE_MAP_MESH_SLOTS") == "1",
+    private val cullOffscreenText: Boolean = System.getenv("RWX_CULL_OFFSCREEN_TEXT") == "1",
+    private val compactTextureInstances: Boolean = System.getenv("RWX_COMPACT_TEXTURE_INSTANCES") == "1",
 ) {
+    private var compactTextureInstancesConfirmed = false
+
+    /** Keep large numeric batches at their known size; ordinary runs grow through Kool's usual path. */
+    private fun unorderedTextureInstanceCapacity(expectedInstances: Int = 0): Int {
+        if (!compactTextureInstances) return UNORDERED_TEXTURE_INSTANCE_INITIAL_SIZE
+        val capacity = maxOf(ORDERED_TEXTURE_INSTANCE_INITIAL_SIZE, expectedInstances)
+        if (!compactTextureInstancesConfirmed && capacity < UNORDERED_TEXTURE_INSTANCE_INITIAL_SIZE) {
+            compactTextureInstancesConfirmed = true
+            if (System.getenv("RWX_FRAME_METRICS") != null)
+                println("RWXCompactTextureInstances allocationConfirmed=true initialCapacity=$capacity")
+        }
+        return capacity
+    }
+
     private val renderFonts = if (prepareText) KoolCanvasRenderFonts() else null
     private val textMetrics = if (primitiveTextMetrics) KoolPrimitiveTextMetrics() else null
     private val textTemplates = if (reuseTextGeometry || instanceTextGlyphs || instanceTextLabels) KoolCanvasTextTemplates(reuseLookups = prepareText) else null
+    private val textVisibility = if (cullOffscreenText) KoolCanvasTextVisibility() else null
+    private var culledTextCount = 0L
+    internal fun culledOffscreenTextCount(): Long = culledTextCount
     private val labelGeometry = if (instanceTextLabels) KoolCanvasLabelGeometry() else null
     private var attachedScene: Node? = null
     private val primitiveMeshes = linkedMapOf<PrimitiveMeshKey, Mesh<VertexLayouts.PositionNormalColor>>()
@@ -861,6 +880,7 @@ class KoolCanvasFrameRenderer(
             textShaders.clear()
             renderFonts?.clear()
             textTemplates?.clear()
+            textVisibility?.clear()
             labelGeometry?.clear()
             usedTextMeshKeys.clear()
             spriteMeshes.clear()
@@ -1414,6 +1434,7 @@ class KoolCanvasFrameRenderer(
         renderBlend: CanvasRenderBlend,
         premultipliedAlpha: Boolean,
         ordered: Boolean,
+        expectedInstances: Int = 0,
     ): InstancedTextureMeshEntry {
         val textureIdentity = meshTextureIdentity(textureId)
         if (!ordered) {
@@ -1424,6 +1445,7 @@ class KoolCanvasFrameRenderer(
                 texture,
                 renderBlend,
                 premultipliedAlpha,
+                expectedInstances,
             )
         }
         val batchIndex = batchIndexForTexture(textureId, textureFilter, renderBlend, premultipliedAlpha)
@@ -1495,6 +1517,7 @@ class KoolCanvasFrameRenderer(
         texture: Texture2d,
         renderBlend: CanvasRenderBlend,
         premultipliedAlpha: Boolean,
+        expectedInstances: Int,
     ): InstancedTextureMeshEntry {
         val textureIdentity = meshTextureIdentity(textureId)
         if (pendingOrderingSegmentAdvance) {
@@ -1586,7 +1609,7 @@ class KoolCanvasFrameRenderer(
         val batchIndex = activateTextureBatch(batchKey)
         val shader = createInstancedTextureShader(texture, renderBlend, premultipliedAlpha)
         val instances =
-            MeshInstanceList(KoolCanvasTextureInstanceLayout, initialSize = UNORDERED_TEXTURE_INSTANCE_INITIAL_SIZE)
+            MeshInstanceList(KoolCanvasTextureInstanceLayout, initialSize = unorderedTextureInstanceCapacity(expectedInstances))
         val mesh = createInstancedTextureMesh(
             textureId,
             renderBlend,
@@ -1869,7 +1892,7 @@ class KoolCanvasFrameRenderer(
         val batchIndex = activateAffineTextureBatch(batchKey)
         val shader = createAffineInstancedTextureShader(texture, renderBlend, premultipliedAlpha)
         val instances =
-            MeshInstanceList(KoolCanvasAffineTextureInstanceLayout, initialSize = UNORDERED_TEXTURE_INSTANCE_INITIAL_SIZE)
+            MeshInstanceList(KoolCanvasAffineTextureInstanceLayout, initialSize = unorderedTextureInstanceCapacity())
         val mesh = createAffineInstancedTextureMesh(
             textureId,
             renderBlend,
@@ -2480,7 +2503,7 @@ class KoolCanvasFrameRenderer(
         val orderingBarrier = paint.requiresTextureOrderingBarrier(ref)
         val entry = ensureInstancedTextureMesh(scene, ref.id, paint.textureFilter,
             resolveTexture(ref, paint.textureFilter), paint.renderBlend, ref.premultipliedAlpha,
-            ordered = frameProjectionDepth == 0 && orderingBarrier)
+            ordered = frameProjectionDepth == 0 && orderingBarrier, expectedInstances = command.quads.size)
         val clip = command.state.clip
         var added = false
         for (quad in 0 until command.quads.size) {
@@ -3489,6 +3512,14 @@ class KoolCanvasFrameRenderer(
         val fontStart = if (timing) System.nanoTime() else 0L
         val font = renderFonts?.let { KoolCanvasFontRegistry.font(command.paint.textSize, command.paint.typefaceKey, it) }
             ?: KoolCanvasFontRegistry.font(command.paint.textSize, command.paint.typefaceKey)
+        // Projected frames use their own coordinate/viewport mapping; leave them and the dynamic HUD
+        // on the original path. Reject only quads proven to lie wholly outside this render target.
+        if (!performanceHud && frameProjectionDepth == 0 && '\n' !in command.text &&
+            textVisibility?.outside(font, command, viewport) == true) {
+            if (culledTextCount++ == 0L && textMeshMetricsEnabled) println("RWXOffscreenText cullConfirmed=true")
+            if (orderingBarrier) markOrderingBarrier()
+            return false
+        }
         val labelTemplate = if (instanceTextLabels && !performanceHud && '\n' !in command.text)
             textTemplates!!.geometry(font, command.text) else null
         val labelSlice = labelTemplate?.let { labelGeometry!!.slice(it, renderSequence) }

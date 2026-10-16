@@ -117,17 +117,75 @@ abstract class KoolVulkanOverlayPatchTask : DefaultTask() {
         patchDrawQueueGroupHint()
         patchFrameRateLimit()
         patchGrowingBufferUploads()
+        patchInstanceBufferCapacity()
         patchTextureUploads()
         patchImageByteSizes()
         patchSampledImageStageMasks()
         patchFrameLifecycle()
+        patchFrontendStageDiagnostics()
         patchMeshPipelineOwnership()
+        patchMeshShadowCapacity()
         patchNativePipelineCache()
         validateMappedAllocatorLayout()
         patchNativeMemoryRetirement()
         patchBufferAllocationDiagnostics()
         patchNativeReleaseQueue()
         patchDeviceIdleResult()
+    }
+
+    /**
+     * These synchronous stages sit between canvas replay and backend recording. Do not wrap
+     * Scene.collectScene itself: it is a coroutine, so timing its immediate return would mistake
+     * COROUTINE_SUSPENDED for completion. Collect measures each pass after its scene callbacks;
+     * sorting, pipeline updates and sync are separate spans, not backend-frame children.
+     */
+    private fun patchFrontendStageDiagnostics() {
+        val contextOwner = "de/fabmax/kool/KoolContext"
+        val context = loadNode("$contextOwner.class")
+        val frameDescriptor = "(Lde/fabmax/kool/FrameData;)V"
+        wrapSynchronousStage(context, "updatePipelineData", frameDescriptor, "frontend-pipeline-data")
+        wrapSynchronousStage(context, "syncData", frameDescriptor, "frontend-sync-data")
+        writeNode("$contextOwner.class", context)
+
+        val passOwner = "de/fabmax/kool/pipeline/GpuPass"
+        val pass = loadNode("$passOwner.class")
+        wrapSynchronousStage(pass, "collect", "(Lde/fabmax/kool/PassData;L$contextOwner;)V", "scene-pass-collect")
+        writeNode("$passOwner.class", pass)
+
+        val sceneOwner = "de/fabmax/kool/scene/Scene"
+        val scene = loadNode("$sceneOwner.class")
+        wrapSynchronousStage(scene, "sortGpuPassesByDependencies", "()V", "scene-pass-sort")
+        writeNode("$sceneOwner.class", scene)
+    }
+
+    /** Preserve the pinned method body and dispatch; only completed calls emit diagnostic spans. */
+    private fun wrapSynchronousStage(node: ClassNode, name: String, descriptor: String, stage: String) {
+        val original = node.methods.singleOrNull { it.name == name && it.desc == descriptor }
+            ?: error("Expected Kool 0.19 synchronous ${node.name}.$name$descriptor")
+        check(original.access and (ACC_STATIC or ACC_ABSTRACT or ACC_NATIVE) == 0 &&
+            descriptor.endsWith(")V") && !descriptor.contains("kotlin/coroutines/Continuation")) {
+            "Expected concrete non-static void Kool 0.19 ${node.name}.$name"
+        }
+        val measuredName = "$name\$rwxMeasured"
+        check(node.methods.none { it.name == measuredName }) { "Diagnostic method already patched: $measuredName" }
+        original.name = measuredName
+        val wrapper = MethodNode(original.access, name, descriptor, original.signature, original.exceptions.toTypedArray())
+        val arguments = org.objectweb.asm.Type.getArgumentTypes(descriptor)
+        val timerLocal = 1 + arguments.sumOf { it.size }
+        wrapper.instructions.apply {
+            add(MethodInsnNode(INVOKESTATIC, LIFECYCLE_OWNER, "diagnosticStageStart", "()J", false))
+            add(VarInsnNode(LSTORE, timerLocal))
+            add(VarInsnNode(ALOAD, 0))
+            var local = 1
+            for (argument in arguments) {
+                add(VarInsnNode(argument.getOpcode(ILOAD), local)); local += argument.size
+            }
+            add(MethodInsnNode(INVOKESPECIAL, node.name, measuredName, descriptor, false))
+            add(LdcInsnNode(stage)); add(VarInsnNode(LLOAD, timerLocal))
+            add(MethodInsnNode(INVOKESTATIC, LIFECYCLE_OWNER, "diagnosticStageEnd", "(Ljava/lang/String;J)V", false))
+            add(InsnNode(RETURN))
+        }
+        node.methods.add(wrapper)
     }
 
     /** An empty group can be pruned while prevQueue still points into that detached container. */
@@ -170,6 +228,44 @@ abstract class KoolVulkanOverlayPatchTask : DefaultTask() {
         val writer = ClassWriter(ClassWriter.COMPUTE_MAXS)
         node.accept(writer)
         writeClass(entry, writer.toByteArray())
+    }
+
+    /** Keep the async copies real and resizable without preallocating unused sync-render buffers. */
+    private fun patchMeshShadowCapacity() {
+        val owner = "de/fabmax/kool/scene/Mesh"
+        val geometryOwner = "de/fabmax/kool/scene/geometry/IndexedVertexList"
+        val instancesOwner = "de/fabmax/kool/scene/MeshInstanceList"
+        val node = loadNode("$owner.class")
+        val constructor = node.methods.single { it.name == "<init>" &&
+            it.desc == "(L$geometryOwner;L$instancesOwner;[FLde/fabmax/kool/scene/animation/Skin;Ljava/lang/String;)V" }
+        for ((bufferOwner, field, defaultMask) in listOf(
+            Triple(geometryOwner, "drawGeometry", 16378),
+            Triple(instancesOwner, "drawInstances", 6),
+        )) {
+            check(node.fields.count { it.name == field && it.desc == "L$bufferOwner;" } == 1) {
+                "Expected one Kool 0.19 Mesh.$field buffer"
+            }
+            val calls = constructor.instructions.toArray().filterIsInstance<MethodInsnNode>()
+            val create = calls.single { it.owner == bufferOwner && it.name == "<init>" }
+            check(create.desc.endsWith("ILkotlin/jvm/internal/DefaultConstructorMarker;)V")) {
+                "Expected the Kool 0.19 default-argument constructor for Mesh.$field"
+            }
+            val layout = calls.single { it.owner == bufferOwner && it.name == "getLayout" &&
+                it.desc == "()Lde/fabmax/kool/util/Struct;" }
+            val initialSize = generateSequence(layout.next) { it.next }.first { it.opcode >= 0 }
+            check(initialSize.opcode == ICONST_0) { "Expected Mesh.$field initialSize placeholder" }
+            val arguments = generateSequence(create.previous) { it.previous }.filter { it.opcode >= 0 }.take(2).toList()
+            check(arguments.first().opcode == ACONST_NULL) { "Expected Mesh.$field default constructor marker" }
+            val mask = arguments[1]
+            check(mask is IntInsnNode && mask.operand == defaultMask) {
+                "Expected Kool 0.19 Mesh.$field default mask $defaultMask"
+            }
+            // Only initialSize becomes explicit. Usage, attributes, primitive type, and instance
+            // resizability retain the original arguments. Async capture still expands via set().
+            constructor.instructions.set(initialSize, InsnNode(ICONST_1))
+            constructor.instructions.set(mask, IntInsnNode(mask.opcode, defaultMask and 2.inv()))
+        }
+        writeNode("$owner.class", node)
     }
 
     /** Register a selected pipeline's CPU owner before collect -> capture retirement can run. */
@@ -235,6 +331,51 @@ abstract class KoolVulkanOverlayPatchTask : DefaultTask() {
             })
         }
         writeNode("$owner.class", node)
+    }
+
+    /** Reserve native instance buffers to their CPU capacity, without changing upload lengths. */
+    private fun patchInstanceBufferCapacity() {
+        val growingOwner = "de/fabmax/kool/pipeline/backend/vk/GrowingBufferVk"
+        val instancesOwner = "de/fabmax/kool/pipeline/backend/vk/InstancesVk"
+        val listOwner = "de/fabmax/kool/scene/MeshInstanceList"
+        val bridgeOwner = "io/github/rwx/kool/vulkan/VulkanGrowingBufferCapacityAccess"
+        val helperOwner = "io/github/rwx/kool/vulkan/VulkanInstanceBufferCapacity"
+        val growing = loadNode("$growingOwner.class")
+        val checkSize = growing.methods.single { it.name == "checkSize" && it.desc == "(J)V" }
+        check(checkSize.access and ACC_PRIVATE != 0) { "Expected Kool 0.19 private GrowingBufferVk.checkSize" }
+        val resizeCalls = checkSize.instructions.toArray().filterIsInstance<MethodInsnNode>()
+        check(resizeCalls.count { it.name == "release" && it.owner == "de/fabmax/kool/pipeline/backend/vk/GpuBufferVk" } == 1 &&
+            resizeCalls.count { it.name == "makeBuffer" && it.owner == growingOwner } == 1) {
+            "Expected Kool 0.19 buffer growth to release and replace through its original allocator"
+        }
+        check(bridgeOwner !in growing.interfaces && growing.methods.none { it.name == "rwxEnsureCapacity" })
+        growing.interfaces.add(bridgeOwner)
+        growing.methods.add(MethodNode(ACC_PUBLIC or ACC_FINAL, "rwxEnsureCapacity", "(J)V", null, null).apply {
+            instructions.add(VarInsnNode(ALOAD, 0))
+            instructions.add(VarInsnNode(LLOAD, 1))
+            instructions.add(MethodInsnNode(INVOKESPECIAL, growingOwner, "checkSize", "(J)V", false))
+            instructions.add(InsnNode(RETURN))
+        })
+        writeNode("$growingOwner.class", growing)
+
+        val instances = loadNode("$instancesOwner.class")
+        check(instances.fields.count { it.name == "instances" && it.desc == "L$listOwner;" } == 1) {
+            "Expected Kool 0.19 InstancesVk source instance list"
+        }
+        val method = instances.methods.single { it.name == "checkBuffers" && it.desc == "(Lorg/lwjgl/vulkan/VkCommandBuffer;)V" }
+        val write = method.instructions.toArray().filterIsInstance<MethodInsnNode>().single {
+            it.owner == growingOwner && it.name == "writeData" &&
+                it.desc == "(Lde/fabmax/kool/util/MixedBuffer;Lorg/lwjgl/vulkan/VkCommandBuffer;)V"
+        }
+        // At the original upload site the stack already holds buffer / actual data / command buffer.
+        // Append the source list, preserving the original dirty check and every existing branch/frame.
+        method.instructions.insertBefore(write, InsnList().apply {
+            add(VarInsnNode(ALOAD, 0))
+            add(FieldInsnNode(GETFIELD, instancesOwner, "instances", "L$listOwner;"))
+        })
+        method.instructions.set(write, MethodInsnNode(INVOKESTATIC, helperOwner, "writeData",
+            "(L$growingOwner;Lde/fabmax/kool/util/MixedBuffer;Lorg/lwjgl/vulkan/VkCommandBuffer;L$listOwner;)V", false))
+        writeNode("$instancesOwner.class", instances)
     }
 
     /** Keep Kool's type dispatch, replace only the synchronous image transfer implementation. */

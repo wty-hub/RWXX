@@ -332,6 +332,23 @@ class KoolCanvasSceneHost(
     }
 }
 
-private fun KoolCanvasFrame.withSurfaceClear(): KoolCanvasFrame =
+internal fun KoolCanvasFrame.withSurfaceClear(): KoolCanvasFrame =
     if (commands.any { it is KoolCanvasCommand.Clear && it.renderTarget == null }) this
-    else copy(commands = listOf(KoolCanvasCommand.Clear(KoolCanvasColor(0xff000000.toInt()), KoolCanvasBlendMode.Source)) + commands)
+    else copy(commands = SurfaceClearCommands(commands))
+
+/** The resource lease already owns a frozen, read-only command list; keep that list intact. */
+private class SurfaceClearCommands(private val commands: List<KoolCanvasCommand>) :
+    AbstractList<KoolCanvasCommand>(), java.util.RandomAccess {
+    override val size: Int = commands.size + 1
+
+    override fun get(index: Int): KoolCanvasCommand {
+        if (index < 0 || index >= size) throw IndexOutOfBoundsException("Index: $index, size: $size")
+        return if (index == 0) surfaceClear else commands[index - 1]
+    }
+
+    companion object {
+        private val surfaceClear = KoolCanvasCommand.Clear(
+            KoolCanvasColor(0xff000000.toInt()), KoolCanvasBlendMode.Source,
+        )
+    }
+}

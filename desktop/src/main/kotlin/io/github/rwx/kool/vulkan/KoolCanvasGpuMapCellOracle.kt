@@ -67,6 +67,7 @@ import com.corrodinggames.rts.gameFramework.SettingsEngine
 import com.corrodinggames.rts.gameFramework.ui.GameUI
 import io.github.rwx.render.canvas.KoolCanvasCpuTextureStore
 import io.github.rwx.render.canvas.KoolCanvasFrameRenderer
+import io.github.rwx.render.canvas.KoolCanvasTextAlign
 import io.github.rwx.render.canvas.KoolCanvasSceneHost
 import io.github.rwx.render.canvas.KoolCanvasTextureFilter
 import io.github.rwx.render.canvas.KoolCanvasTextureId
@@ -486,7 +487,10 @@ object KoolCanvasGpuMapCellOracle {
         } }
         val nodes = listOf(Node("sprite-control"), Node("sprite-append"))
         val cameras = nodes.map { OrthographicCamera(it.name) }
-        val renderers = stores.map { KoolCanvasFrameRenderer(textureStore = it) }
+        val renderers = stores.mapIndexed { index, textureStore ->
+            if (index == 0) KoolCanvasFrameRenderer(textureStore = textureStore, compactTextureInstances = false)
+            else KoolCanvasFrameRenderer(textureStore = textureStore)
+        }
         val passes = nodes.mapIndexed { index, node -> OffscreenPass2d(node,
             AttachmentConfig.singleColorNoDepth(TexFormat.RGBA), Vec2i(WIDTH, HEIGHT), "gpu-sprite-$index").apply {
                 camera = cameras[index]; isMirrorY = false; viewport = Viewport(0, 0, WIDTH, HEIGHT)
@@ -554,7 +558,8 @@ object KoolCanvasGpuMapCellOracle {
         val ref = KoolCanvasTextureRef(KoolCanvasTextureId("fog-mixed-oracle"), 8, 8)
         val nodes = listOf(Node("fog-control"), Node("fog-batched"))
         val cameras = listOf(OrthographicCamera("fog-control"), OrthographicCamera("fog-batched"))
-        val renderers = listOf(KoolCanvasFrameRenderer(reuseInstancedTextureShaders = false), KoolCanvasFrameRenderer())
+        val renderers = listOf(KoolCanvasFrameRenderer(reuseInstancedTextureShaders = false,
+            compactTextureInstances = false), KoolCanvasFrameRenderer())
         val passes = nodes.mapIndexed { index, node -> OffscreenPass2d(node,
             AttachmentConfig.singleColorNoDepth(TexFormat.RGBA), Vec2i(WIDTH, HEIGHT), "gpu-fog-$index").apply {
                 camera = cameras[index]; isMirrorY = false; viewport = Viewport(0, 0, WIDTH, HEIGHT)
@@ -631,7 +636,8 @@ object KoolCanvasGpuMapCellOracle {
                 MsdfGlyph(character.code, .6f, MsdfRect(0f, 0f, .5f, 1f), MsdfRect(x, y, x + 4, y + 2)) }))
         val nodes = listOf(Node("text-control"), Node("text-instanced"))
         val cameras = listOf(OrthographicCamera("text-control"), OrthographicCamera("text-instanced"))
-        val renderers = listOf(KoolCanvasFrameRenderer(instanceTextGlyphs = false, reuseTextShaders = false, instanceTextLabels = false, prepareText = false, reuseTextMeshKeys = false),
+        val renderers = listOf(KoolCanvasFrameRenderer(instanceTextGlyphs = false, reuseTextShaders = false, instanceTextLabels = false, prepareText = false, reuseTextMeshKeys = false, cullOffscreenText = false,
+            compactTextureInstances = false),
             KoolCanvasFrameRenderer(instanceTextGlyphs = !sharedShaders && !labels, reuseTextShaders = sharedShaders,
                 instanceTextLabels = labels))
         if (labels) {
@@ -667,6 +673,16 @@ object KoolCanvasGpuMapCellOracle {
                         KoolCanvasPaint.Default.copy(textSize = 9f, color = KoolCanvasColor(0xff00ff00.toInt())),
                         KoolCanvasState(transform = KoolCanvasTransform.Identity.scale(.8f, .9f).rotate(4f))),
                     ))
+                    // Include fully invisible and partially visible glyphs on every edge. The control
+                    // always keeps the ordinary text path, even when culling is enabled globally.
+                    for ((index, position) in listOf(-100f to 12f, 100f to 12f, 12f to -100f, 12f to 100f,
+                        -2.4f to 10.6f, 31.4f to 17.2f, 14.3f to 2.4f, 19.2f to 29.4f).withIndex()) {
+                        add(KoolCanvasCommand.DrawText("AB9", KoolCanvasPoint(position.first, position.second),
+                            KoolCanvasPaint.Default.copy(textSize = 8f,
+                                textAlign = KoolCanvasTextAlign.entries[index % 3]),
+                            KoolCanvasState(transform = if (version % 3 == 0) KoolCanvasTransform.Identity
+                                else KoolCanvasTransform.Identity.rotate(7f))))
+                    }
                 }
                 val direct = KoolCanvasFrame(KoolCanvasViewport(WIDTH, HEIGHT), commands)
                 val frame = if (labels && version >= 4 && version % 2 == 1) {
@@ -797,7 +813,7 @@ object KoolCanvasGpuMapCellOracle {
 
         val node = Node("rwx-bisect-node")
         val camera = OrthographicCamera("rwx-bisect-camera")
-        val renderer = KoolCanvasFrameRenderer()
+        val renderer = KoolCanvasFrameRenderer(compactTextureInstances = false)
         var clearColour: de.fabmax.kool.pipeline.ClearColor =
             de.fabmax.kool.pipeline.ClearColorFill(Color.BLACK)
         renderer.renderInto(node, camera, frame) { clearColour = it }

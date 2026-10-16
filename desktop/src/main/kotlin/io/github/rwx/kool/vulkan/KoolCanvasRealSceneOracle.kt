@@ -122,7 +122,7 @@ internal object KoolCanvasRealSceneOracle {
                         cameras = nodes.map { OrthographicCamera(it.name) }
                         renderers = listOf(KoolCanvasFrameRenderer(reuseTextGeometry = false, instanceTextGlyphs = false,
                             reuseTextShaders = false, instanceTextLabels = false, projectedSpriteAtlas = false, prepareText = false, reuseTextMeshKeys = false,
-                            reuseInstancedTextureShaders = false),
+                            reuseInstancedTextureShaders = false, cullOffscreenText = false, compactTextureInstances = false),
                             KoolCanvasFrameRenderer(instanceTextLabels = false),
                             KoolCanvasFrameRenderer(projectedSpriteAtlas = false), KoolCanvasFrameRenderer())
                         passes = nodes.mapIndexed { index, node -> OffscreenPass2d(node,
@@ -158,7 +158,8 @@ internal object KoolCanvasRealSceneOracle {
                                 val camera = OrthographicCamera(node.name)
                                 val renderer = KoolCanvasFrameRenderer(reuseInstancedTextureShaders = false,
                                     useSpriteAtlas = false, meshRetentionRenders = 0, prepareText = false,
-                                    reuseTextMeshKeys = false, reuseMapMeshSlots = false)
+                                    reuseTextMeshKeys = false, reuseMapMeshSlots = false, cullOffscreenText = false,
+                                    compactTextureInstances = false)
                                 val pass = OffscreenPass2d(node, AttachmentConfig.singleColorNoDepth(TexFormat.RGBA),
                                     Vec2i(cellWidth, cellHeight), node.name).apply {
                                     this.camera = camera; isMirrorY = false; viewport = Viewport(0, 0, cellWidth, cellHeight)
