@@ -77,6 +77,7 @@ class KoolMeshShadowCapacityTest {
                 assertEquals(geometryVersion, geometry.modCount.count)
                 assertEquals(instancesVersion, instances.modCount.count)
                 assertEquals(geometryVersion, copiedGeometry.modCount.count)
+                assertEquals(instancesVersion, copiedInstances.modCount.count)
                 assertBufferEquals(geometry.vertexData.buffer, copiedGeometry.vertexData.buffer,
                     count * geometry.layout.structSize)
                 assertBufferEquals(instances.instanceData.buffer, copiedInstances.instanceData.buffer,
@@ -88,6 +89,7 @@ class KoolMeshShadowCapacityTest {
                 mesh.captureBuffer()
                 assertSame(vertices, copiedGeometry.vertexData)
                 assertSame(instanceData, copiedInstances.instanceData)
+                assertEquals(instancesVersion, copiedInstances.modCount.count)
             }
             geometry.clear()
             instances.clear()
@@ -103,6 +105,42 @@ class KoolMeshShadowCapacityTest {
             assertTrue(copiedInstances.isReleased)
             assertTrue(geometry.isReleased)
             assertTrue(instances.isReleased)
+        }
+    }
+
+    @Test
+    fun `single instance mutations are captured without changing source or copied versions`() {
+        for (usage in listOf(Usage.STATIC, Usage.DYNAMIC)) {
+            val instances = MeshInstanceList(Instances, initialSize = 1).apply { this.usage = usage }
+            val mesh = Mesh(IndexedVertexList(VertexLayouts.Position, initialSize = 1), instances)
+            val copied = checkNotNull(drawInstances(mesh))
+            fun capture(expectedCount: Int) {
+                val version = instances.modCount.count
+                repeat(2) {
+                    mesh.captureBuffer()
+                    assertEquals(expectedCount, copied.numInstances)
+                    assertEquals(version, instances.modCount.count)
+                    assertEquals(version, copied.modCount.count)
+                    assertEquals(usage, copied.usage)
+                    assertBufferEquals(instances.instanceData.buffer, copied.instanceData.buffer,
+                        expectedCount * instances.layout.structSize)
+                }
+            }
+            try {
+                instances.addInstance { layout -> set(layout.value, 1f, 2f, 3f, 4f) }
+                capture(1)
+                instances.addInstance { layout -> set(layout.value, 5f, 6f, 7f, 8f) }
+                assertEquals(1, copied.numInstances)
+                capture(2)
+                instances.numInstances = 1
+                capture(1)
+                instances.clear()
+                assertEquals(1, copied.numInstances)
+                capture(0)
+                instances.addInstance { layout -> set(layout.value, 9f, 10f, 11f, 12f) }
+                assertEquals(0, copied.numInstances)
+                capture(1)
+            } finally { mesh.release() }
         }
     }
 

@@ -125,6 +125,7 @@ abstract class KoolVulkanOverlayPatchTask : DefaultTask() {
         patchFrontendStageDiagnostics()
         patchMeshPipelineOwnership()
         patchMeshShadowCapacity()
+        patchInstanceCopyVersion()
         patchNativePipelineCache()
         validateMappedAllocatorLayout()
         patchNativeMemoryRetirement()
@@ -266,6 +267,43 @@ abstract class KoolVulkanOverlayPatchTask : DefaultTask() {
             constructor.instructions.set(mask, IntInsnNode(mask.opcode, defaultMask and 2.inv()))
         }
         writeNode("$owner.class", node)
+    }
+
+    /** The numInstances setter increments modCount, so a copy must restore the source version last. */
+    private fun patchInstanceCopyVersion() {
+        val owner = "de/fabmax/kool/scene/MeshInstanceList"
+        val counterOwner = "de/fabmax/kool/util/ModCounter"
+        val entry = "$owner.class"
+        val node = loadNode(entry)
+        val method = node.methods.single { it.name.startsWith("set\$") && it.desc == "(L$owner;)V" }
+        val instructions = method.instructions.toArray().filter { it.opcode >= 0 }
+        val reset = instructions.filterIsInstance<MethodInsnNode>().single {
+            it.owner == counterOwner && it.name == "reset" && it.desc == "(L$counterOwner;)V"
+        }
+        val resetIndex = instructions.indexOf(reset)
+        val resetBlock = instructions.subList(resetIndex - 4, resetIndex + 1)
+        check(resetBlock[0] is VarInsnNode && resetBlock[0].opcode == ALOAD &&
+            (resetBlock[0] as VarInsnNode).`var` == 0 &&
+            resetBlock[2] is VarInsnNode && resetBlock[2].opcode == ALOAD &&
+            (resetBlock[2] as VarInsnNode).`var` == 1 &&
+            listOf(resetBlock[1], resetBlock[3]).all {
+                it is FieldInsnNode && it.opcode == GETFIELD && it.owner == owner &&
+                    it.name == "modCount" && it.desc == "L$counterOwner;"
+            }) { "Expected Kool 0.19 instance copy source-version reset" }
+        val countSetter = instructions.filterIsInstance<MethodInsnNode>().single {
+            it.owner == owner && it.name == "setNumInstances" && it.desc == "(I)V"
+        }
+        check(instructions.indexOf(countSetter) == resetIndex + 4 && instructions.last().opcode == RETURN &&
+            instructions[instructions.lastIndex - 1] === countSetter) {
+            "Expected Kool 0.19 instance count assignment immediately after version reset"
+        }
+        val moved = InsnList()
+        resetBlock.forEach { instruction ->
+            method.instructions.remove(instruction)
+            moved.add(instruction)
+        }
+        method.instructions.insert(countSetter, moved)
+        writeNode(entry, node)
     }
 
     /** Register a selected pipeline's CPU owner before collect -> capture retirement can run. */
