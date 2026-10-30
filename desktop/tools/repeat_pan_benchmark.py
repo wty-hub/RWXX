@@ -36,7 +36,7 @@ def main():
     parser.add_argument('--zoom-mode', default=None, choices=('cycle', 'none'))
     parser.add_argument('--map-cell-min-render-scale', type=float,
                         help='Experimental cache scale floor; changes both resolution and world coverage')
-    parser.add_argument('--jar', type=Path, default=PROJECT / 'desktop/build/libs/RWXX-1.1.0-windows-x64.jar')
+    parser.add_argument('--jar', type=Path, default=PROJECT / 'desktop/build/libs/RWXX-1.4.0-windows-x64.jar')
     parser.add_argument('--skip-windows', type=int, default=0,
                         help='Leading per-run windows excluded from the aggregate as map-load/warm-up')
     parser.add_argument('--extra', nargs=argparse.REMAINDER, default=[])

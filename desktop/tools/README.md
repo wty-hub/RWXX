@@ -41,7 +41,7 @@ python desktop/tools/candidate_interaction_abba.py --tag text-visibility-new-run
 ```sh
 ./gradlew :desktop:platformFatJar
 python3 desktop/tools/vulkan_native_matrix.py \
-  --jar desktop/build/libs/RWXX-1.1.0-macos-arm64.jar \
+  --jar desktop/build/libs/RWXX-1.4.0-macos-arm64.jar \
   --java /path/to/jdk25/bin/java \
   --operating-state visible-unlocked
 ```
@@ -71,7 +71,7 @@ Kool 原有默认画质使用 4 倍 MSAA，继续保持该默认值。`--msaa-sa
 
 ```powershell
 python desktop/tools/windows_backend_comparison.py `
-  --jar desktop/build/libs/RWXX-1.1.0-windows-x64.jar `
+  --jar desktop/build/libs/RWXX-1.4.0-windows-x64.jar `
   --output build/rwx-benchmark/windows-comparison
 ```
 
@@ -85,7 +85,7 @@ python desktop/tools/windows_backend_comparison.py `
 
 ```powershell
 .\gradlew.bat :desktop:platformFatJar
-$jar = (Resolve-Path 'desktop/build/libs/RWXX-1.1.0-windows-x64.jar').Path
+$jar = (Resolve-Path 'desktop/build/libs/RWXX-1.4.0-windows-x64.jar').Path
 $java = (Get-Command java -ErrorAction Stop).Source
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 ```

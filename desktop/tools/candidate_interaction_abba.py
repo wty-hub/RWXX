@@ -20,7 +20,7 @@ from frozen_benchmark_tooling import freeze_tooling, frozen_environment
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--tag', required=True)
-    parser.add_argument('--jar', type=Path, default=PROJECT / 'desktop/build/libs/RWXX-1.1.0-windows-x64.jar')
+    parser.add_argument('--jar', type=Path, default=PROJECT / 'desktop/build/libs/RWXX-1.4.0-windows-x64.jar')
     parser.add_argument('--replay', type=Path, default=PROJECT / REPLAY)
     parser.add_argument('--java', default=JAVA)
     parser.add_argument('--mode', choices=('static', 'pan', 'zoom', 'pan-zoom'), default='pan-zoom')

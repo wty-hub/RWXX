@@ -24,7 +24,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--tag', required=True)
     parser.add_argument('--runs', type=int, default=4)
-    parser.add_argument('--jar', type=Path, default=PROJECT / 'desktop/build/libs/RWXX-1.1.0-windows-x64.jar')
+    parser.add_argument('--jar', type=Path, default=PROJECT / 'desktop/build/libs/RWXX-1.4.0-windows-x64.jar')
     parser.add_argument('--extra', nargs=argparse.REMAINDER, default=[])
     parser.add_argument('--env', nargs='*', default=[], help='Extra KEY=VALUE environment entries for each run')
     parser.add_argument('--legacy-text-vertex-allocation', action='store_true',

@@ -78,7 +78,7 @@ def main() -> int:
         shot.unlink(missing_ok=True)
         command = [
             sys.executable, str(PROJECT / 'desktop/tools/map_pan_replay.py'),
-            '--jar', str(PROJECT / 'desktop/build/libs/RWXX-1.1.0-windows-x64.jar'),
+            '--jar', str(PROJECT / 'desktop/build/libs/RWXX-1.4.0-windows-x64.jar'),
             '--replay', REPLAY, '--java', JAVA, '--output', str(run_dir),
             '--camera-mode', 'pan-zoom', '--zoom-min', '0.35', '--zoom-max', '0.70',
             '--fog', 'on', '--window-width', '1280', '--window-height', '720',

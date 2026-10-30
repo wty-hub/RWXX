@@ -17,7 +17,7 @@ from pinned_interaction_comparison import JAVA, REPLAY, write
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--tag', required=True)
-    parser.add_argument('--jar', type=Path, default=PROJECT / 'desktop/build/libs/RWXX-1.1.0-windows-x64.jar')
+    parser.add_argument('--jar', type=Path, default=PROJECT / 'desktop/build/libs/RWXX-1.4.0-windows-x64.jar')
     parser.add_argument('--replay', type=Path, default=PROJECT / REPLAY)
     parser.add_argument('--warmup-seconds', type=int, default=20)
     parser.add_argument('--sample-seconds', type=int, default=40)

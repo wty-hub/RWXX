@@ -113,7 +113,7 @@ def main():
     parser.add_argument('--warmup-seconds', type=int, default=20)
     parser.add_argument('--original', action='store_true', help='Measure only original (no comparison or acceptance claim)')
     parser.add_argument('--fog', choices=('on', 'off'), default='off', help='Reject comparison if original fog display differs')
-    parser.add_argument('--jar', type=Path, default=PROJECT / 'desktop/build/libs/RWXX-1.1.0-windows-x64.jar')
+    parser.add_argument('--jar', type=Path, default=PROJECT / 'desktop/build/libs/RWXX-1.4.0-windows-x64.jar')
     parser.add_argument('--replay', type=Path, default=PROJECT / REPLAY)
     parser.add_argument('--extra', nargs=argparse.REMAINDER, default=[])
     args = parser.parse_args()
