@@ -27,6 +27,18 @@ public class InGameMenuController {
         this.callbacks = callbacks != null ? callbacks : InGameMenuCallbacks.CORE_UI_EVENT_QUEUE;
     }
 
+    /** Called by the engine owner; the callback queues navigation for the UI thread. */
+    public void requestPause(GameEngine gameEngine) {
+        if (gameEngine == null) {
+            return;
+        }
+        if (gameEngine.gameUI != null) {
+            gameEngine.gameUI.isDraggingSelection = false;
+            gameEngine.gameUI.resetMouseState();
+        }
+        this.callbacks.requestPause();
+    }
+
     public void b() {
         GameEngine.log("InGameMenuController finish");
         this.finishing = true;

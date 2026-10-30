@@ -12,6 +12,7 @@ internal class CoreEventDispatcher(
     private val resourceBrowserController: ResourceBrowserController,
     private val inGameDialogController: InGameDialogController,
     private val mapController: MapController,
+    private val openInGamePauseMenu: () -> Unit,
     private val openInGameSettings: () -> Unit,
     private val requestInGameSurrender: () -> Unit,
     private val exitRwGame: (Boolean) -> Unit,
@@ -35,6 +36,7 @@ internal class CoreEventDispatcher(
                 CoreUiEvent.MenuBackgroundReady -> {
                     if (currentScreen() == AppScreen.MainMenu) refreshMenuBackground()
                 }
+                CoreUiEvent.InGamePauseRequested -> openInGamePauseMenu()
                 CoreUiEvent.InGameSaveRequested -> inGameDialogController.showSaveGameDialog()
                 CoreUiEvent.InGameExportMapRequested -> inGameDialogController.showExportMapDialog()
                 CoreUiEvent.InGameSettingsRequested -> openInGameSettings()

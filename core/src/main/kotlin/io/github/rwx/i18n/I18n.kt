@@ -2836,6 +2836,22 @@ object I18n {
             ),
         )
 
+        val startRecording = entry(
+            key = "pausemenu.startRecording",
+            translations = linkedMapOf(
+                "en" to "Start Recording",
+                "zh-CN" to "开始录制",
+            ),
+        )
+
+        val stopRecording = entry(
+            key = "pausemenu.stopRecording",
+            translations = linkedMapOf(
+                "en" to "Stop Recording",
+                "zh-CN" to "停止录制",
+            ),
+        )
+
         val surrender = entry(
             key = "pausemenu.surrender",
             translations = linkedMapOf(

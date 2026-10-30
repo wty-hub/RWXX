@@ -27,6 +27,7 @@ sealed interface CoreUiEvent {
     data object ResourceBrowserDownloadProgress : CoreUiEvent
     data object ResourceBrowserDownloadCompleted : CoreUiEvent
     data object MenuBackgroundReady : CoreUiEvent
+    data object InGamePauseRequested : CoreUiEvent
     data object InGameExitRequested : CoreUiEvent
     data object InGameReturnToBattleRoomRequested : CoreUiEvent
     data object InGameSettingsRequested : CoreUiEvent
@@ -108,6 +109,7 @@ object CoreUiEventQueue {
             CoreUiEvent.ResourceBrowserDownloadProgress,
             CoreUiEvent.ResourceBrowserDownloadCompleted,
             CoreUiEvent.MenuBackgroundReady,
+            CoreUiEvent.InGamePauseRequested,
             CoreUiEvent.InGameExitRequested,
             CoreUiEvent.InGameReturnToBattleRoomRequested,
             CoreUiEvent.InGamePlayerListRequested,
@@ -192,6 +194,11 @@ object CoreUiEventQueue {
 
     fun requestMenuBackgroundReady() {
         enqueue(CoreUiEvent.MenuBackgroundReady)
+    }
+
+    @JvmStatic
+    fun requestInGamePause() {
+        enqueue(CoreUiEvent.InGamePauseRequested)
     }
 
     @JvmStatic

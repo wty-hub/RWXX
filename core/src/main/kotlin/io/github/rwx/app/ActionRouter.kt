@@ -42,6 +42,7 @@ internal class ActionRouter(
     private val showInGameChatDialog: (Boolean) -> Unit,
     private val showMultiplayerPlayerList: () -> Unit,
     private val requestInGameSurrender: () -> Unit,
+    private val selectLegacyPauseMenuOption: (Int) -> Unit,
     private val exitRwGame: (Boolean) -> Unit,
     private val showUnavailableDialog: (String) -> Unit,
 ) {
@@ -196,6 +197,12 @@ internal class ActionRouter(
 
             PauseMenuOutcome.Surrender -> requestInGameSurrender()
             PauseMenuOutcome.ExitGame -> showExitGameDialog(exitRwGame)
+            is PauseMenuOutcome.SelectLegacyOption -> {
+                // Native options can hide the HUD or open a mod window without another navigation
+                // callback. Close the Kool pause overlay before asking the owner to execute them.
+                navigator.navigateTo(AppScreen.InGame)
+                selectLegacyPauseMenuOption(outcome.menuId)
+            }
         }
     }
 

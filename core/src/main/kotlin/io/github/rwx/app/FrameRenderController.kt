@@ -37,6 +37,8 @@ internal class FrameRenderController(
         val rwCanvasFrame = when {
             isExternalBattleRoomJoinPending -> KoolCanvasFrame(canvasViewport, emptyList())
             isRwGameVisible -> gameSession.updateFrame(canvasViewport, deltaSeconds)
+            screen == AppScreen.Paused -> pausedNetworkFrameForSession(gameSession, canvasViewport, deltaSeconds)
+                ?: gameSession.currentFrame()
             isRwMenuBackgroundVisible -> {
                 gameSession.updateFrame(
                     canvasViewport,
@@ -137,3 +139,15 @@ internal fun KoolCanvasFrame.withDefaultSurfaceClear(): KoolCanvasFrame {
         ) + commands,
     )
 }
+
+/** Native sessions advance from updateFrame; an open pause panel must not stall their online match. */
+internal fun pausedNetworkFrameForSession(
+    gameSession: GameSession,
+    canvasViewport: KoolCanvasViewport,
+    deltaSeconds: Float,
+): KoolCanvasFrame? =
+    if (!gameSession.usesIndependentEngineLoop && gameSession.isNetworkMultiplayerActive()) {
+        gameSession.updateFrame(canvasViewport, deltaSeconds)
+    } else {
+        null
+    }

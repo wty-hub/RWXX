@@ -22,7 +22,6 @@ import com.corrodinggames.rts.gameFramework.network.GameInputStream;
 import com.corrodinggames.rts.gameFramework.network.GameOutputStream;
 import com.corrodinggames.rts.gameFramework.platform.PlatformExtension;
 import com.corrodinggames.rts.gameFramework.statistics.AndroidMenu;
-import com.corrodinggames.rts.gameFramework.statistics.AndroidMenuItem;
 import com.corrodinggames.rts.gameFramework.stats.TeamStats;
 import com.corrodinggames.rts.gameFramework.utility.FastArrayList;
 import com.corrodinggames.rts.gameFramework.utility.GameViewUtils;
@@ -45,8 +44,6 @@ import java.util.Iterator;
 /* JADX INFO: renamed from: com.corrodinggames.rts.gameFramework.f.a */
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/gameFramework/f/a.class */
 public class GameInterfaceRenderer extends Serializable {
-    private static final boolean DEBUG_SLICK_MENU = "1".equals(System.getenv("RWX_DEBUG_SLICK_MENU"));
-
     private static int debugHudCount = 0;
     private final ReplayTimelineControls replayTimeline = new ReplayTimelineControls();
     private final ReplayPlaybackControls replayPlayback = new ReplayPlaybackControls();
@@ -2608,6 +2605,10 @@ public class GameInterfaceRenderer extends Serializable {
     }
 
     void a(final float float1, final boolean boolean2) {
+        // Old callers may still leave the legacy menu flag set. Hand it to the app before drawing.
+        if (this.gameUI.isDraggingSelection) {
+            requestPauseMenu();
+        }
         float float2 = this.gameEngine.screenScale * 0.7f;
         if (GameEngine.isNonPCPlatform() && float2 < 0.7) {
             float2 = 0.7f;
@@ -2616,14 +2617,13 @@ public class GameInterfaceRenderer extends Serializable {
         int n2 = (int) (n * float2);
         int n3 = 4 + n2 / 2;
         int n4 = 4 + n2 / 2;
-        if (this.gameEngine.consumeKeyPress(111) && !replayVision.close()) {
-            boolean clearCurrentAction = false;
-            if (!this.gameUI.isDraggingSelection) {
-                clearCurrentAction = this.gameUI.clearCurrentAction();
-            }
-            if (!clearCurrentAction) {
-                this.gameUI.isDraggingSelection = !this.gameUI.isDraggingSelection;
-            }
+        boolean pauseKeyPressed = this.gameEngine.consumeKeyPress(111);
+        if (this.gameEngine.settingsEngine.keyboardSupport && this.gameEngine.inputController != null) {
+            // Honor the configured Show Menu binding (including F10), not just the raw Escape key.
+            pauseKeyPressed |= this.gameEngine.inputController.w.a();
+        }
+        if (pauseKeyPressed && !replayVision.close() && !this.gameUI.clearCurrentAction()) {
+            requestPauseMenu();
         }
         if (this.gameUI.isDraggingSelection) {
             this.infoTextTimer += 0.008f * float1;
@@ -2645,7 +2645,7 @@ public class GameInterfaceRenderer extends Serializable {
         }
         if (this.gameUI.isSelectionBoxActive && !this.gameUI.isInputDisabled && this.unitRect2.b((int) this.gameUI.selectionBoxStartX, (int) this.gameUI.selectionBoxStartY)) {
             this.gameUI.isSelectionBoxActive = false;
-            this.gameUI.isDraggingSelection = !this.gameUI.isDraggingSelection;
+            requestPauseMenu();
         }
         this.gameUI.a(this.unitRect2);
         if (this.gameEngine.replayEngine.j()) {
@@ -2685,46 +2685,6 @@ public class GameInterfaceRenderer extends Serializable {
             }
         }
         if (boolean2 && this.gameEngine.replayEngine.j() && !this.gameUI.isDraggingSelection) drawReplayVision();
-        if (this.gameUI.isDraggingSelection) {
-            this.gameEngine.isMenuOpen = false;
-            final int screenPixels = this.gameEngine.toScreenPixels(190);
-            this.zoomButtonRect.a = (int) (this.gameEngine.currentScreenWidthPixels / 2.0f - screenPixels / 2);
-            this.zoomButtonRect.c = (int) (this.gameEngine.currentScreenWidthPixels / 2.0f + screenPixels / 2);
-            final int screenPixels2 = this.gameEngine.toScreenPixels(34);
-            final int n5 = screenPixels2 + this.gameEngine.toScreenPixels(15);
-            final AndroidMenu o = this.o();
-            final int n6 = this.gameEngine.toScreenPixels(50) + n5 * (1 + o.size());
-            this.zoomButtonRect.b = (int) (this.gameEngine.halfScreenHeight - n6 / 2);
-            this.zoomButtonRect.d = (int) (this.gameEngine.halfScreenHeight + n6 / 2);
-            if (boolean2) {
-                this.gameUI.ninePatchStyle4.c(this.gameEngine.renderGraphicsEngine, this.zoomButtonRect);
-            }
-            final int n7 = this.zoomButtonRect.b + this.gameEngine.toScreenPixels(40);
-            final int screenPixels3 = this.gameEngine.toScreenPixels(152);
-            final int n8 = (int) (this.gameEngine.currentScreenWidthPixels / 2.0f - screenPixels3 / 2);
-            int n9 = n7;
-            final int a = KoolArgbColor.a(140, 100, 100, 100);
-            boolean resumeHit = this.gameUI.a(n8, n9, screenPixels3, screenPixels2, Locale.get("menus.ingame.resume"), IconGroup.none, false, a, this.gameUI.buildingPreviewInvalidPaint, this.gameUI.ninePatchStyle3);
-            debugSlickMenuButton("resume", -1, n8, n9, screenPixels3, screenPixels2, resumeHit);
-            if (resumeHit) {
-                this.gameUI.isSelectionBoxActive = false;
-                this.gameUI.tooltipY = 40.0f;
-                this.gameUI.isDraggingSelection = false;
-            }
-            n9 += n5;
-            for (int i = 0; i < o.size(); ++i) {
-                final AndroidMenuItem item = o.getItem(i);
-                boolean itemHit = this.gameUI.a(n8, n9, screenPixels3, screenPixels2, item.getTitle().toString(), IconGroup.none, false, a, this.gameUI.buildingPreviewInvalidPaint, this.gameUI.ninePatchStyle3);
-                debugSlickMenuButton(item.getTitle().toString(), item.getItemId(), n8, n9, screenPixels3, screenPixels2, itemHit);
-                if (itemHit) {
-                    this.a(item.getItemId());
-                    this.gameUI.isSelectionBoxActive = false;
-                    this.gameUI.tooltipY = 40.0f;
-                }
-                n9 += n5;
-            }
-            this.gameUI.a(this.zoomButtonRect);
-        }
     }
 
     public void l() {
@@ -2739,31 +2699,11 @@ public class GameInterfaceRenderer extends Serializable {
         a(16);
     }
 
-    private void debugSlickMenuButton(String label, int itemId, int x, int y, int width, int height, boolean hit) {
-        if (!DEBUG_SLICK_MENU) {
-            return;
-        }
-        if (!hit && !this.gameUI.isMousePressed && !this.gameUI.isSelectionBoxActive && !this.gameEngine.isTouchDown()) {
-            return;
-        }
-        int pointerId = -1;
-        if (this.gameEngine.getTouchPointerCount() > 0) {
-            pointerId = this.gameEngine.getTouchPointerId(0);
-        }
-        GameEngine.log("RWX_DEBUG_SLICK_MENU legacyMenuButton label=\"" + label
-                + "\" id=" + itemId
-                + " rect=" + x + "," + y + "," + width + "," + height
-                + " hit=" + hit
-                + " draggingMenu=" + this.gameUI.isDraggingSelection
-                + " mousePressed=" + this.gameUI.isMousePressed
-                + " selectionActive=" + this.gameUI.isSelectionBoxActive
-                + " inputDisabled=" + this.gameUI.isInputDisabled
-                + " selectionStart=" + this.gameUI.selectionBoxStartX + "," + this.gameUI.selectionBoxStartY
-                + " selectionMin=" + this.gameUI.selectionBoxMinWidth + "," + this.gameUI.selectionBoxMinHeight
-                + " touch=" + this.gameEngine.getTouchX() + "," + this.gameEngine.getTouchY()
-                + " touchDown=" + this.gameEngine.isTouchDown()
-                + " pointerCount=" + this.gameEngine.getTouchPointerCount()
-                + " pointerId0=" + pointerId);
+    private void requestPauseMenu() {
+        CoreGameView view = this.gameEngine.activeGameView;
+        InGameMenuController controller = view != null ? view.getInGameMenuController() : null;
+        if (controller == null) controller = new InGameMenuController();
+        controller.requestPause(this.gameEngine);
     }
 
     void a(int i) {

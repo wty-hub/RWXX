@@ -49,7 +49,7 @@ class NavigationRulesTest {
             backActionForScreen(AppScreen.InGame, rendersIntoKoolCanvas = true),
         )
         assertEquals(
-            BackNavigationAction.ShowExitDialog,
+            BackNavigationAction.Pause,
             backActionForScreen(AppScreen.InGame, rendersIntoKoolCanvas = false),
         )
         assertEquals(

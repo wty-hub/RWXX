@@ -1,6 +1,10 @@
 package io.github.rwx.ui;
 
 public interface InGameMenuCallbacks {
+    default void requestPause() {
+        CoreUiEventQueue.requestInGamePause();
+    }
+
     InGameMenuCallbacks CORE_UI_EVENT_QUEUE = new InGameMenuCallbacks() {
         @Override
         public void requestSettings() {

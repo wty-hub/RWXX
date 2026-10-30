@@ -30,6 +30,7 @@ internal class FrameLoopInstaller(
     private val modsController: ModsController,
     private val inputController: InputController,
     private val gameReadyController: GameReadyController,
+    private val openInGamePauseMenu: () -> Unit,
     private val refreshModWindow: () -> Unit,
     private val onBattleRoomClosed: (reason: String?, message: String?) -> Unit,
 ) {
@@ -44,6 +45,7 @@ internal class FrameLoopInstaller(
             resourceBrowserController = resourceBrowserController,
             inGameDialogController = inGameDialogController,
             mapController = mapController,
+            openInGamePauseMenu = openInGamePauseMenu,
             openInGameSettings = sessionActions::openInGameSettings,
             requestInGameSurrender = sessionActions::requestInGameSurrender,
             exitRwGame = sessionActions::exitRwGame,

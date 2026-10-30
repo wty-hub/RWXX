@@ -133,14 +133,10 @@ internal enum class BackNavigationAction {
 
 internal fun backActionForScreen(
     screen: AppScreen,
-    rendersIntoKoolCanvas: Boolean,
+    @Suppress("UNUSED_PARAMETER") rendersIntoKoolCanvas: Boolean,
 ): BackNavigationAction =
     when (screen) {
-        AppScreen.InGame -> if (rendersIntoKoolCanvas) {
-            BackNavigationAction.Pause
-        } else {
-            BackNavigationAction.ShowExitDialog
-        }
+        AppScreen.InGame -> BackNavigationAction.Pause
 
         AppScreen.Paused -> BackNavigationAction.InGame
         AppScreen.BattleRoom -> BackNavigationAction.CloseBattleRoom

@@ -45,7 +45,7 @@ internal class InputController(
             name = "rwx-escape",
             filter = InputStack.KEY_FILTER_ALL,
         ) { event ->
-            if (!event.isPressed) return@addKeyListener
+            if (!event.isPressed || event.isRepeated) return@addKeyListener
             // Esc while typing must not leave the screen. Chinese IME composition is cancelled by
             // the platform editor before this runs; a plain Esc closes a dialog (in-game chat)
             // and otherwise only drops the field.
@@ -75,12 +75,15 @@ internal class InputController(
 
     fun forwardInputForFrame(isRenderLoopFrame: Boolean, pointer: Pointer = PointerInput.pointerState.primaryPointer) {
         gameKeyboardHandler.syncRegistration()
+        if (!shouldForwardKoolInputForScreen(currentScreen(), gameSession.acceptsKoolInput)) {
+            // A HUD press can open the pause menu before its release reaches the game.
+            legacyPointerSink.resetOnHostFocusLost()
+            return
+        }
         // Kool 0.19 dispatches InputStack from KeyboardInput.poll BEFORE updating PointerInput.
         // Forward the new pointer only after poll, avoiding the stale listener and startup drive.
         if (!legacyPointerForwarding && !isRenderLoopFrame) return
-        if (shouldForwardKoolInputForScreen(currentScreen(), gameSession.acceptsKoolInput)) {
-            legacyPointerSink.onPointer(pointer)
-        }
+        legacyPointerSink.onPointer(pointer)
     }
 }
 

@@ -7,6 +7,7 @@ import com.corrodinggames.rts.gameFramework.*
 import com.corrodinggames.rts.gameFramework.graphics.GraphicsEngine
 import com.corrodinggames.rts.gameFramework.network.*
 import com.corrodinggames.rts.gameFramework.network.ChatMessage
+import com.corrodinggames.rts.gameFramework.statistics.AndroidMenu
 import io.github.rwx.app.launchOnIO
 import io.github.rwx.applyBattleRoomPlayerConfig
 import io.github.rwx.battleRoomPlayerDisplayName
@@ -15,6 +16,7 @@ import io.github.rwx.geometry.Point
 import io.github.rwx.logger
 import io.github.rwx.map.MapMetadata
 import io.github.rwx.map.TransferredUnit
+import io.github.rwx.mod.registry.UiRegistry
 import io.github.rwx.net.CoreUiNetworkCallbacks
 import io.github.rwx.platform.CoreGameView
 import io.github.rwx.render.RendererMode
@@ -340,6 +342,22 @@ abstract class GameSession {
 
     open fun setInGameMenuCallbacks(callbacks: InGameMenuCallbacks?) {
         inGameMenuController.setCallbacks(callbacks)
+    }
+
+    /** Invoke in a requestSessionTask action; only the detached result belongs on the UI thread. */
+    open fun captureInGameMenuOptions(): List<InGameMenuOptionSnapshot> =
+        runEngineCommand("capture in-game menu") {
+            val menu = AndroidMenu()
+            inGameMenuController.a(menu)
+            val modMenuIds = UiRegistry.getInGameMenuItems().map { it.menuId }.toSet()
+            menu.snapshotOptions(modMenuIds)
+        }.orEmpty()
+
+    /** Invoke in a requestSessionTask action so native and mod callbacks run on the engine owner. */
+    open fun selectInGameMenuOption(menuId: Int) {
+        runEngineCommand("select in-game menu option") { engine ->
+            inGameMenuController.selectMenuOption(menuId, engine)
+        }
     }
 
     open fun preload(viewport: KoolCanvasViewport): GameEngine {

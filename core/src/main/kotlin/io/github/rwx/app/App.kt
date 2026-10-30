@@ -6,6 +6,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.util.ApplicationScope
 import com.corrodinggames.rts.gameFramework.SettingsEngine
+import io.github.rwx.i18n.I18n
 import io.github.rwx.input.KoolKeyCodeMapping
 import io.github.rwx.logger
 import io.github.rwx.render.canvas.KoolCanvasFrame
@@ -16,7 +17,6 @@ import io.github.rwx.ui.component.PlatformTextInputBridge
 import io.github.rwx.ui.model.BattleRoomAction
 import io.github.rwx.ui.model.LevelSelectMode
 import io.github.rwx.ui.model.MainMenuConditions
-import io.github.rwx.ui.model.PauseMenuConditions
 import io.github.rwx.ui.model.ReplaySelectViewModel
 import io.github.rwx.ui.model.ResourceBrowserType
 import io.github.rwx.ui.model.SettingsAction
@@ -272,6 +272,10 @@ fun installApp(
     )
 
     gameSession.setInGameMenuCallbacks(object : InGameMenuCallbacks {
+        override fun requestPause() {
+            inGameDialogController.requestInGameKoolOverlay { CoreUiEventQueue.requestInGamePause() }
+        }
+
         override fun requestSettings() {
             inGameDialogController.requestInGameKoolOverlay { CoreUiEventQueue.requestInGameSettings() }
         }
@@ -385,9 +389,28 @@ fun installApp(
         autoStartSinglePlayerFromUi = options.autoStartSinglePlayerFromUi,
         autoStartBattleRoom = options.autoStartBattleRoom,
     )
+    val pauseController = InGamePauseController(
+        currentScreen = { navigator.current },
+        isModalOverlayOpen = {
+            dialogSceneHost.isShowing || loadingDialogSceneHost.isShowing || PlatformTextInputBridge.isEditing()
+        },
+        isGameLoading = { pendingStartController.isPending },
+        requestMenuOptions = { onComplete ->
+            gameSession.requestSessionTask({ gameSession.captureInGameMenuOptions() }, onComplete)
+        },
+        updateMenu = pauseSceneHost::updateItems,
+        navigateTo = { screen -> navigator.navigateTo(screen) },
+        onFailure = { error ->
+            logger.warn(error) { "Unable to capture in-game pause menu" }
+            dialogController.showUnavailable(I18n.common.actionUnavailable())
+        },
+    )
     navigator = ScreenNavigator(
         initialScreen = AppScreen.Loading,
-        onScreenChanged = screenLifecycleController::onScreenChanged,
+        onScreenChanged = { screen ->
+            pauseController.onScreenChanged(screen)
+            screenLifecycleController.onScreenChanged(screen)
+        },
     )
     lateinit var inputController: InputController
     val session = AppSession(
@@ -399,13 +422,7 @@ fun installApp(
                 actions.settings(SettingsAction.Back)
             } else when (backActionForScreen(navigator.current, gameSession.rendersIntoKoolCanvas)) {
                 BackNavigationAction.Pause -> {
-                    pauseSceneHost.updateItems(
-                        PauseMenuConditions(
-                            canSave = true,
-                            isMultiplayer = gameSession.isNetworkMultiplayerActive(),
-                        )
-                    )
-                    navigator.navigateTo(AppScreen.Paused)
+                    pauseController.open()
                 }
 
                 BackNavigationAction.ShowExitDialog -> {
@@ -459,6 +476,14 @@ fun installApp(
         showMultiplayerPlayerList = inGameDialogController::showInGamePlayerListDialog,
         requestInGameSurrender = sessionActions::requestInGameSurrender,
         exitRwGame = sessionActions::exitRwGame,
+        selectLegacyPauseMenuOption = { menuId ->
+            gameSession.requestSessionTask({ gameSession.selectInGameMenuOption(menuId) }) { result ->
+                result.onFailure { error ->
+                    logger.warn(error) { "Unable to select in-game menu option: $menuId" }
+                    dialogController.showUnavailable(I18n.common.actionUnavailable())
+                }
+            }
+        },
         showUnavailableDialog = dialogController::showUnavailable,
     ).install()
 
@@ -524,6 +549,7 @@ fun installApp(
         modsController = modsController,
         inputController = inputController,
         gameReadyController = gameReadyController,
+        openInGamePauseMenu = pauseController::open,
         refreshModWindow = modWindowSceneHost::refresh,
         onBattleRoomClosed = { reason, message ->
             battleRoomLaunchController.cancelPendingStart()

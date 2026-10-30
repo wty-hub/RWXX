@@ -3,6 +3,7 @@ package io.github.rwx.ui.host
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
 import io.github.rwx.i18n.I18n
+import io.github.rwx.session.InGameMenuOptionSnapshot
 import io.github.rwx.ui.ColorSchemeDefinition
 import io.github.rwx.ui.ResponsiveContentWidth
 import io.github.rwx.ui.ResponsiveViewportHeight
@@ -21,8 +22,11 @@ class PauseMenuSceneHost(
 
     private val menuItems = mutableStateListOf<PauseMenuItem>()
 
-    fun updateItems(conditions: PauseMenuConditions) {
-        val next = PauseMenuViewModel.items(conditions)
+    fun updateItems(conditions: PauseMenuConditions) = replaceItems(PauseMenuViewModel.items(conditions))
+
+    fun updateItems(options: List<InGameMenuOptionSnapshot>) = replaceItems(PauseMenuViewModel.items(options))
+
+    private fun replaceItems(next: List<PauseMenuItem>) {
         if (next != items) {
             items = next
             menuItems.atomic {
@@ -164,4 +168,11 @@ private val PauseMenuAction.pauseIcon: Icon
         PauseMenuAction.Players -> Icon.Multiplayer
         PauseMenuAction.Surrender -> Icon.Surrender
         PauseMenuAction.ExitGame -> Icon.Exit
+        is PauseMenuAction.Legacy -> when (menuId) {
+            11 -> Icon.Help
+            18 -> Icon.Save
+            22 -> Icon.Interface
+            24 -> Icon.Map
+            else -> Icon.Gameplay
+        }
     }
