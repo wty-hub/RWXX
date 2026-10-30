@@ -1,80 +1,117 @@
-<div style="text-align: center;">
+<div align="center">
 
-![Banner](logo.svg)
+![RWXX](logo.svg)
 
-----
+# RWXX
 
-![GitHub Created At](https://img.shields.io/github/created-at/yomi2539/RWX?color=blue&style=for-the-badge)
-[![Discord](https://img.shields.io/discord/1352880561215246376?style=for-the-badge&logo=discord)](https://discord.gg/q2amh4Gt3f)
-[![QQ](https://img.shields.io/badge/QQ-982838086-orange?style=for-the-badge&logo=qq)](https://qm.qq.com/cgi-bin/qm/qr?k=kupOkNOePIjHK4sSdiJE-9YRdh3ANwum&jump_from=webapi&authKey=/fjvR18rZdV+4fe6gmVlBQkSwLZxoT0L2MYpxl8G2yph2YtqseZn2RAO556LJooZ)
-[![License](https://img.shields.io/github/license/yomi2539/RWX?style=for-the-badge&color=blue)](./LICENSE)
+**基于 RWX，专注底层性能与稳定性优化。**
 
-[![Downloads](https://img.shields.io/github/downloads/yomi2539/RWX/total?style=flat-square&color=e74c3c)](https://github.com/yomi2539/RWX/releases)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/5c73d6b0-e2f9-46d7-a0d2-271b8f81b6b2/deploy-status)](https://app.netlify.com/projects/rwx-docs/deploys)
+[![License](https://img.shields.io/github/license/wty-hub/RWXX?style=flat-square&color=blue)](./LICENSE)
+[![Downloads](https://img.shields.io/github/downloads/wty-hub/RWXX/total?style=flat-square&color=e74c3c)](https://github.com/wty-hub/RWXX/releases)
 
-**R**usted **W**arfare e**X**tension
-
-重建和扩展 Rusted Warfare 的开源跨平台 RTS 游戏
+简体中文 · [English](README.md) · [上游 RWX](https://github.com/yomi2539/RWX) · [下载](https://github.com/wty-hub/RWXX/releases)
 
 </div>
 
-> **项目状态**: 当前项目仍在积极维护中，欢迎提交 Issue 和 Pull Request。
+RWXX 是基于 [RWX（Rusted Warfare eXtension）](https://github.com/yomi2539/RWX) 的优化分支，
+工作重点是渲染链路、帧调度、内存与资源管理，以及跨平台运行的稳定性。
+目标是在延续 RWX 现有游戏体验的基础上，减少底层开销，改善大规模对局中的操作响应与帧时间稳定性。
 
-简体中文, [English](README.md)
+RWX 的 P2P 联机、区域控制、地图联通和 JVM 模组能力构成本项目的功能基础。
+当前优化工作主要集中在 Windows、Linux 和 macOS 桌面端；项目同时保留 Android 构建支持。
 
-## 亮点
+## 优化重点
 
-- 支持 **Desktop + Android**
-- **P2P 联机**：全新联机方式
-- **区域控制**模式：占领区域、持续计分、改写胜负条件
-- **地图联通**：用传送门连接多张地图，单位可跨图转移
-- **JVM 模组**，便于更深度地扩展玩法
+| 方向 | 当前实现 |
+| --- | --- |
+| 桌面渲染 | 游戏画面统一使用 Kool 渲染，移除旧 Slick 游戏画布及逐帧回读路径；Windows 默认 Vulkan，macOS 通过 MoltenVK 使用 Metal，Linux 默认 OpenGL。 |
+| 引擎与呈现 | 游戏循环运行在独立线程，渲染端消费已经完成的画面；输入按顺序进入引擎，仿真计时独立于 GPU 呈现节奏。 |
+| 地图绘制 | 地图层内复用不变的画笔状态，结合地图格缓存与 GPU 离屏绘制，减少重复准备和像素处理。 |
+| 文字与纹理 | 复用文字网格、纹理元数据和不可变像素快照，减少重复创建几何数据及复制像素。 |
+| 资源管理 | 复用像素与上传缓冲区，按 GPU 实际完成状态回收在途资源，控制闲置缓存与待处理画面的积压。 |
+| 帧调度 | 协调引擎画面生产与呈现上限，默认采用休眠等待；失焦、隐藏或最小化时限制呈现频率，减少无效绘制和忙等。 |
 
-## 开发路线图
+这些改动以保持确定性仿真、游戏规则及既有网络、存档和回放行为为约束。
+回放校验、像素对照、联机验证与性能测试分别记录验证范围，兼容性结论以对应记录为准。
 
-### 平台
+## 当前状态
 
-- [x] Desktop 构建（Windows / Linux / macOS）
-- [x] Android 构建
+- **地图层预备绘制默认开启**：每层绘制只准备一次不变画笔状态，可用 `RWX_PREPARED_MAP_TILES=0` 关闭。
+- **桌面自动档上限为 300 FPS**：保存的手动上限继续生效，VSync、省电模式和后台状态仍会进一步限制呈现频率；后台上限为 30 FPS。上限不代表实际帧率。
+- **持续优化与验证中**：快速拖动、连续缩放、物理输入响应、长时间对局流畅性，以及历史 DirectBuffer 内存耗尽问题尚未完成整体验收。其他实验优化有各自独立的开关和默认状态。
 
-### 联机
+性能结果与具体版本、硬件、地图、单位数量和设置有关。局部微基准的收益不能直接换算为整局帧率提升，
+早期版本的数据也不代表当前默认配置。桌面端的优化结果不直接外推到 Android。
+最新默认值与验收范围见 [当前优化状态](docs/NEXT-SESSION.md)。
 
-- [x] 基于 P2P 的联机系统
-- [ ] 中继 / 兜底连通性改进
+## 下载与运行
 
-### 玩法特性
+在 [Releases](https://github.com/wty-hub/RWXX/releases) 查看已发布版本，具体文件以对应版本提供的产物为准。
+桌面端建议选择与系统和架构匹配的 `desktop.zip`，其中已包含 Java 运行时。
 
-- [x] 区域控制模式
-- [x] 地图联通 / 地图传送门
-- [ ] 区域控制与地图联通的平衡 / 交互打磨
+| 产物 | 运行要求 |
+| --- | --- |
+| `RWXX-<version>-<platform>-desktop.zip` | 自带 Java；完整解压后启动应用。 |
+| `RWXX-<version>-<platform>.jar` | 对应桌面平台的 JAR，需自行安装 Java 25。 |
+| `RWXX-<version>-all.jar` | 包含所有支持桌面平台原生库的通用 JAR，需自行安装 Java 25。 |
 
-## 编译
+`<platform>` 为 `windows-x64`、`linux-x64`、`linux-arm64`、`macos-x64` 或 `macos-arm64`。
+ZIP 完整解压后，Windows 启动 `RWXX/RWXX.exe`，Linux 启动 `RWXX/bin/RWXX`，macOS 打开 `RWXX.app`。
+Android 安装包需要有效签名；自行构建的未签名 Release APK 不能直接安装。
 
-构建需要 Java 25。常用发行任务如下：
+## 从源码运行与构建
+
+构建需要 **JDK 25**。Android 构建还需要 Android SDK 36，并通过 `ANDROID_HOME` 或 `local.properties` 配置 SDK 路径。
+在仓库根目录执行以下命令；Windows 使用 `.\gradlew.bat` 替代 `./gradlew`。
 
 ```bash
-# 当前平台 fat JAR 与 jpackage 应用镜像
+# 从源码运行桌面版
+./gradlew :desktop:run
+
+# 当前平台 JAR 与自带 Java 的桌面应用 ZIP
 ./gradlew :desktop:platformFatJar :desktop:packageDesktopDistribution
 
-# 包含所有桌面平台原生库的通用 JAR
+# 包含所有支持桌面平台原生库的通用 JAR
 ./gradlew :desktop:multiPlatformFatJar
 
-# Android APK
+# Android Release APK
 ./gradlew :android:assembleRelease
+
+# 核心与桌面单元测试
+./gradlew :core:test :desktop:test
 ```
 
-macOS / Linux / Windows 桌面版的**游戏画面都走 Kool 渲染器**（Windows 默认 Vulkan，macOS 经 MoltenVK 落到 Metal，Linux 默认 OpenGL），
-旧 Slick 游戏画布和逐帧回读已移除；可用 `RWX_KOOL_BACKEND=opengl` 显式选择 OpenGL。支持 macOS 绿色按钮的原生全屏，切换完成后恢复 Vulkan 渲染表面；
-保存的全屏设置会在启动时生效，也可在设置中切换，或按 `Control + Command + F` 进入/退出全屏。
-桌面日志位于 `~/Library/Application Support/rwx/logs/rwx.log`。
+桌面 JAR 输出到 `desktop/build/libs/`，应用 ZIP 输出到 `desktop/build/distributions/`，
+Android APK 输出到 `android/build/outputs/apk/`。
+平台 JAR 可通过 `-PtargetPlatform=<platform>` 交叉构建；自带运行时的应用 ZIP 必须在对应系统和架构上打包。
 
-原理与实测见 [docs/desktop-performance.md](docs/desktop-performance.md) 第 11 节。
+Android 未配置完整发行签名时，`assembleRelease` 生成未签名 APK；
+安装或发布前须配置发行签名。CI 的已签名 APK 以 `RWXX-<version>-` 为文件名前缀。
+签名与发行流程见 [CI/CD 配置](.github/workflows/ci.yml)。
 
-更多信息请参考 [CI/CD 配置](.github/workflows/ci.yml) 以及
-[文档站快速开始](https://rwx-docs.netlify.app/zh/tutorial/getting-started)。
+## 技术文档
 
-## 免责声明
+- [当前优化与验收状态](docs/NEXT-SESSION.md)：最新默认值、已验证范围和待解决问题。
+- [桌面性能优化说明](docs/desktop-performance.md)：渲染路径、帧调度和性能工作的演进。
+- [引擎与 Vulkan 渲染分离](docs/vulkan-engine-separation.md)：线程、输入、画面交接及资源生命周期。
+- [Windows 拖动与缩放优化记录](docs/windows-map-pan-optimization.md)：瓶颈排查、实验方案和对照结果。
+- [性能测试工具](desktop/tools/README.md)：复现方法、采样指标与测试边界。
+- [RWX 使用教程](https://rwx-docs.netlify.app/zh/tutorial/getting-started)：上游项目的基础使用说明。
 
-本项目为 Rusted Warfare 的非官方扩展项目，旨在通过现代技术栈扩展游戏功能和玩法。本项目所使用的相关资产均归原作者所有。仅为学习研究目的，禁止商业用途。
+部分技术文档保留了历史阶段和实验结果，默认行为以当前源码及最新状态记录为准。
+已有的 `RWX_*` 环境变量、包名和存储目录继续保留，以兼容既有配置和数据。
+Windows / Linux 可用 `RWX_KOOL_BACKEND=opengl` 显式选择 OpenGL；macOS 使用 Vulkan / MoltenVK。
 
----
+## 反馈与贡献
+
+欢迎通过 [Issues](https://github.com/wty-hub/RWXX/issues) 反馈问题，或提交 Pull Request 参与底层优化。
+报告性能问题时，请附上版本、系统与硬件、地图或回放、复现步骤、帧率与 VSync 设置，以及相关日志。
+性能改动请提供可复现的前后对照，并说明画面、输入、回放或联机一致性的验证范围。
+
+## 致谢与免责声明
+
+感谢 [RWX](https://github.com/yomi2539/RWX) 及 Rusted Warfare 的作者和贡献者。
+项目许可证见 [LICENSE](LICENSE)。
+
+本项目为 Rusted Warfare 的非官方项目，专注于基于 RWX 的底层优化。
+本项目所使用的相关资产均归原作者所有。仅为学习研究目的，禁止商业用途。
