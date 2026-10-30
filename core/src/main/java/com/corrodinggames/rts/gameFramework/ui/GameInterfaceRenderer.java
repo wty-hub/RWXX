@@ -49,31 +49,39 @@ public class GameInterfaceRenderer extends Serializable {
 
     private static int debugHudCount = 0;
     private final ReplayTimelineControls replayTimeline = new ReplayTimelineControls();
+    private final ReplayPlaybackControls replayPlayback = new ReplayPlaybackControls();
     private final ReplayVisionControls replayVision = new ReplayVisionControls();
     private final KoolPaint replayTimelinePaint = new KoolPaint();
 
     public void resetReplayPresentationControls() {
         replayTimeline.reset();
+        replayPlayback.reset();
         replayVision.reset();
     }
 
+    private ReplayPlaybackControls.Layout replayPlaybackLayout() {
+        return ReplayPlaybackControls.layout(gameEngine.currentScreenWidthPixels, gameEngine.screenScale,
+                7 + gameUI.unitRangePaint.k() + 10);
+    }
+
     private ReplayTimelineControls.Layout replayTimelineLayout() {
-        float scale = gameEngine.screenScale;
-        float iconHeight = fastTexture == null ? 32 * scale : fastTexture.q * scale * 1.6f;
-        float top = 7 + gameUI.unitRangePaint.k() + iconHeight + 22 * scale;
-        return ReplayTimelineControls.layout(gameEngine.currentScreenWidthPixels, scale, top);
+        ReplayPlaybackControls.Layout playback = replayPlaybackLayout();
+        return ReplayTimelineControls.layout(gameEngine.currentScreenWidthPixels, gameEngine.screenScale,
+                playback.bottom() + 8 * playback.unit());
     }
 
     public boolean isReplayTimelineAt(float x, float y) {
-        if (gameEngine.replayEngine.j() && !gameEngine.isMenuOpen
-                && replayVision.contains(replayVisionLayout(), x, y)) return true;
-        return gameEngine.replayEngine.j() && gameEngine.replayEngine.getDurationMillis() >= 0
-                && (replayTimeline.isCaptured() || replayTimelineLayout().contains(x, y));
+        if (!gameEngine.replayEngine.j() || gameEngine.isMenuOpen || gameUI.isDraggingSelection) return false;
+        return replayVision.contains(replayVisionLayout(), x, y)
+                || replayPlayback.contains(replayPlaybackLayout(), x, y)
+                || replayTimeline.contains(replayTimelineLayout(), x, y,
+                        gameEngine.replayEngine.getDurationMillis() >= 0);
     }
 
     public boolean updateReplayTimelineInput() {
         if (!gameEngine.replayEngine.j() || gameUI.isDraggingSelection || gameEngine.isMenuOpen) {
-            replayTimeline.reset();
+            replayTimeline.resetInput();
+            replayPlayback.reset();
             replayVision.reset();
             return false;
         }
@@ -86,18 +94,23 @@ public class GameInterfaceRenderer extends Serializable {
                     if (action == ReplayVisionControls.TOGGLE_FOG) replay.setFogDisplayEnabled(!replay.isFogDisplayEnabled());
                     else if (action >= 0 && action < teams.size()) replay.setFogDisplayTeamId(teams.get(action).teamId);
                 })) {
-            replayTimeline.reset();
+            replayTimeline.resetInput();
+            replayPlayback.reset();
             gameEngine.touchPointerEnabled[0] = false;
             return true;
         }
-        // A legacy/incomplete recording has no trustworthy end time. Keep its HUD readable,
-        // but let the normal map input path handle touches until the index is available.
-        if (gameEngine.replayEngine.getDurationMillis() < 0) {
-            replayTimeline.reset();
-            return false;
-        }
         boolean down = gameEngine.isTouchDown() && gameEngine.getTouchPointerCount() == 1
                 && gameEngine.touchPointerEnabled[0];
+        if (replayPlayback.handle(replayPlaybackLayout(), down, gameEngine.getTouchX(), gameEngine.getTouchY(),
+                !replay.isSeeking() && !replay.isPlaybackEnded(), action -> {
+                    if (action == ReplayPlaybackControls.SLOWER) replay.slowDown();
+                    else if (action == ReplayPlaybackControls.FASTER) replay.speedUp();
+                    else replay.togglePlayback();
+                })) {
+            replayTimeline.resetInput();
+            gameEngine.touchPointerEnabled[0] = false;
+            return true;
+        }
         boolean consumed = replayTimeline.handle(replayTimelineLayout(), down,
                 gameEngine.getTouchX(), gameEngine.getTouchY(),
                 Math.max(0, gameEngine.gameTimeMillis - gameEngine.replayEngine.getStartTimeMillis()),
@@ -142,6 +155,11 @@ public class GameInterfaceRenderer extends Serializable {
         ReplayTimelineControls.Layout layout = replayTimelineLayout();
         float y = layout.centerY();
         float scale = layout.unit();
+        boolean collapsed = replayTimeline.isCollapsed();
+        if (collapsed) {
+            drawReplayTimelineToggle(layout);
+            return;
+        }
         int duration = replay.getDurationMillis() < 0 ? -1 : replay.getDurationMillis() - replay.getStartTimeMillis();
         int preview = replayTimeline.getPreviewMillis();
         int displayed = preview >= 0 ? preview : Math.max(0, gameEngine.gameTimeMillis - replay.getStartTimeMillis());
@@ -174,6 +192,7 @@ public class GameInterfaceRenderer extends Serializable {
                     layout.buttonLeft(direction) + layout.buttonWidth() / 2,
                     (layout.buttonTop() + layout.buttonBottom()) / 2 + 5 * scale, text);
         }
+        drawReplayTimelineToggle(layout);
         if (duration >= 0) {
             float fraction = duration == 0 ? 0 : Math.max(0, Math.min(1, displayed / (float) duration));
             float head = layout.trackLeft() + fraction * (layout.trackRight() - layout.trackLeft());
@@ -201,11 +220,61 @@ public class GameInterfaceRenderer extends Serializable {
         }
     }
 
+    private void drawReplayTimelineToggle(ReplayTimelineControls.Layout layout) {
+        boolean collapsed = replayTimeline.isCollapsed();
+        float scale = layout.unit();
+        drawReplayTimelineRoundedRect(layout.toggleLeft(collapsed), layout.toggleTop(collapsed),
+                layout.toggleLeft(collapsed) + layout.toggleWidth(collapsed), layout.toggleBottom(collapsed),
+                6 * scale, KoolArgbColor.a(collapsed ? 210 : 150, 43, 57, 73));
+        KoolPaint text = new KoolPaint(gameUI.unitRangePaint);
+        text.a(KoolPaint.Align.CENTER);
+        text.b(13 * scale);
+        text.b(KoolArgbColor.a(255, 218, 231, 243));
+        gameEngine.renderGraphicsEngine.a(Locale.get(collapsed ? "replay.timeline.expand" : "replay.timeline.collapse")
+                        + (collapsed ? " ▾" : " ▴"),
+                layout.toggleLeft(collapsed) + layout.toggleWidth(collapsed) / 2,
+                (layout.toggleTop(collapsed) + layout.toggleBottom(collapsed)) / 2 + 5 * scale, text);
+    }
+
+    private void drawReplayPlaybackButton(ReplayPlaybackControls.Box box, String label, boolean primary, boolean enabled) {
+        float scale = replayPlaybackLayout().unit();
+        drawReplayTimelineRoundedRect(box.left(), box.top(), box.left() + box.width(), box.top() + box.height(),
+                6 * scale, primary ? KoolArgbColor.a(230, 43, 77, 101) : KoolArgbColor.a(210, 43, 57, 73));
+        KoolPaint text = new KoolPaint(gameUI.unitRangePaint);
+        text.a(KoolPaint.Align.CENTER);
+        text.b(13 * scale);
+        text.b(enabled ? KoolArgbColor.a(255, 218, 231, 243) : KoolArgbColor.a(255, 140, 153, 168));
+        float available = box.width() - 8 * scale;
+        if (text.a(label) > available) text.b(text.k() * available / text.a(label));
+        gameEngine.renderGraphicsEngine.a(label, box.left() + box.width() / 2,
+                box.top() + box.height() / 2 + text.k() / 3, text);
+    }
+
+    private void drawReplayPlayback() {
+        ReplayEngine replay = gameEngine.replayEngine;
+        ReplayPlaybackControls.Layout layout = replayPlaybackLayout();
+        boolean enabled = !replay.isSeeking() && !replay.isPlaybackEnded();
+        float speed = replay.getPlaybackSpeed();
+        drawReplayPlaybackButton(layout.slower(), Locale.get("replay.playback.slower"), false, enabled && speed > .25f);
+        drawReplayPlaybackButton(layout.playPause(), Locale.get(gameEngine.gameSpeed == 0
+                ? "replay.playback.play" : "replay.playback.pause"), true, enabled);
+        drawReplayPlaybackButton(layout.faster(), Locale.get("replay.playback.faster"), false, enabled && speed < 64);
+        String speedLabel = Float.toString(speed);
+        if (speedLabel.endsWith(".0")) speedLabel = speedLabel.substring(0, speedLabel.length() - 2);
+        KoolPaint text = new KoolPaint(gameUI.unitRangePaint);
+        text.a(KoolPaint.Align.CENTER);
+        text.b(13 * layout.unit());
+        text.b(KoolArgbColor.a(255, 162, 179, 197));
+        gameEngine.renderGraphicsEngine.a(speedLabel + "×", layout.speed().left() + layout.speed().width() / 2,
+                layout.speed().top() + layout.speed().height() / 2 + text.k() / 3, text);
+    }
+
     private ReplayVisionControls.Layout replayVisionLayout() {
-        float scale = gameEngine.screenScale;
-        float icon = fastTexture == null ? 32 * scale : fastTexture.q * scale * 1.6f;
-        return ReplayVisionControls.layout(gameEngine.currentScreenWidthPixels, gameEngine.screenHeight, scale,
-                7 + gameUI.unitRangePaint.k() + 10, icon, gameEngine.replayEngine.getFogDisplayTeams().size());
+        ReplayPlaybackControls.Layout playback = replayPlaybackLayout();
+        ReplayPlaybackControls.Box button = playback.vision();
+        return ReplayVisionControls.layout(gameEngine.currentScreenWidthPixels, gameEngine.screenHeight, playback.unit(),
+                new ReplayVisionControls.Box(button.left(), button.top(), button.width(), button.height()),
+                gameEngine.replayEngine.getFogDisplayTeams().size());
     }
 
     private void drawReplayVisionBox(ReplayVisionControls.Box box, String label, int color, boolean active) {
@@ -443,12 +512,6 @@ public class GameInterfaceRenderer extends Serializable {
     /* JADX INFO: renamed from: U */
     Texture pauseTexture = null;
 
-    /* JADX INFO: renamed from: V */
-    Texture replayPauseTexture = null;
-
-    /* JADX INFO: renamed from: W */
-    Texture fastTexture = null;
-
     /* JADX INFO: renamed from: X */
     Texture leaderboardTexture = null;
 
@@ -515,8 +578,6 @@ public class GameInterfaceRenderer extends Serializable {
         this.zoomButtonTexture = this.gameEngine.renderGraphicsEngine.a(R.drawable.zoom_button);
         this.lockIconTexture = this.gameEngine.renderGraphicsEngine.a(R.drawable.lock_icon_menu);
         this.pauseTexture = this.gameEngine.renderGraphicsEngine.a(R.drawable.pause);
-        this.replayPauseTexture = this.gameEngine.renderGraphicsEngine.a(R.drawable.replay_pause);
-        this.fastTexture = this.gameEngine.renderGraphicsEngine.a(R.drawable.fast);
         this.leaderboardTexture = this.gameEngine.renderGraphicsEngine.a(R.drawable.replay_leaderboard);
         staticPaint.a(255, 30, 30, 30);
         staticPaint.a(staticColorFilter);
@@ -2588,13 +2649,10 @@ public class GameInterfaceRenderer extends Serializable {
         }
         this.gameUI.a(this.unitRect2);
         if (this.gameEngine.replayEngine.j()) {
-            if (boolean2) drawReplayTimeline();
-            this.paintHealthBar.c(80);
-            if (this.gameEngine.replayEngine.v != 1) {
-                this.paintHealthBar.c(200);
+            if (boolean2) {
+                drawReplayTimeline();
+                drawReplayPlayback();
             }
-            n = this.fastTexture.q;
-            n2 = (int) (n * this.gameEngine.screenScale * 1.6f);
             n3 = (int) (this.gameEngine.currentScreenWidthPixels / 2.0f);
             n4 = 7 + (int) this.gameUI.unitRangePaint.k();
             this.gameEngine.renderGraphicsEngine.a(Utility.formatDuration(Math.max(0, this.gameEngine.gameTimeMillis - this.gameEngine.replayEngine.getStartTimeMillis()) / 1000)
@@ -2608,39 +2666,16 @@ public class GameInterfaceRenderer extends Serializable {
                         + " sidebar=" + this.gameEngine.sidebarWidth
                         + " zoomButton=" + this.zoomButtonRect);
             }
-            n4 += n2 / 2 + 10;
-            n3 += n2 / 2 + 5;
-            this.unitRect2.a(n3, n4, n3 + n2, n4 + n2);
-            this.unitRect2.a(-this.unitRect2.b() / 2, -this.unitRect2.c() / 2);
-            if (boolean2) {
-                this.gameEngine.renderGraphicsEngine.a(this.fastTexture, (float) this.unitRect2.a, (float) this.unitRect2.b, this.paintHealthBar, 0.0f, (float) (n2 / n));
-            }
-            if (this.gameUI.isSelectionBoxActive && !this.gameUI.isInputDisabled && this.unitRect2.b((int) this.gameUI.selectionBoxStartX, (int) this.gameUI.selectionBoxStartY)) {
-                this.gameUI.isSelectionBoxActive = false;
-                this.gameEngine.replayEngine.b();
-            }
-            if (this.gameEngine.gameSpeed != 1.0f && boolean2) {
-                this.gameEngine.renderGraphicsEngine.a("x" + this.gameEngine.gameSpeed, (float) (this.unitRect2.d() + n2 / 2), (float) this.unitRect2.e(), this.gameUI.buildingPreviewPaint);
-            }
-            final Texture replayPauseTexture = this.replayPauseTexture;
-            n = replayPauseTexture.q;
-            n2 = (int) (n * this.gameEngine.screenScale * 1.6f);
-            n3 -= n2 + 5;
-            this.unitRect2.a(n3, n4, n3 + n2, n4 + n2);
-            this.unitRect2.a(-this.unitRect2.b() / 2, -this.unitRect2.c() / 2);
-            if (boolean2) {
-                this.gameEngine.renderGraphicsEngine.a(replayPauseTexture, (float) this.unitRect2.a, (float) this.unitRect2.b, this.paintHealthBar, 0.0f, (float) (n2 / n));
-            }
-            if (this.gameUI.isSelectionBoxActive && !this.gameUI.isInputDisabled && this.unitRect2.b((int) this.gameUI.selectionBoxStartX, (int) this.gameUI.selectionBoxStartY)) {
-                this.gameUI.isSelectionBoxActive = false;
-                this.gameEngine.replayEngine.a();
-            }
+            // Keep the leaderboard on the timer row, clear of the toolbar even in narrow windows.
+            n = this.leaderboardTexture.q;
+            n2 = Math.max(1, (int) (24 * replayPlaybackLayout().unit()));
+            n4 = 7 + Math.max(0, ((int) this.gameUI.unitRangePaint.k() - n2) / 2);
+            this.paintHealthBar.c(80);
             final Texture leaderboardTexture = this.leaderboardTexture;
-            n3 = (int) (this.gameEngine.screenWidth - this.gameEngine.sidebarWidth - (n2 + 5));
+            n3 = (int) (this.gameEngine.currentScreenWidthPixels - n2 - 8 * replayPlaybackLayout().unit());
             this.unitRect2.a(n3, n4, n3 + n2, n4 + n2);
-            this.unitRect2.a(-this.unitRect2.b() / 2, -this.unitRect2.c() / 2);
             if (boolean2) {
-                this.gameEngine.renderGraphicsEngine.a(leaderboardTexture, (float) this.unitRect2.a, (float) this.unitRect2.b, this.paintHealthBar, 0.0f, (float) (n2 / n));
+                this.gameEngine.renderGraphicsEngine.a(leaderboardTexture, (float) this.unitRect2.a, (float) this.unitRect2.b, this.paintHealthBar, 0.0f, (float) n2 / n);
             }
             if (this.gameUI.isSelectionBoxActive && !this.gameUI.isInputDisabled && this.unitRect2.b((int) this.gameUI.selectionBoxStartX, (int) this.gameUI.selectionBoxStartY)) {
                 final TeamStats teamStats = this.gameEngine.teamStats;
@@ -2781,6 +2816,9 @@ public class GameInterfaceRenderer extends Serializable {
                 }
                 if (this.gameEngine.inputController.aj[i5].a()) {
                     this.gameUI.clearCurrentAction();
+                    if (this.gameEngine.settingsEngine.shiftDigitUpdatesGroup) {
+                        unitGroupMarker.c();
+                    }
                     unitGroupMarker.a();
                 }
                 if (this.gameEngine.inputController.ai[i5].a()) {

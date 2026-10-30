@@ -2,6 +2,7 @@ package io.github.rwx.ui.host
 
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
+import io.github.rwx.i18n.I18n
 import io.github.rwx.ui.ResponsiveContentWidth
 import io.github.rwx.ui.ResponsiveViewportHeight
 import io.github.rwx.ui.UiTheme
@@ -33,7 +34,7 @@ class MultiplayerSceneHost(
             val metrics = multiplayerLayoutMetrics()
             MultiplayerRoomList(
                 model = MultiplayerRoomListModel(
-                    title = "Multiplayer Rooms",
+                    title = I18n.multiplayer.title(),
                     lobbyKind = lobbyKind.use(),
                     rooms = rooms.use(),
                     statusText = statusText.use(),

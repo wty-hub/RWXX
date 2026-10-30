@@ -4,6 +4,7 @@ import com.corrodinggames.rts.game.units.custom.logicBooleans.VariableScope;
 import com.corrodinggames.rts.gameFramework.GameEngine;
 import com.corrodinggames.rts.gameFramework.graphics.GamePaint;
 import com.corrodinggames.rts.gameFramework.graphics.GraphicsEngine;
+import com.corrodinggames.rts.gameFramework.graphics.PreparedMapTextureDraw;
 import com.corrodinggames.rts.gameFramework.graphics.Texture;
 import com.corrodinggames.rts.gameFramework.utility.Log;
 import com.corrodinggames.rts.gameFramework.utility.SlickToAndroidKeycodes;
@@ -414,6 +415,10 @@ public class MapLayer {
         byte[][] bArr2 = tileMap.fogOfWarCurrent;
         byte[][] bArr3 = tileMap.fogOfWarNext;
         Texture texture = TileMap.fogSmoothAtlasTexture;
+        // gamePaint6 remains unchanged throughout this synchronous layer render. The optional writer
+        // only changes the recording representation; geometry, fog traversal and ordering stay here.
+        PreparedMapTextureDraw preparedTiles = z3 ? null : graphicsEngine.prepareMapTextureDraw(gamePaint6);
+        try {
         for (int i6 = i; i6 < i3 + 1; i6++) {
             int i7 = i2;
             while (i7 < i4 + 1) {
@@ -475,12 +480,11 @@ public class MapLayer {
                                             rectF.a = (int) rectF.a;
                                         }
                                     }
-                                    graphicsEngine.a(
-                                        tileAtlasCache.getAtlasTextureForIndex(mapTile.atlasSlotIndex),
-                                        tileAtlasCache.getRectForIndex(mapTile.atlasSlotIndex),
-                                        rectF,
-                                        gamePaint6,
-                                        repeatCount);
+                                    Texture tileTexture = tileAtlasCache.getAtlasTextureForIndex(mapTile.atlasSlotIndex);
+                                    Rect tileSource = tileAtlasCache.getRectForIndex(mapTile.atlasSlotIndex);
+                                    if (repeatCount != 1 || preparedTiles == null || !preparedTiles.draw(tileTexture, tileSource, rectF)) {
+                                        graphicsEngine.a(tileTexture, tileSource, rectF, gamePaint6, repeatCount);
+                                    }
                                     if (traceTileRuns) {
                                         if (runEnd > i7) {
                                             tileRunMerged++;
@@ -575,6 +579,9 @@ public class MapLayer {
                 }
                 i7++;
             }
+        }
+        } finally {
+            if (preparedTiles != null) preparedTiles.close();
         }
     }
 

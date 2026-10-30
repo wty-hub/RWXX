@@ -149,6 +149,50 @@ class KoolPointerProjectionTest {
         assertEquals((newGroup.top + newGroup.bottom) * 0.5f, projectedGroup.second)
     }
 
+    @Test fun `DPI changes without resizing preserve minimap unselect and group targets in both directions`() {
+        val viewport = KoolCanvasViewport(2560, 1440)
+        val normal = hudCamera(viewport)
+        val retina = hudCamera(viewport, scale = 2f, sidebar = 500f)
+        for ((seen, current) in listOf(normal to retina, retina to normal)) {
+            val oldHud = seen.hudLayout!!
+            val newHud = current.hudLayout!!
+            val controls = listOf(oldHud.minimap!! to newHud.minimap!!,
+                oldHud.unselectButton!! to newHud.unselectButton!!) +
+                oldHud.unitGroupButtons.zip(newHud.unitGroupButtons)
+            for ((oldRect, newRect) in controls) {
+                // A queued click still refers to the old picture, even though the new HUD is larger
+                // or smaller on the same framebuffer. Preserve the position within each control.
+                val x = oldRect.left + oldRect.width * 0.25f
+                val y = oldRect.top + oldRect.height * 0.75f
+                val projected = projectSeenPointer(seen, current, viewport, x, y, viewport)
+                assertEquals(newRect.left + newRect.width * 0.25f, projected.first)
+                assertEquals(newRect.top + newRect.height * 0.75f, projected.second)
+            }
+        }
+    }
+
+    @Test fun `DPI changes without resizing preserve sidebar action column and row in both directions`() {
+        val viewport = KoolCanvasViewport(2560, 1440)
+        val normal = hudCamera(viewport)
+        val retina = hudCamera(viewport, scale = 2f, sidebar = 500f)
+        for ((seen, current) in listOf(normal to retina, retina to normal)) {
+            val oldHud = seen.hudLayout!!
+            val newHud = current.hudLayout!!
+            for (columnFraction in listOf(0.25f, 0.75f)) {
+                val x = viewport.width - seen.sidebarWidth + seen.sidebarWidth * columnFraction
+                val y = oldHud.actionTop + oldHud.actionRowPitch * 2.5f
+                for (screenRelative in listOf(false, true)) {
+                    val projected = projectSeenPointer(seen, current, viewport, x, y, viewport,
+                        screenRelative = screenRelative)
+                    assertEquals(viewport.width - current.sidebarWidth + current.sidebarWidth * columnFraction,
+                        projected.first)
+                    assertEquals(newHud.actionTop + newHud.actionRowPitch * 2.5f, projected.second, 0.001f)
+                    assertTrue(projected.first >= viewport.width - current.sidebarWidth)
+                }
+            }
+        }
+    }
+
     @Test fun `alternate left bottom minimap is classified before world camera projection`() {
         val seen = hudCamera(KoolCanvasViewport(1280, 720), leftMinimap = true)
         val current = hudCamera(KoolCanvasViewport(1920, 900), leftMinimap = true)

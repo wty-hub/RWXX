@@ -196,7 +196,7 @@ fun UiScope.ModCard(
             }
             Row {
                 if (!mod.author.isNullOrBlank()) {
-                    Text("Author:${mod.author}") {
+                    Text(I18n.mods.author(mod.author)) {
                         modifier
                             .width(Grow.Std)
                             .clipToBounds(true)
@@ -205,7 +205,7 @@ fun UiScope.ModCard(
                     }
                 }
                 if (!mod.version.isNullOrBlank()) {
-                    Text("Version:${mod.version}") {
+                    Text(I18n.mods.version(mod.version)) {
                         modifier
                         .width(Grow.Std)
                             .margin(start = UiTheme.Spacing.md)

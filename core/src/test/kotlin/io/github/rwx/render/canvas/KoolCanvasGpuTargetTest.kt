@@ -158,6 +158,7 @@ class KoolCanvasGpuTargetTest {
         registry.registerGpuTargetTexture(GPU_VERSION_ID, linear, nearest)
         try {
             assertTrue(registry.isGpuTargetTexture(GPU_VERSION_ID))
+            assertFalse(registry.isGpuTargetTextureReady(GPU_VERSION_ID))
             // Until the backend has created the attachment image there is nothing to sample, so both
             // filters must degrade to a drawable placeholder instead of an unloaded texture.
             assertNotSame(linear, registry.resolve(ref, KoolCanvasTextureFilter.Linear))
@@ -166,12 +167,14 @@ class KoolCanvasGpuTargetTest {
             val image = FakeGpuTexture(16, 16)
             linear.gpuTexture = image
             nearest.gpuTexture = image
+            assertTrue(registry.isGpuTargetTextureReady(GPU_VERSION_ID))
             assertSame(linear, registry.resolve(ref, KoolCanvasTextureFilter.Linear))
             assertSame(nearest, registry.resolve(ref, KoolCanvasTextureFilter.Nearest))
         } finally {
             registry.unregister(GPU_VERSION_ID)
         }
         assertFalse(registry.isGpuTargetTexture(GPU_VERSION_ID))
+        assertFalse(registry.isGpuTargetTextureReady(GPU_VERSION_ID))
         // The logical id keeps resolving to something drawable instead of throwing.
         assertNotNull(registry.resolve(ref, KoolCanvasTextureFilter.Linear))
     }

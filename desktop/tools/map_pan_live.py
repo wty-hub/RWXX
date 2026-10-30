@@ -16,6 +16,7 @@ from frozen_benchmark_tooling import fingerprint
 
 
 CANDIDATES = {
+    'prepared-map-tiles': 'RWX_PREPARED_MAP_TILES',
     'frozen-reuse': 'RWX_FROZEN_CONTENT_REUSE', 'map-texture-batches': 'RWX_MAP_TEXTURE_BATCHES',
     'map-fog-batches': 'RWX_MAP_FOG_BATCHES', 'map-zoom-generation': 'RWX_MAP_ZOOM_GENERATION',
     'single-map-cell-render': 'RWX_SINGLE_MAP_CELL_RENDER', 'incremental-sprite-atlas': 'RWX_INCREMENTAL_SPRITE_ATLAS',
@@ -68,7 +69,9 @@ def main():
     p.add_argument('--retain-map-units', action='store_true', help='Run the map ordinary game and AI; omit the injected unit fixture')
     p.add_argument('--real-scene-cell-oracle', action='store_true', help='Diagnostic: independently redraw real live map cells and compare final compositions')
     for flag in CANDIDATES:
-        p.add_argument('--' + flag, action='store_true', help='Explicit canvas candidate; default remains unchanged')
+        p.add_argument('--' + flag, action='store_true', help=(
+            'Controlled prepared map recording: omitted explicitly disables this product-default feature'
+            if flag == 'prepared-map-tiles' else 'Explicit canvas candidate; default remains unchanged'))
     diagnostics = p.add_mutually_exclusive_group()
     diagnostics.add_argument('--diagnostic', action='store_true')
     diagnostics.add_argument('--diagnostic-light', action='store_true', help='JFR and engine trace without per-canvas profiling')
@@ -110,6 +113,7 @@ def main():
     p.add_argument('--disable-bulk-argb-pack', action='store_true', help='Reproduce the retired bulk conversion experiment with frozen runtime 10')
     p.add_argument('--disable-native-bgra-upload', action='store_true', help='Controlled Vulkan RGBA baseline')
     p.add_argument('--canvas-stage-trace', action='store_true', help='Record canvas stages without canvas statistics logging')
+    p.add_argument('--frame-lifecycle-trace', action='store_true', help='Diagnostic: join produced, chosen, native submission and accepted picture identities')
     p.add_argument('--cpu-target-profile', action='store_true', help="Log CPU map/minimap raster work; diagnostic only")
     args = p.parse_args()
     if args.player_death_seconds is not None and (args.player_death_seconds < 1 or not args.retain_map_units or args.fog != 'on' or not args.real_scene_cell_oracle):
@@ -146,6 +150,8 @@ def main():
     for flag, variable in CANDIDATES.items():
         if getattr(args, flag.replace('-', '_')):
             env[variable] = '1'
+    # Product defaults must not silently turn a controlled OFF arm into an ON arm.
+    env['RWX_PREPARED_MAP_TILES'] = '1' if args.prepared_map_tiles else '0'
     if args.real_scene_cell_oracle:
         env['RWX_REAL_SCENE_ORACLE'] = str(out / 'real-scene-oracle')
         env['RWX_REAL_SCENE_CELL_ORACLE'] = '1'
@@ -226,6 +232,8 @@ def main():
         env.update({'RWX_CANVAS_PERF': '1', 'RWX_CANVAS_TRACE': str(out / 'canvas-stages.csv')})
     if args.diagnostic or args.vk_trace:
         env['RWX_VK_TRACE'] = str(out / 'vulkan-stages.csv')
+    if args.frame_lifecycle_trace:
+        env['RWX_FRAME_LIFECYCLE_TRACE'] = str(out / 'frame-lifecycle.csv')
     tooling_digest, _ = fingerprint(Path(__file__).resolve().parent)
     if os.environ.get('RWX_BENCHMARK_TOOLING_SHA256') not in (None, tooling_digest):
         raise RuntimeError('frozen live measurement tooling fingerprint changed before launch')
@@ -234,7 +242,7 @@ def main():
     report = {'runtimeSha256': hashlib.sha256(jar.read_bytes()).hexdigest(), 'toolingSha256': tooling_digest,
               'configuration': configuration, 'configurationSha256': hashlib.sha256(json.dumps(configuration,
                   sort_keys=True, separators=(',', ':')).encode()).hexdigest(), 'mapEvidence': map_evidence,
-              'diagnosticOnly': args.diagnostic or args.diagnostic_light or args.vk_trace or camera_trace or args.real_scene_cell_oracle or args.camera_mode == 'edge-jump',
+              'diagnosticOnly': args.diagnostic or args.diagnostic_light or args.vk_trace or camera_trace or args.real_scene_cell_oracle or args.camera_mode == 'edge-jump' or args.frame_lifecycle_trace,
               'diagnosticMode': 'full' if args.diagnostic else 'light' if args.diagnostic_light else 'none',
               'protocol': {'mode': 'ordinary-map' if args.retain_map_units else args.mode, 'teams': None if args.retain_map_units else args.teams, 'fog': args.fog, 'recordReplay': False,
                            'units': None if args.retain_map_units else args.units, 'injectedUnitFixture': not args.retain_map_units,
@@ -259,6 +267,8 @@ def main():
                            'legacyPointerForwardingRequested': args.legacy_pointer_forwarding}}
     report['protocol']['perfWindowLogRequested'] = not args.no_perf_window_log
     report['protocol']['engineSectionTraceRequested'] = args.engine_section_trace
+    report['protocol']['frameLifecycleTraceRequested'] = args.frame_lifecycle_trace
+    report['protocol']['preparedMapTilesRequested'] = args.prepared_map_tiles
     report['protocol']['bulkArgbPackingRequested'] = not args.disable_bulk_argb_pack
     report['protocol']['nativeBgraUploadsRequested'] = not args.disable_native_bgra_upload
     report['protocol']['canvasStageTraceRequested'] = args.canvas_stage_trace
@@ -310,6 +320,11 @@ def main():
         log = (out / f'{name}.log').read_text(encoding='utf-8', errors='replace')
         if 'RWXFrozenTextureReferences reuseConfirmed=true' not in log:
             report['run']['invalidReasons'].append('frozen texture reference reuse was not confirmed by actual source versions')
+            report['run']['validMeasurement'] = False
+    if args.prepared_map_tiles:
+        log = (out / f'{name}.log').read_text(encoding='utf-8', errors='replace')
+        if 'RWXPreparedMapTiles recordingConfirmed=true' not in log:
+            report['run']['invalidReasons'].append('prepared map tile recording was not exercised')
             report['run']['validMeasurement'] = False
     if args.cull_offscreen_text:
         log = (out / f'{name}.log').read_text(encoding='utf-8', errors='replace')

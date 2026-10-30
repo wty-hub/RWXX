@@ -11,7 +11,7 @@ internal const val ABOUT_LICENSE_URL: String = "https://www.gnu.org/licenses/agp
 internal const val ABOUT_QQ_URL: String =
     "https://qm.qq.com/cgi-bin/qm/qr?k=kupOkNOePIjHK4sSdiJE-9YRdh3ANwum&jump_from=webapi&authKey=/fjvR18rZdV+4fe6gmVlBQkSwLZxoT0L2MYpxl8G2yph2YtqseZn2RAO556LJooZ"
 internal const val ABOUT_DISCORD_URL: String = "https://discord.gg/q2amh4Gt3f"
-internal const val ABOUT_GITHUB_URL: String = "https://github.com/yomi2539/RWX"
+internal const val ABOUT_GITHUB_URL: String = "https://github.com/wty-hub/RWXX"
 
 internal fun AboutDialog(
     appMetadata: AppMetadata,
@@ -51,7 +51,7 @@ internal fun AboutDialog(
             DialogInfoRow(
                 icon = Icon.Github,
                 label = I18n.mainmenu.about.github(),
-                value = "github.com/yomi2539/RWX",
+                value = "github.com/wty-hub/RWXX",
                 onPress = { onOpenLink(ABOUT_GITHUB_URL) },
             ),
         ),

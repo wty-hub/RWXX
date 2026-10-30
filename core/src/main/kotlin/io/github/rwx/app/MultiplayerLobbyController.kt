@@ -4,6 +4,7 @@ import com.corrodinggames.rts.gameFramework.GameEngine
 import com.corrodinggames.rts.gameFramework.network.MasterServerClient
 import com.corrodinggames.rts.gameFramework.network.ServerInfo
 import io.github.rwx.logger
+import io.github.rwx.i18n.I18n
 import io.github.rwx.map.MapMetadata
 import io.github.rwx.p2p.P2PLobbyService
 import io.github.rwx.p2p.P2PRoomAdvertisement
@@ -59,7 +60,7 @@ internal class MultiplayerLobbyController(
     }
 
     private fun requestOriginalRefresh() {
-        sceneHost.updateRooms(latestRooms, "Searching for rooms...", MultiplayerLobbyKind.Original)
+        sceneHost.updateRooms(latestRooms, I18n.multiplayer.searchingRooms(), MultiplayerLobbyKind.Original)
         gameSession.requestSessionTask(action = {
             if (GameEngine.getInstance()?.networkEngine == null) return@requestSessionTask false
             MasterServerClient.loadServerListAsync {
@@ -69,10 +70,10 @@ internal class MultiplayerLobbyController(
         }, onComplete = { result ->
             if (activeLobbyKind != MultiplayerLobbyKind.Original) return@requestSessionTask
             result.onSuccess { available ->
-                updateOriginalRooms(if (available) "Searching for rooms..." else "")
+                updateOriginalRooms(if (available) I18n.multiplayer.searchingRooms() else "")
             }.onFailure { error ->
                 logger.warn(error) { "Original room refresh failed" }
-                sceneHost.updateRooms(emptyList(), "Original lobby unavailable: ${error.message ?: error.javaClass.simpleName}",
+                sceneHost.updateRooms(emptyList(), I18n.multiplayer.lobby.originalUnavailable(error.message ?: error.javaClass.simpleName),
                     MultiplayerLobbyKind.Original)
             }
         })
@@ -86,11 +87,11 @@ internal class MultiplayerLobbyController(
             lobby.requestRefresh()
         }, onComplete = { result ->
             if (activeLobbyKind != MultiplayerLobbyKind.P2P) return@requestSessionTask
-            result.onSuccess { updateP2PRooms("Searching for rooms...") }.onFailure { error ->
+            result.onSuccess { updateP2PRooms(I18n.multiplayer.searchingRooms()) }.onFailure { error ->
                 logger.warn { "P2P room refresh failed: ${error.message}" }
                 sceneHost.updateRooms(
                     emptyList(),
-                    "P2P unavailable: ${error.message ?: error.javaClass.simpleName}",
+                    I18n.multiplayer.lobby.p2pUnavailable(error.message ?: error.javaClass.simpleName),
                     MultiplayerLobbyKind.P2P,
                 )
             }
@@ -109,7 +110,7 @@ internal class MultiplayerLobbyController(
         latestRooms = rooms
         sceneHost.updateRooms(
             rooms = rooms,
-            statusText = statusText.ifBlank { if (rooms.isEmpty()) "No rooms found" else "" },
+            statusText = statusText.ifBlank { if (rooms.isEmpty()) I18n.multiplayer.noRooms() else "" },
             lobbyKind = MultiplayerLobbyKind.P2P,
         )
     }
@@ -125,13 +126,13 @@ internal class MultiplayerLobbyController(
             result.onSuccess { rooms ->
                 latestRooms = rooms.orEmpty()
                 sceneHost.updateRooms(latestRooms,
-                    if (rooms == null) "Original lobby requires the RW engine to be loaded"
-                    else statusText.ifBlank { if (rooms.isEmpty()) "No rooms found" else "" },
+                    if (rooms == null) I18n.multiplayer.lobby.requiresEngine()
+                    else statusText.ifBlank { if (rooms.isEmpty()) I18n.multiplayer.noRooms() else "" },
                     MultiplayerLobbyKind.Original)
             }.onFailure { error ->
                 logger.warn(error) { "Original room list read failed" }
                 latestRooms = emptyList()
-                sceneHost.updateRooms(emptyList(), "Original lobby unavailable: ${error.message ?: error.javaClass.simpleName}",
+                sceneHost.updateRooms(emptyList(), I18n.multiplayer.lobby.originalUnavailable(error.message ?: error.javaClass.simpleName),
                     MultiplayerLobbyKind.Original)
             }
         })
@@ -141,10 +142,12 @@ internal class MultiplayerLobbyController(
 internal fun p2pRoomToMultiplayerItem(room: P2PRoomAdvertisement): MultiplayerRoomItem =
     MultiplayerRoomItem(
         roomId = room.roomId.orEmpty(),
-        hostName = room.createdBy ?: "Unknown",
-        mapName = room.getMapDisplayName().withRwxModeSuffix(room.requiredRwxFeatures),
+        hostName = room.createdBy ?: I18n.multiplayer.unknown(),
+        mapName = room.getMapDisplayName()
+            .let { if (it == "<No Map>") I18n.battleroom.noMapSelected() else it }
+            .withRwxModeSuffix(room.requiredRwxFeatures),
         playersLabel = "${room.currentPlayers.coerceAtLeast(0)}/${room.maxPlayers.coerceAtLeast(0)}",
-        versionLabel = room.gameVersionString?.let { "v$it" } ?: "Unknown",
+        versionLabel = room.gameVersionString?.let { "v$it" } ?: I18n.multiplayer.unknown(),
         requiresPassword = room.requiresPassword,
         hasMods = room.hasMods,
         transportLabel = when {
@@ -153,7 +156,7 @@ internal fun p2pRoomToMultiplayerItem(room: P2PRoomAdvertisement): MultiplayerRo
             else -> "P2P"
         },
         stateLabel = room.gameState ?: "unknown",
-        infoText = room.getInfoText(),
+        infoText = localizeLegacyRoomText(room.getInfoText()),
         currentPlayers = room.currentPlayers,
         maxPlayers = room.maxPlayers,
     )
@@ -164,10 +167,10 @@ private fun String.withRwxModeSuffix(requiredRwxFeatures: List<String>): String 
 internal fun serverInfoToMultiplayerItem(server: ServerInfo): MultiplayerRoomItem =
     MultiplayerRoomItem(
         roomId = server.getConnectDescriptor(),
-        hostName = server.createdBy ?: server.publicHost ?: server.lanHost ?: "Unknown",
-        mapName = server.mapPath?.let(MapMetadata::getMapName) ?: server.serverMessage ?: "<No Map>",
+        hostName = server.createdBy ?: server.publicHost ?: server.lanHost ?: I18n.multiplayer.unknown(),
+        mapName = server.mapPath?.let(MapMetadata::getMapName) ?: server.serverMessage ?: I18n.battleroom.noMapSelected(),
         playersLabel = "${server.currentPlayers.coerceAtLeast(0)}/${server.maxPlayers.coerceAtLeast(0)}",
-        versionLabel = server.gameVersionString?.let { if (it == "ANY") it else "v$it" } ?: "Unknown",
+        versionLabel = server.gameVersionString?.let { if (it == "ANY") I18n.multiplayer.anyVersion() else "v$it" } ?: I18n.multiplayer.unknown(),
         requiresPassword = server.requiresPassword,
         hasMods = server.hasMods,
         transportLabel = when {
@@ -184,5 +187,5 @@ internal fun serverInfoToMultiplayerItem(server: ServerInfo): MultiplayerRoomIte
             ?.takeIf { it.isNotBlank() }
             ?.let { "$it:${server.port}" },
         originalServerId = server.serverId?.takeIf { it.isNotBlank() },
-        infoText = runCatching { server.getInfoText() }.getOrDefault(""),
+        infoText = runCatching { localizeLegacyRoomText(server.getInfoText()) }.getOrDefault(""),
     )

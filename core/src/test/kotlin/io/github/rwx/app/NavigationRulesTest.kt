@@ -39,7 +39,7 @@ class NavigationRulesTest {
     }
 
     @Test
-    fun `escape from other screens keeps the existing destinations`() {
+    fun `escape resumes a paused game and keeps the other screen destinations`() {
         assertEquals(
             BackNavigationAction.MainMenu,
             backActionForScreen(AppScreen.Multiplayer, rendersIntoKoolCanvas = true),
@@ -53,8 +53,12 @@ class NavigationRulesTest {
             backActionForScreen(AppScreen.InGame, rendersIntoKoolCanvas = false),
         )
         assertEquals(
-            BackNavigationAction.ShowExitDialog,
+            BackNavigationAction.InGame,
             backActionForScreen(AppScreen.Paused, rendersIntoKoolCanvas = true),
+        )
+        assertEquals(
+            BackNavigationAction.InGame,
+            backActionForScreen(AppScreen.Paused, rendersIntoKoolCanvas = false),
         )
     }
 

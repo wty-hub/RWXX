@@ -41,8 +41,8 @@ internal class PendingStartController(
             logger.error(loadError) { "Unable to enter RW game for map: $pendingMapPath" }
             dialogSceneHost.show(
                 Dialog(
-                    title = "Map Load Error",
-                    message = "Unable to load the selected map.",
+                    title = I18n.levelselect.loadError.title(),
+                    message = I18n.levelselect.loadError.message(),
                     buttons = listOf(DialogButton(I18n.common.ok())),
                 ),
             )

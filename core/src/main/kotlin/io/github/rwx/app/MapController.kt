@@ -37,10 +37,10 @@ internal class MapController(
 ) {
     fun jumpToLinkedMap(event: CoreUiEvent.InGameMapJumpRequested) {
         if (!LinkedMapAvailability.ENABLED) {
-            showUnavailableDialog(LinkedMapAvailability.UNAVAILABLE_MESSAGE)
+            showUnavailableDialog(I18n.levelselect.linkedMaps.unavailable())
             return
         }
-        showUnavailableDialog("RWX multi-map switching is not wired to the HUD yet: ${event.targetMapId}")
+        showUnavailableDialog(I18n.levelselect.linkedMaps.hudUnavailable(event.targetMapId))
     }
 
     fun canShowMapList(): Boolean =
@@ -49,19 +49,19 @@ internal class MapController(
 
     fun showMapSwitchDialog() {
         if (!LinkedMapAvailability.ENABLED) {
-            showUnavailableDialog(LinkedMapAvailability.UNAVAILABLE_MESSAGE)
+            showUnavailableDialog(I18n.levelselect.linkedMaps.unavailable())
             return
         }
         val mapStorage = storage()
         if (mapStorage == null) {
-            showUnavailableDialog("RWX map switching is unavailable on this platform.")
+            showUnavailableDialog(I18n.levelselect.linkedMaps.platformUnavailable())
             return
         }
         val currentMapPath = gameSession.runningMapPath()
             ?: pendingStartMapPath()
             ?: currentBattleRoomSnapshotForJoin()?.room?.mapPath
         if (currentMapPath.isNullOrBlank()) {
-            showUnavailableDialog("No active RWX map.")
+            showUnavailableDialog(I18n.levelselect.linkedMaps.noActiveMap())
             return
         }
         val rootPath = state.graphRootPath?.takeIf { root ->
@@ -92,12 +92,12 @@ internal class MapController(
         state.runtimeLinkedMapNames.clear()
         state.runtimeLinkedMapNames.putAll(mapRows)
         if (mapRows.size <= 1) {
-            showUnavailableDialog("This map has no linked RWX maps.")
+            showUnavailableDialog(I18n.levelselect.linkedMaps.noLinkedMaps())
             return
         }
         val missingTargets = (graph.missingTargetMapIds + runtimeMissingTargets).distinct()
         if (missingTargets.isNotEmpty()) {
-            showUnavailableDialog("Linked map missing: ${missingTargets.joinToString(", ")}")
+            showUnavailableDialog(I18n.levelselect.linkedMaps.missingTargets(missingTargets.joinToString(", ")))
             return
         }
         state.graphRootPath = rootPath
@@ -105,8 +105,8 @@ internal class MapController(
         val localPlayerId = currentLocalPlayerId()
         showDialogOverGame(
             Dialog(
-                title = "RWX Maps",
-                message = "Select a linked map.",
+                title = I18n.levelselect.linkedMaps.title(),
+                message = I18n.levelselect.linkedMaps.select(),
                 infoRows = mapRows.map { (mapPath, displayName) ->
                     val assignment = assignments?.instances?.firstOrNull {
                         state.samePath(it.mapPath, mapPath)
@@ -117,8 +117,8 @@ internal class MapController(
                         icon = Icon.Map,
                         label = displayName,
                         value = when {
-                            isCurrent -> "Current"
-                            assignment != null -> "Sim: ${assignment.simulatorPlayerName}"
+                            isCurrent -> I18n.levelselect.linkedMaps.current()
+                            assignment != null -> I18n.levelselect.linkedMaps.simulator(assignment.simulatorPlayerName)
                             else -> mapPath.substringAfterLast('/')
                         },
                         emphasis = isCurrent || isLocalSimulator,
@@ -135,22 +135,22 @@ internal class MapController(
 
     fun handlePortalTransfer(transfer: PortalTransferMessage) {
         if (!LinkedMapAvailability.ENABLED) {
-            showUnavailableDialog(LinkedMapAvailability.UNAVAILABLE_MESSAGE)
+            showUnavailableDialog(I18n.levelselect.linkedMaps.unavailable())
             return
         }
         val targetMapPath = storage()?.let { MapLinkResolver.findMapPathById(it, transfer.targetMapId) }
         if (targetMapPath == null) {
-            showUnavailableDialog("Linked map not found: ${transfer.targetMapId}")
+            showUnavailableDialog(I18n.levelselect.linkedMaps.notFound(transfer.targetMapId))
             return
         }
         if (gameSession.isNetworkMultiplayerActive()) {
             P2PLobbyService.getInstance().broadcastPortalTransfer(transfer)
-            gameSession.showGameMessage("RWX portal transfer sent")
+            gameSession.showGameMessage(I18n.levelselect.linkedMaps.portalTransferSent())
             return
         }
         state.queuePortalTransfer(targetMapPath, transfer)
         gameSession.showGameMessage(
-            "Unit transferred to ${MapMetadata.getMapName(targetMapPath)}"
+            I18n.levelselect.linkedMaps.unitTransferred(MapMetadata.getMapName(targetMapPath))
         )
     }
 
@@ -180,7 +180,7 @@ internal class MapController(
         transfers.groupBy { it.targetPortalId }.forEach { (portalId, groupedTransfers) ->
             val units = groupedTransfers.flatMap { it.units }
             gameSession.requestSessionTask({ gameSession.injectTransferredUnits(units, portalId) }) { result ->
-                result.onFailure { showUnavailableDialog(it.message ?: "Unit transfer failed") }
+                result.onFailure { showUnavailableDialog(it.message ?: I18n.levelselect.linkedMaps.unitTransferFailed()) }
             }
         }
     }
@@ -221,7 +221,9 @@ internal class MapController(
             val localPlayerId = currentLocalPlayerId()
             if (assignment == null || assignment.simulatorPlayerId != localPlayerId) {
                 showUnavailableDialog(
-                    "This map is simulated by ${assignment?.simulatorPlayerName ?: "another player"}."
+                    I18n.levelselect.linkedMaps.simulatedBy(
+                        assignment?.simulatorPlayerName ?: I18n.levelselect.linkedMaps.anotherPlayer()
+                    )
                 )
                 return
             }
@@ -232,7 +234,7 @@ internal class MapController(
             result.onSuccess { snapshot ->
                 if (currentMapPath != null && snapshot != null) state.putSnapshot(currentMapPath, snapshot)
                 queueMapLoad(targetMapPath, state.snapshotFor(targetMapPath))
-            }.onFailure { showUnavailableDialog(it.message ?: "Map snapshot failed") }
+            }.onFailure { showUnavailableDialog(it.message ?: I18n.levelselect.linkedMaps.snapshotFailed()) }
         }
     }
 

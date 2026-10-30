@@ -73,7 +73,7 @@ data class P2PRoomAdvertisement(
             parts += "Mods Needed: $modsRequired"
         }
         if (requiredRwxFeatures.isNotEmpty()) {
-            parts += "RWX Features: ${requiredRwxFeatures.joinToString(", ")}"
+            parts += "RWXX Features: ${requiredRwxFeatures.joinToString(", ")}"
         }
         if (!webrtcSignaling.isNullOrBlank()) {
             parts += "WebRTC DataChannel: available"

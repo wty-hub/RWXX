@@ -169,7 +169,7 @@ class ApiImpl private constructor(
                     "Failed to compile unit ${definition.id.value}: ${error.message ?: error.javaClass.simpleName}"
                 )
                 logger.error(error) {
-                    "JVM mod ${manifest.id}: failed to compile unit ${definition.id.value} to native RWX content"
+                    "JVM mod ${manifest.id}: failed to compile unit ${definition.id.value} to native RWXX content"
                 }
             }
         }

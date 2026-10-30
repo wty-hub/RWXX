@@ -105,11 +105,17 @@ dependencies {
     implementation(libs.lwjgl3.awt) {
         exclude(group = "org.lwjgl")
     }
-    val lwjglModules = listOf("lwjgl", "lwjgl-glfw", "lwjgl-opengl", "lwjgl-openal", "lwjgl-jawt")
+    // Kool uses these bindings on every desktop architecture. Its transitive native set does not
+    // include Linux ARM64, so enumerate the complete runtime rather than relying on host defaults.
+    val lwjglNativeModules = listOf(
+        "lwjgl", "lwjgl-glfw", "lwjgl-opengl", "lwjgl-openal", "lwjgl-jemalloc",
+        "lwjgl-vma", "lwjgl-shaderc", "lwjgl-nfd", "lwjgl-stb", "lwjgl-msdfgen",
+    )
+    // JAWT uses the JDK's native library and does not publish LWJGL native artifacts.
+    val lwjglModules = lwjglNativeModules + "lwjgl-jawt"
     lwjglModules.forEach { module ->
         implementation("org.lwjgl:$module:$lwjglVersion")
     }
-    val lwjglNativeModules = lwjglModules - "lwjgl-jawt"
     lwjglNativeModules.forEach { module ->
         runtimeOnly("org.lwjgl:$module:$lwjglVersion:${targetPlatform.lwjglClassifier}")
         DesktopPlatform.entries.map { it.lwjglClassifier }.distinct().forEach { classifier ->
@@ -301,6 +307,7 @@ tasks.register<JavaExec>("runRealMapCellOracle") {
     environment("RWX_GPU_TEXT_SHADER_ORACLE", "1")
     jvmArgs("-Dorg.lwjgl.opengl.contextAPI=native", "-Dorg.lwjgl.system.stackSize=512",
         "--enable-native-access=ALL-UNNAMED", "--sun-misc-unsafe-memory-access=allow")
+    if (hostPlatform.osName == "macos") jvmArgs("-XstartOnFirstThread")
 }
 
 /**

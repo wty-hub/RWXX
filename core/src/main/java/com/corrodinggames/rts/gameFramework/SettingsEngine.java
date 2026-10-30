@@ -37,7 +37,7 @@ public class SettingsEngine {
     public boolean trackpad;
     public boolean dpad;
 
-    public boolean batterySaving;
+    public volatile boolean batterySaving;
 
     public volatile boolean highRefreshRate;
 
@@ -151,7 +151,7 @@ public class SettingsEngine {
 
     public boolean liveReloading;
 
-    public boolean renderVsync;
+    public volatile boolean renderVsync;
 
     public boolean renderSmoothDelta;
     public int teamUnitCapSinglePlayer;
@@ -173,6 +173,7 @@ public class SettingsEngine {
     public String externalSAFPathExtra;
 
     public boolean smartSelection_v2;
+    public boolean shiftDigitUpdatesGroup;
     public boolean singleUnitProduction;
     public boolean replayTracing;
     Preference prefs;
@@ -244,9 +245,8 @@ public class SettingsEngine {
     public static final float MAX_UI_RENDER_SCALE = 2.0f;
 
     /**
-     * Interface scale bounds. Desktop has no per-display density scaling, so
-     * {@code GameLogic.getScreenScale()} equals this value there; a stored 0/NaN would otherwise
-     * collapse the whole HUD to nothing.
+     * User interface scale bounds, applied on top of the current display density. A stored 0/NaN
+     * would otherwise collapse the whole HUD to nothing.
      */
     public static float normalizeUiRenderScale(float value) {
         if (Float.isNaN(value) || value <= 0.0f) {
@@ -422,6 +422,7 @@ public class SettingsEngine {
         this.externalSAFPathShown = getStringPref("externalSAFPathShown", null);
         this.externalSAFPathExtra = getStringPref("externalSAFPathExtra", null);
         this.smartSelection_v2 = getBooleanPref("smartSelection_v2", true);
+        this.shiftDigitUpdatesGroup = getBooleanPref("shiftDigitUpdatesGroup", true);
         this.singleUnitProduction = getBooleanPref("singleUnitProduction", false);
         this.mouseOrders = getIntPref("mouseOrders", 1);
         this.mousePlacement = getIntPref("mousePlacement", 1);
@@ -590,6 +591,7 @@ public class SettingsEngine {
         editorEdit.putString("externalSAFPathShown", this.externalSAFPathShown);
         editorEdit.putString("externalSAFPathExtra", this.externalSAFPathExtra);
         editorEdit.putBoolean("smartSelection_v2", this.smartSelection_v2);
+        editorEdit.putBoolean("shiftDigitUpdatesGroup", this.shiftDigitUpdatesGroup);
         editorEdit.putBoolean("singleUnitProduction", this.singleUnitProduction);
         editorEdit.putInt("mouseOrders", this.mouseOrders);
         editorEdit.putInt("mousePlacement", this.mousePlacement);

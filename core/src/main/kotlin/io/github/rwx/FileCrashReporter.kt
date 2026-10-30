@@ -63,7 +63,7 @@ class FileCrashReporter private constructor(
         runCatching {
             val report = synchronized(lock) {
                 buildString {
-                    appendLine("===== RWX crash report =====")
+                    appendLine("===== RWXX crash report =====")
                     appendLine("timestamp=${Instant.now()}")
                     appendLine("type=$type")
                     appendLine("thread=${thread.name}")

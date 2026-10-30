@@ -1,15 +1,53 @@
 package io.github.rwx.ui.model
 
+import io.github.rwx.i18n.I18n
+import java.util.Locale
+import io.github.rwx.p2p.P2PRoomAdvertisement
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MultiplayerRoomBrowserTest {
+    @Test
+    fun `P2P display brand keeps the existing discovery protocol`() {
+        val originalLocale = I18n.currentLocale
+        try {
+            I18n.setLocale(Locale.ENGLISH)
+            assertEquals("RWXX P2P", MultiplayerLobbyKind.P2P.label)
+            I18n.setLocale(Locale.SIMPLIFIED_CHINESE)
+            assertEquals("RWXX 点对点联机", MultiplayerLobbyKind.P2P.label)
+        } finally {
+            I18n.setLocale(originalLocale)
+        }
+        val advertisement = P2PRoomAdvertisement()
+        assertEquals("rwx-p2p-lobby", advertisement.magic)
+        assertEquals(1, advertisement.schema)
+    }
+
     private val rooms = listOf(
         room("Alice", "Crossing", state = "battleroom", current = 2, max = 10),
         room("Bob", "Ice Base", state = "ingame", current = 10, max = 10, password = true, mods = true),
         room("Cara", "Crossing", state = "chat", current = 1, max = 4, mods = true),
         room("Dave", "Beach", state = "locked", current = -1, max = 8),
     )
+
+    @Test
+    fun `localized room display preserves discovery values and filters`() {
+        val originalLocale = I18n.currentLocale
+        try {
+            I18n.setLocale(Locale.SIMPLIFIED_CHINESE)
+            val waitingRoom = rooms.first()
+            assertEquals("等待中", waitingRoom.localizedStateLabel)
+            assertEquals("局域网", waitingRoom.localizedTransportLabel)
+            assertEquals("battleroom", waitingRoom.stateLabel)
+            assertEquals("LAN", waitingRoom.transportLabel)
+            assertEquals(listOf("Alice"), visible(status = MultiplayerStatusFilter.Waiting).map { it.hostName })
+            I18n.setLocale(Locale.ENGLISH)
+            assertEquals("Waiting", waitingRoom.localizedStateLabel)
+            assertEquals("LAN", waitingRoom.localizedTransportLabel)
+        } finally {
+            I18n.setLocale(originalLocale)
+        }
+    }
 
     @Test
     fun `search matches host or map and keeps the original order`() {

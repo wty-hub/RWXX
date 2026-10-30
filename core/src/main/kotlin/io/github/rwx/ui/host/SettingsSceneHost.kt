@@ -12,6 +12,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
 import io.github.rwx.PlatformBridge
 import io.github.rwx.input.KoolKeyCodeMapping
+import io.github.rwx.i18n.I18n
 import io.github.rwx.session.GameSession
 import io.github.rwx.ui.ResponsiveContentWidth
 import io.github.rwx.ui.ResponsiveViewportHeight
@@ -177,15 +178,7 @@ class SettingsSceneHost(
         pageContent: SettingsPageContent,
         activeCapture: KeyBindingCaptureTarget?,
     ): List<SettingsScrollRow> {
-        val sectionTitle = when (pageContent.page) {
-            SettingsPage.Display -> DISPLAY_SECTION_TITLE
-            SettingsPage.Audio -> AUDIO_SECTION_TITLE
-            SettingsPage.Interface -> INTERFACE_SECTION_TITLE
-            SettingsPage.Gameplay -> GAMEPLAY_SECTION_TITLE
-            SettingsPage.KeyBindings -> KEY_BINDINGS_SECTION_TITLE
-            SettingsPage.ColorScheme -> COLOR_SCHEME_SECTION_TITLE
-        }
-        val rows = mutableListOf<SettingsScrollRow>(SettingsScrollRow.SectionTitle(sectionTitle))
+        val rows = mutableListOf<SettingsScrollRow>(SettingsScrollRow.SectionTitle(pageContent.page.title))
 
         when (pageContent.page) {
             SettingsPage.Display, SettingsPage.Audio, SettingsPage.Interface, SettingsPage.Gameplay -> {
@@ -204,11 +197,11 @@ class SettingsSceneHost(
             }
 
             SettingsPage.KeyBindings -> {
-                rows.add(SettingsScrollRow.BodyText(KEY_BINDINGS_HINT))
+                rows.add(SettingsScrollRow.BodyText(I18n.settings.keyBindings.hint()))
                 val controller = keyBindingController()
                 keyBindingRows(controller, activeCapture).forEach { row ->
                     if (row.keyBinding.d()) {
-                        rows.add(SettingsScrollRow.SectionTitle(row.keyBinding.name))
+                        rows.add(SettingsScrollRow.SectionTitle(localizedKeyBindingName(row.keyBinding)))
                     } else {
                         rows.add(SettingsScrollRow.KeyBinding(row))
                     }
@@ -216,7 +209,7 @@ class SettingsSceneHost(
             }
 
             SettingsPage.ColorScheme -> {
-                rows.add(SettingsScrollRow.BodyText(COLOR_SCHEME_HINT))
+                rows.add(SettingsScrollRow.BodyText(I18n.settings.colorScheme.hint()))
                 pageContent.items.filterIsInstance<SettingsPageItem.ColorSchemeSelector>().forEach { selectorItem ->
                     rows.add(SettingsScrollRow.ColorSchemeSelector(selectorItem.item, selectorItem.selected))
                 }
@@ -334,8 +327,8 @@ class SettingsSceneHost(
             SettingKeyBindingRow(
                 index = index,
                 keyBinding = keyBinding,
-                primaryText = keyBinding.b(PRIMARY_KEY_SLOT),
-                secondaryText = keyBinding.b(SECONDARY_KEY_SLOT),
+                primaryText = localizedKeyBindingSlot(keyBinding.b(PRIMARY_KEY_SLOT)),
+                secondaryText = localizedKeyBindingSlot(keyBinding.b(SECONDARY_KEY_SLOT)),
                 primaryOverlaps = hasOverlappingBinding(controller, keyBinding, PRIMARY_KEY_SLOT),
                 secondaryOverlaps = hasOverlappingBinding(controller, keyBinding, SECONDARY_KEY_SLOT),
                 activeSlot = activeCapture?.takeIf { it.bindingIndex == index }?.slot,
@@ -363,15 +356,6 @@ class SettingsSceneHost(
 
     companion object {
         const val SETTINGS_SCENE_NAME: String = "settings"
-        const val DISPLAY_SECTION_TITLE: String = "Display & Input"
-        const val AUDIO_SECTION_TITLE: String = "Audio"
-        const val INTERFACE_SECTION_TITLE: String = "Interface"
-        const val GAMEPLAY_SECTION_TITLE: String = "Gameplay"
-        const val KEY_BINDINGS_SECTION_TITLE: String = "Key Bindings"
-        const val KEY_BINDINGS_HINT: String =
-            "Click a binding slot, then press the replacement key. Escape cancels capture."
-        const val COLOR_SCHEME_SECTION_TITLE: String = "In-game Color Scheme"
-        const val COLOR_SCHEME_HINT: String = "These colors apply to the game HUD and in-game mod windows. Menus and the pause panel use the fixed cyberpunk theme."
         private const val PRIMARY_KEY_SLOT: Int = 0
         private const val SECONDARY_KEY_SLOT: Int = 1
     }

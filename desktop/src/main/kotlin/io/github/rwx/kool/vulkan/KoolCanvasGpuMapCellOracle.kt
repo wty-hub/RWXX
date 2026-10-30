@@ -28,6 +28,7 @@ import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.OnRenderScene
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.VertexLayouts
@@ -224,6 +225,8 @@ object KoolCanvasGpuMapCellOracle {
             val engine = GameLogic()
             engine.replayEngine = ReplayEngine()
             GameEngine.isNonAndroidVersion = true
+            GameEngine.isPCOrIOSVersion = true
+            GameEngine.isIOSVersion = false
             engine.renderGraphicsEngine = root
             val tileConstructor = MapTile::class.java.getDeclaredConstructor().apply { isAccessible = true }
             val map = TileMap().apply {
@@ -257,10 +260,22 @@ object KoolCanvasGpuMapCellOracle {
         val envelopes = mutableListOf<FrameEnvelope>()
 
         try {
+            // Keep a complete old picture on screen while the differently sized (32x24, not the
+            // primed map-cell size) target allocates its first attachment. Observe the actual host
+            // choice on every render callback; waiting for the later pixel comparison misses this
+            // window entirely.
+            root.beginFrame(WIDTH, HEIGHT)
+            root.b(0xff314159.toInt())
+            val previous = store.freezeFrame(root.snapshot(), ++sequence, 1L, sequence.toInt(), 1L)
+            envelopes += previous
+            host.submit(previous)
+            awaitCondition("initial complete frame") { host.currentFrame() === previous.frame }
+
             drawContent(cell, stamp, FIRST)
             cell.p()
             val first = present(root, store, host, target, ++sequence)
             envelopes += first.second
+            checks += verifyColdPresentation(scene, host, previous.frame, first.first, first.second.frame)
             // Kool needs more than one frame before a newly created mesh is live; sample after the
             // target has finished its render frames plus a margin.
             waitCycles(8)
@@ -317,6 +332,63 @@ object KoolCanvasGpuMapCellOracle {
             // No explicit scene release: the process exits right after, and releasing the scene while
             // the render loop still collects it aborts the backend thread with "already released".
             store.close()
+        }
+    }
+
+    /**
+     * Checks the cold transition before any settling delay. This is a presentation/binding check,
+     * not a screenshot of the first swapchain image; the subsequent comparison still checks pixels.
+     */
+    private suspend fun verifyColdPresentation(
+        scene: Scene,
+        host: KoolCanvasSceneHost,
+        previous: KoolCanvasFrame,
+        versionId: KoolCanvasTextureId,
+        next: KoolCanvasFrame,
+    ): Int {
+        var coldFrames = 0
+        val adopted = CompletableDeferred<Unit>()
+        // Registered after the host callback, so currentFrame is the frame it actually chose for
+        // this render cycle. No suspension occurs between present() and installing this observer.
+        val observer = OnRenderScene {
+            if (!adopted.isCompleted) {
+                try {
+                    val current = host.currentFrame()
+                    val registered = KoolCanvasTextureRegistry.isGpuTargetTexture(versionId)
+                    val ready = KoolCanvasTextureRegistry.isGpuTargetTextureReady(versionId)
+                    if (registered && !ready) {
+                        coldFrames++
+                        check(current === previous) {
+                            "cold target replaced the complete frame before its attachment existed"
+                        }
+                    }
+                    check(current === previous || current === next) {
+                        "cold transition presented an unrelated or empty frame"
+                    }
+                    if (current === next) {
+                        check(ready) { "first target presentation used an unready attachment" }
+                        val texture = KoolCanvasTextureRegistry.resolve(
+                            KoolCanvasTextureRef(versionId, WIDTH, HEIGHT),
+                            KoolCanvasTextureFilter.Nearest,
+                        )
+                        check(texture.gpuTexture != null && !texture.name.startsWith("rwx-canvas-placeholder-")) {
+                            "first target presentation resolved to the magenta placeholder"
+                        }
+                        adopted.complete(Unit)
+                    }
+                } catch (failure: Throwable) {
+                    adopted.completeExceptionally(failure)
+                }
+            }
+        }
+        scene.onRenderScene += observer
+        try {
+            withTimeout(10_000L) { adopted.await() }
+            check(coldFrames > 0) { "cold presentation check never observed a pending attachment" }
+            println("RWXGpuMapCellOracle cold-presentation retainedFrames=$coldFrames adoptedReady=true placeholder=false")
+            return coldFrames + 2
+        } finally {
+            scene.onRenderScene -= observer
         }
     }
 

@@ -1,4 +1,4 @@
-rootProject.name = "RWX"
+rootProject.name = "RWXX"
 
 pluginManagement {
     repositories {

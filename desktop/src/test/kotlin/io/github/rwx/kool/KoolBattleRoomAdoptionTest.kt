@@ -26,6 +26,8 @@ class KoolBattleRoomAdoptionTest {
                 }
 
                 override fun updateWindowResolution(width: Int, height: Int) = Unit
+
+                override fun updateWindowResolution(width: Int, height: Int, renderSurfaceScale: Float) = Unit
             }
             engine.networkEngine = NetworkEngine().apply {
                 gameHasBeenStarted = true

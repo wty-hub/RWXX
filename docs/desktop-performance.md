@@ -4,9 +4,49 @@
 [Windows 快速拖图优化实现记录](windows-map-pan-optimization.md)。本文保留较早的测试数据与架构演进；
 涉及游戏循环内联于 Kool 回调的描述属于历史阶段，当前使用独立引擎所有者线程。
 
+2026 年 10 月 30 日按用户要求将自动档上限调整为 300 FPS，当前行为见下一节。本文其余章节保留的
+帧率、功耗相关观察及测试结果属于此前版本，不能作为本轮节能改动的验证结果。
+
 本文记录 RWXX Linux 桌面端从「选中圈卡、操作不跟手」到「约 2000 单位仍能稳住 60fps」的改动。目标是：**只改显示和平台层，仿真与原版铁锈 bit-exact，可以联机。**
 
 约束见 `.cursor/rules/rw-compatibility.mdc`：不改确定性仿真、网络包、存档/回放、地图模组解析结果、校验和、游戏规则。`core/src/main/java/com/corrodinggames/rts/**` 里凡走逻辑路径的行为必须与 `/home/wty/code/TuanHun/铁锈代码` 一致。性能工作放在显示与平台层（`desktop/.../kool` 与纯显示代码）。旧的 `desktop/.../slick` 与 `slick2d-lwjgl3` 已删除，见第 11 节；下文提到它们的段落是当时的实测记录。
+
+## 当前默认节奏（2026-10-30）
+
+桌面「自动」档以 300 FPS 为呈现上限；已保存的手动上限继续生效。
+手动 30 / 60 / 120 / 144 / 240 / 300 FPS 档位继续保留。省电模式将呈现上限设为 30 FPS，
+避免引擎已经低频运行时，GPU 仍反复绘制同一画面。OpenGL 与 Vulkan 使用相同的目标解析。
+
+开启 VSync 时，统一目标还会取所设上限与当前窗口所在显示器刷新率的较小值；系统未报告
+刷新率时按 60 Hz 处理。Swing 宿主在窗口活动、显示、最小化、移动和调整尺寸时发布状态，
+跨屏后刷新显示器信息。失焦、隐藏或最小化时，呈现上限进一步降至 30 FPS；较低目标仍保留。
+此判断使用宿主真实窗口状态，鼠标悬停或 Kool 画布的旧焦点标志不会恢复后台高刷。
+
+`RWX-engine-owner` 也按这一目标限制外层循环和 CPU 画面生产，避免低呈现率背后继续生产
+数百张无人使用的画面。开启高刷新率时，外层循环目标限制在 61～300 Hz；关闭高刷新率时
+保持原版普通节奏约 61 Hz。因此手动 30 FPS 或后台 30 FPS 不会把正常网络与输入循环降至
+30 Hz。既有省电模式保留原版约 31 Hz 的外层节奏。
+
+所有者线程默认使用 `LockSupport.parkNanos` 等待完整剩余间隔，输入入队可唤醒线程。
+旧的休眠加末尾忙等策略仅在 `RWX_HYBRID_OWNER_PACING=1` 时启用；同时设置
+`RWX_LEGACY_OWNER_PACING=1` 时，以完整休眠策略为准。引擎仍使用实际经过时间作为 delta，
+保留原版时间换算、联机和回放累积器；这不是固定 61 tick/s 模拟。FIFO 输入队列和完整原版
+循环独立运行，不由 GPU 呈现回调驱动，隐藏窗口也不会暂停模拟。
+
+基准测试应显式指定目标，例如 `RWX_DESKTOP_TARGET_FPS=300`，不能用自动档推断吞吐上限。
+该变量优先于手动档与省电呈现档，并兼容旧名 `RWX_SLICK_TARGET_FPS`；VSync 和后台上限
+仍然生效，所有者循环仍最高 300 Hz。比较时须记录前后台状态、VSync、显示器刷新率、
+高刷新率开关与等待策略。以下旧数据对应当时配置，不代表这些新默认值的测量结果。
+
+本轮 macOS 验证见 [节流验证记录](verification/desktop-power-pacing-2026-10-26.json)。
+以下等待与后台测量完成于自动档为 60 FPS 的版本，后来曾调整为 120 FPS；本轮按用户要求
+改为 300 FPS。原有测量不能据此推断 300 FPS 前台游玩的温度或功耗。
+300 Hz 目标、空 tick 回调的两轮等待测试中，旧 hybrid 等待使用约 31.7%～31.8% 单核 CPU，
+完整休眠使用约 0.47%～0.60%；实际循环频率分别约 300 Hz 和 243～245 Hz，休眠存在系统调度
+误差。该测试只测等待开销，不能作为整局游戏 CPU 或温度降幅。两个 500 单位移动场景均正常
+退出，失焦后的呈现约 29.8 FPS，模拟继续推进；因两个窗口均在启动后失焦，未形成有效的
+前台整局 A/B。桌面测试和 macOS 应用打包通过；核心全量测试有一项本地回放数量假设失败
+（预期一个未完整录制的回放，实际六个）。没有测量整机温度或功率，也未重新进行双端联机验收。
 
 ## 1. 问题是怎么定位的
 
@@ -125,7 +165,7 @@ Kool 原来 `swapInterval=1`，在 `KoolGlCanvas.render()` 里等垂直同步，
 | `RWX_CHECKSUM_LOG=/path/file` | 每 tick 一行：原版 `GameStateChecksum` + 每个可命令单位浮点 bit 的更严 FNV |
 | `--replay=` / `RWX_REPLAY_SPEED` | 窗口版自动播回放，方便对校验和 |
 | `RWX_CANVAS_PERF=1` | 每 2 秒一行：Kool 画布重放（`KoolCanvasFrameRenderer.render`）的 avg/peak，见 11.5 |
-| `RWX_DESKTOP_TARGET_FPS=N` | 覆盖设置的 `maxFrameRate`（兼容旧的 `RWX_SLICK_TARGET_FPS`），设很大等于关掉节流 |
+| `RWX_DESKTOP_TARGET_FPS=N` | 显式覆盖呈现目标（兼容旧的 `RWX_SLICK_TARGET_FPS`）；当前仍受 VSync 和后台上限约束，见「当前默认节奏」 |
 | `RWX_TEXTURE_DEBUG=1` | Kool 画布每次 ARGB→RGBA 转换按纹理 id 计数，用来找"每帧重传哪张纹理" |
 
 不需要窗口时用 `:desktop:headless`。它走同一条 `gameLoop`，不创建 OpenGL。`--checksum=` 和 `RWX_CHECKSUM_LOG` 写的是同一种文件。

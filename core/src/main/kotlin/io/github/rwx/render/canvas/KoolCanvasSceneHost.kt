@@ -118,6 +118,10 @@ class KoolCanvasSceneHost(
     private val mailbox = LatestFrameMailbox()
     private var currentEnvelope: FrameEnvelope? = null
     private var installedResources: AutoCloseable? = null
+    // At most one installed frame waits for cold offscreen attachments. The mailbox continues to
+    // coalesce newer submissions while the current scene and its camera remain visible.
+    private var preparingEnvelope: FrameEnvelope? = null
+    private var preparingResources: AutoCloseable? = null
     private var renderedEnvelope: FrameEnvelope? = null
     private var retirementSink: ((() -> Unit) -> Unit)? = null
 
@@ -191,7 +195,22 @@ class KoolCanvasSceneHost(
 
     private fun retireCurrent() {
         val envelope = currentEnvelope ?: return
-        val installed = installedResources
+        retire(envelope, installedResources) {
+            currentEnvelope = null
+            installedResources = null
+        }
+    }
+
+    private fun retirePreparing() {
+        val envelope = preparingEnvelope ?: return
+        // Even though this frame was never presented, its offscreen passes may be in flight.
+        retire(envelope, preparingResources) {
+            preparingEnvelope = null
+            preparingResources = null
+        }
+    }
+
+    private fun retire(envelope: FrameEnvelope, installed: AutoCloseable?, accepted: () -> Unit) {
         // Until the fence sink accepts retirement, keep the old front and GPU owners in place.
         // A sink may invoke or enqueue the callback and then throw; that callback must stay inert.
         val retirementState = AtomicInteger(0) // Pending, accepted, requested, released, rejected.
@@ -213,12 +232,16 @@ class KoolCanvasSceneHost(
             retirementState.set(4)
             throw failure
         }
-        currentEnvelope = null
-        installedResources = null
+        accepted()
         if (!retirementState.compareAndSet(0, 1) && retirementState.compareAndSet(2, 3)) {
             releaseResources()
         }
     }
+
+    private fun targetsReady(envelope: FrameEnvelope): Boolean =
+        envelope.resourceLease.resources().all { (id, resource) ->
+            resource !is FrozenCanvasResource.GpuTarget || KoolCanvasTextureRegistry.isGpuTargetTextureReady(id)
+        }
 
     private fun configure(scene: Scene) {
         activeScene = scene
@@ -237,6 +260,7 @@ class KoolCanvasSceneHost(
             CanvasFramePresentation.clear(presentationOwner)
             presentationTracker?.clear()
             mailbox.close()
+            retirePreparing()
             retireCurrent()
             // Only clear the process-wide hooks if they are still ours; a scene swap configures the
             // replacement before the old scene is released.
@@ -256,18 +280,35 @@ class KoolCanvasSceneHost(
             var replayed = false
             if (!useEnvelope) {
                 mailbox.clear()
+                retirePreparing()
                 retireCurrent()
             }
-            mailbox.poll()?.let { next ->
+            val preparing = preparingEnvelope
+            if (preparing != null) {
+                if (targetsReady(preparing)) {
+                    gpuTargetPasses.refreshPreparedTargets(preparing.resourceLease)
+                    retireCurrent()
+                    currentEnvelope = preparing
+                    installedResources = preparingResources
+                    preparingEnvelope = null
+                    preparingResources = null
+                }
+                // Do not replace a just-prepared frame with another cold one in this callback.
+            } else mailbox.poll()?.let { next ->
                 // Install first: shared versions retain an owner while the previous GPU lease retires.
                 val installStart = CanvasRenderStageTrace.start()
                 var installed: AutoCloseable? = null
                 var adopted = false
                 try {
                     installed = installResources(next.resourceLease)
-                    retireCurrent()
-                    currentEnvelope = next
-                    installedResources = installed
+                    if (targetsReady(next)) {
+                        retireCurrent()
+                        currentEnvelope = next
+                        installedResources = installed
+                    } else {
+                        preparingEnvelope = next
+                        preparingResources = installed
+                    }
                     adopted = true
                     CanvasRenderStageTrace.record("envelope-install", installStart, next.sequence, next.generation)
                 } catch (failure: Throwable) {

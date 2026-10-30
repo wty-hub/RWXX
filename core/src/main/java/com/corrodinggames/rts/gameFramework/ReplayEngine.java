@@ -111,6 +111,10 @@ public class ReplayEngine {
     private final AtomicReference<Integer> pendingSeek = new AtomicReference<>();
     private volatile SeekSession seekSession;
     private boolean restoringSeek;
+    public static final float MIN_PLAYBACK_SPEED = .25f;
+    public static final float MAX_PLAYBACK_SPEED = 64f;
+    private static final float[] PLAYBACK_SPEEDS = { .25f, .5f, 1f, 2f, 4f, 8f, 16f, 32f, 64f };
+    private float playbackSpeedBeforePause = 1f;
     // Presentation only: never serialized into the replay or simulation snapshots.
     private boolean fogDisplayEnabled;
     private int fogDisplayTeamId = -1;
@@ -427,47 +431,48 @@ public class ReplayEngine {
         return FileHelper.getRWFile(str, this.a, z);
     }
 
-    public void a() {
-        GameEngine gameEngine = GameEngine.getInstance();
+    /** The configured speed, including while paused or catching up to a seek target. */
+    public float getPlaybackSpeed() {
+        SeekSession session = seekSession;
+        GameEngine engine = GameEngine.getInstance();
+        float speed = session != null ? session.speed : engine == null ? 0 : engine.gameSpeed;
+        return Float.isFinite(speed) && speed > 0 ? speed : playbackSpeedBeforePause;
+    }
+
+    public void togglePlayback() {
         if (isSeeking() || isPlaybackEnded()) return;
-        if (gameEngine.gameSpeed != 0.0f) {
-            gameEngine.gameSpeed = 0.0f;
+        GameEngine engine = GameEngine.getInstance();
+        if (engine.gameSpeed != 0) {
+            playbackSpeedBeforePause = getPlaybackSpeed();
+            engine.gameSpeed = 0;
         } else {
-            gameEngine.gameSpeed = 1.0f;
+            engine.gameSpeed = playbackSpeedBeforePause;
         }
     }
 
-    public void b() {
-        GameEngine gameEngine = GameEngine.getInstance();
+    public void speedUp() { changePlaybackSpeed(1); }
+    public void slowDown() { changePlaybackSpeed(-1); }
+
+    private void changePlaybackSpeed(int direction) {
         if (isSeeking() || isPlaybackEnded()) return;
-        if (gameEngine.gameSpeed == 1.0f) {
-            gameEngine.gameSpeed = 2.0f;
-            return;
-        }
-        if (gameEngine.gameSpeed == 2.0f) {
-            gameEngine.gameSpeed = 4.0f;
-            return;
-        }
-        if (gameEngine.gameSpeed == 4.0f) {
-            gameEngine.gameSpeed = 8.0f;
-            return;
-        }
-        if (gameEngine.gameSpeed == 8.0f) {
-            gameEngine.gameSpeed = 16.0f;
-            return;
-        }
-        if (gameEngine.gameSpeed == 16.0f) {
-            gameEngine.gameSpeed = 32.0f;
-            return;
-        }
-        if (gameEngine.gameSpeed == 32.0f) {
-            gameEngine.gameSpeed = 64.0f;
-        } else if (gameEngine.gameSpeed == 64.0f) {
-            gameEngine.gameSpeed = 1.0f;
+        GameEngine engine = GameEngine.getInstance();
+        float current = getPlaybackSpeed();
+        float next = direction > 0 ? MAX_PLAYBACK_SPEED : MIN_PLAYBACK_SPEED;
+        if (direction > 0) {
+            for (float speed : PLAYBACK_SPEEDS) {
+                if (speed > current) { next = speed; break; }
+            }
         } else {
-            gameEngine.gameSpeed = 1.0f;
+            for (int i = PLAYBACK_SPEEDS.length - 1; i >= 0; i--) {
+                if (PLAYBACK_SPEEDS[i] < current) { next = PLAYBACK_SPEEDS[i]; break; }
+            }
         }
+        playbackSpeedBeforePause = next;
+        if (engine.gameSpeed != 0) engine.gameSpeed = next;
     }
+
+    public void a() { togglePlayback(); }
+    public void b() { speedUp(); }
 
     public void a(int i, String str, String str2, int i2) {
         ReplayWriter replayWriter = this.replayWriter;
@@ -573,6 +578,7 @@ public class ReplayEngine {
             realtimeFog.reset();
             fogTick = -1;
             if (!restoringSeek) {
+                playbackSpeedBeforePause = 1f;
                 fogCheckpoints.clear();
                 fogDisplayEnabled = false;
                 fogDisplayTeamId = -1;

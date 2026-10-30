@@ -77,6 +77,8 @@ def main():
                              'because it leaves black holes across the map; --tile-run is for fixing it.')
     parser.add_argument('--map-texture-batches', action='store_true',
                         help='Compact ordered GPU map-cell texture batches; experimental candidate')
+    parser.add_argument('--prepared-map-tiles', action='store_true',
+                        help='Controlled prepared map recording: omitted explicitly disables this product-default feature')
     parser.add_argument('--map-fog-batches', action='store_true',
                         help='Literal-order mixed fog mask batches; experimental candidate')
     parser.add_argument('--map-zoom-generation', action='store_true',
@@ -100,6 +102,7 @@ def main():
                              'a 16MB sprite atlas page), which G1 then has to collect specially.')
     parser.add_argument('--engine-section-trace', action='store_true')
     parser.add_argument('--input-response-trace', action='store_true', help='Correctness: normal session input adoption and accepted picture latency')
+    parser.add_argument('--frame-lifecycle-trace', action='store_true', help='Diagnostic: join produced, chosen, native submission and accepted picture identities')
     parser.add_argument('--real-scene-oracle', action='store_true', help='Correctness: compare live leased game snapshots through control and candidate rendering')
     parser.add_argument('--real-scene-cell-oracle', action='store_true', help='Correctness: additionally compare actual live map attachments with independent replays of the same frozen cells')
     parser.add_argument('--reuse-paint-snapshots', action='store_true', help='Candidate: reuse unchanged immutable paints after checking all normalized legacy getter values')
@@ -245,6 +248,8 @@ def main():
                 'RWX_REPLAY_PAN_SAMPLE_SECONDS': str(args.sample_seconds),
                 'RWX_REPLAY_PAN_REPETITIONS': str(args.repetitions),
                 'RWX_DEBUG_AUTO_EXIT_SECONDS': str(max(140, args.warmup_seconds + args.sample_seconds * args.repetitions + 85))})
+    # Keep frozen ABBA controls explicit even when the current product default is ON.
+    env['RWX_PREPARED_MAP_TILES'] = '1' if args.prepared_map_tiles else '0'
     if args.disable_map_rect_batches:
         env['RWX_MAP_RECT_BATCHES'] = '0'
     if args.msaa is not None:
@@ -366,6 +371,8 @@ def main():
                     'RWX_CANVAS_MEMORY_DIAGNOSTICS': '1'})
     if args.input_response_trace:
         env['RWX_INPUT_RESPONSE_TRACE'] = str(output / 'input-response.csv')
+    if args.frame_lifecycle_trace:
+        env['RWX_FRAME_LIFECYCLE_TRACE'] = str(output / 'frame-lifecycle.csv')
     if args.normal_input_probe:
         env['RWX_NORMAL_INPUT_PROBE'] = '1'
     env.update({'RWX_REPLAY_PAN_PERIOD_SECONDS': str(args.camera_period_seconds),
@@ -394,7 +401,7 @@ def main():
               'mapFogBatchesRequested': args.map_fog_batches,
               'replaySha256': digest, 'replaySource': str(args.replay.resolve()),
               'diagnosticOnly': args.diagnostic or args.vk_trace or args.engine_section_trace or camera_trace or args.cpu_target_profile
-                                or args.canvas_stage_trace or args.command_profile or args.command_timing or args.gc_log or args.input_response_trace or args.real_scene_oracle or args.real_scene_cell_oracle or args.export_replay_map,
+                                or args.canvas_stage_trace or args.command_profile or args.command_timing or args.gc_log or args.input_response_trace or args.real_scene_oracle or args.real_scene_cell_oracle or args.export_replay_map or args.frame_lifecycle_trace,
               'measurementProtocol': measurement_protocol,
               'protocol': {'fog': args.fog, 'cameraMode': camera_mode, 'cameraModeRequested': args.camera_mode,
                            'cameraPeriodSeconds': args.camera_period_seconds,
@@ -417,6 +424,7 @@ def main():
                            'gpuMapCellPassReuseDisabled': args.disable_gpu_map_cell_pass_reuse,
                            'primitiveTextMetricsRequested': args.primitive_text_metrics,
                            'preparedCanvasTextRequested': args.prepare_canvas_text,
+                           'preparedMapTilesRequested': args.prepared_map_tiles,
                            'cpuTargetProfileRequested': args.cpu_target_profile,
                            'rasterThreadsRequested': args.raster_threads,
                            'vulkanStageTraceRequested': args.vk_trace,
@@ -467,6 +475,9 @@ def main():
         report['run']['validMeasurement'] = False
     if args.reuse_map_mesh_slots and 'RWXMapMeshSlots reuseConfirmed=true' not in actual_log:
         report['run']['invalidReasons'].append('map mesh slot reuse did not confirm a compatible unused mesh')
+        report['run']['validMeasurement'] = False
+    if args.prepared_map_tiles and 'RWXPreparedMapTiles recordingConfirmed=true' not in actual_log:
+        report['run']['invalidReasons'].append('prepared map tile recording was not exercised')
         report['run']['validMeasurement'] = False
     if args.cull_offscreen_text and 'RWXOffscreenText cullConfirmed=true' not in actual_log:
         report['run']['invalidReasons'].append('offscreen text rejection was not exercised')

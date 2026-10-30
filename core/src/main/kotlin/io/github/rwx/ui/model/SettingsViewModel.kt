@@ -14,13 +14,17 @@ import io.github.rwx.ui.ColorSchemeRegistry
 import kotlin.math.roundToInt
 
 
-enum class SettingsPage(val title: String, val tabTitle: String) {
-    Display("Display & Input", "Display"),
-    Audio("Audio", "Audio"),
-    Interface("Interface", "Interface"),
-    Gameplay("Gameplay", "Gameplay"),
-    KeyBindings("Key Bindings", "Keys"),
-    ColorScheme("In-game Color Scheme", "Game Colors"),
+enum class SettingsPage(private val titleText: I18nText, private val tabText: I18nText = titleText) {
+    Display(I18n.settings.pages.display, I18n.settings.tabs.display),
+    Audio(I18n.settings.pages.audio),
+    Interface(I18n.settings.pages.`interface`),
+    Gameplay(I18n.settings.pages.gameplay),
+    KeyBindings(I18n.settings.pages.keyBindings, I18n.settings.tabs.keyBindings),
+    ColorScheme(I18n.settings.pages.colorScheme, I18n.settings.tabs.colorScheme),
+    ;
+
+    val title: String get() = titleText()
+    val tabTitle: String get() = tabText()
 }
 
 sealed interface SettingsPageItem {
@@ -62,7 +66,8 @@ enum class MaxFrameRateOption(val framesPerSecond: Int) {
     ;
 
     override fun toString(): String =
-        if (this == Auto) I18n.settings.display.maxFrameRateAuto() else "$framesPerSecond FPS"
+        if (this == Auto) I18n.settings.display.maxFrameRateAuto()
+        else I18n.settings.display.framesPerSecond(framesPerSecond)
 
     companion object {
         fun fromFramesPerSecond(value: Int): MaxFrameRateOption =
@@ -170,6 +175,7 @@ class SettingsModel {
     val showPlayerChatInGame: MutableStateValue<Boolean> = mutableStateOf(true)
     val showChatAndPingShortcuts: MutableStateValue<Boolean> = mutableStateOf(true)
     val smartSelection: MutableStateValue<Boolean> = mutableStateOf(true)
+    val shiftDigitUpdatesGroup: MutableStateValue<Boolean> = mutableStateOf(true)
     val singleUnitProduction: MutableStateValue<Boolean> = mutableStateOf(false)
     val autosaving: MutableStateValue<Boolean> = mutableStateOf(true)
     val udpInMultiplayer: MutableStateValue<Boolean> = mutableStateOf(false)
@@ -220,8 +226,8 @@ class SettingsViewModel(val model: SettingsModel) {
         if (GameEngine.isPC()) add(SettingToggle(I18n.settings.display.adaptiveBattleVisuals, model.adaptiveBattleVisuals))
         add(SettingToggle(I18n.settings.display.showUnitIcons, model.showUnitIcons))
         add(SettingToggle(I18n.settings.display.useMinimapAllyColors, model.useMinimapAllyColors))
+        add(SettingToggle(I18n.settings.display.showZoomButton, model.showZoomButton))
         if (isAndroidPlatform()) {
-            add(SettingToggle(I18n.settings.display.showZoomButton, model.showZoomButton))
             add(SettingToggle(I18n.settings.`interface`.immersiveFullScreen, model.immersiveFullScreen))
             add(SettingToggle(I18n.settings.display.renderDoubleScale, model.renderDoubleScale))
         }
@@ -292,6 +298,7 @@ class SettingsViewModel(val model: SettingsModel) {
         add(SettingToggle(I18n.settings.gameplay.quickRally, model.quickRally))
         add(SettingToggle(I18n.settings.gameplay.doubleClickToAttackMove, model.doubleClickToAttackMove))
         add(SettingToggle(I18n.settings.gameplay.smartSelection, model.smartSelection))
+        add(SettingToggle(I18n.settings.gameplay.shiftDigitUpdatesGroup, model.shiftDigitUpdatesGroup))
         if (isAndroidPlatform()) {
             add(SettingToggle(I18n.settings.gameplay.autosaving, model.autosaving))
         }
@@ -311,7 +318,7 @@ class SettingsViewModel(val model: SettingsModel) {
 
     fun colorSchemeItems(): List<SettingColorSchemeItem> = ColorSchemeRegistry.schemes.map { scheme ->
         SettingColorSchemeItem(
-            label = scheme.displayName,
+            label = localizedColorSchemeName(scheme),
             key = "color-scheme:${scheme.id.value}",
             id = scheme.id,
             scheme = scheme,

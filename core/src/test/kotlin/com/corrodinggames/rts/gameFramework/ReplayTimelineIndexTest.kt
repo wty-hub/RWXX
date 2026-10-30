@@ -54,25 +54,32 @@ class ReplayTimelineIndexTest {
         assertFailsWith<IOException> { ReplayTimelineIndex.scan(byteArrayOf(0, 9, 0).inputStream()) { false } }
     }
 
-    @Test fun `scans repository replays including metadata beyond end block`() {
-        val directory = File("../replays")
-        if (!directory.isDirectory) return
-        val files = directory.listFiles()!!.filter { it.extension == "replay" }
-        assertTrue(files.isNotEmpty())
-        var indexed = 0
-        var incomplete = 0
-        files.forEach { file ->
-            try {
-                val index = file.inputStream().use { ReplayTimelineIndex.scan(it) { false } }
-                assertTrue(index.durationMillis > 0, file.name)
-                assertTrue(index.endTick > 0, file.name)
-                indexed++
-            } catch (error: IOException) {
-                assertEquals("Replay has no end metadata", error.message, file.name)
-                incomplete++
+    @Test fun `scans complete and interrupted replay files including metadata beyond end block`() {
+        // Local replays are user data and are not versioned test fixtures. Keep both complete and
+        // interrupted recordings under test without assuming how many games the developer recorded.
+        val directory = kotlin.io.path.createTempDirectory("replay-index-fixtures-").toFile()
+        try {
+            File(directory, "complete-a.replay").writeBytes(fixture())
+            File(directory, "complete-b.replay").writeBytes(fixture())
+            File(directory, "interrupted.replay").writeBytes(fixture(metadata = false))
+            val files = directory.listFiles()!!.filter { it.extension == "replay" }
+            var indexed = 0
+            var incomplete = 0
+            files.forEach { file ->
+                try {
+                    val index = file.inputStream().use { ReplayTimelineIndex.scan(it) { false } }
+                    assertEquals(30_000, index.durationMillis, file.name)
+                    assertEquals(900, index.endTick, file.name)
+                    indexed++
+                } catch (error: IOException) {
+                    assertEquals("Replay has no end metadata", error.message, file.name)
+                    incomplete++
+                }
             }
+            assertEquals(2, indexed)
+            assertEquals(1, incomplete)
+        } finally {
+            directory.deleteRecursively()
         }
-        assertTrue(indexed >= 2)
-        assertEquals(1, incomplete) // repository also includes one interrupted recording
     }
 }

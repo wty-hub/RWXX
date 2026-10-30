@@ -1,0 +1,141 @@
+{
+  "date": "2026-10-30",
+  "platform": "macOS arm64 / Vulkan MoltenVK",
+  "status": "candidate-implemented-correctness-passed-end-to-end-not-accepted",
+  "candidate": {
+    "environment": "RWX_PREPARED_MAP_TILES=1",
+    "harnessFlag": "--prepared-map-tiles",
+    "defaultEnabled": false,
+    "scope": "One synchronous MapLayer texture-paint snapshot. Existing coordinate arithmetic, fog traversal, target commits, source registration, texture versions, state and GPU retirement remain in the original paths.",
+    "runtimeSha256": "555afd008f301d3adbe6b466f30893f57d762c99b4f61537bcd75da82951da63"
+  },
+  "validation": {
+    "coreAffected": {
+      "tests": 257,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "log": "build/zoom-optimization-20261030/build-validation-3.log"
+    },
+    "desktop": {
+      "tests": 137,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "log": "build/zoom-optimization-20261030/build-validation-3.log"
+    },
+    "batchEnabledDifferential": {
+      "tests": 6,
+      "failures": 0,
+      "log": "build/zoom-optimization-20261030/batched-validation.log"
+    },
+    "pythonTargeted": {
+      "lifecycleTests": 13,
+      "inputResponseTests": 7,
+      "failures": 0
+    },
+    "pythonBroader": "93/94 passed; existing frozen-tooling test compares /var and /private/var macOS symlink paths without normalization. Not modified.",
+    "nativeVulkan": {
+      "mapChecks": 3844,
+      "fontChecks": 3072,
+      "fogChecks": 4608,
+      "mapContentVersions": 2,
+      "mapFogVariants": 3,
+      "maximumMapChannelDelta": 1,
+      "channelTolerance": 3,
+      "preparedRecordingConfirmed": true,
+      "log": "build/zoom-optimization-20261030/gpu-oracle-2.log"
+    },
+    "retainedFailures": [
+      "New MapLayer fixture initially initialized PlayerTeam before an engine existed; fixture corrected.",
+      "New MapLayer fixture initially lacked isPCOrIOSVersion; optimized-path assertion detected zero prepared draws. Fixture corrected and both batch configurations passed.",
+      "First macOS native oracle launch lacked -XstartOnFirstThread; task corrected and native oracle passed."
+    ]
+  },
+  "recordingMicrobenchmark": {
+    "scope": "Single-thread producer recording, scope preparation, snapshot and hash; no window/context/GPU or simulated game. Eight sequential low-priority JVM processes, 128MiB heap, SerialGC, ActiveProcessorCount=1, 64 warmup layers + 128 measured layers x 1024 draws. Concurrent user work allowed; CPU/wall not a controlled end-to-end result.",
+    "summary": {
+      "False": {
+        "arms": {
+          "False": {
+            "bytesPerDraw": 268.289429,
+            "cpuNanosPerDraw": 82.3783875,
+            "wallNanosPerDraw": 92.8239825
+          },
+          "True": {
+            "bytesPerDraw": 140.289307,
+            "cpuNanosPerDraw": 74.5277405,
+            "wallNanosPerDraw": 82.7048645
+          }
+        },
+        "changePercent": {
+          "bytesPerDraw": -47.70971501825366,
+          "cpuNanosPerDraw": -9.52998382008875,
+          "wallNanosPerDraw": -10.901404709714967
+        }
+      },
+      "True": {
+        "arms": {
+          "False": {
+            "bytesPerDraw": 240.344116,
+            "cpuNanosPerDraw": 81.882477,
+            "wallNanosPerDraw": 93.253452
+          },
+          "True": {
+            "bytesPerDraw": 48.343994,
+            "cpuNanosPerDraw": 61.126709,
+            "wallNanosPerDraw": 61.200779
+          }
+        },
+        "changePercent": {
+          "bytesPerDraw": -79.8855096581603,
+          "cpuNanosPerDraw": -25.348241480286436,
+          "wallNanosPerDraw": -34.371567285251814
+        }
+      }
+    },
+    "runtimeSha256": "555afd008f301d3adbe6b466f30893f57d762c99b4f61537bcd75da82951da63",
+    "benchmarkClassSha256": "df162d23f264565d32fcbb401a0b3397fde1f28219b350e53d57d873ce0b0406",
+    "rawReport": "build/zoom-optimization-20261030/micro-summary.json",
+    "limitations": [
+      "No window, GPU, normal input, game simulation or end-to-end frame measurement.",
+      "User work continued; wall-clock and short CPU samples are uncontrolled screening data.",
+      "snapshotHash is a DCE sink with process-local enum identities; it is not a cross-JVM correctness assertion.",
+      "An initial summary script wrongly required equal cross-JVM hashCode; summary repaired from all retained original logs without rerunning or removing any sample.",
+      "Same-process differential recording and native pixel checks provide the independent correctness evidence."
+    ]
+  },
+  "frameLifecycleDiagnostics": {
+    "environment": "RWX_FRAME_LIFECYCLE_TRACE=/absolute/new/frame-lifecycle.csv",
+    "defaultEnabled": false,
+    "boundedPrimitiveEvents": 262144,
+    "inputTraceRows": 65536,
+    "notes": [
+      "Exact generation/sequence/submission joins, not temporal-overlap attribution.",
+      "Input trace no longer formats CSV or flushes files in the render callback.",
+      "Missing completion, overflow, failed native submission, repeated native presentation and incomplete input invalidate analysis.",
+      "No physical OS input, GPU completion or display scanout claims.",
+      "Unit tests passed; no new full-window runtime lifecycle capture was run after the user requested non-disruptive testing."
+    ]
+  },
+  "endToEnd": {
+    "accepted": false,
+    "abbaComplete": false,
+    "foregroundPolicy": "User requested that testing must not interfere with normal work. No subsequent focus changes, foreground restoration, visible pressure tests or forced foreground runs are authorized. Default to windowless, low-priority, limited-concurrency verification.",
+    "cancellation": "build/zoom-optimization-20261030/abba-cancelled.json",
+    "retainedInvalidRuns": [
+      "baseline-foreground-01: original mixed fixture encountered DirectBuffer OOM and lost focus; incomplete invalid run.",
+      "baseline-builtin-02: completed 500 moving units but lost focus; ~30FPS background cap, invalid foreground evidence.",
+      "abba-a1-off: two windows, focus not continuous, invalid.",
+      "abba-b1-on: no completed measurement windows; incomplete ABBA cancelled."
+    ],
+    "claimsNotMade": [
+      "Stable default end-to-end speedup",
+      "No dropped frames while panning/zooming",
+      "Ten-minute continuity",
+      "Physical input response",
+      "Original-client parity",
+      "General DirectBuffer OOM fix"
+    ]
+  }
+}

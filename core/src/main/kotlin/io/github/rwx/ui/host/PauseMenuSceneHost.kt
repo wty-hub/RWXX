@@ -59,7 +59,7 @@ class PauseMenuSceneHost(
                 CyberCardRail(theme, active = true)
                 Column(width = Grow.Std, height = FitContent) {
                     Row(width = Grow.Std, height = Dp(24f)) {
-                        Text("RWXX  //  COMMAND") {
+                        Text(I18n.pausemenu.command()) {
                             modifier.width(Grow.Std).font(UiTheme.Fonts.caption)
                                 .textColor(theme.palette.primary)
                         }

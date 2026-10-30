@@ -6,6 +6,9 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$ExternalJavaHome,
 
+    [ValidatePattern('^[A-Za-z0-9][A-Za-z0-9._-]*$')]
+    [string]$AppName = 'RWXX',
+
     [int]$TimeoutSeconds = 20
 )
 
@@ -34,7 +37,7 @@ function Normalize-Path([string]$Path) {
 
 $resolvedImage = Normalize-Path((Resolve-Path -LiteralPath $ImagePath).Path)
 $resolvedExternalJava = Normalize-Path((Resolve-Path -LiteralPath $ExternalJavaHome).Path)
-$sourceLauncher = Join-Path $resolvedImage 'RWX.exe'
+$sourceLauncher = Join-Path $resolvedImage "${AppName}.exe"
 $sourceApp = Join-Path $resolvedImage 'app'
 $sourceRuntime = Join-Path $resolvedImage 'runtime'
 
@@ -47,9 +50,9 @@ if (-not (Test-Path -LiteralPath (Join-Path $resolvedExternalJava 'bin\java.dll'
     throw "外层 Java Home 缺少 bin\java.dll: $resolvedExternalJava"
 }
 
-$testRoot = Join-Path ([IO.Path]::GetTempPath()) ("rwx-launcher-collision-" + [Guid]::NewGuid().ToString('N'))
-$testImage = Join-Path $testRoot 'RWX'
-$testLauncher = Join-Path $testImage 'RWX.exe'
+$testRoot = Join-Path ([IO.Path]::GetTempPath()) ("${AppName}-launcher-collision-" + [Guid]::NewGuid().ToString('N'))
+$testImage = Join-Path $testRoot $AppName
+$testLauncher = Join-Path $testImage "${AppName}.exe"
 $launcherProcess = $null
 $junctions = [Collections.Generic.List[string]]::new()
 
@@ -102,7 +105,7 @@ try {
     }
 
     if ($null -eq $loadedJvm) {
-        throw "在 $TimeoutSeconds 秒内没有观察到 RWX 加载 jvm.dll"
+        throw "在 $TimeoutSeconds 秒内没有观察到 $AppName 加载 jvm.dll"
     }
 
     $normalizedJvm = Normalize-Path($loadedJvm)
@@ -113,10 +116,10 @@ try {
     if (-not ($allowedRuntimeRoots | Where-Object {
         $normalizedJvm.StartsWith($_ + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)
     })) {
-        throw "RWX 加载了包外 JVM: $normalizedJvm"
+        throw "$AppName 加载了包外 JVM: $normalizedJvm"
     }
 
-    Write-Host "RWX 使用包内 JVM: $normalizedJvm"
+    Write-Host "$AppName 使用包内 JVM: $normalizedJvm"
 } finally {
     if ($null -ne $launcherProcess) {
         foreach ($processId in Get-ProcessTreeIds $launcherProcess.Id) {

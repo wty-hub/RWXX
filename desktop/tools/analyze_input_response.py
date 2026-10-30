@@ -15,6 +15,8 @@ def analyze(rows, windows):
                any(window['sampleStartNanos'] <= int(row['sampledNanos']) <= window['sampleEndNanos'] for window in windows)]
     accepted_ids = {row['id'] for row in accepted}
     reasons = []
+    if any('overflow' in row['stage'] for row in rows):
+        reasons.append('input trace exceeded its bounded storage; truncated data cannot validate response')
     if not accepted:
         reasons.append('no input sampled in the measurement windows reached an accepted picture')
     missing = [row for row in sampled if row['id'] not in accepted_ids]

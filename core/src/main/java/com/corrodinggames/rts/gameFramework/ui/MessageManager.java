@@ -85,7 +85,7 @@ public class MessageManager {
         String strSubstring;
         GameEngine gameEngine = GameEngine.getInstance();
         pruneMessages();
-        int i2 = (int) (20.0f * gameEngine.screenScale);
+        int lineHeight = Math.max((int) (20.0f * gameEngine.screenScale), TextUtils.getLineHeight(this.textPaint));
         boolean messageDisplayPersistent = gameEngine.isMessageDisplayPersistent();
         for (int size = this.messages.size() - 1; size >= 0; size--) {
             Message message = (Message) this.messages.get(size);
@@ -108,8 +108,12 @@ public class MessageManager {
                     }
                 }
                 this.textPaint.b(message.textColor);
-                gameEngine.renderGraphicsEngine.a(strSubstring, 20, i, this.textPaint);
-                i += i2;
+                String text = strSubstring == null ? "" : strSubstring;
+                text = text.replace("\r\n", "\n").replace('\r', '\n');
+                for (String line : text.split("\n", -1)) {
+                    gameEngine.renderGraphicsEngine.a(line, 20, i, this.textPaint);
+                    i += lineHeight;
+                }
             }
         }
         return i;

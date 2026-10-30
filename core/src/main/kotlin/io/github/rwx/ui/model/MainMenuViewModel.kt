@@ -70,16 +70,16 @@ object MainMenuViewModel {
 
     private val MainMenuAction.badge: String
         get() = when (this) {
-            MainMenuAction.Continue -> "GO"
-            MainMenuAction.SinglePlayer -> "SP"
-            MainMenuAction.WatchReplay -> "REP"
-            MainMenuAction.Sandbox -> "SAN"
-            MainMenuAction.Multiplayer -> "MP"
-            MainMenuAction.P2PMultiplayer -> "P2P"
-            MainMenuAction.Settings -> "SET"
-            MainMenuAction.Mods -> "MOD"
-            MainMenuAction.ResourceBrowser -> "RES"
-            MainMenuAction.About -> "INFO"
-            MainMenuAction.Exit -> "EXIT"
+            MainMenuAction.Continue -> I18n.mainmenu.badge.resume()
+            MainMenuAction.SinglePlayer -> I18n.mainmenu.badge.singlePlayer()
+            MainMenuAction.WatchReplay -> I18n.mainmenu.badge.replay()
+            MainMenuAction.Sandbox -> I18n.mainmenu.badge.sandbox()
+            MainMenuAction.Multiplayer -> I18n.mainmenu.badge.multiplayer()
+            MainMenuAction.P2PMultiplayer -> I18n.mainmenu.badge.p2p()
+            MainMenuAction.Settings -> I18n.mainmenu.badge.settings()
+            MainMenuAction.Mods -> I18n.mainmenu.badge.mods()
+            MainMenuAction.ResourceBrowser -> I18n.mainmenu.badge.resources()
+            MainMenuAction.About -> I18n.mainmenu.badge.about()
+            MainMenuAction.Exit -> I18n.mainmenu.badge.exit()
         }
 }

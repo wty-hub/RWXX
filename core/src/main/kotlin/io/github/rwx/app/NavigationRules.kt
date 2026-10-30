@@ -142,7 +142,7 @@ internal fun backActionForScreen(
             BackNavigationAction.ShowExitDialog
         }
 
-        AppScreen.Paused -> BackNavigationAction.ShowExitDialog
+        AppScreen.Paused -> BackNavigationAction.InGame
         AppScreen.BattleRoom -> BackNavigationAction.CloseBattleRoom
         else -> BackNavigationAction.MainMenu
     }

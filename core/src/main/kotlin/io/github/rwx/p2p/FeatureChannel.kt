@@ -116,7 +116,7 @@ class FeatureChannel {
         val peerId = try {
             PeerId.fromBase58(hostPeerId)
         } catch (e: Exception) {
-            throw IOException("Invalid RWX feature host peer id: $hostPeerId", e)
+            throw IOException("Invalid RWXX feature host peer id: $hostPeerId", e)
         }
 
         val handler = ClientProtocolHandler(hostPeerId)
@@ -129,7 +129,7 @@ class FeatureChannel {
                 .orTimeout(STREAM_OPEN_TIMEOUT_MS, TimeUnit.MILLISECONDS)
                 .get()
         } catch (e: Exception) {
-            throw IOException("Failed to connect RWX feature channel to host", e)
+            throw IOException("Failed to connect RWXX feature channel to host", e)
         }
         val streamPromise = connection.muxerSession().createStream(
             listOf(binding.toInitiator(listOf(PROTOCOL_ID)))
@@ -140,7 +140,7 @@ class FeatureChannel {
                 .get()
         } catch (e: Exception) {
             runCatching { streamPromise.stream.getNow(null)?.close() }
-            throw IOException("Failed to negotiate RWX feature channel", e)
+            throw IOException("Failed to negotiate RWXX feature channel", e)
         }
         controllersByPeer[hostPeerId] = controller
         running.set(true)
@@ -355,7 +355,7 @@ class FeatureChannel {
         if (missing.isEmpty()) {
             GameEngine.log("RWX map features ok map=${message.mapPath} required=${requiredFeatures.joinToString(",")}")
         } else {
-            val text = "RWX map requires unsupported features: ${missing.joinToString(",")}"
+            val text = "RWXX map requires unsupported features: ${missing.joinToString(",")}"
             GameEngine.log(text)
             NetworkEngine.reportDesync(text)
         }

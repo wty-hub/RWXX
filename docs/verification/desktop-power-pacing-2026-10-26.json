@@ -1,0 +1,100 @@
+{
+  "date": "2026-10-26",
+  "platform": "macOS arm64",
+  "ownerWait": {
+    "targetHz": 300,
+    "workload": "Empty tick callback; 250 ms warmup then 2 seconds per sample, hybrid/park/park/hybrid order. CPU measured inside the owner thread with ThreadMXBean. This is wait overhead, not whole-game CPU or heat.",
+    "samples": [
+      {
+        "mode": "hybrid",
+        "seconds": 2.006,
+        "ownerCpuPercent": 31.817,
+        "loopHz": 300.055
+      },
+      {
+        "mode": "park",
+        "seconds": 2.006,
+        "ownerCpuPercent": 0.598,
+        "loopHz": 242.784
+      },
+      {
+        "mode": "park",
+        "seconds": 2.005,
+        "ownerCpuPercent": 0.466,
+        "loopHz": 245.42
+      },
+      {
+        "mode": "hybrid",
+        "seconds": 2.004,
+        "ownerCpuPercent": 31.697,
+        "loopHz": 299.937
+      }
+    ]
+  },
+  "backgroundSmoke": {
+    "workload": "500 moving land/air units, 15 teams, fog on, pan camera, 1280x720, Vulkan MSAA4",
+    "runs": [
+      {
+        "configuredPolicy": "previous-policy",
+        "exitCode": 0,
+        "lastTwoWindows": [
+          {
+            "presentFps": 29.85,
+            "producedHz": 52.14,
+            "simulationTicksPerSecond": 52.14
+          },
+          {
+            "presentFps": 29.87,
+            "producedHz": 52.77,
+            "simulationTicksPerSecond": 52.77
+          }
+        ]
+      },
+      {
+        "configuredPolicy": "daily-default",
+        "exitCode": 0,
+        "lastTwoWindows": [
+          {
+            "presentFps": 29.83,
+            "producedHz": 52.3,
+            "simulationTicksPerSecond": 52.3
+          },
+          {
+            "presentFps": 29.84,
+            "producedHz": 52.72,
+            "simulationTicksPerSecond": 52.72
+          }
+        ]
+      }
+    ],
+    "limitation": "Both applications lost foreground focus during startup and used the same 30 FPS background cap. Do not interpret their CPU difference as foreground savings. These runs only verify background throttling and continued engine updates."
+  },
+  "verification": {
+    "desktopTests": {
+      "tests": 137,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "coreTests": "Initial full run: 389 tests, 1 failure, 1 skipped. ReplayTimelineIndexTest assumes 1 incomplete local replay; current replay directory has 6. It does not exercise frame pacing.",
+    "build": ":desktop:test :desktop:packageDesktopDistribution succeeded (22s)."
+  },
+  "limitations": [
+    "No direct temperature or power measurement.",
+    "No valid foreground whole-game A/B: both windows lost foreground focus during startup.",
+    "No new multiplayer interoperability or Android device run."
+  ],
+  "buildJarSha256": "4d48eccba3591161557871c6c5fcebe607ca2eebdb64b1f027db03b851150e67",
+  "default120FollowUp": {
+    "change": "Auto presentation cap changed from 60 to 120 FPS at user request; manual 60 FPS remains available. Background cap and sleeping waits unchanged.",
+    "tests": {
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "build": ":desktop:packageDesktopDistribution succeeded.",
+    "jarSha256": "14d46fe73afb1dd3fa441b7df4f3567effa38d8b8e743d9e7be225e9665e9bd8",
+    "measurementScope": "Earlier CPU wait and background smoke measurements were collected before this default change. No foreground 120 FPS power or temperature measurement."
+  }
+}

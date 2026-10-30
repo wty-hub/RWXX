@@ -46,7 +46,7 @@ public class InGameMenuController {
             }
             if ((gameEngine.missionEngine != null && gameEngine.missionEngine.hasMapPortalMode())
                     || this.callbacks.shouldShowMapList()) {
-                menu.add(0, 24, 0, "RWX Maps");
+                menu.add(0, 24, 0, "RWXX Maps");
             }
             menu.add(0, 2, 0, Locale.get("menus.ingame.settings"));
             if (gameEngine.replayEngine != null && gameEngine.replayEngine.j()) {

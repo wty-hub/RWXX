@@ -5,6 +5,7 @@ import de.fabmax.kool.modules.ui2.UiScene
 import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.Scene
+import io.github.rwx.i18n.I18n
 import io.github.rwx.ui.component.BattleRoom
 import io.github.rwx.ui.component.PanelStyle
 import io.github.rwx.ui.component.addPanelSurface
@@ -20,8 +21,8 @@ class BattleRoomSceneHost(
     private val chatLines = mutableStateListOf<BattleRoomChatLine>()
     private val info: MutableStateValue<BattleRoomInfo> = mutableStateOf(
         BattleRoomInfo(
-            mapName = "No map selected",
-            mapTypeLabel = "Battle room",
+            mapName = I18n.battleroom.noMapSelected(),
+            mapTypeLabel = I18n.battleroom.title(),
         )
     )
     private val isHost: MutableStateValue<Boolean> = mutableStateOf(true)

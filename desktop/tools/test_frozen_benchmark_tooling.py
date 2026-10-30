@@ -41,8 +41,8 @@ class FrozenBenchmarkToolingTest(unittest.TestCase):
             left, right, map_file, vulkan_file = json.loads(result.stdout)
             self.assertEqual(Path(left), project)
             self.assertEqual(Path(right), project)
-            self.assertEqual(Path(map_file).parent, snapshot)
-            self.assertEqual(Path(vulkan_file).parent, snapshot)
+            self.assertEqual(Path(map_file).resolve().parent, snapshot.resolve())
+            self.assertEqual(Path(vulkan_file).resolve().parent, snapshot.resolve())
 
 
 if __name__ == '__main__':

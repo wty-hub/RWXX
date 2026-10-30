@@ -411,6 +411,61 @@ class MapPanCameraTest(unittest.TestCase):
                 self.assertEqual(failure.exception.code, 2)
                 self.assertFalse(output.exists())
 
+    def test_prepared_map_control_and_candidate_pin_environment_despite_product_default_and_inheritance(self):
+        for module in (map_pan_live, map_pan_replay):
+            for requested in (False, True):
+                with self.subTest(module=module.__name__, requested=requested), tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    jar = root / 'frozen.jar'; jar.write_bytes(b'frozen runtime test fixture')
+                    replay = root / 'europe.replay'; replay.write_bytes(b'replay test fixture')
+                    output = root / 'measurement'; invoked = {}
+                    def fake_launch(command, environment, out, name, timeout):
+                        invoked['environment'] = environment
+                        (out / f'{name}.log').write_text('RWXVulkanConfiguration gpuMapCellSupported=true\n' +
+                            ('RWXPreparedMapTiles recordingConfirmed=true' if requested else ''), encoding='utf-8')
+                        return {'name': name}
+                    arguments = [module.__name__, '--jar', str(jar), '--java', 'unused-java', '--output', str(output),
+                                 '--camera-mode', 'pan-zoom']
+                    if module is map_pan_replay:
+                        arguments.extend(['--replay', str(replay)])
+                    if requested:
+                        arguments.append('--prepared-map-tiles')
+                    fixture = [{'kind': 'scenario', 'requestedUnits': 500, 'mode': 'moving', 'teams': 15, 'fogEnabled': False}]
+                    with patch('sys.argv', arguments), patch.dict('os.environ', {'RWX_PREPARED_MAP_TILES': '0' if requested else '1'}), \
+                            patch.object(module, 'java_command', return_value=['unused-java']), \
+                            patch.object(module, 'launch', side_effect=fake_launch), \
+                            patch.object(module, 'analyze_run', return_value=self.gpu_run()), \
+                            patch.object(module, 'read_json_lines', return_value=fixture, create=True), patch('builtins.print'):
+                        self.assertEqual(module.main(), 0)
+                    self.assertEqual(invoked['environment']['RWX_PREPARED_MAP_TILES'], '1' if requested else '0')
+                    summary = json.loads((output / 'diagnostic-summary.json').read_text(encoding='utf-8'))
+                    self.assertEqual(summary['protocol']['preparedMapTilesRequested'], requested)
+                    self.assertTrue(summary['run']['validMeasurement'])
+
+    def test_requested_prepared_map_recording_requires_runtime_confirmation(self):
+        for module in (map_pan_live, map_pan_replay):
+            with self.subTest(module=module.__name__), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                jar = root / 'frozen.jar'; jar.write_bytes(b'frozen runtime test fixture')
+                replay = root / 'europe.replay'; replay.write_bytes(b'replay test fixture')
+                output = root / 'measurement'
+                def fake_launch(command, environment, out, name, timeout):
+                    (out / f'{name}.log').write_text('RWXVulkanConfiguration gpuMapCellSupported=true', encoding='utf-8')
+                    return {'name': name}
+                arguments = [module.__name__, '--jar', str(jar), '--java', 'unused-java', '--output', str(output),
+                             '--prepared-map-tiles', '--camera-mode', 'pan-zoom']
+                if module is map_pan_replay:
+                    arguments.extend(['--replay', str(replay)])
+                fixture = [{'kind': 'scenario', 'requestedUnits': 500, 'mode': 'moving', 'teams': 15, 'fogEnabled': False}]
+                with patch('sys.argv', arguments), patch.object(module, 'java_command', return_value=['unused-java']), \
+                        patch.object(module, 'launch', side_effect=fake_launch), \
+                        patch.object(module, 'analyze_run', return_value=self.gpu_run()), \
+                        patch.object(module, 'read_json_lines', return_value=fixture, create=True), patch('builtins.print'):
+                    self.assertEqual(module.main(), 1)
+                summary = json.loads((output / 'diagnostic-summary.json').read_text(encoding='utf-8'))
+                self.assertFalse(summary['run']['validMeasurement'])
+                self.assertIn('prepared map tile recording was not exercised', summary['run']['invalidReasons'])
+
     def test_gpu_pass_reuse_runner_is_explicit_and_records_control_protocol_without_java(self):
         for module in (map_pan_live, map_pan_replay):
             for disabled in (False, True):

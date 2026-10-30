@@ -151,14 +151,28 @@ class SwingKoolHost private constructor(
             override fun windowClosing(e: WindowEvent) {
                 requestClose()
             }
+
+            override fun windowActivated(e: WindowEvent) = publishWindowActivity()
+            override fun windowDeactivated(e: WindowEvent) = publishWindowActivity()
+            override fun windowIconified(e: WindowEvent) = publishWindowActivity()
+            override fun windowDeiconified(e: WindowEvent) = publishWindowActivity()
+        })
+        frame.addWindowStateListener { publishWindowActivity() }
+        frame.addComponentListener(object : ComponentAdapter() {
+            override fun componentShown(e: ComponentEvent) = publishWindowActivity()
+            override fun componentHidden(e: ComponentEvent) = publishWindowActivity()
+            override fun componentMoved(e: ComponentEvent) = publishWindowActivity()
+            override fun componentResized(e: ComponentEvent) = publishWindowActivity()
         })
         frame.addWindowFocusListener(object : WindowAdapter() {
             override fun windowLostFocus(e: WindowEvent) {
+                publishWindowActivity()
                 fullscreenShortcutDown = false
                 hostFocusLostHandler?.invoke()
             }
 
             override fun windowGainedFocus(e: WindowEvent) {
+                publishWindowActivity()
                 focusVisibleCanvas()
             }
         })
@@ -169,6 +183,7 @@ class SwingKoolHost private constructor(
             frame.setLocationRelativeTo(null)
         }
         frame.isVisible = true
+        publishWindowActivity()
         resizeCanvases()
         fitInitialContentSize()
         val configuration = frame.graphicsConfiguration
@@ -176,6 +191,21 @@ class SwingKoolHost private constructor(
             "displayBounds=${configuration.bounds} scale=${configuration.defaultTransform.scaleX}x${configuration.defaultTransform.scaleY} " +
             "screenInsets=${Toolkit.getDefaultToolkit().getScreenInsets(configuration)}" }
         showKool()
+    }
+
+    private fun publishWindowActivity() {
+        val previous = DesktopWindowActivity.state
+        DesktopWindowActivity.update(
+            active = frame.isActive,
+            showing = frame.isShowing,
+            iconified = frame.extendedState and JFrame.ICONIFIED != 0,
+            refreshRate = runCatching {
+                frame.graphicsConfiguration?.device?.displayMode?.refreshRate ?: 0
+            }.getOrDefault(0),
+        )
+        if (DesktopWindowActivity.state != previous) {
+            logger.info { "RWX window activity: ${DesktopWindowActivity.state}" }
+        }
     }
 
     /** The game world is drawn into the Kool canvas, which is the only presented surface. */
@@ -467,7 +497,7 @@ class SwingKoolHost private constructor(
             System.getProperty("rwx.windowTitle")
                 ?.takeIf { it.isNotBlank() }
                 ?: System.getenv("RWX_WINDOW_TITLE")?.takeIf { it.isNotBlank() }
-                ?: "RWX Game"
+                ?: "RWXX Game"
 
         private fun isMacHost(): Boolean = System.getProperty("os.name").startsWith("mac", ignoreCase = true)
 

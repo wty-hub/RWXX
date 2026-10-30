@@ -1,5 +1,6 @@
 package io.github.rwx.kool
 
+import java.lang.management.ManagementFactory
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -8,6 +9,38 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class EngineOwnerLoopTest {
+    @Test fun `default high refresh pacing yields the CPU between ticks`() {
+        val threadMetrics = ManagementFactory.getThreadMXBean()
+        if (!threadMetrics.isCurrentThreadCpuTimeSupported) return
+        if (!threadMetrics.isThreadCpuTimeEnabled) threadMetrics.isThreadCpuTimeEnabled = true
+        val warmedUp = CountDownLatch(30)
+        val loop = EngineOwnerLoop({ 3_333_333L }, { warmedUp.countDown() }, { throw it })
+        try {
+            assertTrue(warmedUp.await(5, TimeUnit.SECONDS))
+            val before = loop.call { System.nanoTime() to threadMetrics.currentThreadCpuTime }
+            Thread.sleep(500)
+            val after = loop.call { System.nanoTime() to threadMetrics.currentThreadCpuTime }
+            val elapsed = after.first - before.first
+            val cpu = after.second - before.second
+            // Leave ample scheduling/VM overhead; the previous 1.5 ms spin used about 45% of a core.
+            assertTrue(cpu < elapsed / 5 + 10_000_000L,
+                "Idle owner used ${cpu / 1_000_000} ms CPU during ${elapsed / 1_000_000} ms of paced waiting")
+        } finally { loop.close() }
+    }
+
+    @Test fun `full interval parking still wakes immediately for queued work and close`() {
+        val firstTick = CountDownLatch(1)
+        val loop = EngineOwnerLoop({ TimeUnit.SECONDS.toNanos(30) }, { firstTick.countDown() }, { throw it },
+            legacyPacing = true)
+        try {
+            assertTrue(firstTick.await(5, TimeUnit.SECONDS))
+            val ownerThread = loop.submit { Thread.currentThread() }.get(1, TimeUnit.SECONDS)
+            assertEquals(42, loop.submit { 42 }.get(1, TimeUnit.SECONDS))
+            loop.close()
+            assertTrue(!ownerThread.isAlive, "Closing the owner did not interrupt its frame wait")
+        } finally { loop.close() }
+    }
+
     @Test fun `nested owner operations do not hold the producer queue lock`() {
         val entered = CountDownLatch(1)
         val release = CountDownLatch(1)

@@ -213,7 +213,7 @@ private fun MapEntry.playerLabel(): String =
     if (isSavedGame) {
         I18n.singleplayer.loadSave()
     } else {
-        CompatibilityLabel() ?: playerCount?.let { "${it}p" } ?: "Scenario"
+        CompatibilityLabel() ?: playerCount?.let { I18n.levelselect.playerCount(it) } ?: I18n.levelselect.scenario()
     }
 
 private const val MAP_GRID_MAX_COLUMNS: Int = 6
@@ -296,7 +296,8 @@ fun UiScope.LevelSelectList(
                     .modifier.align(AlignmentX.Center, AlignmentY.Center)
             } else {
                 Text(
-                    if (model.currentMode == LevelSelectMode.SavedGames) "No saved games found" else "No maps match the current filter"
+                    if (model.currentMode == LevelSelectMode.SavedGames) I18n.levelselect.noSavedGames()
+                    else I18n.levelselect.noMatches()
                 ) {
                     modifier
                         .width(Grow.Std)
@@ -424,7 +425,7 @@ private fun UiScope.LevelSelectFilterInput(
             onPressed = onBack,
         )
         LevelSelectControlLabel(
-            "Filter",
+            I18n.levelselect.filter(),
             Icon.Search,
             theme,
             width = metrics.controlLabelWidth,
@@ -439,7 +440,7 @@ private fun UiScope.LevelSelectFilterInput(
                 )
                 .height(metrics.controlHeight)
                 .padding(start = UiTheme.Spacing.sm)
-                .hint("Map name")
+                .hint(I18n.levelselect.searchHint())
                 .font(UiTheme.Fonts.bodySmall)
                 .colors(
                     textColor = theme.palette.textPrimary,
@@ -472,21 +473,21 @@ private fun UiScope.LevelSelectOptionBar(
         Row(width = contentWidth) {
             modifier.margin(bottom = UiTheme.Spacing.xs)
             LevelSelectCombo(
-                "Map Type", Icon.Map, modes, selectedModeIndex, null, theme,
+                I18n.levelselect.mapType(), Icon.Map, modes, selectedModeIndex, null, theme,
                 labelWidth = metrics.controlLabelWidth,
                 comboWidth = metrics.comboWidth,
                 controlHeight = metrics.controlHeight,
             ) { index -> modes.getOrNull(index)?.let(onModeSelected) }
             Box(width = UiTheme.Spacing.lg, height = metrics.controlHeight) {}
             LevelSelectCombo(
-                "Players", Icon.Team, filters, selectedFilterIndex, null, theme,
+                I18n.levelselect.players(), Icon.Team, filters, selectedFilterIndex, null, theme,
                 labelWidth = metrics.controlLabelWidth,
                 comboWidth = metrics.comboWidth,
                 controlHeight = metrics.controlHeight,
             ) { onFilterSelected(it) }
             Box(width = UiTheme.Spacing.lg, height = metrics.controlHeight) {}
             LevelSelectCombo(
-                "Sort", Icon.Sort, sortOptions, selectedSortIndex, null, theme,
+                I18n.levelselect.sort(), Icon.Sort, sortOptions, selectedSortIndex, null, theme,
                 labelWidth = metrics.controlLabelWidth,
                 comboWidth = metrics.comboWidth,
                 controlHeight = metrics.controlHeight,
@@ -499,19 +500,19 @@ private fun UiScope.LevelSelectOptionBar(
         Column(width = contentWidth) {
             modifier.margin(bottom = UiTheme.Spacing.md)
             Row(width = contentWidth) {
-                LevelSelectCombo("Map Type", Icon.Map, modes, selectedModeIndex, contentWidth, theme) { index ->
+                LevelSelectCombo(I18n.levelselect.mapType(), Icon.Map, modes, selectedModeIndex, contentWidth, theme) { index ->
                     modes.getOrNull(index)?.let(onModeSelected)
                 }
             }
             Row(width = contentWidth) {
                 modifier.margin(top = UiTheme.Spacing.xs)
-                LevelSelectCombo("Players", Icon.Team, filters, selectedFilterIndex, contentWidth, theme) {
+                LevelSelectCombo(I18n.levelselect.players(), Icon.Team, filters, selectedFilterIndex, contentWidth, theme) {
                     onFilterSelected(it)
                 }
             }
             Row(width = contentWidth) {
                 modifier.margin(top = UiTheme.Spacing.xs)
-                LevelSelectCombo("Sort", Icon.Sort, sortOptions, selectedSortIndex, contentWidth, theme) {
+                LevelSelectCombo(I18n.levelselect.sort(), Icon.Sort, sortOptions, selectedSortIndex, contentWidth, theme) {
                     onSortSelected(it)
                 }
             }
@@ -519,15 +520,15 @@ private fun UiScope.LevelSelectOptionBar(
     } else {
         Row(width = contentWidth) {
             modifier.margin(bottom = UiTheme.Spacing.md)
-            LevelSelectCombo("Map Type", Icon.Map, modes, selectedModeIndex, null, theme) { index ->
+            LevelSelectCombo(I18n.levelselect.mapType(), Icon.Map, modes, selectedModeIndex, null, theme) { index ->
                 modes.getOrNull(index)?.let(onModeSelected)
             }
             Box(width = UiTheme.Spacing.lg, height = UiTheme.Layout.menuButtonHeight) {}
-            LevelSelectCombo("Players", Icon.Team, filters, selectedFilterIndex, null, theme) {
+            LevelSelectCombo(I18n.levelselect.players(), Icon.Team, filters, selectedFilterIndex, null, theme) {
                 onFilterSelected(it)
             }
             Box(width = UiTheme.Spacing.lg, height = UiTheme.Layout.menuButtonHeight) {}
-            LevelSelectCombo("Sort", Icon.Sort, sortOptions, selectedSortIndex, null, theme) {
+            LevelSelectCombo(I18n.levelselect.sort(), Icon.Sort, sortOptions, selectedSortIndex, null, theme) {
                 onSortSelected(it)
             }
         }

@@ -108,7 +108,7 @@ class PacedSwingWindowSubsystem(
 
         private fun framePeriodNanos(): Long {
             val settings = SettingsEngine.getInstance()
-            val targetFrameRate = desktopTargetFrameRate(settings)
+            val targetFrameRate = desktopPresentationFrameRate(desktopTargetFrameRate(settings))
             if (!settings.renderVsync) {
                 return desktopFramePeriodNanos(targetFrameRate, vsync = false, refreshRate = 0)
             }

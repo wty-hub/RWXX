@@ -4,8 +4,8 @@ import com.corrodinggames.rts.gameFramework.GameEngine;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadMXBean;
+import io.github.rwx.diagnostics.RuntimeDiagnostics;
+import java.util.function.LongSupplier;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,10 +14,10 @@ import java.nio.file.Path;
 final class MapCacheTrace {
     private static final MapCacheTrace INSTANCE = open();
     private final BufferedWriter writer;
-    private final ThreadMXBean cpuClock;
+    private final LongSupplier cpuClock;
     private volatile boolean enabled;
 
-    private MapCacheTrace(BufferedWriter writer, ThreadMXBean cpuClock) {
+    private MapCacheTrace(BufferedWriter writer, LongSupplier cpuClock) {
         this.writer = writer;
         this.cpuClock = cpuClock;
         this.enabled = writer != null;
@@ -182,9 +182,7 @@ final class MapCacheTrace {
     }
 
     private long cpuTime() {
-        if (cpuClock == null) return -1;
-        try { return cpuClock.getCurrentThreadCpuTime(); }
-        catch (RuntimeException ignored) { return -1; }
+        return RuntimeDiagnostics.cpuTime(cpuClock);
     }
 
     private synchronized void write(CellSpan span, long end, long cpuNanos,
@@ -228,11 +226,7 @@ final class MapCacheTrace {
             if (parent != null) Files.createDirectories(parent);
             output = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
             output.write("startNanos,endNanos,cpuNanos,event,cellI,cellJ,worldLeft,worldTop,cameraX,cameraY,originX,originY,step,scale,tick,axis,direction,gridCells,screenLeft,screenTop,screenRight,screenBottom,visibleIntersection,completed,cameraXInt,cameraYInt,visibleWorldWidth,visibleWorldHeight,needsRedraw,smoothFade\n");
-            ThreadMXBean clock = null;
-            try {
-                ThreadMXBean candidate = ManagementFactory.getThreadMXBean();
-                if (candidate.isCurrentThreadCpuTimeSupported() && candidate.isThreadCpuTimeEnabled()) clock = candidate;
-            } catch (RuntimeException ignored) { }
+            LongSupplier clock = RuntimeDiagnostics.currentThreadCpuClock();
             MapCacheTrace trace = new MapCacheTrace(output, clock);
             Runtime.getRuntime().addShutdownHook(new Thread(trace::close, "RWX_MAP_CACHE_TRACE-close"));
             return trace;

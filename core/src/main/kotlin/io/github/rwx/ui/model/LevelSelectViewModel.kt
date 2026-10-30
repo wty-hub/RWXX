@@ -96,25 +96,26 @@ data class LevelSelectFilterOption(
     override fun toString(): String = label
 
     companion object {
-        val All: LevelSelectFilterOption = LevelSelectFilterOption("All maps")
+        val All: LevelSelectFilterOption
+            get() = LevelSelectFilterOption(I18n.levelselect.allMaps())
     }
 }
 
-enum class LevelSelectSortOption(private val label: String) {
-    Default("Default"),
-    Name("Name"),
-    Players("Players"),
+enum class LevelSelectSortOption(private val text: I18nText) {
+    Default(I18n.levelselect.sort.defaultOrder),
+    Name(I18n.levelselect.sort.name),
+    Players(I18n.levelselect.sort.players),
     ;
 
-    override fun toString(): String = label
+    override fun toString(): String = text()
 }
 
 object LevelSelectMapBrowser {
     fun filterOptions(maps: List<MapEntry>): List<LevelSelectFilterOption> {
         val playerCounts = maps.mapNotNull { it.playerCount }.distinct().sorted()
         return listOf(LevelSelectFilterOption.All) +
-                playerCounts.map { count -> LevelSelectFilterOption("${count}p maps", count) } +
-                listOf(LevelSelectFilterOption("RWX modes", rwxOnly = true))
+                playerCounts.map { count -> LevelSelectFilterOption(I18n.levelselect.playerMaps(count), count) } +
+                listOf(LevelSelectFilterOption(I18n.levelselect.rwxxModes(), rwxOnly = true))
     }
 
     fun visibleMaps(
@@ -305,12 +306,12 @@ class LevelSelectViewModel(
 fun MapEntry.ModeLabel(): String? = requiredRwxFeatures.ModeLabel()
 
 fun MapEntry.CompatibilityLabel(): String? =
-    ModeLabel()?.let { "Single-player / RWX P2P" }
+    ModeLabel()?.let { I18n.levelselect.compatibility() }
 
 fun List<String>.ModeLabel(): String? =
     when {
-        contains(FeatureIds.AREA_CONTROL) -> "Area Control"
-        contains(FeatureIds.MAP_LINKS) -> "Map Links"
+        contains(FeatureIds.AREA_CONTROL) -> I18n.levelselect.mode.areaControl()
+        contains(FeatureIds.MAP_LINKS) -> I18n.levelselect.mode.mapLinks()
         else -> firstOrNull { it.startsWith("mode:") }
             ?.substringAfter("mode:")
             ?.takeIf { it.isNotBlank() }

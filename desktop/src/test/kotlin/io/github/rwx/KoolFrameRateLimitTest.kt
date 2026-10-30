@@ -10,10 +10,27 @@ import de.fabmax.kool.platform.WindowSubsystem
 import java.lang.reflect.Proxy
 import java.lang.management.ManagementFactory
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /** Exercises the patched Kool limiter with a window stub, without opening a graphics context. */
 class KoolFrameRateLimitTest {
+    @Test
+    fun `Swing activity changes reach the actual Kool limiter`() {
+        val previous = DesktopWindowActivity.state
+        val context = testContext()
+        try {
+            DesktopWindowActivity.update(active = false, showing = true, iconified = false)
+            KoolDesktopMain.syncDesktopFrameRateLimit(context, 300)
+            assertEquals(30, context.maxFrameRate)
+            DesktopWindowActivity.update(active = true, showing = true, iconified = false)
+            KoolDesktopMain.syncDesktopFrameRateLimit(context, 300)
+            assertEquals(300, context.maxFrameRate)
+        } finally {
+            DesktopWindowActivity.update(previous.active, previous.showing, previous.iconified, previous.refreshRate)
+        }
+    }
+
     @Test
     fun `high refresh wait yields most of its CPU budget`() {
         val clock = ManagementFactory.getThreadMXBean()

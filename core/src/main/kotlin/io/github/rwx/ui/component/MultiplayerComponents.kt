@@ -79,9 +79,9 @@ fun UiScope.MultiplayerRoomRow(
         multiplayerCell(room.hostName, contentWidth.fraction(0.18f, Dp(120f), Dp(280f)), theme, AlignmentX.Start)
         multiplayerCell(room.mapName, Grow.Std, theme, AlignmentX.Start)
         multiplayerCell(room.playersLabel, Dp(128f), theme, AlignmentX.Center)
-        multiplayerCell(room.stateLabel, Dp(116f), theme, AlignmentX.Center)
+        multiplayerCell(room.localizedStateLabel, Dp(116f), theme, AlignmentX.Center)
         multiplayerCell(room.versionLabel, Dp(100f), theme, AlignmentX.Center)
-        multiplayerCell(room.transportLabel, Dp(120f), theme, AlignmentX.Center)
+        multiplayerCell(room.localizedTransportLabel, Dp(120f), theme, AlignmentX.Center)
         multiplayerCell(roomMarkers(room), Dp(56f), theme, AlignmentX.Center)
     }
 }
@@ -193,13 +193,13 @@ fun UiScope.MultiplayerRoomList(
     }
     if (contentWidth.value < MULTIPLAYER_COMPACT_WIDTH_DP) {
         Column(width = contentWidth) {
-            TextIconButton("Refresh", Icon.Refresh, buttonWidth, theme) {
+            TextIconButton(I18n.multiplayer.refresh(), Icon.Refresh, buttonWidth, theme) {
                 actions.onRefresh()
             }
-            TextIconButton("Join", Icon.Multiplayer, buttonWidth, theme) {
+            TextIconButton(I18n.common.join(), Icon.Multiplayer, buttonWidth, theme) {
                 actions.onJoinDirect()
             }
-            TextIconButton("Host", Icon.Start, buttonWidth, theme) {
+            TextIconButton(I18n.multiplayer.hostGame(), Icon.Start, buttonWidth, theme) {
                 actions.onHostGame()
             }
             TextIconButton(I18n.multiplayer.rejoinLastGame(), Icon.Back, buttonWidth, theme) {
@@ -209,13 +209,13 @@ fun UiScope.MultiplayerRoomList(
     } else {
         Row {
             modifier.alignX(AlignmentX.Center)
-            TextIconButton("Refresh", Icon.Refresh, buttonWidth, theme) {
+            TextIconButton(I18n.multiplayer.refresh(), Icon.Refresh, buttonWidth, theme) {
                 actions.onRefresh()
             }
-            TextIconButton("Join", Icon.Multiplayer, buttonWidth, theme) {
+            TextIconButton(I18n.common.join(), Icon.Multiplayer, buttonWidth, theme) {
                 actions.onJoinDirect()
             }
-            TextIconButton("Host", Icon.Start, buttonWidth, theme) {
+            TextIconButton(I18n.multiplayer.hostGame(), Icon.Start, buttonWidth, theme) {
                 actions.onHostGame()
             }
         }
@@ -458,14 +458,14 @@ private fun UiScope.multiplayerCell(
 }
 
 private fun roomStatusLabel(room: MultiplayerRoomItem): String =
-    "${room.playersLabel} | ${room.stateLabel} | ${room.versionLabel} | ${room.transportLabel} ${roomMarkers(room)}"
+    "${room.playersLabel} | ${room.localizedStateLabel} | ${room.versionLabel} | ${room.localizedTransportLabel} ${roomMarkers(room)}"
         .trim()
 
 private fun roomMarkers(room: MultiplayerRoomItem): String = buildString {
-    if (room.requiresPassword) append("P")
+    if (room.requiresPassword) append(I18n.multiplayer.passwordMarker())
     if (room.hasMods) {
         if (isNotEmpty()) append(" ")
-        append("M")
+        append(I18n.multiplayer.modMarker())
     }
 }
 

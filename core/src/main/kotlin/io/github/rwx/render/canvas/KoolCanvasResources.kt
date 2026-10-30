@@ -6,14 +6,12 @@ import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.useRaw
 import io.github.rwx.logger
 import java.nio.ByteOrder
-import java.lang.management.ManagementFactory
+import io.github.rwx.diagnostics.RuntimeDiagnostics
 import java.util.IdentityHashMap
 
 private const val COMPLETE_SLICK_FRAME_TEXTURE_ID = "slick-complete-frame"
 private const val CPU_TEXTURE_PROFILE_INTERVAL = 120
-private val argbPackCpuClock = if (CanvasRenderStageTrace.enabled) ManagementFactory.getThreadMXBean().takeIf {
-    it.isCurrentThreadCpuTimeSupported && it.isThreadCpuTimeEnabled
-} else null
+private val argbPackCpuClock = if (CanvasRenderStageTrace.enabled) RuntimeDiagnostics.currentThreadCpuClock() else null
 
 @JvmInline
 value class KoolCanvasTextureId(val value: String)
@@ -437,6 +435,10 @@ object KoolCanvasTextureRegistry :
     @Synchronized
     fun isGpuTargetTexture(id: KoolCanvasTextureId): Boolean = gpuTargetTextures.containsKey(id)
 
+    /** A newly installed target cannot be sampled until its first offscreen submission creates the image. */
+    @Synchronized
+    fun isGpuTargetTextureReady(id: KoolCanvasTextureId): Boolean = gpuTargetTextures[id]?.hasImage() == true
+
     @Synchronized
     override fun retainFrameSnapshot(id: KoolCanvasTextureId) {
         if (id in registeredFrames) {
@@ -740,7 +742,7 @@ object KoolCanvasTextureRegistry :
         reusableBuffer: Uint8Buffer? = null,
     ): ImageData2d {
         val packStart = CanvasRenderStageTrace.start()
-        val packCpuStart = argbPackCpuClock?.currentThreadCpuTime ?: -1L
+        val packCpuStart = if (argbPackCpuClock != null) RuntimeDiagnostics.cpuTime(argbPackCpuClock) else -1L
         val pixelCount = width * height
         val pixels = reusableBuffer ?: Uint8Buffer(pixelCount * 4)
         val bgra = nativeBgraUploads && id.value != COMPLETE_SLICK_FRAME_TEXTURE_ID
@@ -753,8 +755,11 @@ object KoolCanvasTextureRegistry :
             packArgbPixelsToRgba(pixels, argbPixels, pixelCount)
         }
         CanvasRenderStageTrace.record("argb-pack", packStart, pixelCount.toLong() * 4, width.toLong(), height.toLong())
-        if (packCpuStart >= 0L) CanvasRenderStageTrace.record("argb-pack-work", packStart, pixelCount.toLong(),
-            argbPackCpuClock!!.currentThreadCpuTime - packCpuStart, if (bgra) 2 else 0)
+        if (packCpuStart >= 0L) {
+            val packCpuEnd = RuntimeDiagnostics.cpuTime(argbPackCpuClock)
+            if (packCpuEnd >= packCpuStart) CanvasRenderStageTrace.record("argb-pack-work", packStart, pixelCount.toLong(),
+                packCpuEnd - packCpuStart, if (bgra) 2 else 0)
+        }
         if (bgra) return KoolCanvasBgraImageData(pixels, width, height,
             "rwx-canvas-bgra-${id.value}-$filter-$ownerSerial-$uploadSlot")
         return BufferedImageData2d(

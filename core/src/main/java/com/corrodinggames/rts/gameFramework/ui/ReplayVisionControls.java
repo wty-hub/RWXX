@@ -34,6 +34,11 @@ public final class ReplayVisionControls {
         float buttonWidth = 64 * unit;
         Box button = new Box(Math.max(4, Math.min(width - buttonWidth - 4, width / 2 + iconWidth + 12 * unit)),
                 Math.max(4, Math.min(height - 5 * row - 12, buttonTop)), buttonWidth, row);
+        return layout(width, height, unit, button, teams);
+    }
+
+    public static Layout layout(float width, float height, float unit, Box button, int teams) {
+        float row = 30 * unit;
         float panelWidth = Math.max(1, Math.min(width - 8, 280 * unit));
         float panelTop = button.top() + row + 4;
         int visible = Math.max(1, Math.min(teams, (int) ((height - panelTop - 4) / row) - 3));

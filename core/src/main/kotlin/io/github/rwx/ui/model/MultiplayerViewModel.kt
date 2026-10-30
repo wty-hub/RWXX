@@ -21,7 +21,27 @@ data class MultiplayerRoomItem(
     val infoText: String = "",
     val currentPlayers: Int = -1,
     val maxPlayers: Int = 0,
-)
+) {
+    // Discovery values remain unchanged for protocol handling and room filtering.
+    val localizedStateLabel: String
+        get() = when (stateLabel.trim().lowercase()) {
+            "battleroom" -> I18n.multiplayer.filterStatus.waiting()
+            "ingame" -> I18n.multiplayer.filterStatus.inGame()
+            "chat" -> I18n.multiplayer.state.chat()
+            "locked" -> I18n.multiplayer.state.locked()
+            "unknown", "" -> I18n.multiplayer.unknown()
+            else -> stateLabel
+        }
+
+    val localizedTransportLabel: String
+        get() = when (transportLabel.lowercase()) {
+            "lan" -> I18n.multiplayer.transport.lan()
+            "dedicated" -> I18n.multiplayer.transport.dedicated()
+            "internet" -> I18n.multiplayer.transport.internet()
+            "relay" -> I18n.multiplayer.transport.relay()
+            else -> transportLabel
+        }
+}
 
 enum class MultiplayerStatusFilter {
     All,
@@ -131,9 +151,16 @@ object MultiplayerRoomBrowser {
         }
 }
 
-enum class MultiplayerLobbyKind(val label: String) {
-    Original("Original RW"),
-    P2P("RWX P2P"),
+enum class MultiplayerLobbyKind {
+    Original,
+    P2P,
+    ;
+
+    val label: String
+        get() = when (this) {
+            Original -> I18n.multiplayer.lobby.original()
+            P2P -> I18n.multiplayer.lobby.p2p()
+        }
 }
 
 

@@ -201,15 +201,15 @@ internal class InGameDialogController(
     fun showSaveGameDialog() {
         showDialogOverGame(
             Dialog(
-                title = "Save Game",
-                message = "Enter a name to save the game under.",
+                title = I18n.ingame.saveGame(),
+                message = I18n.ingame.savePrompt(),
                 textInput = DialogTextInput(
                     initialText = "rwx_save",
-                    hint = "Save name",
+                    hint = I18n.ingame.saveName(),
                 ),
                 buttons = listOf(
                     DialogButton(
-                        label = "Save",
+                        label = I18n.common.save(),
                         onInputPress = { name ->
                             val saveName = name.trim().ifBlank { "rwx_save" }
                             gameSession.requestSaveGame(saveName)
@@ -225,15 +225,15 @@ internal class InGameDialogController(
         val initialName = defaultExportMapName()
         showDialogOverGame(
             Dialog(
-                title = "Export Map",
-                message = "Enter a name to export the map as.",
+                title = I18n.ingame.exportMap(),
+                message = I18n.ingame.exportPrompt(),
                 textInput = DialogTextInput(
                     initialText = initialName,
-                    hint = "Map name",
+                    hint = I18n.ingame.mapName(),
                 ),
                 buttons = listOf(
                     DialogButton(
-                        label = "Export",
+                        label = I18n.ingame.export(),
                         onInputPress = { name ->
                             val exportName = name.trim().ifBlank { initialName }
                             gameSession.requestExportMap(exportName)
@@ -260,15 +260,15 @@ internal class InGameDialogController(
         val history = gameSession.multiplayerChatHistory()
         showDialogOverGame(
             Dialog(
-                title = if (teamOnly) "Team Chat" else "Chat",
-                message = if (history.isEmpty()) "No chat messages yet." else "",
+                title = if (teamOnly) I18n.ingame.teamChat() else I18n.pausemenu.chat(),
+                message = if (history.isEmpty()) I18n.battleroom.emptyChat() else "",
                 listItems = history.asReversed().map { line ->
                     DialogListItem(line.text, line.teamColorIndex)
                 },
-                textInput = DialogTextInput(hint = "Message", focusOnShow = true),
+                textInput = DialogTextInput(hint = I18n.battleroom.sendMessage(), focusOnShow = true),
                 buttons = listOf(
                     DialogButton(
-                        label = "Send",
+                        label = I18n.battleroom.send(),
                         onInputPress = { message ->
                             val text = message.trim()
                             if (text.isNotBlank()) {
@@ -286,12 +286,12 @@ internal class InGameDialogController(
         val players = gameSession.multiplayerPlayerList()
         showDialogOverGame(
             Dialog(
-                title = "Players",
-                message = if (players.isEmpty()) "No multiplayer players found." else "",
+                title = I18n.battleroom.players(),
+                message = if (players.isEmpty()) I18n.ingame.noPlayers() else "",
                 listItems = players.map { player ->
                     val ping = inGamePlayerPingSuffix(player.pingLabel)
                     DialogListItem(
-                        text = "${player.name}  #${player.spawnLabel}  Team ${player.teamLabel}$ping",
+                        text = I18n.ingame.playerInfo(player.name, player.spawnLabel, player.teamLabel, ping),
                         colorIndex = player.nameColorIndex,
                     )
                 },

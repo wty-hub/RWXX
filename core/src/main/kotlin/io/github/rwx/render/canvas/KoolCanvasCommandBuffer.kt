@@ -6,6 +6,8 @@ class KoolCanvasCommandBuffer(
     private val rectBatches: Boolean = textureBatches,
     private val fogBatches: Boolean = false,
 ) {
+    internal var recordingGeneration = 0L
+        private set
     private val commands = mutableListOf<KoolCanvasCommand>()
     private var fogSize = 0
     private var fogTexture: KoolCanvasTextureRef? = null
@@ -132,6 +134,7 @@ class KoolCanvasCommandBuffer(
     val isEmpty: Boolean get() = commands.isEmpty() && batchSize == 0 && rectBatchSize == 0 && fogSize == 0
 
     fun beginFrame(viewport: KoolCanvasViewport) {
+        recordingGeneration++
         this.viewport = viewport
         commands.clear()
         fogSize = 0
@@ -280,6 +283,46 @@ class KoolCanvasCommandBuffer(
             paint = paint,
             state = state,
         ))
+    }
+
+    /** Same recording as drawTexture, without temporary rectangles on the numeric batch path. */
+    internal fun drawTextureCoordinates(
+        texture: KoolCanvasTextureRef,
+        sourceLeft: Float, sourceTop: Float, sourceRight: Float, sourceBottom: Float,
+        destinationLeft: Float, destinationTop: Float, destinationRight: Float, destinationBottom: Float,
+        paint: KoolCanvasPaint,
+    ) {
+        if (!textureBatches || state.transform !== KoolCanvasTransform.Identity ||
+            state.renderTarget != null || state.drawRole != KoolCanvasDrawRole.Generic ||
+            paint.textureEffect != null || paint.color != KoolCanvasColor.White || paint.alphaMultiplier != 1f ||
+            (paint.blendMode != KoolCanvasBlendMode.SourceOver && paint.blendMode != KoolCanvasBlendMode.Source) ||
+            !(sourceRight - sourceLeft > 0f && sourceBottom - sourceTop > 0f &&
+                destinationRight - destinationLeft > 0f && destinationBottom - destinationTop > 0f)
+        ) {
+            drawTexture(texture, KoolCanvasRect(destinationLeft, destinationTop, destinationRight, destinationBottom),
+                paint, KoolCanvasRect(sourceLeft, sourceTop, sourceRight, sourceBottom))
+            return
+        }
+        flushFogBatch()
+        flushRectBatch()
+        if (batchTexture != texture || batchPaint != paint || batchState != state || batchSize == 4096) {
+            flushTextureBatch()
+            batchTexture = texture
+            batchPaint = paint
+            batchState = state
+        }
+        val offset = batchSize * KoolCanvasTextureBatch.STRIDE
+        if (offset + KoolCanvasTextureBatch.STRIDE > batchCoordinates.size)
+            batchCoordinates = batchCoordinates.copyOf(batchCoordinates.size * 2)
+        batchCoordinates[offset] = sourceLeft
+        batchCoordinates[offset + 1] = sourceTop
+        batchCoordinates[offset + 2] = sourceRight
+        batchCoordinates[offset + 3] = sourceBottom
+        batchCoordinates[offset + 4] = destinationLeft
+        batchCoordinates[offset + 5] = destinationTop
+        batchCoordinates[offset + 6] = destinationRight
+        batchCoordinates[offset + 7] = destinationBottom
+        batchSize++
     }
 
     fun drawRect(rect: KoolCanvasRect, paint: KoolCanvasPaint) {

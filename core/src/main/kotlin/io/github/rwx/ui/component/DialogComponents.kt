@@ -1,5 +1,7 @@
 package io.github.rwx.ui.component
 
+import io.github.rwx.i18n.I18n
+
 import io.github.rwx.ui.smallCornerRadius
 import io.github.rwx.ui.mediumCornerRadius
 import io.github.rwx.ui.UiAppearance
@@ -576,7 +578,7 @@ private fun UiScope.DialogToggleField(
 ) {
     val checked = value?.toBooleanStrictOrNull() ?: field.checked
     DialogFieldRow(field.label, theme, contentWidth, compact) {
-        Button(if (checked) "On" else "Off") {
+        Button(if (checked) I18n.common.on() else I18n.common.off()) {
             modifier
                 .width(Grow.Std)
                 .height(if (compact) UiTheme.Layout.CompactMenuButtonHeight else UiTheme.Layout.menuButtonHeight)

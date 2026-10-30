@@ -3,6 +3,7 @@ package io.github.rwx.ui.host
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.ClearColorFill
 import de.fabmax.kool.scene.Scene
+import io.github.rwx.i18n.I18n
 import io.github.rwx.session.GameLoadingStatus
 import io.github.rwx.ui.*
 import io.github.rwx.ui.component.*
@@ -47,7 +48,7 @@ class LoadingSceneHost(
     companion object {
         const val LOADING_SCENE_NAME: String = "loading-scene"
         const val GAME_LOADING_SCENE_NAME: String = "game-loading-scene"
-        const val LOADING_LABEL: String = "Loading..."
+        val LOADING_LABEL: String get() = I18n.loading.label()
 
         fun createScene(
             model: SettingsModel = SettingsModel(),
@@ -158,15 +159,15 @@ private fun UiScope.LoadingStepHistory(
 
         Column(width = Grow.Std, height = Grow.Std) {
             Row(width = Grow.Std, height = Dp(24f)) {
-                Text("BOOT / EVENT LOG") {
+                Text(I18n.loading.eventLog()) {
                     modifier
                         .width(Grow.Std)
-                        .font(UiTheme.Fonts.titleBase.derive(13f))
+                        .font(UiTheme.Fonts.base.derive(13f))
                         .textColor(theme.palette.primary)
                 }
-                Text("AUTO SCROLL") {
+                Text(I18n.loading.autoScroll()) {
                     modifier
-                        .font(UiTheme.Fonts.titleBase.derive(11f))
+                        .font(UiTheme.Fonts.base.derive(11f))
                         .textColor(theme.palette.secondary)
                 }
             }

@@ -210,7 +210,7 @@ internal class BattleRoomLaunchController(
         if (requiredFeatures.isEmpty()) {
             return null
         }
-        return "RWX map modes require RWX P2P multiplayer. Switch to P2P or choose a vanilla-compatible map."
+        return "RWXX map modes require RWXX P2P multiplayer. Switch to P2P or choose a vanilla-compatible map."
     }
 
     private fun currentLinkedMapUnavailableMessage(): String? {
@@ -222,7 +222,7 @@ internal class BattleRoomLaunchController(
         if (FeatureIds.MAP_LINKS in MapFeatureDetector.requiredFeaturesForMap(mapPath) &&
             !LinkedMapAvailability.ENABLED
         ) {
-            return LinkedMapAvailability.UNAVAILABLE_MESSAGE
+            return I18n.levelselect.linkedMaps.unavailable()
         }
         val mapStorage = storage() ?: return null
         val missing = MapLinkResolver.missingLinkedMapIds(mapStorage, mapPath)
@@ -244,12 +244,12 @@ internal class BattleRoomLaunchController(
             return true
         }
         if (!LinkedMapAvailability.ENABLED) {
-            showUnavailableDialog(LinkedMapAvailability.UNAVAILABLE_MESSAGE)
+            showUnavailableDialog(I18n.levelselect.linkedMaps.unavailable())
             return false
         }
         val mapStorage = storage()
         if (mapStorage == null) {
-            showUnavailableDialog("RWX multi-map requires local map storage.")
+            showUnavailableDialog("RWXX multi-map requires local map storage.")
             return false
         }
         val plan = MultiMapCoordinator.createAssignmentPlan(mapStorage, mapPath, snapshot.players)
@@ -259,14 +259,14 @@ internal class BattleRoomLaunchController(
         }
         if (!plan.hasEnoughPlayers) {
             showUnavailableDialog(
-                "RWX multi-map requires at least one non-spectator human player per map instance. " +
+                "RWXX multi-map requires at least one non-spectator human player per map instance. " +
                         "Maps: ${plan.requiredPlayerCount}, players: ${plan.availablePlayerCount}."
             )
             return false
         }
         val assignments = plan.assignments
         if (assignments == null) {
-            showUnavailableDialog("Unable to prepare RWX multi-map assignments.")
+            showUnavailableDialog("Unable to prepare RWXX multi-map assignments.")
             return false
         }
         preparedMultiMapAssignments = assignments

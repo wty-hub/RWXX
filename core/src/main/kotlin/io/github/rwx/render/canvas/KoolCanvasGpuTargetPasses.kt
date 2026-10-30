@@ -15,6 +15,7 @@ import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Viewport
+import io.github.rwx.diagnostics.RuntimeDiagnostics
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -178,7 +179,9 @@ internal class KoolCanvasGpuTargetPasses(
         framesSinceMemoryReport++
         if (framesSinceMemoryReport < 120) return
         framesSinceMemoryReport = 0
-        val pools = directBufferPools.joinToString(",") { it.name + "=" + (it.memoryUsed / (1024 * 1024)) + "MB" }
+        val pools = RuntimeDiagnostics.bufferPoolSnapshot()?.joinToString(",") {
+            it.name + "=" + if (it.memoryUsed >= 0L) "${it.memoryUsed / (1024 * 1024)}MB" else "unavailable"
+        } ?: "unavailable"
         val heapMb = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1024 * 1024)
         // Live slots are exactly one of installed / idle / pending: acquired slots leave the pool and a
         // retired slot leaves both maps, so these three sets never overlap.
@@ -268,8 +271,8 @@ internal class KoolCanvasGpuTargetPasses(
      * (`RenderBackendVk.renderFrame` runs `preparePipelines` for all passes before `executePasses`).
      * A target that is first sampled on the frame its pass is created would therefore bind an image
      * that does not exist yet. Priming the pool makes every pooled slot carry a valid image from the
-     * start; a target that still needs a fresh pass changes cell size, which the fixed layer-buffer
-     * size rules out, and then degrades to the placeholder for one frame instead of failing.
+     * start. A different target size or an exhausted pool still needs a fresh pass; the scene host
+     * keeps the previous frame visible until those new attachments have been created.
      */
     private fun primePool(scene: Scene) {
         val size = KoolLayerBufferSizing.startupPixels
@@ -334,6 +337,22 @@ internal class KoolCanvasGpuTargetPasses(
         slot.pass.isEnabled = true
         installed[versionId] = slot
         KoolCanvasTextureRegistry.registerGpuTargetTexture(versionId, slot.colour, slot.nearest)
+    }
+
+    /**
+     * A deferred frame now has attachment images. Re-register the sampler views to invalidate any
+     * placeholder bindings cached during preparation, then collect the target draws with those new
+     * bindings before presenting. Warm frames never take this path.
+     */
+    fun refreshPreparedTargets(lease: KoolCanvasResourceLease) {
+        for ((versionId, resource) in lease.resources()) {
+            if (resource !is FrozenCanvasResource.GpuTarget) continue
+            val slot = installed[versionId] ?: continue
+            slot.nearest.gpuTexture = slot.colour.gpuTexture
+            slot.renderFramesRemaining = maxOf(slot.renderFramesRemaining, RENDER_FRAMES_MIN)
+            slot.pass.isEnabled = true
+            KoolCanvasTextureRegistry.registerGpuTargetTexture(versionId, slot.colour, slot.nearest)
+        }
     }
 
     /**
@@ -514,14 +533,6 @@ internal class KoolCanvasGpuTargetPasses(
         const val IDLE_PASS_LIMIT = 32
 
         private val memoryDiagnosticsEnabled = System.getenv("RWX_CANVAS_MEMORY_DIAGNOSTICS") == "1"
-
-        /**
-         * Both JVM buffer pools: the direct-memory limit covers `ByteBuffer.allocateDirect` **and**
-         * `FileChannel.map`, which is how Vulkan host-visible memory is usually mapped on Windows.
-         */
-        private val directBufferPools: List<java.lang.management.BufferPoolMXBean> =
-            java.lang.management.ManagementFactory
-                .getPlatformMXBeans(java.lang.management.BufferPoolMXBean::class.java)
 
         private var framesSinceMemoryReport = 0
 

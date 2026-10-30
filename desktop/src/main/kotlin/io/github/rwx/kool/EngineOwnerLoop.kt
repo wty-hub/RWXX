@@ -11,7 +11,10 @@ internal class EngineOwnerLoop(
     private val periodNanos: () -> Long,
     private val tick: (Float) -> Unit,
     private val onFailure: (Throwable) -> Unit,
-    private val legacyPacing: Boolean = System.getenv("RWX_LEGACY_OWNER_PACING") == "1",
+    // A 1.5 ms spin on every 300 Hz frame can consume almost half a CPU core even when idle.
+    // Park for the full remaining interval in normal play; keep hybrid pacing opt-in for benchmarks.
+    private val legacyPacing: Boolean = System.getenv("RWX_LEGACY_OWNER_PACING") == "1" ||
+        System.getenv("RWX_HYBRID_OWNER_PACING") != "1",
     private val legacyShortOwnerPark: Boolean = System.getenv("RWX_GUARD_SHORT_OWNER_PARK") != "1" ||
         System.getenv("RWX_LEGACY_SHORT_OWNER_PARK") == "1",
     private val stableFrameDeadlines: Boolean = System.getenv("RWX_STABLE_FRAME_DEADLINES") == "1",
@@ -57,7 +60,7 @@ internal class EngineOwnerLoop(
 
     private fun run() {
         if (System.getenv("RWX_FRAME_METRICS") != null || System.getenv("RWX_ENGINE_FRAME_TRACE") != null) {
-            println("RWXOwnerPacing hybrid=${!legacyPacing} spinBudgetNanos=$SPIN_BUDGET_NANOS maxHybridPeriodNanos=$MAX_HYBRID_PERIOD_NANOS " +
+            println("RWXOwnerPacing hybrid=${!legacyPacing} spinBudgetNanos=${if (legacyPacing) 0L else SPIN_BUDGET_NANOS} maxHybridPeriodNanos=$MAX_HYBRID_PERIOD_NANOS " +
                 "shortParkGuard=${!legacyPacing && !legacyShortOwnerPark} minCoarseParkNanos=$MIN_COARSE_PARK_NANOS " +
                 "stableFrameDeadlines=$stableFrameDeadlines")
         }
@@ -90,7 +93,11 @@ internal class EngineOwnerLoop(
                     // A tiny coarse request can still oversleep by a Windows timer tick.
                     if (coarsePark <= 0L || !legacyShortOwnerPark && coarsePark < MIN_COARSE_PARK_NANOS) Thread.onSpinWait()
                     else LockSupport.parkNanos(this, coarsePark)
-                } else LockSupport.parkNanos(this, remaining)
+                } else {
+                    // submit()/close() unpark this thread, so a full wait does not delay queued work.
+                    // Recheck the deadline after waking; spurious wake-ups must not create extra ticks.
+                    LockSupport.parkNanos(this, remaining)
+                }
                 continue
             }
             val delta = ((now - previous).coerceAtLeast(0L) / 1_000_000_000.0).toFloat()

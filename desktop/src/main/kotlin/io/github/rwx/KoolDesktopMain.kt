@@ -104,6 +104,10 @@ object KoolDesktopMain : KoinComponent {
                 onQuit = swingHost::requestClose,
                 configureGameSession = { gameSession ->
                     (gameSession as? io.github.rwx.kool.KoolDesktopGameSession)?.let { independent ->
+                        // Kool menus already follow renderScale. The recorded game HUD needs the
+                        // same density, independently of its framebuffer and pointer coordinates.
+                        independent.setDisplayScale(context.window.renderScale)
+                        context.onRender += { independent.setDisplayScale(context.window.renderScale) }
                         installKoolFrameAvailability(independent::hasUnpresentedFrame)
                         context.onShutdown += { installKoolFrameAvailability(null) }
                     }
@@ -164,13 +168,14 @@ object KoolDesktopMain : KoinComponent {
         isVsync = SettingsEngine.getInstance().renderVsync,
         // The GL Swing host schedules frames outside the canvas lock. Kool's limiter would sleep
         // inside that lock and block input as well as the embedded game canvas.
-        maxFrameRate = if (swingHost.windowSubsystem.usesExternalFramePacing) 0 else desktopTargetFrameRate(),
-        // Same limit whether or not the window has focus: a stale focus flag must not silently
-        // throttle a focused game, and the Slick path has no unfocused variant either.
+        maxFrameRate = if (swingHost.windowSubsystem.usesExternalFramePacing) 0
+            else desktopPresentationFrameRate(desktopTargetFrameRate()),
+        // Swing host activity already supplies the background cap. Kool's canvas focus can be stale,
+        // and hovering over an inactive window must not restore its foreground rate.
         windowNotFocusedFrameRate = 0,
     )
 
-    /** Applies the settings' target frame rate to Kool's frame-rate limiter. */
+    /** Applies settings and the Swing host's current activity to Kool's frame-rate limiter. */
     internal fun syncDesktopFrameRateLimit(
         context: Lwjgl3Context,
         targetFrameRate: Int = desktopTargetFrameRate(),
@@ -178,7 +183,7 @@ object KoolDesktopMain : KoinComponent {
         val limit = if ((context.windowSubsystem as? PacedSwingWindowSubsystem)?.usesExternalFramePacing == true) {
             0
         } else {
-            targetFrameRate
+            desktopPresentationFrameRate(targetFrameRate)
         }
         if (context.maxFrameRate != limit) {
             context.maxFrameRate = limit

@@ -42,6 +42,13 @@ class InputResponseTest(unittest.TestCase):
         rows[-1]['producedNanos'] = '5000'
         self.assertFalse(analyze(rows, self.windows)['validTrace'])
 
+    def test_bounded_trace_overflow_cannot_pass_with_a_valid_retained_prefix(self):
+        for stage in ('trace-overflow', 'camera-effect-overflow', 'unpresented-overflow'):
+            rows = self.rows() + [dict(self.rows()[0], stage=stage)]
+            result = analyze(rows, self.windows)
+            self.assertFalse(result['validTrace'])
+            self.assertTrue(any('bounded storage' in reason for reason in result['invalidReasons']))
+
     def test_wheel_cannot_be_credited_with_camera_motion_from_a_key(self):
         rows = self.rows()
         rows[-1]['zoom'] = '1'

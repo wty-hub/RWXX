@@ -551,7 +551,7 @@ class AndroidWebRtcTunnelProxy(
                 }"
             )
         } else {
-            val text = "RWX map requires unsupported features: ${missing.joinToString(",")}"
+            val text = "RWXX map requires unsupported features: ${missing.joinToString(",")}"
             GameEngine.log(text)
             NetworkEngine.reportDesync(text)
         }

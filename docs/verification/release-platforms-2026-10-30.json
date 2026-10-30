@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 1,
+  "product": "RWXX",
+  "version": "1.1.0",
+  "date": "2026-10-30",
+  "generatedAtUtc": "2026-10-30T10:15:27.236611+00:00",
+  "sourceBaseCommit": "b860ab02f28845dd346c6b9c09978b4cef1774c9",
+  "sourceIsUncommittedWorkingTree": true,
+  "preexistingWorkingTreeChangesPreserved": true,
+  "requestedDefaults": {
+    "preparedMapTilesEnabled": true,
+    "disableEnvironment": "RWX_PREPARED_MAP_TILES=0",
+    "desktopAutoFrameLimitFps": 300,
+    "savedManualLimitsPreserved": true,
+    "vsyncBatteryAndBackgroundLimitsPreserved": true,
+    "otherExperimentalDefaultsUnchanged": true,
+    "defaultChangeReason": "Explicit user request; not an end-to-end performance acceptance result",
+    "packagedBinaryDefaultSmoke": "build/release-acceptance-20261030/packaged-defaults.json"
+  },
+  "branding": {
+    "productAndReleaseName": "RWXX",
+    "ciArtifactNamingUpdated": true,
+    "compatibilityIdentifiersRetained": [
+      "io.github.rwx package/application identifier",
+      "existing RWX_* environment names",
+      "wire protocol magic and signing domains",
+      "saved data/cache directories",
+      "diagnostic markers and historical evidence"
+    ]
+  },
+  "platformAcceptance": {
+    "macos-arm64": {
+      "status": "native app-image packaging and headless launcher passed",
+      "artifact": {
+        "path": "desktop/build/distributions/RWXX-1.1.0-macos-arm64-desktop.zip",
+        "bytes": 162081318,
+        "sha256": "3e96e852b9eb165b267222f4737a30940334346cd40138203ac08d833aa5bae6"
+      },
+      "platformJar": {
+        "path": "desktop/build/libs/RWXX-1.1.0-macos-arm64.jar",
+        "bytes": 125134370,
+        "sha256": "a454a228d69efd59302f8df638924186c42e92f5b8a664f548ea0bee085db73e"
+      },
+      "nativeArchitectureAndContentsVerified": true,
+      "bundledRuntimeVersion": "25.0.4.1",
+      "headlessTicks": 120,
+      "headlessExitCode": 0,
+      "defaultBundledAssetsVerified": true,
+      "packagedJarMatchesPlatformJar": true,
+      "signature": {
+        "archiveBytesAndSymlinkTargetsMatchCheckedImage": true,
+        "entriesCompared": 273,
+        "symlinksCompared": 153,
+        "deepStrictCodesignVerification": true,
+        "signature": "adhoc",
+        "developerIdSignature": false,
+        "notarizationVerified": false,
+        "guiOrGpuStarted": false,
+        "verificationToolRepair": "First comparison dereferenced ZIP symlinks as regular files; corrected to compare symlink target bytes. Product archive unchanged."
+      },
+      "guiAndGpuVerified": false,
+      "evidence": "build/release-acceptance-20261030/mac/acceptance.json"
+    },
+    "linux-x64": {
+      "status": "native Linux packaging, raw jar and bundled launcher headless checks passed",
+      "artifact": {
+        "path": "desktop/build/distributions/RWXX-1.1.0-linux-x64-desktop.zip",
+        "bytes": 173212163,
+        "sha256": "7e0cc9f76d70c6b0c91c866fce445fa75f060bae9f46922c18dd7fecf67d839b"
+      },
+      "platformJar": {
+        "path": "desktop/build/libs/RWXX-1.1.0-linux-x64.jar",
+        "bytes": 127725409,
+        "sha256": "74cadfdfdd42b978cfd1bcbc570c0040aac0008d0d0bafe461ab18e7debf3c6e"
+      },
+      "bundledRuntimeVendor": "Amazon Corretto",
+      "bundledRuntimeVersion": "25.0.5",
+      "headlessRawJarTicks": 120,
+      "headlessBundledLauncherTicks": 120,
+      "headlessExitCodes": [
+        0,
+        0
+      ],
+      "bundledJvmLoadedProven": true,
+      "defaultBundledAssetsVerified": true,
+      "archiveCrcAndEmbeddedJarVerified": true,
+      "guiAndGpuVerified": false,
+      "limitations": [
+        "No GUI, GPU, OpenGL, input, frame pacing or 300 FPS verification.",
+        "Server lacks libXtst.so.6, so GUI system dependencies are incomplete.",
+        "App image built with verified Amazon Corretto 25.0.5, not CI Temurin."
+      ],
+      "evidence": "build/release-acceptance-20261030/linux/result.json"
+    },
+    "linux-arm64": {
+      "status": "cross-built jar and native archive architecture check passed",
+      "platformJar": {
+        "path": "desktop/build/libs/RWXX-1.1.0-linux-arm64.jar",
+        "bytes": 126390356,
+        "sha256": "4d4e0e4926c097d2add12354312d3e11fc5d5feaffbea3b3265c1242d78a7207"
+      },
+      "nativeArchitectureAndContentsVerified": true,
+      "nativeAppImageBuilt": false,
+      "targetRuntimeExecuted": false,
+      "guiAndGpuVerified": false,
+      "evidence": "build/release-acceptance-20261030/cross-linux-arm64-native-contents.json"
+    },
+    "windows-x64": {
+      "status": "cross-built jar and native archive architecture check passed",
+      "platformJar": {
+        "path": "desktop/build/libs/RWXX-1.1.0-windows-x64.jar",
+        "bytes": 125995632,
+        "sha256": "67ad386e86a9d0aaf5642263e371f82ba95b7e8cc68bbedc7fb563ed30d95599"
+      },
+      "nativeArchitectureAndContentsVerified": true,
+      "nativeAppImageBuilt": false,
+      "targetRuntimeExecuted": false,
+      "guiAndGpuVerified": false,
+      "evidence": "build/release-acceptance-20261030/cross-windows-x64-native-contents.json"
+    },
+    "macos-x64": {
+      "status": "cross-built jar and native archive architecture check passed",
+      "platformJar": {
+        "path": "desktop/build/libs/RWXX-1.1.0-macos-x64.jar",
+        "bytes": 127001215,
+        "sha256": "fc0b1655d873d7793e99f91953fffcbc2eb0e4ed68fab899921752be19f90d5d"
+      },
+      "nativeArchitectureAndContentsVerified": true,
+      "nativeAppImageBuilt": false,
+      "targetRuntimeExecuted": false,
+      "guiAndGpuVerified": false,
+      "evidence": "build/release-acceptance-20261030/cross-macos-x64-native-contents.json"
+    },
+    "android-arm64": {
+      "status": "release and debug builds plus metadata/native/signature/DEX inspection completed",
+      "artifacts": [
+        {
+          "variant": "release-unsigned",
+          "artifact": {
+            "path": "build/release-acceptance-20261030/android/RWXX-1.1.0-android-arm64-release-unsigned.apk",
+            "bytes": 64348974,
+            "sha256": "eadea722b5e21de252561e2851662f319272a1ff50be45a09cea9183f214be22"
+          },
+          "applicationLabels": [
+            "RWXX"
+          ],
+          "package": {
+            "applicationId": "io.github.rwx",
+            "versionCode": "10100",
+            "versionName": "1.1.0"
+          },
+          "sdk": {
+            "minSdkVersion": "28",
+            "targetSdkVersion": "36"
+          },
+          "abis": [
+            "arm64-v8a"
+          ],
+          "metadataValid": true,
+          "signatureStatus": "unsigned",
+          "javaLangManagementHardReferences": [],
+          "canBeTreatedAsSignedRelease": false
+        },
+        {
+          "variant": "debug",
+          "artifact": {
+            "path": "build/release-acceptance-20261030/android/RWXX-1.1.0-android-arm64-debug.apk",
+            "bytes": 108523719,
+            "sha256": "b3da8389189fce4b4c6bdb372c7738bf4f54bdda982a14764390d1ddcf92bb4d"
+          },
+          "applicationLabels": [
+            "RWXX"
+          ],
+          "package": {
+            "applicationId": "io.github.rwx",
+            "versionCode": "10100",
+            "versionName": "1.1.0"
+          },
+          "sdk": {
+            "minSdkVersion": "28",
+            "targetSdkVersion": "36"
+          },
+          "abis": [
+            "arm64-v8a"
+          ],
+          "metadataValid": true,
+          "signatureStatus": "verified-debug-key",
+          "javaLangManagementHardReferences": [
+            "Ljava/lang/management/ManagementFactory;",
+            "Ljava/lang/management/RuntimeMXBean;"
+          ],
+          "canBeTreatedAsSignedRelease": false
+        }
+      ],
+      "deviceOrEmulatorRun": false,
+      "debugManagementReferences": "Ktor 3.5.2 IntellijIdeaDebugDetector retains two management type references in unshrunk Debug; device safety not inferred from its catch(Throwable).",
+      "evidence": "build/release-acceptance-20261030/android/android-static-acceptance.json"
+    }
+  },
+  "universalDesktopJar": {
+    "artifact": {
+      "path": "desktop/build/libs/RWXX-1.1.0-all.jar",
+      "bytes": 176803289,
+      "sha256": "14076911838e62318e395f9b824bdec4d127c7daddd90740ffc7d195e6e1e729"
+    },
+    "requiredLwjglModulesPerPlatform": 10,
+    "macosIncludesMoltenVK": true,
+    "allFivePlatformEntryAndBinaryArchitectureChecksPassed": true,
+    "nativeLibrariesLoaded": false,
+    "targetPlatformRuntimeCompatibilityVerified": false,
+    "evidence": "build/release-acceptance-20261030/android/universal-native-contents-final-defaults.json"
+  },
+  "tests": {
+    "core": {
+      "tests": 409,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "desktop": {
+      "tests": 137,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "desktopPythonTools": {
+      "tests": 96,
+      "failures": 0
+    },
+    "releaseScripts": {
+      "tests": 15,
+      "failures": 0
+    },
+    "gitDiffCheckPassed": true,
+    "gradleBuildLog": "build/release-acceptance-20261030/build-defaults-final.log"
+  },
+  "fixesDuringAcceptance": [
+    "Complete LWJGL native module set for every supported architecture, including Linux ARM64",
+    "Optional runtime diagnostics bridge avoids desktop management API hard dependencies in shared application code; Android Release R8 passes",
+    "Replay file scan test uses temporary fixtures instead of user replay files",
+    "Frozen tooling test resolves macOS /var and /private/var path aliases"
+  ],
+  "nonDisruption": {
+    "noGuiOrGpuValidationStarted": true,
+    "noFocusActivationOrInputAutomation": true,
+    "isolatedHomesAndAssets": true,
+    "localCpuCount": 1,
+    "localOsNice": 15,
+    "maxGradleWorkers": 1,
+    "networkTransferLimitMiBPerSecond": 2,
+    "macTemporaryImageCleaned": true
+  },
+  "remainingAcceptance": [
+    "GUI rendering, real input and dragging/zooming frame pacing on final defaults",
+    "Long-session stability and the previous diagnostic DirectBuffer OOM remain unresolved by this acceptance",
+    "Windows x64, Linux ARM64 and macOS x64 native app-image execution",
+    "Android device execution and release signing",
+    "macOS Developer ID signing and notarization",
+    "No new original-client interoperability or checksum comparison was performed"
+  ],
+  "endToEndNoDroppedFramesClaim": false,
+  "ciRunPerformed": false,
+  "published": false
+}

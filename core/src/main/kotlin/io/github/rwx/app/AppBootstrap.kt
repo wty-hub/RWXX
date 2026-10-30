@@ -212,8 +212,8 @@ internal fun createAppBootstrap(
     if (options.showDemoDialog) {
         dialogSceneHost.show(
             Dialog(
-                title = "Connection Error",
-                message = "Unable to reach the server.\nPlease check your connection and try again.",
+                title = I18n.multiplayer.connectionError(),
+                message = I18n.multiplayer.checkConnection(),
                 buttons = listOf(DialogButton(I18n.common.ok())),
             ),
         )

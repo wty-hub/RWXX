@@ -115,6 +115,7 @@ object CanvasFrameMetrics {
     }
 
     @Synchronized fun produced(envelope: FrameEnvelope) {
+        CanvasFrameLifecycleTrace.produced(envelope.generation, envelope.sequence)
         CanvasInputResponseTrace.produced(envelope)
         hud.produced(envelope.simulationTick, envelope.generation)
         diagnostics?.produced(envelope.simulationTick, envelope.generation)
@@ -122,6 +123,15 @@ object CanvasFrameMetrics {
 
     @Synchronized fun chosen(sequence: Long, generation: Long) {
         chosenSequence = sequence; chosenGeneration = generation
+        CanvasFrameLifecycleTrace.chosen(generation, sequence)
+    }
+
+    val lifecycleTraceEnabled: Boolean get() = CanvasFrameLifecycleTrace.enabled
+    fun lifecycleNativeBackend() = CanvasFrameLifecycleTrace.nativeBackend()
+
+    /** The native submit result gates this edge; a failed submission never acquires a picture. */
+    @Synchronized fun submitted(submission: Long, accepted: Boolean) {
+        CanvasFrameLifecycleTrace.submitted(chosenGeneration, chosenSequence, submission, accepted)
     }
 
     fun inputSampled(kind: String, value: Int): Long = CanvasInputResponseTrace.sampled(kind, value)
@@ -131,6 +141,7 @@ object CanvasFrameMetrics {
     @JvmStatic @Synchronized fun presented() {
         if (chosenSequence < 0) return
         val now = System.nanoTime()
+        CanvasFrameLifecycleTrace.presented(chosenGeneration, chosenSequence, now)
         CanvasInputResponseTrace.presented(chosenSequence, chosenGeneration, now)
         hud.presented(chosenSequence, chosenGeneration, now)
         hud.sample(now, 1_000_000_000L)?.let { published = it }
@@ -159,6 +170,7 @@ object CanvasFrameMetrics {
 
     @JvmStatic @Synchronized fun close() {
         CanvasInputResponseTrace.close()
+        CanvasFrameLifecycleTrace.close()
         try { trace?.close() } finally { metricsWriter?.close() }
     }
 }

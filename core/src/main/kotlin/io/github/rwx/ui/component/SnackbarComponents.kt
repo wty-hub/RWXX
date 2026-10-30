@@ -3,6 +3,7 @@ package io.github.rwx.ui.component
 import io.github.rwx.ui.smallCornerRadius
 import io.github.rwx.ui.mediumCornerRadius
 import de.fabmax.kool.modules.ui2.*
+import io.github.rwx.i18n.I18n
 import io.github.rwx.ui.UiTheme
 import io.github.rwx.ui.model.SnackbarData
 import io.github.rwx.ui.model.SnackbarVisuals
@@ -101,7 +102,7 @@ private fun UiScope.SnackbarDismiss(
         theme = theme,
         size = UiTheme.Layout.snackbarDismissButtonSize,
         iconSize = UiTheme.Layout.snackbarDismissIconSize,
-        tooltip = "Dismiss",
+        tooltip = I18n.common.close(),
         onPressed = onDismiss,
     )
 }

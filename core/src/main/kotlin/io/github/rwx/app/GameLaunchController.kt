@@ -76,11 +76,11 @@ internal class GameLaunchController(
     fun showStartNewGameDialog(startNewAction: () -> Unit = { enterRwGame(startNew = true) }) {
         dialogSceneHost.show(
             Dialog(
-                title = "Game in progress",
-                message = "A game is already running. Start a new game or continue the current game?",
+                title = I18n.levelselect.gameInProgress.title(),
+                message = I18n.levelselect.gameInProgress.message(),
                 buttons = listOf(
-                    DialogButton("Start New") { startNewAction() },
-                    DialogButton("Continue") { resumeRwGame() },
+                    DialogButton(I18n.levelselect.gameInProgress.startNew()) { startNewAction() },
+                    DialogButton(I18n.mainmenu.`continue`()) { resumeRwGame() },
                     DialogButton(I18n.common.cancel()),
                 ),
             ),

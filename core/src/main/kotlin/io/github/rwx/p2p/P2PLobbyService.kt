@@ -373,7 +373,7 @@ class P2PLobbyService private constructor() {
             return null
         }
         return buildString {
-            append("Cannot start this RWX map. Missing client features: ")
+            append("Cannot start this RWXX map. Missing client features: ")
             append(missingByPeer.joinToString("; ") { (peerId, missing) ->
                 "${peerId.take(8)}=${missing.joinToString(",")}"
             })

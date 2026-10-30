@@ -12,8 +12,8 @@ internal val desktopTargetFrameRateOverride: Int? =
         ?.takeIf { it > 0 }
 
 /**
- * Target frame rate for the desktop render loop, resolved from the settings `maxFrameRate` /
- * `highRefreshRate` and then the environment override.
+ * Target frame rate for the desktop render loop. Auto uses a 300 FPS limit; other frame rates
+ * can be selected explicitly (or requested by a benchmark override).
  *
  * Kool cannot rely on the swapchain as its only throttle: on macOS that is MoltenVK's FIFO present
  * mode, which caps the whole game at the display refresh rate and ignores the in-game maximum frame
@@ -24,27 +24,41 @@ internal fun desktopTargetFrameRate(
     environmentOverride: Int? = desktopTargetFrameRateOverride,
 ): Int = resolveDesktopTargetFrameRate(
     maxFrameRate = settings.maxFrameRate,
-    highRefreshRate = settings.highRefreshRate,
     environmentOverride = environmentOverride,
+    batterySaving = settings.batterySaving,
+    vsync = settings.renderVsync,
+    refreshRate = DesktopWindowActivity.state.refreshRate,
 )
 
 internal fun resolveDesktopTargetFrameRate(
     maxFrameRate: Int,
-    highRefreshRate: Boolean,
     environmentOverride: Int?,
-): Int = environmentOverride
-    ?: SettingsEngine.normalizeMaxFrameRate(maxFrameRate).takeIf { it > 0 }
-    ?: legacyDesktopTargetFrameRate(highRefreshRate)
+    batterySaving: Boolean = false,
+    vsync: Boolean = false,
+    refreshRate: Int = 0,
+): Int {
+    val target = environmentOverride?.takeIf { it > 0 }
+        ?: if (batterySaving) 30 else
+            SettingsEngine.normalizeMaxFrameRate(maxFrameRate).takeIf { it > 0 } ?: DEFAULT_TARGET_FPS
+    // Pace CPU frame production too when VSync bounds actual presentation to the current monitor.
+    return if (vsync) minOf(target, refreshRate.takeIf { it > 0 } ?: 60) else target
+}
 
 /**
- * Fallback when neither the environment override nor the game's `maxFrameRate` setting applies.
- *
- * 300 rather than 120: the software pacer throttles the whole loop, and the original build reaches about
- * 228 frames/s on this replay, so a 120 default made RWX's own interaction measurements a comparison
- * against a cap rather than against the workload (`docs/original-benchmark.md` §6.7 round 49). Pacing
- * stays in place so a fast machine does not spin; it just no longer sits below what the game can do.
+ * Avoid producing hundreds of discarded CPU frames behind a lower presentation limit. Keep the
+ * original normal loop cadence as a floor even at 30 FPS or in the background: networking, input
+ * and replay updates still run independently of presentation, with a real elapsed-time delta.
+ * The existing battery-saving option retains its original engine cadence.
  */
-internal fun legacyDesktopTargetFrameRate(highRefreshRate: Boolean): Int = MAX_TARGET_FPS
+internal fun desktopEngineFramePeriodNanos(
+    targetFrameRate: Int,
+    highRefreshRate: Boolean,
+    batterySaving: Boolean,
+): Long = when {
+    batterySaving -> 32_258_064L
+    !highRefreshRate -> 16_393_442L
+    else -> 1_000_000_000L / targetFrameRate.coerceIn(61, 300)
+}
 
 /** Software pacing also honours vertical sync when the GL canvas swaps without waiting. */
 internal fun desktopFramePeriodNanos(targetFrameRate: Int, vsync: Boolean, refreshRate: Int): Long {
@@ -61,10 +75,4 @@ internal fun desktopScheduledFrameStartNanos(scheduledNanos: Long, actualNanos: 
     if (periodNanos > 0 && actualNanos >= scheduledNanos && actualNanos - scheduledNanos < periodNanos / 2)
         scheduledNanos else actualNanos
 
-/**
- * Ceiling for the software pacer in both the standard and high-refresh paths.
- *
- * Kept as one constant so the two paths cannot drift: the distinction used to cap the common path at 120,
- * which measured RWX against its own cap rather than against the workload.
- */
-private const val MAX_TARGET_FPS = 300
+private const val DEFAULT_TARGET_FPS = 300

@@ -1,5 +1,22 @@
 # Vulkan 本机验收工具
 
+## 地图层预备绘制与帧关联诊断（2026-10-30）
+
+按用户要求，产品从本轮默认开启地图层预备绘制；`RWX_PREPARED_MAP_TILES=0` 可关闭。
+`map_pan_replay.py` 与 `map_pan_live.py` 为受控对照显式设置此变量：传入
+`--prepared-map-tiles` 时为 `1`，否则为 `0`。每个同步 MapLayer 绘制范围内只准备一次不变的纹理画笔；
+每块瓦片仍提交待更新源纹理、注册像素版本并读取当前绘制状态，坐标与迷雾顺序保持原样。
+它可以独立于 `--map-texture-batches` 使用；不得将已有批次的收益归因给本候选。
+运行器要求实际录制日志 `RWXPreparedMapTiles recordingConfirmed=true`。
+
+`--frame-lifecycle-trace` 输出按画面与原生提交身份关联的有界诊断，运行标为
+diagnosticOnly。分析和边界见 [帧生命周期诊断](../../docs/frame-lifecycle-diagnostics.md)。
+诊断、像素读回及局部录制微基准均不能代替交互性能验收。
+
+后续测试不得影响用户正常工作：不抢焦点、不置顶、不激活或恢复前台应用，不自动
+运行可见游戏压力测试。默认采用无窗口、低优先级及单进程验证；不满足前台条件时保留
+无效记录，不能通过强制前台或后台限帧数据制造通过结果。
+
 ## 视口外文字剔除候选（2026-10-13）
 
 `map_pan_replay.py` 与 `map_pan_live.py` 的 `--cull-offscreen-text` 对应默认关闭的

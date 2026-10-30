@@ -4,6 +4,9 @@ import com.corrodinggames.rts.game.GameLogic
 import com.corrodinggames.rts.game.map.TileMap
 import com.corrodinggames.rts.gameFramework.GameEngine
 import io.github.rwx.DesktopRendererMode
+import io.github.rwx.desktopEngineFramePeriodNanos
+import io.github.rwx.desktopPresentationFrameRate
+import io.github.rwx.desktopTargetFrameRate
 import io.github.rwx.PlatformStorage
 import io.github.rwx.app.launchOnIO
 import io.github.rwx.input.MultiTouchPointerState
@@ -52,14 +55,17 @@ internal class KoolDesktopGameSession(
     private var drainLayerBuffers = false
     @Volatile private var loopFailure: Throwable? = null
     private val requestedViewport = AtomicReference<KoolCanvasViewport?>()
+    @Volatile private var requestedDisplayScale = 1f
     private val uiState = AtomicReference(UiState())
     private val owner by lazy {
         EngineOwnerLoop(
             periodNanos = {
                 val settings = gameEngine?.settingsEngine
-                when { settings?.batterySaving == true -> 32_258_064L
-                    settings?.highRefreshRate == true -> 3_333_333L
-                    else -> 16_393_442L }
+                desktopEngineFramePeriodNanos(
+                    targetFrameRate = settings?.let { desktopPresentationFrameRate(desktopTargetFrameRate(it)) } ?: 60,
+                    highRefreshRate = settings?.highRefreshRate == true,
+                    batterySaving = settings?.batterySaving == true,
+                )
             },
             tick = ::engineFrame,
             onFailure = { error ->
@@ -227,6 +233,16 @@ internal class KoolDesktopGameSession(
         if (requestedViewport.getAndSet(viewport) != viewport) owner.submit {
             lastViewport = viewport
             activeEngineLocked()?.let { applyViewport(it, viewport) }
+        }
+    }
+
+    /** Render-owner notification: a monitor change can alter DPI without changing pixel dimensions. */
+    internal fun setDisplayScale(scale: Float) {
+        val normalized = normalizeDesktopDisplayScale(scale)
+        if (requestedDisplayScale == normalized) return
+        requestedDisplayScale = normalized
+        owner.submit {
+            activeEngineLocked()?.let { applyViewport(it, lastViewport) }
         }
     }
 
@@ -530,10 +546,10 @@ internal class KoolDesktopGameSession(
     protected override fun applyViewport(engine: GameEngine, viewport: KoolCanvasViewport) {
         val width = viewport.width.coerceAtLeast(1)
         val height = viewport.height.coerceAtLeast(1)
-        if (appliedViewport.width == width && appliedViewport.height == height) {
+        val changed = applyDesktopViewport(engine, viewport, requestedDisplayScale)
+        if (!changed && appliedViewport.width == width && appliedViewport.height == height) {
             return
         }
-        engine.updateWindowResolution(width, height)
         graphicsEngine.a(width, height)
         view.onSizeChanged()
         appliedViewport = KoolCanvasViewport(width, height)

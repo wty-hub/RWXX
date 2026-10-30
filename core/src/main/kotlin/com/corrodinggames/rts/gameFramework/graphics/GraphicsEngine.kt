@@ -45,6 +45,16 @@ fun interface DrawTimeOperation {
     fun draw(graphicsEngine: GraphicsEngine)
 }
 
+/**
+ * One synchronous map-layer scope with an immutable snapshot of its texture paint.
+ * Callers keep the paint unchanged until close, pass each original quad in its original order,
+ * and use the ordinary draw when [draw] returns false. No mutable rectangles may be retained.
+ */
+interface PreparedMapTextureDraw : AutoCloseable {
+    fun draw(texture: Texture?, source: Rect?, destination: RectF?): Boolean
+    override fun close()
+}
+
 interface GraphicsEngine {
     /** Recording backends may copy display geometry here; legacy backends keep their original path. */
     fun captureHudLayout(engine: GameEngine) {}
@@ -62,6 +72,9 @@ interface GraphicsEngine {
     fun endDrawRole() {}
 
     fun backendCapabilities(): GraphicsBackendCapabilities = GraphicsBackendCapabilities()
+
+    /** Optional display-only writer; other backends execute every original texture draw. */
+    fun prepareMapTextureDraw(paint: KoolPaint?): PreparedMapTextureDraw? = null
 
     /** Layer buffers may render into their owned cell target instead of a shared scratch target. */
     fun prefersDirectLayerBufferRendering(): Boolean = false

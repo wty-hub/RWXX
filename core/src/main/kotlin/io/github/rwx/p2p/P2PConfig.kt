@@ -95,7 +95,7 @@ data class P2PConfig(
         val enablePcp: Boolean = true,
         val pcpLifetimeSeconds: Int = 3600,
         val pcpTimeoutMs: Int = 3000,
-        val mappingDescription: String = "RWX P2P"
+        val mappingDescription: String = "RWXX P2P"
     )
 
     @Serializable
@@ -220,7 +220,7 @@ object P2PConfigLoader {
     }
 
     private fun defaultConfigText(): String {
-        return "# RWX P2P configuration\n# Edit this file locally.\n\n" +
+        return "# RWXX P2P configuration\n# Edit this file locally.\n\n" +
                 toml.encodeToString(P2PConfig.serializer(), P2PConfig())
     }
 }

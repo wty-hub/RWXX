@@ -16,6 +16,7 @@ import io.github.rwx.ui.fraction
 import io.github.rwx.ui.remainingAfter
 import io.github.rwx.ui.splitEvenly
 import io.github.rwx.ui.model.visibleSettingsPages
+import io.github.rwx.ui.model.localizedKeyBindingName
 
 fun UiScope.SettingsCardTitle(
     title: String,
@@ -375,7 +376,7 @@ fun UiScope.SettingsKeyBindingCard(
             Icon(Icon.Interface, UiTheme.Layout.textButtonGlyphSize, theme.palette.primary).modifier
                 .align(AlignmentX.Start, AlignmentY.Center)
         }
-        Text(row.keyBinding.name) {
+        Text(localizedKeyBindingName(row.keyBinding)) {
             modifier
                 .width(labelWidth)
                 .height(UiTheme.Layout.settingsRowHeight)
@@ -385,7 +386,7 @@ fun UiScope.SettingsKeyBindingCard(
                 .textColor(theme.palette.textPrimary)
         }
         KeyBindingSlotButton(
-            label = row.primaryText,
+            label = if (row.activeSlot == 0) I18n.settings.keyBindings.pressKey() else row.primaryText,
             slot = 0,
             width = slotWidth,
             active = row.activeSlot == 0,
@@ -395,7 +396,7 @@ fun UiScope.SettingsKeyBindingCard(
         )
         ClearKeyBindingButton(0, clearWidth, theme, onClear)
         KeyBindingSlotButton(
-            label = row.secondaryText,
+            label = if (row.activeSlot == 1) I18n.settings.keyBindings.pressKey() else row.secondaryText,
             slot = 1,
             width = slotWidth,
             active = row.activeSlot == 1,
@@ -444,7 +445,7 @@ private fun UiScope.KeyBindingSlotButton(
             .onEnter { hovered.value = true }
             .onExit { hovered.value = false }
             .onClick { onBind(slot) }
-        Text(label.ifBlank { "None" }) {
+        Text(label.ifBlank { I18n.settings.keyBindings.unassigned() }) {
             modifier
                 .width(Grow.Std)
                 .height(Grow.Std)

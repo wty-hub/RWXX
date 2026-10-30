@@ -315,11 +315,11 @@ internal class JvmModAssetStore(
 }
 
 class MissingJvmModAssetKeyException(keyId: String) : IllegalStateException(
-    "Missing JVM mod asset key $keyId; import the matching .rwxkey file into RWX"
+    "Missing JVM mod asset key $keyId; import the matching .rwxkey file into RWXX"
 )
 
 class UntrustedJvmModAssetAuthorityException(authorityId: String) : IllegalStateException(
-    "Untrusted JVM mod asset authority $authorityId; import the author's .rwxpub trust certificate into RWX"
+    "Untrusted JVM mod asset authority $authorityId; import the author's .rwxpub trust certificate into RWXX"
 )
 
 class MissingJvmModAssetLicenseException(authorityId: String, recipientIds: List<String>) : IllegalStateException(

@@ -1113,10 +1113,10 @@ public final class GameUI extends Serializable {
             }
             if (gameEngine.isSinglePlayerGame() || gameEngine.replayEngine.j()) {
                 if (inputController.L.a()) {
-                    if (gameEngine.gameSpeed != 0.0f) {
-                        if (!gameEngine.replayEngine.j()) {
-                            NetworkEngine.a((String) null, "Game paused");
-                        }
+                    if (gameEngine.replayEngine.j()) {
+                        gameEngine.replayEngine.togglePlayback();
+                    } else if (gameEngine.gameSpeed != 0.0f) {
+                        NetworkEngine.a((String) null, "Game paused");
                         gameEngine.gameSpeed = 0.0f;
                     } else {
                         gameEngine.gameSpeed = 1.0f;
@@ -1125,7 +1125,10 @@ public final class GameUI extends Serializable {
                 boolean zA = inputController.J.a();
                 boolean zA2 = inputController.K.a();
                 if (zA || zA2) {
-                    if (zA) {
+                    if (gameEngine.replayEngine.j()) {
+                        if (zA) gameEngine.replayEngine.slowDown();
+                        else gameEngine.replayEngine.speedUp();
+                    } else if (zA) {
                         boolean z4 = gameEngine.gameSpeed > 1.0f;
                         if (gameEngine.gameSpeed < 2.0f) {
                             gameEngine.gameSpeed = (float) (((double) gameEngine.gameSpeed) - 0.25d);
@@ -1153,11 +1156,7 @@ public final class GameUI extends Serializable {
                         } else {
                             gameEngine.gameSpeed += 4.0f;
                         }
-                        if (gameEngine.replayEngine.j()) {
-                            if (gameEngine.gameSpeed > 64.0f) {
-                                gameEngine.gameSpeed = 64.0f;
-                            }
-                        } else if (gameEngine.gameSpeed > 5.0f) {
+                        if (gameEngine.gameSpeed > 5.0f) {
                             gameEngine.gameSpeed = 5.0f;
                         }
                         if (z5 && gameEngine.gameSpeed > 1.0f) {

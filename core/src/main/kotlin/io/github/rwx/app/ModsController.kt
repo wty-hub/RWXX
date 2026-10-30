@@ -62,7 +62,7 @@ internal class ModsController(
     }
 
     fun deleteAndRefresh(modId: String) {
-        updateModsOnOwner { if (modRepository.delete(modId)) "" else "Unable to delete mod" }
+        updateModsOnOwner { if (modRepository.delete(modId)) "" else I18n.mods.deleteFailed() }
     }
 
     private fun updateModsOnOwner(invalidateThumbnails: Boolean = false,
@@ -78,7 +78,7 @@ internal class ModsController(
                     sceneHost.updateMods(snapshot.mods, snapshot.status)
                 }.onFailure { error ->
                     logger.warn(error) { "Unable to update mods" }
-                    sceneHost.updateMods(publishedMods, "Unable to update mods: ${error.message ?: error.javaClass.simpleName}")
+                    sceneHost.updateMods(publishedMods, I18n.mods.updateFailed(error.message ?: error.javaClass.simpleName))
                 }
             } finally { afterComplete() }
         }
@@ -88,16 +88,16 @@ internal class ModsController(
         var selectedFile: PlatformFileSelection? = null
         dialogSceneHost.show(
             Dialog(
-                title = "Import Mod",
-                message = "Enter a mod, asset key, author trust certificate, or license path.",
+                title = I18n.mods.importTitle(),
+                message = I18n.mods.importPrompt(),
                 textInput = DialogTextInput(
-                    hint = "/path/to/mod.rwmod",
+                    hint = I18n.mods.importPathHint(),
                     trailingIcon = Icon.Import,
-                    trailingIconTooltip = "Choose file",
+                    trailingIconTooltip = I18n.mods.chooseFile(),
                     onTrailingIconPress = { setInputValue ->
                         val host=getKoin().get<PlatformBridge>().filePickerHost?:return@DialogTextInput
                         host.openFilePicker(
-                            title = "Choose a mod file or directory",
+                            title = I18n.mods.chooseFileOrDirectory(),
                             allowedExtensions = setOf(
                                 "rwmod", "zip", "jar", "ini", "rwxkey", "rwxpub", "rwxlicense"
                             ),
@@ -113,7 +113,7 @@ internal class ModsController(
                 ),
                 buttons = listOf(
                     DialogButton(
-                        "Import",
+                        I18n.mods.importFile(),
                         onInputPress = { inputPath ->
                             val path = selectedFile
                                 ?.takeIf { inputPath == it.displayPath }
@@ -182,8 +182,8 @@ internal class ModsController(
         }
         reloadDialogVisible = true
         loadingDialogSceneHost.showProgress(
-            title = "Reloading Mods",
-            message = "Loading custom unit data",
+            title = I18n.mods.reloading(),
+            message = I18n.mods.loadingUnitData(),
             progress = 0.05f,
         ) {
             cancelReload(job)
@@ -194,7 +194,7 @@ internal class ModsController(
         if (reloadLoading && reloadDialogVisible) {
             val status = gameSession.loadingStatus()
             loadingDialogSceneHost.updateProgress(
-                message = status.text.ifBlank { "Loading custom unit data" },
+                message = status.text.ifBlank { I18n.mods.loadingUnitData() },
                 progress = status.progress ?: 0.05f,
             )
         }
@@ -239,14 +239,14 @@ internal class ModsController(
                 onModsReloaded()
                 invalidateModThumbnailTextureCache()
                 publishedMods = result.mods
-                sceneHost.updateMods(result.mods, "Mods reloaded")
+                sceneHost.updateMods(result.mods, I18n.mods.reloaded())
             }
 
             ModsReloadResult.Cancelled -> Unit
             is ModsReloadResult.Failed -> {
                 val error = result.error
                 logger.warn(error) { "Unable to reload mods" }
-                refresh("Unable to reload mods: ${error.message ?: error.javaClass.simpleName}")
+                refresh(I18n.mods.reloadFailed(error.message ?: error.javaClass.simpleName))
             }
         }
     }

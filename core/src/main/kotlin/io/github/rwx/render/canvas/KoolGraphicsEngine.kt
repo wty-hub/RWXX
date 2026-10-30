@@ -2422,6 +2422,41 @@ class KoolGraphicsEngine private constructor(
         )
     }
 
+    override fun prepareMapTextureDraw(paint: KoolPaint?): PreparedMapTextureDraw? =
+        prepareMapTextureDraw(paint, PREPARED_MAP_TILES_ENABLED)
+
+    /** The explicit flag also lets correctness tests compare both paths in the same process. */
+    internal fun prepareMapTextureDraw(paint: KoolPaint?, enabled: Boolean): PreparedMapTextureDraw? {
+        if (!enabled || !gpuReplayTarget || targetTexture == null) return null
+        val snapshot = paint.toCanvasPaint()
+        if (snapshot.textureEffect != null) return null
+        val ordinaryPaint = snapshot.asCanonicalTexturePaint()
+        val sourcePaint = snapshot.copy(blendMode = KoolCanvasBlendMode.Source).asCanonicalTexturePaint()
+        val generation = commandBuffer.recordingGeneration
+        return object : PreparedMapTextureDraw {
+            private var closed = false
+            override fun draw(texture: Texture?, source: Rect?, destination: RectF?): Boolean {
+                if (closed || generation != commandBuffer.recordingGeneration || texture == null || source == null ||
+                    destination == null || texture is TeamColorTexture) return false
+                // Keep every legacy target commit and texture registration. Source versions may change
+                // between two draws, so this scope deliberately does not cache TextureRef or pixels.
+                flushPendingTarget(texture)
+                val resolvedTexture = texture.resolveForKool()
+                registerTexturePixels(resolvedTexture)
+                val reference = freezeTextureForOffscreenDraw(resolvedTexture, resolvedTexture.toCanvasTextureRef())
+                val effectivePaint = if (directBlitActive && snapshot.blendMode == KoolCanvasBlendMode.SourceOver &&
+                    snapshot.color.alpha == 255 && !resolvedTexture.f()) sourcePaint else ordinaryPaint
+                commandBuffer.drawTextureCoordinates(reference,
+                    source.a.toFloat(), source.b.toFloat(), source.c.toFloat(), source.d.toFloat(),
+                    destination.a, destination.b, destination.c, destination.d, effectivePaint)
+                if (PREPARED_MAP_TILES_ENABLED && preparedMapTilesReported.compareAndSet(0, 1))
+                    println("RWXPreparedMapTiles recordingConfirmed=true")
+                return true
+            }
+            override fun close() { closed = true }
+        }
+    }
+
     private fun drawTexture(
         texture: Texture,
         destination: KoolCanvasRect,
@@ -3118,6 +3153,8 @@ class KoolGraphicsEngine private constructor(
     }
 
     internal companion object {
+        private val preparedMapTilesReported = AtomicInteger()
+        private val PREPARED_MAP_TILES_ENABLED = System.getenv("RWX_PREPARED_MAP_TILES") != "0"
         private val AVOID_TEXTURE_PAINT_COPIES = System.getenv("RWX_AVOID_TEXTURE_PAINT_COPIES") == "1"
         private val REUSE_PAINT_SNAPSHOTS = System.getenv("RWX_REUSE_PAINT_SNAPSHOTS") == "1"
         /**

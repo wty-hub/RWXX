@@ -5,9 +5,14 @@ import java.io.File
 /** Opt-in normal session input → owner adoption → accepted picture trace; never drives the camera. */
 internal object CanvasInputResponseTrace {
     private val writer = System.getenv("RWX_INPUT_RESPONSE_TRACE")?.takeIf(String::isNotBlank)?.let { path ->
-        File(path).also { it.absoluteFile.parentFile?.mkdirs() }.bufferedWriter().apply {
-            write("stage,id,kind,value,sampledNanos,appliedNanos,producedNanos,acceptedPresentNanos,generation,sequence,cameraX,cameraY,zoom,expectsCamera\n")
-        }
+        // Rows are serialized only at close; no render-thread flush or number formatting.
+        File(path).also { it.absoluteFile.parentFile?.mkdirs() }.bufferedWriter()
+    }
+    private val rows = writer?.let { CanvasInputTraceBuffer(
+        System.getenv("RWX_INPUT_TRACE_EVENTS")?.toIntOrNull()?.coerceIn(16, 1_048_576) ?: 65_536) }
+
+    init {
+        if (writer != null) Runtime.getRuntime().addShutdownHook(Thread(::close, "RWX-input-response-close"))
     }
     private data class Input(val id: Long, val kind: String, val value: Int, val sampled: Long, val expectsCamera: Boolean,
         var applied: Long = 0, var x: Float = Float.NaN, var y: Float = Float.NaN, var zoom: Float = Float.NaN)
@@ -67,6 +72,11 @@ internal object CanvasInputResponseTrace {
             pending.remove(id)?.let { input ->
                 write("presented", input, picture, now)
                 if (input.expectsCamera) awaitingEffect[id] = input
+                if (awaitingEffect.size > 4096) {
+                    val oldest = awaitingEffect.entries.iterator()
+                    write("camera-effect-overflow", oldest.next().value)
+                    oldest.remove()
+                }
             }
             awaitingEffect[id]?.let { input ->
                 val changed = if (input.kind == "wheel") kotlin.math.abs(picture.zoom - input.zoom) > 1e-5f
@@ -78,13 +88,12 @@ internal object CanvasInputResponseTrace {
                 }
             }
         }
-        writer.flush()
     }
 
     private fun write(stage: String, input: Input, picture: Picture? = null, present: Long = 0) {
-        writer?.write("$stage,${input.id},${input.kind},${input.value},${input.sampled},${input.applied}," +
-            "${picture?.produced ?: 0},$present,${picture?.generation ?: -1},${picture?.envelopeSequence ?: -1}," +
-            "${picture?.x ?: input.x},${picture?.y ?: input.y},${picture?.zoom ?: input.zoom},${input.expectsCamera}\n")
+        rows?.append(stage, input.id, input.kind, input.value, input.sampled, input.applied,
+            picture?.produced ?: 0, present, picture?.generation ?: -1, picture?.envelopeSequence ?: -1,
+            picture?.x ?: input.x, picture?.y ?: input.y, picture?.zoom ?: input.zoom, input.expectsCamera)
     }
 
     @Synchronized fun close() {
@@ -92,6 +101,6 @@ internal object CanvasInputResponseTrace {
         pending.values.forEach { write("unpresented-at-close", it) }
         awaitingEffect.values.forEach { write("camera-effect-unpresented-at-close", it) }
         closed = true
-        writer?.close()
+        if (writer != null) rows?.closeTo(writer)
     }
 }

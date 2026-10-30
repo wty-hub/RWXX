@@ -77,6 +77,8 @@ class GameSettingsRepository(
         model.showChatAndPingShortcuts.value =
             live?.showChatAndPingShortcuts ?: prefs.getBoolean(KEY_SHOW_CHAT_AND_PING_SHORTCUTS, true)
         model.smartSelection.value = live?.smartSelection_v2 ?: prefs.getBoolean(KEY_SMART_SELECTION, true)
+        model.shiftDigitUpdatesGroup.value =
+            live?.shiftDigitUpdatesGroup ?: prefs.getBoolean(KEY_SHIFT_DIGIT_UPDATES_GROUP, true)
         model.singleUnitProduction.value = live?.singleUnitProduction ?: prefs.getBoolean(KEY_SINGLE_UNIT_PRODUCTION, false)
         model.autosaving.value = live?.autosaving ?: prefs.getBoolean(KEY_AUTOSAVING, true)
         model.udpInMultiplayer.value = live?.udpInMultiplayer ?: prefs.getBoolean(KEY_UDP_IN_MULTIPLAYER, false)
@@ -201,6 +203,7 @@ class GameSettingsRepository(
         copy.showPlayerChatInGame.value = model.showPlayerChatInGame.value
         copy.showChatAndPingShortcuts.value = model.showChatAndPingShortcuts.value
         copy.smartSelection.value = model.smartSelection.value
+        copy.shiftDigitUpdatesGroup.value = model.shiftDigitUpdatesGroup.value
         copy.singleUnitProduction.value = model.singleUnitProduction.value
         copy.autosaving.value = model.autosaving.value
         copy.udpInMultiplayer.value = model.udpInMultiplayer.value
@@ -262,6 +265,7 @@ class GameSettingsRepository(
         settings.showPlayerChatInGame = model.showPlayerChatInGame.value
         settings.showChatAndPingShortcuts = model.showChatAndPingShortcuts.value
         settings.smartSelection_v2 = model.smartSelection.value
+        settings.shiftDigitUpdatesGroup = model.shiftDigitUpdatesGroup.value
         settings.singleUnitProduction = model.singleUnitProduction.value
         settings.autosaving = model.autosaving.value
         settings.udpInMultiplayer = model.udpInMultiplayer.value
@@ -342,6 +346,7 @@ class GameSettingsRepository(
             .putBoolean(KEY_SHOW_PLAYER_CHAT_IN_GAME, model.showPlayerChatInGame.value)
             .putBoolean(KEY_SHOW_CHAT_AND_PING_SHORTCUTS, model.showChatAndPingShortcuts.value)
             .putBoolean(KEY_SMART_SELECTION, model.smartSelection.value)
+            .putBoolean(KEY_SHIFT_DIGIT_UPDATES_GROUP, model.shiftDigitUpdatesGroup.value)
             .putBoolean(KEY_SINGLE_UNIT_PRODUCTION, model.singleUnitProduction.value)
             .putBoolean(KEY_AUTOSAVING, model.autosaving.value)
             .putBoolean(KEY_UDP_IN_MULTIPLAYER, model.udpInMultiplayer.value)
@@ -401,6 +406,7 @@ class GameSettingsRepository(
         private const val KEY_SHOW_PLAYER_CHAT_IN_GAME = "showPlayerChatInGame"
         private const val KEY_SHOW_CHAT_AND_PING_SHORTCUTS = "showChatAndPingShortcuts"
         private const val KEY_SMART_SELECTION = "smartSelection_v2"
+        private const val KEY_SHIFT_DIGIT_UPDATES_GROUP = "shiftDigitUpdatesGroup"
         private const val KEY_SINGLE_UNIT_PRODUCTION = "singleUnitProduction"
         private const val KEY_AUTOSAVING = "autosaving"
         private const val KEY_UDP_IN_MULTIPLAYER = "udpInMultiplayer"

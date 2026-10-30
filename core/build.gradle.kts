@@ -17,6 +17,10 @@ java {
     }
 }
 
+tasks.named("compileKotlin") {
+    dependsOn(rootProject.tasks.named("generateI18nSources"))
+}
+
 dependencies {
     api(project(":mod-api"))
     compileOnly(libs.httpclient)

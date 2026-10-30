@@ -1,6 +1,7 @@
 package io.github.rwx.ui.component
 
 import de.fabmax.kool.modules.ui2.*
+import io.github.rwx.i18n.I18n
 import io.github.rwx.ui.ColorSchemeDefinition
 import io.github.rwx.ui.UiAppearance
 import io.github.rwx.ui.UiTheme
@@ -83,17 +84,17 @@ fun UiScope.CyberBackdrop(theme: ColorSchemeDefinition, showLabels: Boolean = tr
     }
 
     if (showLabels && showsCyberBackdropCaptions()) {
-        Text("RWXX  //  TACTICAL INTERFACE") {
+        Text(I18n.interfaceChrome.tacticalInterface()) {
             modifier.align(AlignmentX.Start, AlignmentY.Top)
                 .margin(start = Dp(78f), top = CYBER_CAPTION_TOP_INSET)
                 .font(UiTheme.Fonts.caption).textColor(ghostText)
         }
-        Text("SYSTEM  /  01") {
+        Text(I18n.interfaceChrome.system()) {
             modifier.align(AlignmentX.End, AlignmentY.Top)
                 .margin(end = Dp(78f), top = CYBER_CAPTION_TOP_INSET)
                 .font(UiTheme.Fonts.caption).textColor(ghostText)
         }
-        Text("RUSTED WARFARE EXTENSION") {
+        Text(I18n.interfaceChrome.gameName()) {
             modifier.align(AlignmentX.Start, AlignmentY.Bottom)
                 .margin(start = Dp(78f), bottom = CYBER_CAPTION_BOTTOM_INSET)
                 .font(UiTheme.Fonts.caption).textColor(ghostText)

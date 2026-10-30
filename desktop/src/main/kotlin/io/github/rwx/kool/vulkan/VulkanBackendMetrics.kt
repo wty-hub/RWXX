@@ -2,6 +2,7 @@ package io.github.rwx.kool.vulkan
 
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import io.github.rwx.render.canvas.CanvasStageTrace
+import io.github.rwx.render.canvas.CanvasFrameMetrics
 import java.io.File
 import java.util.Locale
 
@@ -29,6 +30,7 @@ internal object VulkanBackendMetrics {
     private val fenceSubmissions = mutableMapOf<Long, Long>()
 
     inline fun measureSubmit(fence: Long, call: () -> Int): Int {
+        if (CanvasFrameMetrics.lifecycleTraceEnabled) CanvasFrameMetrics.lifecycleNativeBackend()
         return measureNative("submit", call) { submitNanos += it }.also { result ->
             // Record the exact native submission argument, before any swapchain index advances.
             if (stageTrace.enabled && result == 0 && fence != 0L) fenceSubmissions[fence] = frameOrdinal + 1
@@ -68,6 +70,9 @@ internal object VulkanBackendMetrics {
 
     fun submitted(state: VulkanUploadState) {
         frameOrdinal++
+        // The overlay calls this only when PassEncoderState.endFrame returns after vkCheck.
+        // The generic measureSubmit also sees one-off upload submits, which are not picture edges.
+        if (CanvasFrameMetrics.lifecycleTraceEnabled) CanvasFrameMetrics.submitted(frameOrdinal, true)
         if (stageTrace.enabled) {
             // Diagnostic linkage: the fence row names the submission that it is actually waiting for.
             stageTrace.record("submission-work", stageTrace.start(), frameOrdinal,

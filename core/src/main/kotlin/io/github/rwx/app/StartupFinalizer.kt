@@ -17,7 +17,7 @@ internal class StartupFinalizer(
     }
 
     private fun logPreparedComponents() {
-        logger.info { "Starting RWX" }
+        logger.info { "Starting RWXX" }
         preparedScenes().forEach { scene ->
             logger.info { "Prepared ${scene.name}" }
         }
