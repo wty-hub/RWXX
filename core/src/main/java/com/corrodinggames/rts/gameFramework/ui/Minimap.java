@@ -343,19 +343,32 @@ public class Minimap {
             throw new IllegalStateException("Minimap graphics backend is not bound");
         }
         updateDimensions();
+        int bufferWidth = (int) this.width;
+        int bufferHeight = (int) this.height;
+        // Buffers can be allocated during engine initialization, before the final HUD scale is
+        // applied. setup() updates the logical dimensions, so validate the textures themselves.
+        if (hasWrongSize(this.backgroundTexture, bufferWidth, bufferHeight)
+                || hasWrongSize(this.unitsTexture, bufferWidth, bufferHeight)
+                || hasWrongSize(this.fogTexture, bufferWidth, bufferHeight)) {
+            release();
+        }
         GameEngine.log("Creating minimap image buffers..");
         if (this.backgroundTexture == null) {
-            this.backgroundTexture = graphicsEngine.a((int) this.width, (int) this.height, false);
+            this.backgroundTexture = graphicsEngine.a(bufferWidth, bufferHeight, false);
             this.backgroundGraphics = graphicsEngine.b(this.backgroundTexture, RenderTargetMode.IMMEDIATE);
         }
         if (this.unitsTexture == null) {
-            this.unitsTexture = graphicsEngine.a((int) this.width, (int) this.height, false);
+            this.unitsTexture = graphicsEngine.a(bufferWidth, bufferHeight, false);
             this.unitsGraphics = graphicsEngine.b(this.unitsTexture, RenderTargetMode.IMMEDIATE);
         }
         if (this.fogTexture == null) {
-            this.fogTexture = graphicsEngine.a((int) this.width, (int) this.height, false);
+            this.fogTexture = graphicsEngine.a(bufferWidth, bufferHeight, false);
             this.fogGraphics = graphicsEngine.b(this.fogTexture, RenderTargetMode.IMMEDIATE);
         }
+    }
+
+    private static boolean hasWrongSize(Texture texture, int width, int height) {
+        return texture != null && (texture.width() != width || texture.height() != height);
     }
 
     /* JADX INFO: renamed from: f */
@@ -809,7 +822,10 @@ public class Minimap {
         GameEngine gameEngine = GameEngine.getInstance();
         GraphicsEngine graphicsEngine = gameEngine.renderGraphicsEngine;
         updateMinimapPosition();
-        if (this.unitsTexture != null && !Utility.isDifferenceWithinTolerance(this.width, getMinimapWidth(), 5.0f)) {
+        int bufferSize = (int) getMinimapWidth();
+        if (hasWrongSize(this.backgroundTexture, bufferSize, bufferSize)
+                || hasWrongSize(this.unitsTexture, bufferSize, bufferSize)
+                || hasWrongSize(this.fogTexture, bufferSize, bufferSize)) {
             GameEngine.log("minimap", "minimap size has changed, reseting");
             release();
         }
