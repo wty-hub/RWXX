@@ -1,0 +1,78 @@
+{
+  "date": "2026-11-03",
+  "version": "1.4.3",
+  "status": "stopped-failed-coverage-precondition-not-adopted",
+  "goalComplete": false,
+  "candidate": "RWX_REUSE_INSTANCED_TEXTURE_SHADERS=1",
+  "defaultEnabled": false,
+  "scope": "Correctness-only actual automatic owner120 plus real headless Vulkan consumer60, ordinary1x replay/pan/zoom, final retained complete1280x720canvas shaderOFF/ON MSAA4 exact and natural crossmesh/material reuse proof. No synthetic commands or cell fallback.",
+  "exit": {
+    "exitCode": 1,
+    "timedOut": false,
+    "signals": [],
+    "controllerError": null,
+    "ownedGroupSurvivedWait": false,
+    "elapsedSeconds": 27.58559433298069
+  },
+  "failure": "java.lang.IllegalStateException: Actual final frame has no provable material reuse across distinct visible meshes",
+  "assessment": "Final selected real complete-game-canvas packet had no provable shared material across distinct visible instanced meshes. Strict gate correctly failed closed. This is insufficient path coverage, not observed pixel corruption and not proof that shader reuse never occurs in real play. Do not claim full-canvas pixel or lifecycle success.",
+  "fullCanvas": {
+    "passed": false,
+    "pixelsPassed": false,
+    "recordedComparisonRounds": 0,
+    "samples": 4,
+    "sequence": 2632,
+    "tick": 666,
+    "pending": {
+      "path": "/Users/wty/code/RWXX/build/shader-reuse-20261103/strict-owner-gpu/candidate-on-v1/capture/full-canvas-reference-pending.json",
+      "sha256": "ecfc698a92f45bf344251e2ecd4494b810bbd62549733b2b3609a3b783ee2bea"
+    }
+  },
+  "partialEvidence": {
+    "preReferenceOwnerStopped": true,
+    "preReferenceOwnerThreadAlive": false,
+    "finalSequenceBeforeReference": 2632,
+    "fenceCompletedSequenceBeforeReference": 2632,
+    "pendingRetirementsBeforeReference": 0,
+    "actualCellReference": {
+      "comparedCells": 6,
+      "checkedPixels": 1572864,
+      "mismatches": 0,
+      "maxChannelDelta": 0,
+      "referenceRenderedGpuMeshes": 67
+    },
+    "limits": "Partial map-cell evidence does not satisfy the failed full-canvas reuse/native-bind/final-shutdown gate. No result.json was produced; final retirement/CPU lease success is not asserted."
+  },
+  "decision": "Stop after this failure, retain all records, no automatic rerun. Keep candidate defaultOFF; prioritize measured bulk map mesh/shader/pipeline churn and same-environment original baseline rather than expanding this small-gain experiment immediately.",
+  "priorPerformance": "Single background pair fresh112.665→114.462Hz and P9918.908→17.888ms, but max39.715→42.884ms; mixed and unreplicated, not sufficient default adoption.",
+  "evidence": {
+    "command": {
+      "path": "/Users/wty/code/RWXX/build/shader-reuse-20261103/strict-owner-gpu/candidate-on-v1/command.json",
+      "sha256": "1cfc1dabc2049011b92b91fa2d57603aad26eee2ef4728f0504eba943ad983f7"
+    },
+    "process": {
+      "path": "/Users/wty/code/RWXX/build/shader-reuse-20261103/strict-owner-gpu/candidate-on-v1/process-result.json",
+      "sha256": "b98095ea386558fdea4de82aaac57cf1e0e27c9b47399b95bef2e3fecf800b11"
+    },
+    "failure": {
+      "path": "/Users/wty/code/RWXX/build/shader-reuse-20261103/strict-owner-gpu/candidate-on-v1/capture/failure.txt",
+      "sha256": "8475c9e99c03fd9e672e08a442a4cb347ac724c65e46753b8ae4dbf4fbd64ce3"
+    },
+    "preReference": {
+      "path": "/Users/wty/code/RWXX/build/shader-reuse-20261103/strict-owner-gpu/candidate-on-v1/capture/pre-reference.json",
+      "sha256": "3d74212dd56b591c10b7e3c65d102d7bd36597fcc3da75d30675d3d4afaa7dc1"
+    },
+    "cellReference": {
+      "path": "/Users/wty/code/RWXX/build/shader-reuse-20261103/strict-owner-gpu/candidate-on-v1/capture/cell-reference.json",
+      "sha256": "f8228fdd3a686f6c99c331bed423471b86c274759829d04b07d7828a61e40914"
+    },
+    "sourceCompileDelivery": {
+      "path": "/Users/wty/code/RWXX/build/shader-reuse-20261103/full-canvas-reference-v1/delivery.json",
+      "sha256": "4e48b40041fc263b8aadfcd6ca4d93e84972f16e12ee69224350b109181b0d41"
+    },
+    "priorPerformanceReview": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/shader-pair-independent-review/delivery.json",
+      "sha256": "346e23defd0d392407e2b0d388fbec9791d2ec2ed1f2a3143102c6280eb5d001"
+    }
+  }
+}

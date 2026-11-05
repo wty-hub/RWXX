@@ -1,0 +1,281 @@
+{
+  "date": "2026-11-05",
+  "applicationVersion": "1.4.3",
+  "sameUnreleasedBatchNoAdditionalVersionBump": true,
+  "status": "new-beneficial-defaults-enabled-and-built",
+  "goalComplete": false,
+  "userDirection": [
+    "只要有优化的，不影响兼容性的改进，都默认开启",
+    "包括之前探索的结果"
+  ],
+  "adoptionPolicy": "Adopt supported positive real-scene improvements and provable redundant CPU/work removal after compatibility checks; individual adoption does not require meeting the whole-product original+50% or zero-stutter goal. Preserve negative, unproven and incompatible candidates as disabled.",
+  "newDefaults": [
+    {
+      "flag": "RWX_UNION_OPAQUE_POINTS",
+      "default": true,
+      "rollback": "0",
+      "change": "Exact union of dense same-color opaque integer point squares; unsupported batches retain the complete legacy path."
+    },
+    {
+      "flag": "RWX_LAZY_CANVAS_SIGNATURE",
+      "default": true,
+      "rollback": "0",
+      "change": "Compute the unchanged order-sensitive recording hash only when requested."
+    },
+    {
+      "flag": "RWX_CACHE_CANVAS_SHADER_TEMPLATES",
+      "default": true,
+      "rollback": "0",
+      "change": "Reuse immutable CPU shader descriptions; keep independent pipelines, binding storage and native retirement."
+    },
+    {
+      "flag": "RWX_REUSE_MAP_ATLAS_SCRATCH",
+      "default": true,
+      "rollback": "0",
+      "change": "Recycle one bounded unpublished duplicate page with exact dirty-prefix clearing; never recycle canonical or published storage."
+    },
+    {
+      "flag": "RWX_GUARD_SHORT_RENDER_PARK",
+      "default": true,
+      "rollback": "0",
+      "change": "Avoid short presentation parks; use a larger final spin interval, with additional CPU cost."
+    },
+    {
+      "flag": "RWX_WAIT_FOR_FRESH_FRAME",
+      "default": true,
+      "rollback": "0",
+      "change": "Bounded pre-input wait for a newly published immutable frame; may add up to1.5ms of input processing wait and CPU use."
+    },
+    {
+      "flag": "RWX_AVOID_TEXTURE_PAINT_COPIES",
+      "default": true,
+      "rollback": "0",
+      "change": "Reuse the immutable paint when the effective texture effect is unchanged."
+    },
+    {
+      "flag": "RWX_SHARE_IMMUTABLE_COMMANDS",
+      "default": true,
+      "rollback": "0",
+      "change": "Share already immutable unchanged command values while detaching the published list and restoring all resource dependencies."
+    },
+    {
+      "flag": "RWX_REUSE_TEXT_MESH_KEYS",
+      "default": true,
+      "rollback": "0",
+      "change": "Reuse a private unstored lookup probe and retain detached canonical text mesh keys."
+    },
+    {
+      "flag": "RWX_REUSE_TYPEFACE_KEYS",
+      "default": true,
+      "rollback": "0",
+      "change": "Cache the identical family/style string for immutable typeface values."
+    },
+    {
+      "flag": "RWX_PREPARE_CANVAS_TEXT",
+      "default": true,
+      "rollback": "0",
+      "change": "Reuse private derived-font and metrics preparation without changing label geometry."
+    },
+    {
+      "flag": "RWX_MAP_TEXTURE_BATCHES",
+      "default": true,
+      "rollback": "0",
+      "change": "Publish ordered numeric texture batches for GPU map cells; subordinate rect batches now inherit their existing enabled policy."
+    },
+    {
+      "flag": "RWX_MAP_FOG_BATCHES",
+      "default": true,
+      "rollback": "0",
+      "change": "Batch black fog rectangles and texture masks in their original order, preserving alpha and UV."
+    },
+    {
+      "flag": "RWX_RESET_ONLY_ACTIVE_CANVAS_MESHES",
+      "default": true,
+      "rollback": "0",
+      "change": "Reset previously used meshes and finish currently used meshes instead of walking inactive mesh caches."
+    },
+    {
+      "flag": "RWX_SINGLE_MAP_CELL_RENDER",
+      "default": true,
+      "rollback": "0",
+      "change": "Render each installed map content version once instead of retaining the redundant redraw compensation."
+    }
+  ],
+  "subordinateRectPolicy": {
+    "flag": "RWX_MAP_RECT_BATCHES",
+    "sourcePolicyAlreadyDefaultOn": true,
+    "nowEffectiveWithDefaultMapTextureBatches": true,
+    "rollback": "0"
+  },
+  "previouslyEnabled": [
+    "Cumulative engine-owner deadlines",
+    "Frozen content reuse with complete dependency/version/lifetime restoration",
+    "Shared texture registration stamps",
+    "Immutable map-atlas CPU pixels and upload views",
+    "Prepared map tile short path",
+    "Existing pixel/upload/freeze scratch pools and metadata/mesh reuse"
+  ],
+  "keptDisabled": {
+    "RWX_DIRECT_TARGET_TEXTURES": "Observed pixel incompatibility; not enabled.",
+    "RWX_DIRECT_RECT_VERTEX_WRITES": "Matched real motion ABBA reduced throughput and worsened P99.",
+    "RWX_REUSE_PAINT_SNAPSHOTS": "Matched real motion ABBA did not improve throughput and worsened P99.",
+    "RWX_PACKED_ROOT_TEXTURE_COMMANDS": "Only small pooled throughput change with paired direction reversal and worse P99; net benefit remains unproven.",
+    "RWX_DIRECT_SPRITE_INSTANCE_WRITES": "Only weak short single-arm benefit; the combined direct/lazy run regressed and has retained pathfinding waits, without established causal attribution.",
+    "RWX_STABLE_FRAME_DEADLINES": "Later matched renderer deadline pair regressed; owner cumulative deadlines remain enabled independently.",
+    "RWX_REUSE_MAP_MESH_SLOTS": "Later matched real background pair regressed.",
+    "RWX_MAP_NODE_MODEL_UPDATES_ONLY": "Correctness passed but the matched real pair regressed.",
+    "RWX_MAP_ZOOM_GENERATION": "Independent zoom ABBA regressed.",
+    "RWX_COMPACT_QUAD_STORAGE": "Newer independent CPU ABBA increased CPU time8.305%.",
+    "RWX_COMPACT_TEXTURE_INSTANCES": "Later allocation screening did not establish benefit.",
+    "RWX_REUSE_INSTANCED_TEXTURE_SHADERS": "Independent native cross-mesh shared-shader compatibility coverage remains incomplete; separate from CPU shader templates.",
+    "RWX_SHARE_MAP_TEXTURE_MATERIALS": "No verified matched net performance benefit found; do not substitute another shader candidate evidence.",
+    "RWX_REUSE_FROZEN_TEXTURE_REFERENCES": "Independent comparison worsened tails without meaningful throughput gain.",
+    "RWX_TEXT_GEOMETRY_TEMPLATES": "Correctness evidence exists; no verified matched net performance benefit found.",
+    "RWX_INSTANCED_TEXT_GLYPHS": "Correctness evidence exists; no verified matched net performance benefit found.",
+    "RWX_TEXT_SHADER_REUSE": "Correctness evidence exists; no verified matched net performance benefit found.",
+    "RWX_INSTANCED_TEXT_LABELS": "Correctness evidence exists; no verified matched net performance benefit found.",
+    "RWX_PROJECTED_SPRITE_ATLAS": "Correctness evidence exists after fixes; no verified matched net performance benefit found.",
+    "RWX_INCREMENTAL_SPRITE_ATLAS": "Actual append/upload counters improve, but matched CPU/memory/throughput tradeoff is not established.",
+    "RWX_POST_INPUT_FRAME_WAIT": "No established matched net benefit; would supersede the adopted pre-input wait.",
+    "RWX_CULL_OFFSCREEN_TEXT": "Retained candidate without established matched benefit for adoption.",
+    "RWX_ORIGINAL_INTEGER_MS_GAME_DELTA": "Separate clock compatibility change; real adapter network/replay verification remains open."
+  },
+  "newDefaultSourcePins": {
+    "core/src/main/kotlin/io/github/rwx/render/canvas/KoolGraphicsEngine.kt": "4c9bbfbcc95d2afd55358231ccdd74a2de5c69f7345ec9dfddd5b899937c4d36",
+    "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasCommandBuffer.kt": "3dd9718a683315b136ad6e65601cf659d88801df1c8c2706952df8f76db37be6",
+    "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasShaderTemplates.kt": "0cdb30ca1926eaa08614e1eea7c9ab52f556919d70ac570fa801665f5d5e212f",
+    "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasAtlasPixelPool.kt": "521efe17e22da211e6aaa8f4cffa26a4d78834ef11ecf22207039aeaad3ec000",
+    "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasFrameEnvelope.kt": "f024494131f8f18dc04b93e94cdc3584b1da4034d982926504ac49b52132c418",
+    "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasFrameRenderer.kt": "25ac467dec8925287b0ec001b214d9cf51e1dbfeb92a4a9f8f02334b81bfef88",
+    "core/src/main/kotlin/io/github/rwx/render/canvas/KoolTypeface.kt": "fbd7a207f7f0a98dc8e194bb78b22a76095aa8cd1f549133acff7c909d037a97",
+    "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasGpuTargetPasses.kt": "2cf1cd85818a9f2da9547aab959be6a5cd1389c65bc77743f5d877546f9bc08b",
+    "desktop/src/main/kotlin/io/github/rwx/KoolFramePacer.kt": "5bd03bcb3dd246cf757ec3aa31b226fdc9595aa73412ab5be0f36ca919b51e80"
+  },
+  "validation": {
+    "defaultCore": {
+      "tests": 535,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "defaultDesktop": {
+      "tests": 159,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "interactiveFullscreenExplicitlyExcluded": true
+    },
+    "rollback": {
+      "tests": 39,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "gpuScopeReview": "/Users/wty/code/RWXX/build/default-optimization-adoption-20261105/gpu-default-combination-scope-review.json",
+    "spriteRawControllerValid": false,
+    "spriteIndependentPixelResourceChecksPassed": true,
+    "spriteChecks": 148,
+    "spriteRetirementsRequestedAndCompleted": 608,
+    "spriteControllerFailure": "V1 required a CPU template cache log from a sprite-only path that does not load that class; raw failure preserved, no sprite retry.",
+    "mapControllerValid": true,
+    "mapChecks": 3844,
+    "fogChecks": 4608,
+    "textChecks": 3072,
+    "templateCreated": 3,
+    "templateHits": 76,
+    "gpuScope": "Memory-only window adapter, no NSWindow/audio/input. Main context4; these inherited readback passes use default1 sample and tolerance3, not an all-frame exact/MSAA4 claim. Fifteen overrides absent does not mean every branch was exercised.",
+    "opaqueSpecificExactOracle": {
+      "path": "/Users/wty/code/RWXX/build/opaque-point-union-20261105/gpu-exact-v1/process-result.json",
+      "pairs": 22,
+      "rgbaPixels": 77627,
+      "maxChannelDelta": 0,
+      "explicitReadbackSamples": 4,
+      "retirementsCompleted": 44
+    },
+    "preservedCoreV2Failure": "/Users/wty/code/RWXX/build/default-optimization-adoption-20261105/core-regression-v2-failure/result.json",
+    "coreV2Resolution": "Three test-fixture casts assumed unbatched representation. Read the complete ordered rectangles/raw floatbits/paint/state and assert a single-quad texture batch. Product behavior and semantic assertions were not relaxed; finalV3 passed."
+  },
+  "package": {
+    "path": "/Users/wty/code/RWXX/build/default-optimization-adoption-20261105/artifacts/RWXX-1.4.3-macos-arm64.jar",
+    "sha256": "b357010e33ce95c695991018be2db98c5343fe66b1ab222ba8b210acc2d6ef6b",
+    "bytes": 125330312,
+    "installed": false,
+    "moduleManifest": "/Users/wty/code/RWXX/build/default-optimization-adoption-20261105/cpu-inputs-v2/manifest.json"
+  },
+  "packageScope": "/Users/wty/code/RWXX/build/default-optimization-adoption-20261105/artifacts/static-scope-review-v1.json",
+  "packageClassBinding": {
+    "core": 2612,
+    "desktop": 338,
+    "allMatchFrozenModules": true,
+    "outsideModuleSharedPayloadsCompared": 33640,
+    "outsideModulePayloadDifferences": 0,
+    "outsideModuleAdditionsOrRemovals": 0
+  },
+  "realDefaultPair": {
+    "path": "/Users/wty/code/RWXX/build/default-optimization-adoption-20261105/real-defaults-pair-v1",
+    "bothControllersValid": true,
+    "independentReviewPending": false,
+    "order": [
+      "control",
+      "defaults"
+    ],
+    "sampleSecondsPerArm": 20,
+    "new15FlagsControlExplicit0DefaultsUnset": true,
+    "clockBothArmsExplicit1": true,
+    "clockProductDefaultVerified": false,
+    "newOriginalGameComparison": false,
+    "stableImprovementEstablished": false,
+    "independentReview": "/Users/wty/code/RWXX/build/default-optimization-adoption-20261105/real-defaults-pair-v1/independent-default-pair-review-v1.json",
+    "checksPassed": 93,
+    "freshHz": {
+      "control": 118.23974861379519,
+      "defaults": 119.69392378583657
+    },
+    "freshChangePercent": 1.229853,
+    "P99Ms": {
+      "control": 11.431167,
+      "defaults": 9.754333
+    },
+    "maxMs": {
+      "control": 56.632959,
+      "defaults": 21.996667
+    },
+    "over16_667Ms": {
+      "control": 11,
+      "defaults": 2
+    },
+    "over33_333Ms": {
+      "control": 1,
+      "defaults": 0
+    },
+    "over50Ms": {
+      "control": 1,
+      "defaults": 0
+    },
+    "repeatPercent": {
+      "control": 0.337126,
+      "defaults": 0.083472
+    },
+    "lowerRatePreserved": "Both measured around119freshHz despite configured300; keep these valid runs and do not select old240Hz references or infer uncapped headroom."
+  },
+  "independentEligibilityReports": [
+    "/Users/wty/code/RWXX/build/default-optimization-adoption-20261105/independent-eligibility-review-v1.json",
+    "/Users/wty/code/RWXX/build/default-optimization-adoption-20261105/text-batch-eligibility-review-v1.json",
+    "/Users/wty/code/RWXX/build/default-optimization-audit-20261105/scheduling-atlas-cache-scope.json"
+  ],
+  "performanceLimit": "Do not add individual historical percentages. No stable whole-product+50% or stutter-free claim; no new matched official-original reference was run.",
+  "displayCleanup": {
+    "path": "/Users/wty/code/RWXX/build/background-display-20261104/create-20.ndjson",
+    "displayID": 38,
+    "exitCode": 0,
+    "signal": 15,
+    "removed": true,
+    "originalDisplaysUnchanged": true
+  },
+  "preservedDiagnosticPrelaunchStop": "/Users/wty/code/RWXX/build/stress-scenes-20261105/opaque-points-motion-v1/diagnostic-series-stop-v1.json",
+  "installedApplicationChanged": false,
+  "steamInstallationChanged": false,
+  "systemVolumeChanged": false,
+  "startupAudioMuted": true,
+  "committed": false
+}

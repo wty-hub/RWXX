@@ -1,0 +1,146 @@
+{
+  "schema": "rwxx-direct-rect-real-motion-2026-11-04-v1",
+  "status": "correctness-passed-performance-not-adopted",
+  "applicationVersion": "1.4.3",
+  "goalAchieved": false,
+  "candidateDefaultEnabled": false,
+  "userRequirements": [
+    "compatibility",
+    "at least 50 percent faster than original",
+    "stable dragging and zooming",
+    "silent by default"
+  ],
+  "independentReview": {
+    "path": "build/stress-scenes-20261104/direct-rect-real-motion-v1/independent-v1/delivery.json",
+    "sha256": "ffc61b701f0c7ab8e694df05e23c6f125351f38b9756df9b52cb4f8891e234c3"
+  },
+  "platformSha256": "f6e1ae596d241a12f75c74394d9665f9685ee8545c433d4f5bde91266bb76bba",
+  "protocol": {
+    "order": [
+      "control",
+      "direct",
+      "direct-repeat",
+      "control-repeat"
+    ],
+    "changedEnvironmentOnly": "RWX_DIRECT_RECT_VERTEX_WRITES 0/1",
+    "actualAi": "Medium0",
+    "initialUnits": 10000,
+    "mapSha256": "09232b22a1cc72511269895bf388eb1b2c2d2516aa12ef53416d97de845e0373",
+    "viewport": [
+      1792,
+      1008
+    ],
+    "msaa": 4,
+    "vsync": false,
+    "softwareCap": 300,
+    "sampleSeconds": 20,
+    "warmupSeconds": 2,
+    "scriptedCamera": "20-second pan and 4-second .35..1.5 constrained ordinary zoom cycle",
+    "actualForeground": false,
+    "silentFromStartup": true,
+    "otherCandidateFlags": {
+      "RWX_PACKED_ROOT_TEXTURE_COMMANDS": 0,
+      "RWX_REUSE_PAINT_SNAPSHOTS": 0,
+      "RWX_DIRECT_SPRITE_INSTANCE_WRITES": 0,
+      "RWX_LAZY_CANVAS_SIGNATURE": 0,
+      "RWX_AVOID_TEXTURE_PAINT_COPIES": 0
+    }
+  },
+  "arms": [
+    {
+      "name": "control",
+      "summaryPath": "build/stress-scenes-20261104/direct-rect-real-motion-v1/control/completed-summary.json",
+      "summarySha256": "2d60edde20812415b0427126abe782868b07a7de923e8f18d9138231c732d45a",
+      "metrics": {
+        "freshSnapshotHz": 238.4923722149871,
+        "freshSnapshotIntervalP99Ms": 11.569625,
+        "freshSnapshotIntervalMaxMs": 39.633416,
+        "freshSnapshotIntervalsOver16_667Ms": 15,
+        "freshSnapshotIntervalsOver33_333Ms": 2,
+        "freshSnapshotIntervalsOver50Ms": 0,
+        "minimumLivingUnits": 9229,
+        "minimumVisibleUnits": 1332
+      }
+    },
+    {
+      "name": "direct",
+      "summaryPath": "build/stress-scenes-20261104/direct-rect-real-motion-v1/direct/completed-summary.json",
+      "summarySha256": "914d6d7af06b304e5e82c6144fa9687bd2dd24c2a40cc5455bcae4bfcd8e8664",
+      "metrics": {
+        "freshSnapshotHz": 213.16780145124318,
+        "freshSnapshotIntervalP99Ms": 17.517375,
+        "freshSnapshotIntervalMaxMs": 42.399958,
+        "freshSnapshotIntervalsOver16_667Ms": 54,
+        "freshSnapshotIntervalsOver33_333Ms": 2,
+        "freshSnapshotIntervalsOver50Ms": 0,
+        "minimumLivingUnits": 9232,
+        "minimumVisibleUnits": 1333
+      }
+    },
+    {
+      "name": "direct-repeat",
+      "summaryPath": "build/stress-scenes-20261104/direct-rect-real-motion-v1/direct-repeat/completed-summary.json",
+      "summarySha256": "d068cef7c7dc0dfb1628ba032ad82b16f01f7e39d3d8d5880a073e59a8b3a6d3",
+      "metrics": {
+        "freshSnapshotHz": 235.08192023739971,
+        "freshSnapshotIntervalP99Ms": 11.316625,
+        "freshSnapshotIntervalMaxMs": 50.9925,
+        "freshSnapshotIntervalsOver16_667Ms": 19,
+        "freshSnapshotIntervalsOver33_333Ms": 1,
+        "freshSnapshotIntervalsOver50Ms": 1,
+        "minimumLivingUnits": 9235,
+        "minimumVisibleUnits": 1338
+      }
+    },
+    {
+      "name": "control-repeat",
+      "summaryPath": "build/stress-scenes-20261104/direct-rect-real-motion-v1/control-repeat/completed-summary.json",
+      "summarySha256": "ea4da57f23977f16169bba19b5a84fe83fcbd26792f62a767dd4cd39d9772fd2",
+      "metrics": {
+        "freshSnapshotHz": 235.38741805996048,
+        "freshSnapshotIntervalP99Ms": 11.460084,
+        "freshSnapshotIntervalMaxMs": 46.8805,
+        "freshSnapshotIntervalsOver16_667Ms": 20,
+        "freshSnapshotIntervalsOver33_333Ms": 3,
+        "freshSnapshotIntervalsOver50Ms": 0,
+        "minimumLivingUnits": 9225,
+        "minimumVisibleUnits": 1336
+      }
+    }
+  ],
+  "limitations": [
+    "Product/runtime comparisons: official8a55 with compatibility Temurin17x64/OpenGL versus RWXX Java25arm64/Vulkan.",
+    "Independent ordinary AI battles; no seed lock or lockstep equivalence.",
+    "10000 units initially; living/visible counts change during combat and zoom. shouldDraw is not per-unit GPU visibility proof.",
+    "Scripted camera rendering; no physical mouse input latency or display scanout claim.",
+    "Packed diagnostic JFR/stage recording excluded from performance evidence."
+  ],
+  "physicalDisplayChanged": false,
+  "installed": false,
+  "steamModified": false,
+  "contemporaneousOriginal": {
+    "path": "build/original-10000-background-20261104/run-moving-panzoom-v3/summary.json",
+    "sha256": "6d12bf4fa2cf30739fc6a1d506958ed09b3876f24ebe6cae1c47e7d254a87018",
+    "freshHz": 142.2,
+    "p99Ms": 17.068333,
+    "maxMs": 52.741625,
+    "target50PercentFreshHz": 213.29999999999998,
+    "note": "Same display34, after4RWXX arms; one independently seeded ordinary battle, not paired lockstep. Earlier same-protocol originals146.05/152.6 preserved."
+  },
+  "decision": "Pooled candidate fresh minus5.4087 percent; P99 11.5696 to15.6215ms; >16.667ms35 to73; >50ms0 to1. Keep disabled. Both control max39.6334/46.8805ms below this original max52.7416, but previous same-protocol RWXX runs had longer tails; stable no-drops remains unproven.",
+  "virtualDisplayCleanup": {
+    "path": "build/background-display-20261104/create-16.ndjson",
+    "exitCode": 0,
+    "removed": true,
+    "originalDisplaysUnchanged": true
+  },
+  "cpuCompatibilityTests": {
+    "path": "build/direct-rect-vertex-writes-20261104/cpu-inputs-v1/manifest.json",
+    "tests": 19,
+    "failures": 0
+  },
+  "gpuCorrectness": {
+    "path": "build/direct-rect-vertex-writes-20261104/independent-gpu-v1/delivery.json",
+    "scope": "64x64 MSAA4; CPUrawbits exact, GPU148compositechecks include pixel tolerance3 and608retirements each arm, not FPS/full-scene proof"
+  }
+}

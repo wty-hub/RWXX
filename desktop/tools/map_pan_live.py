@@ -17,12 +17,15 @@ from frozen_benchmark_tooling import fingerprint
 
 CANDIDATES = {
     'prepared-map-tiles': 'RWX_PREPARED_MAP_TILES',
+    'share-texture-registrations': 'RWX_SHARE_TEXTURE_REGISTRATIONS',
+    'share-map-atlas-pixels': 'RWX_SHARE_MAP_ATLAS_PIXELS',
     'frozen-reuse': 'RWX_FROZEN_CONTENT_REUSE', 'map-texture-batches': 'RWX_MAP_TEXTURE_BATCHES',
     'map-fog-batches': 'RWX_MAP_FOG_BATCHES', 'map-zoom-generation': 'RWX_MAP_ZOOM_GENERATION',
     'single-map-cell-render': 'RWX_SINGLE_MAP_CELL_RENDER', 'incremental-sprite-atlas': 'RWX_INCREMENTAL_SPRITE_ATLAS',
     'projected-sprite-atlas': 'RWX_PROJECTED_SPRITE_ATLAS', 'instanced-text-labels': 'RWX_INSTANCED_TEXT_LABELS',
     'text-shader-reuse': 'RWX_TEXT_SHADER_REUSE', 'guard-short-render-park': 'RWX_GUARD_SHORT_RENDER_PARK',
     'stable-frame-deadlines': 'RWX_STABLE_FRAME_DEADLINES', 'wait-for-fresh-frame': 'RWX_WAIT_FOR_FRESH_FRAME',
+    'stable-owner-deadlines': 'RWX_STABLE_OWNER_DEADLINES',
     'share-map-texture-materials': 'RWX_SHARE_MAP_TEXTURE_MATERIALS',
     'reuse-frozen-texture-references': 'RWX_REUSE_FROZEN_TEXTURE_REFERENCES',
     'reuse-map-mesh-slots': 'RWX_REUSE_MAP_MESH_SLOTS',
@@ -71,7 +74,10 @@ def main():
     for flag in CANDIDATES:
         p.add_argument('--' + flag, action='store_true', help=(
             'Controlled prepared map recording: omitted explicitly disables this product-default feature'
-            if flag == 'prepared-map-tiles' else 'Explicit canvas candidate; default remains unchanged'))
+            if flag == 'prepared-map-tiles' else
+            'Controlled canvas option: omitted explicitly disables this product-default feature'
+            if flag in ('frozen-reuse', 'share-texture-registrations', 'share-map-atlas-pixels') else
+            'Explicit canvas candidate; default remains unchanged'))
     diagnostics = p.add_mutually_exclusive_group()
     diagnostics.add_argument('--diagnostic', action='store_true')
     diagnostics.add_argument('--diagnostic-light', action='store_true', help='JFR and engine trace without per-canvas profiling')
@@ -152,6 +158,9 @@ def main():
             env[variable] = '1'
     # Product defaults must not silently turn a controlled OFF arm into an ON arm.
     env['RWX_PREPARED_MAP_TILES'] = '1' if args.prepared_map_tiles else '0'
+    env['RWX_SHARE_TEXTURE_REGISTRATIONS'] = '1' if args.share_texture_registrations else '0'
+    env['RWX_SHARE_MAP_ATLAS_PIXELS'] = '1' if args.share_map_atlas_pixels else '0'
+    env['RWX_FROZEN_CONTENT_REUSE'] = '1' if args.frozen_reuse else '0'
     if args.real_scene_cell_oracle:
         env['RWX_REAL_SCENE_ORACLE'] = str(out / 'real-scene-oracle')
         env['RWX_REAL_SCENE_CELL_ORACLE'] = '1'
@@ -269,10 +278,12 @@ def main():
     report['protocol']['engineSectionTraceRequested'] = args.engine_section_trace
     report['protocol']['frameLifecycleTraceRequested'] = args.frame_lifecycle_trace
     report['protocol']['preparedMapTilesRequested'] = args.prepared_map_tiles
+    report['protocol']['shareTextureRegistrationsRequested'] = args.share_texture_registrations
+    report['protocol']['shareMapAtlasPixelsRequested'] = args.share_map_atlas_pixels
     report['protocol']['bulkArgbPackingRequested'] = not args.disable_bulk_argb_pack
     report['protocol']['nativeBgraUploadsRequested'] = not args.disable_native_bgra_upload
     report['protocol']['canvasStageTraceRequested'] = args.canvas_stage_trace
-    report['protocol']['hybridOwnerPacingRequested'] = not args.legacy_owner_pacing
+    report['protocol']['hybridOwnerPacingRequested'] = env.get('RWX_HYBRID_OWNER_PACING') == '1' and env.get('RWX_LEGACY_OWNER_PACING') != '1'
     report['protocol']['legacyShortOwnerParkRequested'] = args.legacy_short_owner_park or not args.guard_short_owner_park
     report['protocol']['shortParkGuardRequested'] = not args.legacy_owner_pacing and args.guard_short_owner_park and not args.legacy_short_owner_park
     report['protocol']['textMeshReuseRequested'] = not args.disable_text_mesh_reuse
@@ -309,6 +320,11 @@ def main():
         report['run']['validMeasurement'] = False
     confirm_experimental_modes(report['run'], (out / f'{name}.log').read_text(encoding='utf-8', errors='replace'),
                                args.parallel_cell_raster, args.primitive_text_metrics, args.adaptive_cell_raster, not args.cpu_cell_raster)
+    if args.stable_owner_deadlines:
+        log = (out / f'{name}.log').read_text(encoding='utf-8', errors='replace')
+        if not re.search(r'^RWXOwnerPacing .*stableFrameDeadlines=true(?:\s|$)', log, re.MULTILINE):
+            report['run']['invalidReasons'].append('stable owner deadlines candidate is not confirmed by the owner runtime')
+            report['run']['validMeasurement'] = False
     if args.real_scene_cell_oracle:
         oracle_path = out / 'real-scene-oracle/summary.json'
         evidence = json.loads(oracle_path.read_text(encoding='utf-8')) if oracle_path.exists() else None
@@ -326,6 +342,19 @@ def main():
         if 'RWXPreparedMapTiles recordingConfirmed=true' not in log:
             report['run']['invalidReasons'].append('prepared map tile recording was not exercised')
             report['run']['validMeasurement'] = False
+    if args.share_texture_registrations:
+        log = (out / f'{name}.log').read_text(encoding='utf-8', errors='replace')
+        if 'RWXSharedTextureRegistrations sharingConfirmed=true' not in log:
+            report['run']['invalidReasons'].append('shared texture registrations were not exercised')
+            report['run']['validMeasurement'] = False
+    if args.share_map_atlas_pixels:
+        log = (out / f'{name}.log').read_text(encoding='utf-8', errors='replace')
+        for marker, reason in (
+                ('RWXAtlasPixelSharing reuseConfirmed=true', 'shared atlas CPU pixel reuse was not confirmed'),
+                ('RWXAtlasPixelUploads reuseConfirmed=true', 'shared atlas upload reuse was not confirmed')):
+            if marker not in log:
+                report['run']['invalidReasons'].append(reason)
+                report['run']['validMeasurement'] = False
     if args.cull_offscreen_text:
         log = (out / f'{name}.log').read_text(encoding='utf-8', errors='replace')
         if 'RWXOffscreenText cullConfirmed=true' not in log:

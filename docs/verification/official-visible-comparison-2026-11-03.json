@@ -1,0 +1,263 @@
+{
+  "analysisDate": "2026-11-03",
+  "captureLocalDate": "2026-11-02",
+  "createdUtc": "2026-11-02T16:16:34.894236+00:00",
+  "status": "first-valid-same-machine-product-present-cadence-comparison-with-stated-limits",
+  "goalComplete": false,
+  "authorization": "User explicitly answered 现在开始 to a new approximately5-minute slot, official and RWXX once each. Both attempts consumed; no automatic retries, activation, focus restoration or injected OS input.",
+  "reference": {
+    "product": "Official Rusted Warfare PC1.15, not RWPP/RWX",
+    "coreSha256": "8a550a37e2d8a5430866090d4e7d5892f9010b47f52a5a09350fc66c620deec9",
+    "probeSha256": "ba14f2162b519d2567928f2609c26efc68d46c4aaed75be2096ec3089e34b2e1",
+    "engine": "Slick/LWJGL2 OpenGL",
+    "jvm": "Bundled official Java8 x64"
+  },
+  "candidate": {
+    "product": "RWXX1.4.3 current guard release",
+    "coreSha256": "5d77d01450aa956655abd8c37eede7f6f0b88391bfa426db31cd5d3fa1e703d9",
+    "platformJarSha256": "f0e3515879c564f29331b977eae82c6057a0b508a1ff14ad1ff32cdb2c4d7f66",
+    "zipSha256": "516d9580fd6603c3af9d3d563caaf11071ee8e03b8146b88b318c5c6719d12ea",
+    "engine": "Kool/Vulkan through MoltenVK",
+    "jvm": "Fixed JDK25.0.4.1 arm64; native jpackage launcher not used",
+    "msaaSamples": 4
+  },
+  "protocol": {
+    "sameMachine": "AppleM5 macOS",
+    "sameReplaySha256": "d19b132ec8866f87496b3c1c91627e7ef35a99b1627e2a9550f74c0e0e57f6d1",
+    "requestedWindow": [
+      1280,
+      720
+    ],
+    "frameCapHz": 120,
+    "warmupSecondsEach": 20,
+    "requestedSampleSecondsEach": 20,
+    "cameraMode": "pan-zoom",
+    "panPeriodSeconds": 20,
+    "zoomPeriodSeconds": 4,
+    "requestedZoom": [
+      0.35,
+      1.5
+    ],
+    "runsPerProduct": 1,
+    "niceRequested": 19,
+    "replayStartTick": 0,
+    "ordinary1xBehavior": true,
+    "fixtureUnitsInjected": false,
+    "jfrOrHighVolumeGpuTraceEnabled": false
+  },
+  "metrics": {
+    "official": {
+      "acceptedPresentHz": 120.0,
+      "freshPictureHz": 120.0,
+      "acceptedPresents": 2400,
+      "freshPresents": 2400,
+      "repeatedPresents": 0,
+      "repeatRatio": 0.0,
+      "freshP95Ms": 12.846459,
+      "freshP99Ms": 15.398875,
+      "freshP999Ms": 17.092917,
+      "freshMaxMs": 18.932167,
+      "freshOver16_667Ms": 8,
+      "freshOver33_333Ms": 0,
+      "freshOver50Ms": 0,
+      "freshOver100Ms": 0,
+      "tailFreshPictureAgeMs": 0.14475,
+      "sampleSeconds": 20
+    },
+    "rwxx": {
+      "acceptedPresentHz": 117.42082410144407,
+      "freshPictureHz": 99.42529550352161,
+      "acceptedPresents": 2349,
+      "freshPresents": 1989,
+      "repeatedPresents": 360,
+      "repeatRatio": 0.1532567049808429,
+      "freshP95Ms": 17.388083,
+      "freshP99Ms": 20.255584,
+      "freshP999Ms": 33.720667,
+      "freshMaxMs": 36.872209,
+      "freshOver16_667Ms": 266,
+      "freshOver33_333Ms": 3,
+      "freshOver50Ms": 0,
+      "freshOver100Ms": 0,
+      "sampleSeconds": 20.004969459,
+      "engineProducedHz": 100.29506922303561,
+      "engineFreshFrames": 2007,
+      "engineIntervalP99Ms": 10.425875
+    }
+  },
+  "relative": {
+    "rwxxFreshVsOriginalPercent": -17.145587080398663,
+    "rwxxFreshP99VsOriginalPercent": 31.53937544138776,
+    "rwxxNeededFreshGainTo120Percent": 20.6936317285068
+  },
+  "alignmentEvidence": {
+    "originalDisplayReportedSize": [
+      1280,
+      720
+    ],
+    "rwxxEngineAndScreenReportedSize": [
+      1280.0,
+      720.0
+    ],
+    "rwxxActualFramebufferLog": "framebuffer=1280x720 samples=4 vsync=false targetFps=120 asyncSceneUpdate=false",
+    "originalCamera": {
+      "viewportWidth": 1280,
+      "viewportHeight": 720,
+      "spanX": 1496.827,
+      "spanY": 911.94446,
+      "zoomMinimum": 0.45,
+      "zoomMaximum": 1.5
+    },
+    "rwxxCamera": {
+      "cameraSpanX": 1489.7605,
+      "cameraSpanY": 911.22424,
+      "actualZoomMinimum": 0.45,
+      "actualZoomMaximum": 1.4999958
+    },
+    "originalSimulation": {
+      "initialTick": 0,
+      "initialGameTimeMillis": 0,
+      "startTick": 604,
+      "startGameTimeMillis": 19745,
+      "endTick": 1203,
+      "endGameTimeMillis": 39512
+    },
+    "rwxxSimulation": {
+      "sampleStartTick": 605,
+      "sampleEndTick": 1205,
+      "sampleStartGameTimeMillis": 19778,
+      "sampleEndGameTimeMillis": 39578,
+      "replaySpeed": 1.0,
+      "replayRate": 1
+    },
+    "fogDisplayReportedByBoth": false,
+    "rwxxLivingUnits": [
+      23,
+      38
+    ],
+    "rwxxVisibleUnitsMinimum": 3,
+    "rwxxMaximumMovingUnits": 23,
+    "rwxxMeasuredMapCacheGrowth": {
+      "created": 0,
+      "hits": 2112
+    }
+  },
+  "validity": {
+    "bothNormalExit0": true,
+    "bothNoTimeoutOrSupervisorSignal": true,
+    "officialSampleDisplayActiveVisibleIncludingLeftBoundary": true,
+    "rwxxExistingWholeRunAwtGate": true,
+    "bothFreshCadenceIndependentTraceRecomputationPassed": true,
+    "fatalCrashFound": false,
+    "ownedProcessesRemain": false,
+    "validForProductPresentCadence": true,
+    "strictPixelAndQualityEquivalentWorkloadProven": false,
+    "rendererOnlyEfficiencyRatioValid": false,
+    "physicalDisplayScanoutFpsMeasured": false,
+    "physicalMouseInputLatencyMeasured": false
+  },
+  "findings": [
+    "RWXX has17.15% fewer new-picture submissions in this sample,31.54% higher fresh-pictureP99 and3 intervals>33.333ms versus0. Original stays at the120 cap; RWXX goal not achieved.",
+    "RWXX accepted-present rate117.42Hz is much higher than its99.43Hz fresh-picture rate;15.33% repeats. Engine production100.30Hz closely tracks fresh-picture rate, prioritizing producer pacing/publication investigation.",
+    "Actual source has no100Hz cap: with highRefreshRate=true and override120, the owner requests8.333ms. Runtime confirms hybrid=false and stableFrameDeadlines=false; fullremaining park plus nextdeadline=actualstart+period can accumulate wakeup delay. This is a hypothesis for the game result, not yet a causal fix proof.",
+    "Map-cell GPU cache is active and reused in sample (created growth0/hits2112), so this measurement is useful for steady pan/zoom rather than only cold target allocation."
+  ],
+  "schedulerDiagnostic": {
+    "report": {
+      "path": "/Users/wty/code/RWXX/build/owner-cadence-20261103/review.json",
+      "sha256": "2fd617b5590deec3f54f750743158f64729e137182e19444b4899a67051e9f47"
+    },
+    "sourceVersionUnchanged": true,
+    "scope": "Existing shipped EngineOwnerLoop class, no-window Java helper, explicit stablefalse/true, one JVM, two workloads ABBA; not game FPS or real-game fix validation.",
+    "idleTickHzOffOn": [
+      86.6,
+      119.74
+    ],
+    "twoMsWorkTickHzOffOn": [
+      92.16,
+      120.0
+    ],
+    "twoMsOwnerCpuMsPerAbout3sOffOn": [
+      567.9,
+      734.66
+    ],
+    "defaultChanged": false
+  },
+  "observation": "CUA inventory listed Main; app binding byid/name returnedInvalid. No screenshot, focus activation or input was performed; do not claim independent OS/occlusion/scanout verification.",
+  "limits": [
+    "One authorized sequential run per product; no variance estimate or universal map/unit-count performance claim.",
+    "Original freshness counts completed original game.render followed by accepted present; RWXX freshness counts an adopted new snapshot at an accepted present. No final pixel change detector or physical scanout measurement.",
+    "Original Display.getWidth/Height and density1 do not directly measure GL_VIEWPORT/native HiDPI framebuffer; actual fog pixels and exact quality/MSAA equivalence are unproven. Product cadence comparison remains useful with these limits, not renderer-only efficiency attribution.",
+    "Original1x has normal replay loading/tick/game-time behavior evidence, not a direct replaySpeed property observation. Camera spans/tick endpoints differ slightly and RWXX actual sample is20.004969459s; independent exact20s sensitivity does not replace primary values.",
+    "Different bundled/runtime architecture and backend; instrumentation and concurrent user applications remain uncontrolled.",
+    "Both visible attempts are consumed; future visible candidate validation requires a fresh time authorization."
+  ],
+  "evidence": {
+    "comparison-ready.json": {
+      "path": "/Users/wty/code/RWXX/build/original-comparison-20261102/final-1.4.3-comparison-v2-guard/comparison-ready.json",
+      "sha256": "91993e15d85d0f0d69d60849d8c4a9533ec0948b17c587c978b18cb5cf7ba544"
+    },
+    "official/attempt-consumed.json": {
+      "path": "/Users/wty/code/RWXX/build/original-comparison-20261102/final-1.4.3-comparison-v2-guard/official/attempt-consumed.json",
+      "sha256": "a8d33473555f0204a4ce63b75abbf67416893f58e26d116b109ee451d3e959c0"
+    },
+    "official/execution-result.json": {
+      "path": "/Users/wty/code/RWXX/build/original-comparison-20261102/final-1.4.3-comparison-v2-guard/official/execution-result.json",
+      "sha256": "92fdb98552fc77a9f4d19f7eb4109723e1a21b7aa65e1cd3d8330138fc50980f"
+    },
+    "official/run/summary.json": {
+      "path": "/Users/wty/code/RWXX/build/original-comparison-20261102/final-1.4.3-comparison-v2-guard/official/run/summary.json",
+      "sha256": "c5be9c870887597907790e014235c6e0c0790765527425e7c743ff6f45c02480"
+    },
+    "official/run/original-present.csv": {
+      "path": "/Users/wty/code/RWXX/build/original-comparison-20261102/final-1.4.3-comparison-v2-guard/official/run/original-present.csv",
+      "sha256": "43f062ea334066379766e314781922c63d45f1f49f7ad2b339431bbc44ee0379"
+    },
+    "official/run/manifest.json": {
+      "path": "/Users/wty/code/RWXX/build/original-comparison-20261102/final-1.4.3-comparison-v2-guard/official/run/manifest.json",
+      "sha256": "58c44d09b77e55edade17052c4b87264aef5673ad7c465a5a4ae9537326af50a"
+    },
+    "rwxx/attempt-consumed.json": {
+      "path": "/Users/wty/code/RWXX/build/original-comparison-20261102/final-1.4.3-comparison-v2-guard/rwxx/attempt-consumed.json",
+      "sha256": "f762f63e9e77d72e92c1ff910a5612f06a4566c27320e3de6dc7614a31279219"
+    },
+    "rwxx/execution-result.json": {
+      "path": "/Users/wty/code/RWXX/build/original-comparison-20261102/final-1.4.3-comparison-v2-guard/rwxx/execution-result.json",
+      "sha256": "795ac2fd6693f8583ef6ebb0d1cfeca645a3dd45bdec9c2e1ed5a62afde0e6c9"
+    },
+    "rwxx/run/diagnostic-summary.json": {
+      "path": "/Users/wty/code/RWXX/build/original-comparison-20261102/final-1.4.3-comparison-v2-guard/rwxx/run/diagnostic-summary.json",
+      "sha256": "1899496f5ed236d7236010f9ce9eefa5a86c4edacef3d373215c8677cbb785af"
+    },
+    "rwxx/run/replay-pan-trace.csv": {
+      "path": "/Users/wty/code/RWXX/build/original-comparison-20261102/final-1.4.3-comparison-v2-guard/rwxx/run/replay-pan-trace.csv",
+      "sha256": "d9ae72dc8bbb5da0620481ebe49eb53b94e1c27e3ca3a610829168e45539f841"
+    },
+    "rwxx/run/replay-pan-scenario.ndjson": {
+      "path": "/Users/wty/code/RWXX/build/original-comparison-20261102/final-1.4.3-comparison-v2-guard/rwxx/run/replay-pan-scenario.ndjson",
+      "sha256": "fc3354c76c086be4e1387467b83096b259391429bfcd6792a67ef40daba8ebd4"
+    },
+    "rwxx/run/replay-pan.log": {
+      "path": "/Users/wty/code/RWXX/build/original-comparison-20261102/final-1.4.3-comparison-v2-guard/rwxx/run/replay-pan.log",
+      "sha256": "4cc5ac646b7c8eac888c219ca3c42ce382418d2a45fef0dfefca707f0633130c"
+    },
+    "rwxx/run/awt-foreground-summary.json": {
+      "path": "/Users/wty/code/RWXX/build/original-comparison-20261102/final-1.4.3-comparison-v2-guard/rwxx/run/awt-foreground-summary.json",
+      "sha256": "cea6fce3b3ef4a2dd391796664c24c03197b9fe8fd4a63b7887c645060d10b78"
+    },
+    "evaluation/independent-visible-audit-v1/review.json": {
+      "path": "/Users/wty/code/RWXX/build/original-comparison-20261102/final-1.4.3-comparison-v2-guard/evaluation/independent-visible-audit-v1/review.json",
+      "sha256": "ef3d5d8e4182bb91119dfd6aa31efaf4154048b3b166badda01989ed2d71275c"
+    },
+    "evaluation/independent-visible-audit-v1/completion-summary.json": {
+      "path": "/Users/wty/code/RWXX/build/original-comparison-20261102/final-1.4.3-comparison-v2-guard/evaluation/independent-visible-audit-v1/completion-summary.json",
+      "sha256": "1378159cb7b4ac71e9c7d42e3d346261a5f044f51fe253bf53f3fbca657f661f"
+    }
+  },
+  "originalLimiterAudit": {
+    "path": "/Users/wty/code/RWXX/build/owner-cadence-20261103/original-sync-review/review.json",
+    "sha256": "9add1a6a3abe1021242794262adec8879faea7998f57c8bf681cc6b12da1fc57",
+    "finding": "Actual container b.updateAndRender calls Display.sync(targetFPS), delegated to Sync.sync; it uses nextFrame=max(previousNextFrame+period,now), plus adaptive sleep1/yield. RWXX default owner anchors to actual pre-tick start. This is a structural lead, not an established causal share of the game result."
+  },
+  "nextAction": "Prioritize independent owner/presentation pacing and publication validation against this now-recorded official product baseline. Do not assume100Hz is a configured cap, enable stable defaults without validation, or automatically launch another visible candidate under the consumed two-arm authorization."
+}

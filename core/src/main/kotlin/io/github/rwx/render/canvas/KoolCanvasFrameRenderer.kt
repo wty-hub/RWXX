@@ -26,8 +26,8 @@ class KoolCanvasFrameRenderer(
     private val renderingFrameTextureIds: MutableSet<KoolCanvasTextureId> = mutableSetOf(),
     private val performanceRates: () -> CanvasFrameRateSample? = CanvasFrameMetrics::snapshot,
     private val reuseTextMeshes: Boolean = System.getenv("RWX_DISABLE_TEXT_MESH_REUSE") != "1",
-    private val reuseTextMeshKeys: Boolean = System.getenv("RWX_REUSE_TEXT_MESH_KEYS") == "1",
-    private val prepareText: Boolean = System.getenv("RWX_PREPARE_CANVAS_TEXT") == "1",
+    private val reuseTextMeshKeys: Boolean = System.getenv("RWX_REUSE_TEXT_MESH_KEYS") != "0",
+    private val prepareText: Boolean = System.getenv("RWX_PREPARE_CANVAS_TEXT") != "0",
     private val primitiveTextMetrics: Boolean = System.getenv("RWX_PRIMITIVE_TEXT_METRICS") == "1",
     private val reuseTextGeometry: Boolean = System.getenv("RWX_TEXT_GEOMETRY_TEMPLATES") == "1",
     private val instanceTextGlyphs: Boolean = System.getenv("RWX_INSTANCED_TEXT_GLYPHS") == "1",
@@ -61,6 +61,29 @@ class KoolCanvasFrameRenderer(
     private val cullOffscreenText: Boolean = System.getenv("RWX_CULL_OFFSCREEN_TEXT") == "1",
     private val compactTextureInstances: Boolean = System.getenv("RWX_COMPACT_TEXTURE_INSTANCES") == "1",
 ) {
+    /** Keep the existing constructor ABI while permitting isolated OFF/ON semantic checks. */
+    private var resetOnlyActiveMeshes = RESET_ONLY_ACTIVE_MESHES
+    private var directSpriteInstanceWrites = System.getenv("RWX_DIRECT_SPRITE_INSTANCE_WRITES") == "1"
+    private var directRectVertexWrites = DIRECT_RECT_VERTEX_WRITES
+
+    @JvmSynthetic
+    internal fun configureDirectRectVertexWritesForTest(enabled: Boolean) {
+        check(attachedScene == null && renderSequence == 0L)
+        directRectVertexWrites = enabled
+    }
+
+    @JvmSynthetic
+    internal fun configureDirectSpriteInstanceWritesForTest(enabled: Boolean) {
+        check(attachedScene == null && renderSequence == 0L)
+        directSpriteInstanceWrites = enabled
+    }
+
+    @JvmSynthetic
+    internal fun configureActiveMeshResetForTest(enabled: Boolean) {
+        check(attachedScene == null && renderSequence == 0L)
+        resetOnlyActiveMeshes = enabled
+    }
+
     private var compactTextureInstancesConfirmed = false
 
     /** Keep large numeric batches at their known size; ordinary runs grow through Kool's usual path. */
@@ -211,8 +234,21 @@ class KoolCanvasFrameRenderer(
     private val textureRunBlends = arrayOfNulls<CanvasRenderBlend>(TEXTURE_RUN_CACHE_SIZE)
     private val textureRunEntries = arrayOfNulls<InstancedTextureMeshEntry>(TEXTURE_RUN_CACHE_SIZE)
     private val primitiveShaders = mutableMapOf<CanvasRenderBlend, KslUnlitShader>()
-    private val spriteAtlas = KoolCanvasSpriteAtlas(textureStore,
+    private var spriteAtlas = KoolCanvasSpriteAtlas(textureStore,
         prepareNestedFrames = projectedSpriteAtlas || System.getenv("RWX_INCREMENTAL_SPRITE_ATLAS") == "1")
+
+    /** Small deterministic capacity/expiry fixtures; configure before attachment or replay. */
+    @JvmSynthetic
+    internal fun configureSpriteAtlasForTest(pageSize: Int, maxPages: Int) {
+        check(attachedScene == null && renderSequence == 0L)
+        require(pageSize > 0 && maxPages > 0)
+        spriteAtlas = KoolCanvasSpriteAtlas(textureStore, pageSize, maxPages,
+            prepareNestedFrames = projectedSpriteAtlas || System.getenv("RWX_INCREMENTAL_SPRITE_ATLAS") == "1")
+    }
+    internal fun shareAtlasPixels(pool: KoolCanvasAtlasPixelPool) {
+        check(attachedScene == null)
+        spriteAtlas.sharePixels(pool)
+    }
     private val spriteMeshes = linkedMapOf<SpriteMeshKey, SpriteMeshEntry>()
     private val spriteShaders = mutableMapOf<SpriteMaterialKey, KoolCanvasSpriteShader>()
     private val usedSpriteMeshKeys = mutableSetOf<SpriteMeshKey>()
@@ -505,6 +541,13 @@ class KoolCanvasFrameRenderer(
         labelGeometry?.beginFrame(renderSequence)
         adaptiveVisuals.prepare(frame)
         if (useSpriteAtlas) spriteAtlas.prepare(frame.commands)
+        // Detailed command timing intentionally uses the complete legacy List view. Normal replay
+        // reads packed scalars and resolves each immutable texture palette entry only once.
+        val packed = if (textureStore === KoolCanvasTextureRegistry && useSpriteAtlas &&
+            loopSplitNanos == null && !KoolCanvasCommandTiming.enabled)
+            frame.commands as? KoolCanvasPackedTextureCommands else null
+        val packedSlots = packed?.let { arrayOfNulls<KoolCanvasSpriteAtlas.Slot>(it.textures.size) }
+        val packedSlotsResolved = packed?.let { BooleanArray(it.textures.size) }
         CanvasRenderStageTrace.record("canvas-prepare", prepareStart, frame.commands.size.toLong())
         // Which passes exist. The measured interaction cost is dominated by the count of passes per frame
         // (1.21 at rest against 2.57 while moving) while commands per pass barely change, so the question
@@ -554,6 +597,50 @@ class KoolCanvasFrameRenderer(
         lastUsedTeamColorTextureMeshKey = null
         lastUsedDisplacementTextureMeshKey = null
         lastUsedTextMeshKey = null
+        forEachFrameMesh(fogMeshes, usedFogMeshKeys) { entry ->
+            entry.instances.clear()
+            entry.mesh.isVisible = false
+        }
+        forEachFrameMesh(spriteMeshes, usedSpriteMeshKeys) { entry ->
+            entry.instances.clear()
+            entry.mesh.isVisible = false
+        }
+        forEachFrameMesh(ringMeshes, usedRingMeshKeys) { entry ->
+            entry.instances.clear()
+            entry.mesh.isVisible = false
+        }
+
+        forEachFrameMesh(primitiveMeshes, usedPrimitiveMeshKeys) { mesh ->
+            mesh.geometry.clear()
+            mesh.isVisible = false
+        }
+        forEachFrameMesh(textureMeshes, usedTextureMeshKeys) { entry ->
+            entry.mesh.geometry.clear()
+            entry.mesh.isVisible = false
+        }
+        forEachFrameMesh(instancedTextureMeshes, usedInstancedTextureMeshKeys) { entry ->
+            entry.instances.clear()
+            entry.mesh.isVisible = false
+        }
+        forEachFrameMesh(affineInstancedTextureMeshes, usedAffineInstancedTextureMeshKeys) { entry ->
+            entry.instances.clear()
+            entry.mesh.isVisible = false
+        }
+        forEachFrameMesh(teamColorTextureMeshes, usedTeamColorTextureMeshKeys) { entry ->
+            entry.mesh.geometry.clear()
+            entry.mesh.isVisible = false
+        }
+        forEachFrameMesh(displacementTextureMeshes, usedDisplacementTextureMeshKeys) { entry ->
+            entry.mesh.geometry.clear()
+            entry.mesh.isVisible = false
+        }
+        forEachFrameMesh(textMeshes, usedTextMeshKeys) { entry ->
+            entry.builder?.clear()
+            entry.instances?.clear()
+            entry.mesh.isVisible = false
+        }
+
+        // Keep the previous used sets until their live geometry/instances have been reset.
         usedPrimitiveMeshKeys.clear()
         usedTextureMeshKeys.clear()
         usedInstancedTextureMeshKeys.clear()
@@ -564,48 +651,6 @@ class KoolCanvasFrameRenderer(
         usedSpriteMeshKeys.clear()
         usedRingMeshKeys.clear()
         usedFogMeshKeys.clear()
-        for (entry in fogMeshes.values) {
-            entry.instances.clear()
-            entry.mesh.isVisible = false
-        }
-        for (entry in spriteMeshes.values) {
-            entry.instances.clear()
-            entry.mesh.isVisible = false
-        }
-        for (entry in ringMeshes.values) {
-            entry.instances.clear()
-            entry.mesh.isVisible = false
-        }
-
-        for (mesh in primitiveMeshes.values) {
-            mesh.geometry.clear()
-            mesh.isVisible = false
-        }
-        for (entry in textureMeshes.values) {
-            entry.mesh.geometry.clear()
-            entry.mesh.isVisible = false
-        }
-        for (entry in instancedTextureMeshes.values) {
-            entry.instances.clear()
-            entry.mesh.isVisible = false
-        }
-        for (entry in affineInstancedTextureMeshes.values) {
-            entry.instances.clear()
-            entry.mesh.isVisible = false
-        }
-        for (entry in teamColorTextureMeshes.values) {
-            entry.mesh.geometry.clear()
-            entry.mesh.isVisible = false
-        }
-        for (entry in displacementTextureMeshes.values) {
-            entry.mesh.geometry.clear()
-            entry.mesh.isVisible = false
-        }
-        for (entry in textMeshes.values) {
-            entry.builder?.clear()
-            entry.instances?.clear()
-            entry.mesh.isVisible = false
-        }
 
         val viewport = frame.viewport
         currentViewportHalfWidth = viewport.width * 0.5f
@@ -624,6 +669,27 @@ class KoolCanvasFrameRenderer(
                 CanvasRenderStageTrace.record("canvas-chunk", chunkStart, (commandIndex - chunkMark).toLong(), chunkMark.toLong())
                 chunkStart = CanvasRenderStageTrace.start()
                 chunkMark = commandIndex
+            }
+            val packedRow = packed?.rowAt(commandIndex) ?: -1
+            if (packedRow >= 0) {
+                val packedCommands = packed!!
+                if (!adaptiveVisuals.shouldDraw(packedCommands.role(packedRow), packedCommands.unitId(packedRow))) {
+                    commandIndex++
+                    continue
+                }
+                if (frameProjectionDepth == 0 && !packedCommands.paint(packedRow).isRenderNoOp) {
+                    val textureIndex = packedCommands.textureIndex(packedRow)
+                    if (!packedSlotsResolved!![textureIndex]) {
+                        packedSlotsResolved[textureIndex] = true
+                        packedSlots!![textureIndex] = spriteAtlas.slotForValidatedTexture(packedCommands.textures[textureIndex])
+                    }
+                    if (addPackedAtlasSprite(scene, viewport, packedCommands, packedRow, packedSlots!![textureIndex])) {
+                        commandIndex++
+                        continue
+                    }
+                }
+                // Atlas capacity / image mismatch / no-op or an unsupported renderer configuration:
+                // decode just this row and execute every original fallback below.
             }
             val command = commands[commandIndex]
             // Diagnostic only: attribute loop time to the step that spends it. Summed across the run this
@@ -796,13 +862,13 @@ class KoolCanvasFrameRenderer(
             }
         }
         val finishStart = CanvasRenderStageTrace.start()
-        for (mesh in primitiveMeshes.values) {
+        forEachFrameMesh(primitiveMeshes, usedPrimitiveMeshKeys) { mesh ->
             mesh.isVisible = !mesh.geometry.isEmpty()
         }
-        for (entry in textureMeshes.values) {
+        forEachFrameMesh(textureMeshes, usedTextureMeshKeys) { entry ->
             entry.mesh.isVisible = !entry.mesh.geometry.isEmpty()
         }
-        for (entry in instancedTextureMeshes.values) {
+        forEachFrameMesh(instancedTextureMeshes, usedInstancedTextureMeshKeys) { entry ->
             val instances = entry.instances
             val hasInstances = instances.numInstances != 0
             if (hasInstances) {
@@ -810,7 +876,7 @@ class KoolCanvasFrameRenderer(
             }
             entry.mesh.isVisible = hasInstances
         }
-        for (entry in affineInstancedTextureMeshes.values) {
+        forEachFrameMesh(affineInstancedTextureMeshes, usedAffineInstancedTextureMeshKeys) { entry ->
             val instances = entry.instances
             val hasInstances = instances.numInstances != 0
             if (hasInstances) {
@@ -818,22 +884,22 @@ class KoolCanvasFrameRenderer(
             }
             entry.mesh.isVisible = hasInstances
         }
-        for (entry in teamColorTextureMeshes.values) {
+        forEachFrameMesh(teamColorTextureMeshes, usedTeamColorTextureMeshKeys) { entry ->
             entry.mesh.isVisible = !entry.mesh.geometry.isEmpty()
         }
-        for (entry in displacementTextureMeshes.values) {
+        forEachFrameMesh(displacementTextureMeshes, usedDisplacementTextureMeshKeys) { entry ->
             entry.mesh.isVisible = !entry.mesh.geometry.isEmpty()
         }
-        for (entry in textMeshes.values) {
+        forEachFrameMesh(textMeshes, usedTextMeshKeys) { entry ->
             val instances = entry.instances
             entry.mesh.isVisible = if (instances == null) !entry.mesh.geometry.isEmpty() else instances.numInstances != 0
             if (entry.mesh.isVisible) instances?.incrementModCount()
         }
-        for (entry in spriteMeshes.values) {
+        forEachFrameMesh(spriteMeshes, usedSpriteMeshKeys) { entry ->
             entry.mesh.isVisible = entry.instances.numInstances != 0
             if (entry.mesh.isVisible) entry.instances.incrementModCount()
         }
-        for (entry in ringMeshes.values) {
+        forEachFrameMesh(ringMeshes, usedRingMeshKeys) { entry ->
             entry.mesh.isVisible = entry.instances.numInstances != 0
             if (entry.mesh.isVisible) entry.instances.incrementModCount()
         }
@@ -849,7 +915,7 @@ class KoolCanvasFrameRenderer(
                 CanvasRenderStageTrace.record("canvas-label-geometry", stage, state.first.toLong(), state.second.toLong(), state.third)
             }
         }
-        for (entry in fogMeshes.values) {
+        forEachFrameMesh(fogMeshes, usedFogMeshKeys) { entry ->
             entry.mesh.isVisible = entry.instances.numInstances != 0
             if (entry.mesh.isVisible) entry.instances.incrementModCount()
         }
@@ -857,6 +923,18 @@ class KoolCanvasFrameRenderer(
             textMeshReused, textMeshPruned, textMeshScanCandidates, textMeshes.size, textMeshPeak)
         (textureStore as? KoolCanvasRetiredTextureReleaser)?.releaseRetiredTextures()
         CanvasRenderStageTrace.record("canvas-finish", finishStart)
+    }
+
+    /** Reset uses the preceding render's keys; finish uses the keys just replayed. Pruning still scans all caches. */
+    private inline fun <K, V> forEachFrameMesh(meshes: Map<K, V>, usedKeys: Set<K>, block: (V) -> Unit) {
+        if (resetOnlyActiveMeshes) {
+            for (key in usedKeys) {
+                val entry = meshes[key]
+                if (entry != null) block(entry)
+            }
+        } else {
+            for (entry in meshes.values) block(entry)
+        }
     }
 
     private fun resetSceneCachesIfNeeded(scene: Node) {
@@ -1174,13 +1252,123 @@ class KoolCanvasFrameRenderer(
         val clip = command.state.clip
         val halfWidth = viewport.width * 0.5f
         val halfHeight = viewport.height * 0.5f
-        entry.instances.addInstances(1) { data ->
+        if (directSpriteInstanceWrites) {
+            KoolCanvasSpriteInstanceWriter.append(entry.instances,
+                x0 - currentViewportHalfWidth, currentViewportHalfHeight - y0, xx - x0, -(yx - y0),
+                xy - x0, -(yy - y0), mode, effect?.amount ?: 0f,
+                (slot.x + source.left) / slot.page.size, (slot.y + source.top) / slot.page.size,
+                (slot.x + source.right) / slot.page.size, (slot.y + source.bottom) / slot.page.size,
+                tint.r, tint.g, tint.b, tint.a, team.r, team.g, team.b, team.a,
+                if (projected) -1e20f else (clip?.left ?: 0f) - halfWidth,
+                if (projected) -1e20f else halfHeight - (clip?.bottom ?: viewport.height.toFloat()),
+                if (projected) 1e20f else (clip?.right ?: viewport.width.toFloat()) - halfWidth,
+                if (projected) 1e20f else halfHeight - (clip?.top ?: 0f))
+        } else entry.instances.addInstances(1) { data ->
             data.put { layout ->
                 set(layout.originAxisX, x0 - currentViewportHalfWidth, currentViewportHalfHeight - y0,
                     xx - x0, -(yx - y0))
                 set(layout.axisYModeAmount, xy - x0, -(yy - y0), mode, effect?.amount ?: 0f)
                 set(layout.uv, (slot.x + source.left) / slot.page.size, (slot.y + source.top) / slot.page.size,
                     (slot.x + source.right) / slot.page.size, (slot.y + source.bottom) / slot.page.size)
+                set(layout.tint, tint.r, tint.g, tint.b, tint.a)
+                set(layout.team, team.r, team.g, team.b, team.a)
+                if (projected) set(layout.clip, -1e20f, -1e20f, 1e20f, 1e20f)
+                else set(layout.clip, (clip?.left ?: 0f) - halfWidth,
+                        halfHeight - (clip?.bottom ?: viewport.height.toFloat()),
+                        (clip?.right ?: viewport.width.toFloat()) - halfWidth, halfHeight - (clip?.top ?: 0f))
+            }
+        }
+        markOrderingBarrier()
+        return true
+    }
+
+    /** Frozen root-only numeric cursor. No DrawTexture/Rect/State is constructed on success. */
+    private fun addPackedAtlasSprite(
+        scene: Node, viewport: KoolCanvasViewport, packed: KoolCanvasPackedTextureCommands,
+        row: Int, preparedSlot: KoolCanvasSpriteAtlas.Slot?,
+    ): Boolean {
+        if (!useSpriteAtlas || frameProjectionDepth != 0) return false
+        val slot = preparedSlot ?: return false
+        val paint = packed.paint(row)
+        if (paint.isRenderNoOp) return false
+        val projected = false
+        val sourceLeft = packed.coordinate(row, 0); val sourceTop = packed.coordinate(row, 1)
+        val sourceRight = packed.coordinate(row, 2); val sourceBottom = packed.coordinate(row, 3)
+        val left = packed.coordinate(row, 4); val top = packed.coordinate(row, 5)
+        val right = packed.coordinate(row, 6); val bottom = packed.coordinate(row, 7)
+        val activeMaterial = (activeBatchKey as? CanvasBatchKey.Sprite)?.material
+        val material = activeMaterial?.takeIf {
+            it.pageSerial == slot.page.serial && it.filter == paint.textureFilter && it.blend == paint.renderBlend
+        } ?: SpriteMaterialKey(slot.page.serial, paint.textureFilter, paint.renderBlend)
+        if (activeMaterial !== material) {
+            if (pendingOrderingSegmentAdvance) advanceOrderingSegmentIfAllowed()
+            activeBatchIndex++
+            activeBatchKey = CanvasBatchKey.Sprite(material)
+        }
+        val cachedKey = lastSpriteMeshKey
+        val key = cachedKey?.takeIf { it.batchIndex == activeBatchIndex && it.material == material }
+            ?: SpriteMeshKey(activeBatchIndex, material)
+        val entry = if (key === cachedKey) checkNotNull(lastSpriteMeshEntry) else spriteMeshes.getOrPut(key) {
+            val shader = spriteShaders.getOrPut(material) {
+                KoolCanvasSpriteShader(PipelineConfig(
+                    blendMode = material.blend.textureBlendMode,
+                    cullMethod = CullMethod.NO_CULLING, depthTest = DepthCompareOp.ALWAYS, isWriteDepth = false,
+                ), additive = material.blend == CanvasRenderBlend.Additive)
+            }
+            val instances = MeshInstanceList(KoolCanvasSpriteInstanceLayout, initialSize = ORDERED_TEXTURE_INSTANCE_INITIAL_SIZE)
+            val mesh = Mesh(IndexedVertexList(VertexLayouts.Position, initialSize = QUAD_STORAGE_SIZE, usage = Usage.STATIC), instances,
+                name = "rwx-canvas-sprites-${material.pageSerial}-$activeBatchIndex")
+            mesh.shader = shader
+            mesh.isOpaque = false
+            mesh.geometry.addVertex { set(it.position, 0f, 0f, 0f) }
+            mesh.geometry.addVertex { set(it.position, 1f, 0f, 0f) }
+            mesh.geometry.addVertex { set(it.position, 1f, 1f, 0f) }
+            mesh.geometry.addVertex { set(it.position, 0f, 1f, 0f) }
+            mesh.geometry.addTriIndices(0, 1, 2)
+            mesh.geometry.addTriIndices(0, 2, 3)
+            SpriteMeshEntry(mesh, instances, shader)
+        }
+        if (key !== cachedKey) {
+            lastSpriteMeshKey = key
+            lastSpriteMeshEntry = entry
+            entry.shader.colorMap = spriteAtlas.texture(slot.page, material.filter)
+            if (usedSpriteMeshKeys.add(key)) placeBatchNode(scene, entry.mesh, activeBatchIndex)
+        }
+        val scaleX = packed.coordinate(row, 8); val skewY = packed.coordinate(row, 9)
+        val skewX = packed.coordinate(row, 10); val scaleY = packed.coordinate(row, 11)
+        val translateX = packed.coordinate(row, 12); val translateY = packed.coordinate(row, 13)
+        // Preserve map()'s arithmetic order while writing instance scalars directly.
+        val x0 = scaleX * left + skewX * top + translateX
+        val y0 = skewY * left + scaleY * top + translateY
+        val xx = scaleX * right + skewX * top + translateX
+        val yx = skewY * right + scaleY * top + translateY
+        val xy = scaleX * left + skewX * bottom + translateX
+        val yy = skewY * left + scaleY * bottom + translateY
+        val tint = paint.toRenderColor()
+        val effect = paint.textureEffect as? KoolCanvasTextureEffect.TeamColor
+        val mode = effect?.mode?.let { it.ordinal + 1 }?.toFloat() ?: 0f
+        val team = effect?.color?.toKoolColor() ?: Color.WHITE
+        val clip = packed.clip(row)
+        val halfWidth = viewport.width * 0.5f
+        val halfHeight = viewport.height * 0.5f
+        if (directSpriteInstanceWrites) {
+            KoolCanvasSpriteInstanceWriter.append(entry.instances,
+                x0 - currentViewportHalfWidth, currentViewportHalfHeight - y0, xx - x0, -(yx - y0),
+                xy - x0, -(yy - y0), mode, effect?.amount ?: 0f,
+                (slot.x + sourceLeft) / slot.page.size, (slot.y + sourceTop) / slot.page.size,
+                (slot.x + sourceRight) / slot.page.size, (slot.y + sourceBottom) / slot.page.size,
+                tint.r, tint.g, tint.b, tint.a, team.r, team.g, team.b, team.a,
+                if (projected) -1e20f else (clip?.left ?: 0f) - halfWidth,
+                if (projected) -1e20f else halfHeight - (clip?.bottom ?: viewport.height.toFloat()),
+                if (projected) 1e20f else (clip?.right ?: viewport.width.toFloat()) - halfWidth,
+                if (projected) 1e20f else halfHeight - (clip?.top ?: 0f))
+        } else entry.instances.addInstances(1) { data ->
+            data.put { layout ->
+                set(layout.originAxisX, x0 - currentViewportHalfWidth, currentViewportHalfHeight - y0,
+                    xx - x0, -(yx - y0))
+                set(layout.axisYModeAmount, xy - x0, -(yy - y0), mode, effect?.amount ?: 0f)
+                set(layout.uv, (slot.x + sourceLeft) / slot.page.size, (slot.y + sourceTop) / slot.page.size,
+                    (slot.x + sourceRight) / slot.page.size, (slot.y + sourceBottom) / slot.page.size)
                 set(layout.tint, tint.r, tint.g, tint.b, tint.a)
                 set(layout.team, team.r, team.g, team.b, team.a)
                 if (projected) set(layout.clip, -1e20f, -1e20f, 1e20f, 1e20f)
@@ -3836,11 +4024,20 @@ class KoolCanvasFrameRenderer(
         ).geometry
         var hasOrderingBarrier = false
         var commandIndex = startIndex
+        val packed = commands as? KoolCanvasPackedTextureCommands
         while (commandIndex < commands.size) {
+            // A packed row is provably a DrawTexture. The old type probe would break here;
+            // avoid materializing that next texture solely to establish it is not a rectangle.
+            if (packed != null && packed.rowAt(commandIndex) >= 0) break
             val command = commands[commandIndex] as? KoolCanvasCommand.DrawRect ?: break
             if (!adaptiveVisuals.shouldDraw(command)) break
             if (!command.canUseFilledIdentityPrimitiveRectRun()) break
-            geometry.addFilledRectIdentityUnchecked(command.rect, command.paint)
+            if (!directRectVertexWrites || !KoolCanvasRectVertexWriter.tryAppend(
+                    geometry, command.rect, currentViewportHalfWidth, currentViewportHalfHeight,
+                    command.paint.toRenderColor(),
+                )) {
+                geometry.addFilledRectIdentityUnchecked(command.rect, command.paint)
+            }
             hasOrderingBarrier = hasOrderingBarrier || command.paint.requiresPrimitiveOrderingBarrier()
             commandIndex++
         }
@@ -4793,6 +4990,12 @@ class KoolCanvasFrameRenderer(
     }
 
     private companion object {
+        val DIRECT_RECT_VERTEX_WRITES = (System.getenv("RWX_DIRECT_RECT_VERTEX_WRITES") == "1").also {
+            println("[RWX canvas] directRectVertexWrites=$it")
+        }
+        val RESET_ONLY_ACTIVE_MESHES = (System.getenv("RWX_RESET_ONLY_ACTIVE_CANVAS_MESHES") != "0").also {
+            println("[RWX canvas] resetOnlyActiveMeshes=$it")
+        }
         val REUSE_INSTANCED_TEXTURE_SHADERS = (System.getenv("RWX_REUSE_INSTANCED_TEXTURE_SHADERS") == "1").also {
             println("[RWX canvas] reuseInstancedTextureShaders=$it")
         }

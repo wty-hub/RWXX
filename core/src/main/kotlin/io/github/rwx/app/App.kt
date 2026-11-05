@@ -527,6 +527,13 @@ fun installApp(
     ).also { it.install() }
     screenPresenter.apply(navigator.current, lastExternalGameFrame)
 
+    val battleRoomCloseController = BattleRoomCloseController(
+        cancelPendingStart = battleRoomLaunchController::cancelPendingStart,
+        cancelPendingJoin = battleRoomJoinController::handleBattleRoomClosed,
+        closeRoom = { battleRoomController.closeRoom() },
+        exitToLobby = { sessionActions.exitRwGame(isMultiplayer = true) },
+        showMessage = dialogController::showUnavailable,
+    )
     FrameLoopInstaller(
         context = context,
         gameSession = gameSession,
@@ -551,18 +558,7 @@ fun installApp(
         gameReadyController = gameReadyController,
         openInGamePauseMenu = pauseController::open,
         refreshModWindow = modWindowSceneHost::refresh,
-        onBattleRoomClosed = { reason, message ->
-            battleRoomLaunchController.cancelPendingStart()
-            battleRoomJoinController.handleBattleRoomClosed()
-            BattleRoomUiBridge.startGamePending = false
-            if (navigator.current == AppScreen.BattleRoom) {
-                navigator.navigateTo(battleRoomController.closeRoom())
-            } else {
-                gameSession.submitSessionTask { gameSession.leaveBattleRoom() }
-            }
-            val text = listOfNotNull(reason, message).joinToString("\n").ifBlank { null }
-            text?.let { dialogController.showUnavailable(it) }
-        },
+        onBattleRoomClosed = battleRoomCloseController::handle,
     ).install()
 
     StartupFinalizer(

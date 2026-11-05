@@ -117,7 +117,7 @@ object OwnerSessionAcceptanceHarness {
             repeat(20) { index -> session.updateFrame(KoolCanvasViewport(1280 + index * 10, 720 + index * 5), 0f) }
             session.updateFrame(finalViewport, 0f)
             waitUntil("resized frame") {
-                session.currentFrame(); session.cameraSnapshot()?.viewport == finalViewport
+                session.currentFrame(); session.currentFrameEnvelope()?.camera?.viewport == finalViewport
             }
             val resized = packet()
             checkResult("viewport and camera publish together", resized.viewportRevision > seen.viewportRevision &&

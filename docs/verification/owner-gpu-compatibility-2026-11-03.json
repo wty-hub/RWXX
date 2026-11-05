@@ -1,0 +1,240 @@
+{
+  "date": "2026-11-03",
+  "createdUtc": "2026-11-02T17:49:37.370111+00:00",
+  "applicationVersion": "1.4.3",
+  "status": "automatic-owner-gpu-correctness-accepted-visible-performance-pending",
+  "goalComplete": false,
+  "scope": "真实KoolDesktopGameSession自动owner、真实GPU目标与memory-only VK_EXT_headless_surface消费者的并发资源/最终地图块正确性。不是窗口FPS、最终App画面或物理屏幕验收。",
+  "candidate": {
+    "defaultOff": true,
+    "ownerOptIn": "RWX_STABLE_OWNER_DEADLINES=1",
+    "globalRendererFlag": "unset",
+    "samePackagedOwnerClasses": 7,
+    "platformJar": {
+      "path": "/Users/wty/code/RWXX/desktop/build/libs/RWXX-1.4.3-macos-arm64.jar",
+      "sha256": "64a96fa4fbe66a0f814a46930eae4d6eb69117ea9a31b48ad143ecc3fe00d206"
+    },
+    "coreJar": {
+      "path": "/Users/wty/code/RWXX/core/build/libs/core-1.4.3.jar",
+      "sha256": "5d77d01450aa956655abd8c37eede7f6f0b88391bfa426db31cd5d3fa1e703d9"
+    },
+    "sources": {
+      "/Users/wty/code/RWXX/desktop/src/test/kotlin/io/github/rwx/benchmark/OwnerReplayWindowlessGpuAcceptance.kt": "451c137eed72c0ae4eb2a992f5591b11a8f74550e4e29d2ea7022d1f99695631",
+      "/Users/wty/code/RWXX/desktop/src/test/kotlin/io/github/rwx/benchmark/RealReplayCellReference.kt": "90c5c96e9d840c9fb9272d5e4e173876eaeee756e667c5bd8a61d724850d4ade",
+      "/Users/wty/code/RWXX/desktop/src/test/kotlin/io/github/rwx/kool/vulkan/WindowlessKoolGpuOracle.kt": "8317e498ba7fc74f6cb95022eeccecace4bb8f018152d8f4824b38a49ad861a2",
+      "/Users/wty/code/RWXX/desktop/src/test/kotlin/io/github/rwx/kool/vulkan/HeadlessVulkanWindowSubsystem.kt": "58bea27fe27ecd0ff0f85b7fcc3fcd7f9d9aa3ae8dffc732ea72372cd38d6b28"
+    },
+    "frozenRuntime": {
+      "manifest": "/Users/wty/code/RWXX/build/owner-policy-20261103/runtimes/aa6bb6fd51cc4d13fa67d931f1cd0c464fcb43a8b60ba451a719b779958b75dc/manifest.json",
+      "sha256": "b12cb78ea0d447fe1c97a6613a9f8b0337f96d4085e5c3e563bf5c2ff81c9d3d",
+      "fingerprint": "aa6bb6fd51cc4d13fa67d931f1cd0c464fcb43a8b60ba451a719b779958b75dc"
+    },
+    "newProductionChangesThisTurn": false,
+    "installed": false
+  },
+  "protocol": {
+    "order": "first atlas-specific oracle failed; corrected prepared-map oracle in fresh v2 run",
+    "replaySha256": "d19b132ec8866f87496b3c1c91627e7ef35a99b1627e2a9550f74c0e0e57f6d1",
+    "replayStartTick": 0,
+    "replaySpeed": 1,
+    "replayRate": 1,
+    "fogDisplay": false,
+    "viewport": [
+      1280,
+      720
+    ],
+    "warmupSeconds": 2,
+    "sampleSeconds": 20,
+    "camera": "ordinary wall-clock pan20s/zoom4s, requested.35–1.5, no injected units",
+    "ownerTargetHz": 120,
+    "memoryAdapterConsumerLimitHz": 60,
+    "heapMiB": 512,
+    "activeProcessorCount": 1,
+    "nice": 19,
+    "font": "real UiTheme MSDF atlas, uploaded",
+    "nativeSurface": "VK_EXT_headless_surface",
+    "gpuInstalledBy": "actual KoolCanvasSceneHost before replay load; no dummy installer",
+    "simulationSteppedManually": false,
+    "manualPresentationAcknowledgment": false,
+    "readbackTiming": "after owner stopped and final real submission fence completed",
+    "performanceInvalid": true
+  },
+  "result": {
+    "actualOwnerPolicy": {
+      "stableFrameDeadlines": true,
+      "legacyPacing": true,
+      "threadId": 24,
+      "threadName": "RWX-engine-owner"
+    },
+    "lifecycle": {
+      "allCompletedFreezeEvents": 2631,
+      "nativeSubmittedEvents": 1379,
+      "nativeSubmittedUniqueSequences": 1279,
+      "droppedEvents": 0,
+      "nativeBackend": true,
+      "finalPublishedSequence": 2631
+    },
+    "submittedToHostCount": 1279,
+    "adoptedUniqueCount": 1279,
+    "fenceCompletedUniqueCount": 1279,
+    "nativeSubmissionCount": 1391,
+    "ownerFinalPublishedSequence": 2631,
+    "fenceCompletedSequence": 2631,
+    "forwardedSequenceSkips": 1349,
+    "gpuTargetInstalls": 381,
+    "gpuTargetRenderCallbacks": 844,
+    "finalActualGpuTargetCount": 8,
+    "realFontAtlasUploaded": true,
+    "ownerStopped": true,
+    "sessionClosed": true,
+    "finalCpuLeaseReleased": true,
+    "maxPendingFenceRetirements": 166,
+    "pendingRetirementsAfterShutdown": 0
+  },
+  "pixels": {
+    "correctnessOnly": true,
+    "performanceInvalid": true,
+    "completed": true,
+    "passed": true,
+    "referenceMode": "prepared-map-source-textures",
+    "sequence": 2631,
+    "simulationTick": 665,
+    "tolerance": 3,
+    "contextMsaaSamples": 4,
+    "directTargetTexturesVerified": false,
+    "sharedAtlasPixelsVerified": false,
+    "sharedAtlasPixelsAvailable": true,
+    "atlasPixelInternRequests": 0,
+    "atlasPixelReuseHits": 0,
+    "atlasPixelUploadRequests": 0,
+    "atlasPixelUploadReuseHits": 0,
+    "expectedCells": 8,
+    "comparedCells": 8,
+    "checkedPixels": 2097152,
+    "mismatches": 0,
+    "maxChannelDelta": 0,
+    "referenceAtlasPages": 0,
+    "referenceAtlasMeshes": 0,
+    "referenceUploadedAtlasTextures": 0,
+    "referenceRenderedGpuAtlasMeshes": 0,
+    "referenceRenderedGpuMeshes": 67,
+    "referenceNonTransparentPixels": 1830912,
+    "referenceNonTransparentRgbDiverse": true,
+    "scope": "Frozen real map-cell attachments only; no final-screen correctness or FPS claim"
+  },
+  "process": {
+    "exitCode": 0,
+    "timedOut": false,
+    "signals": [],
+    "controllerError": null,
+    "ownedGroupSurvivedWait": false,
+    "observedNice": 19,
+    "elapsedSeconds": 27.7918531250034
+  },
+  "rootIndependentRecomputation": {
+    "rawLifecycleCounterMatches": true,
+    "zeroDroppedEvents": true,
+    "terminalActuallySubmitted": true,
+    "allCellDimensionsSumToPixels": true,
+    "cellReferenceMatchesResult": true,
+    "allFrozenProjectFilesStillMatch": true,
+    "sevenPackagedOwnerClassesStillMatchFrozenRuntime": true,
+    "sourcesAndSnapshotsStillMatch": true,
+    "packageAndCoreUnchangedAfterRun": true
+  },
+  "firstFailure": {
+    "retainedDirectory": "/Users/wty/code/RWXX/build/owner-policy-20261103/automatic-owner-gpu/candidate-on",
+    "accepted": false,
+    "exitCode": 1,
+    "reason": "Old atlas-sharing-specific verifier required reuseHits>0 before any cell enumeration/readback. Current prepared-map path had0 atlas intern/upload requests. It did not verify pixels or all post-success release checks.",
+    "independentReview": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/automatic-owner-gpu/first-failure-review.json",
+      "sha256": "168fa80c6714205a508d8dcc1438aea20e1d61f62181b58b1cfac39630b83d7c",
+      "bytes": 14058
+    },
+    "oldAtlasVerifierGatesPreserved": true,
+    "newPreparedReference": "Separate entry renders source textures with independent renderer/attachments, checks real GPU geometry, diverse nontransparent pixels, fixed-front/slot provenance and exact maxDelta0 in caller."
+  },
+  "cpuLongTailClarification": {
+    "report": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/long-tail-readonly/report.json",
+      "sha256": "16fcd96c86bb599049d3afd0239799f9314aec8204990b104960816a669b01b4",
+      "bytes": 14314
+    },
+    "all107IntervalsRetained": true,
+    "finding": "CPU fallback slow gaps are zoom-correlated pre-world-hook CPU work; map-cache reset/raster is source-grounded hypothesis, no per-cell attribution. This does not explain visible GPU99Hz."
+  },
+  "windowingEvidence": {
+    "adapter": "HeadlessVulkanWindowSubsystem / memory window; audited MoltenVK SHA1 checked by existing entry",
+    "nativeWindowOrFocusMonitoringPerformed": false,
+    "awtLwawtLibraryLoaded": true,
+    "jvmLoadedGlfwLibraryObserved": false,
+    "interpretation": "JVM native-library log includes macOS AWT libraries; library loading is not OS-window/focus telemetry. No GLFW/activation/input path was used by this entry. Do not claim independent OS monitoring."
+  },
+  "limits": [
+    "One corrected correctness run, not a performance A/B. Initial failed run remains invalid and retained.",
+    "Reference covers8 final frozen map-cell attachments, not every intermediate/root/App/HUD pixel or original-game visual equality.",
+    "Producer2631, host/adopt/fence1279 and native submissions1391 cover different phases, coalescing and reference work; never divide these counts to claim screen FPS.",
+    "Prepared-map mode explicitly does not validate atlas sharing; its actual intern/upload counters are0. Prior atlas-specific verifier remains strict.",
+    "The current installed application and Steam directory were not changed."
+  ],
+  "evidence": {
+    "command.json": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/automatic-owner-gpu/candidate-on-v2/command.json",
+      "sha256": "94715b632883728f9429b131e920a325d75734c2d6ff275d616aefbcabd755d7",
+      "bytes": 26041
+    },
+    "process-result.json": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/automatic-owner-gpu/candidate-on-v2/process-result.json",
+      "sha256": "4e8bfa2342b4d2f0d6b80164a294555beb771296f2d8005092f999d870ddb593",
+      "bytes": 26309
+    },
+    "capture/result.json": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/automatic-owner-gpu/candidate-on-v2/capture/result.json",
+      "sha256": "a42cc94905298f927bad9bf2d2cfa2627177575b2c5f3bc591dabeb7ed4dbed6",
+      "bytes": 12730
+    },
+    "capture/pre-reference.json": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/automatic-owner-gpu/candidate-on-v2/capture/pre-reference.json",
+      "sha256": "23adbcb53b385ce14d163e8768b917b27aebe4da86a48ae2abac6fcb29f11ce3",
+      "bytes": 1198
+    },
+    "capture/cell-reference.json": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/automatic-owner-gpu/candidate-on-v2/capture/cell-reference.json",
+      "sha256": "29d725965b1f7ab7f401e17a7c47dc6732c49234606d5e73d80606adc5c28549",
+      "bytes": 5319
+    },
+    "capture/producer-lifecycle.csv": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/automatic-owner-gpu/candidate-on-v2/capture/producer-lifecycle.csv",
+      "sha256": "d85602bccbf57900894d737be84b22c05f74ac48f874911a27d6c7ffbe739966",
+      "bytes": 266822
+    },
+    "capture/scenario.ndjson": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/automatic-owner-gpu/candidate-on-v2/capture/scenario.ndjson",
+      "sha256": "648bf63234a65e883167c3326d2ab47c3ac1aee61a515398004c16c09d6f20bb",
+      "bytes": 2715
+    },
+    "capture/frames.ndjson": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/automatic-owner-gpu/candidate-on-v2/capture/frames.ndjson",
+      "sha256": "87920a757431b23ffaa12b160c972ef3177fcdc90d7546a721d8ad30892b6005",
+      "bytes": 19976
+    },
+    "native-library.log": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/automatic-owner-gpu/candidate-on-v2/native-library.log",
+      "sha256": "55550600c832b797ed8d6d04a082a9c4bb39fb879d41727b87c2166042a195f2",
+      "bytes": 34154
+    },
+    "stdout.log": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/automatic-owner-gpu/candidate-on-v2/stdout.log",
+      "sha256": "0c18a9ab765cd42fc8ce847da1990326d28e6d1a9c8f09d1579054a4f7a85f75",
+      "bytes": 62146
+    }
+  },
+  "nextAction": "Await the already issued fresh visible-slot question. The frozen same-artifact RWXX OFF/ON context remains ready and unconsumed; do not launch visible games without the user answer. Keep full fluidity goal active.",
+  "independentFinalReview": {
+    "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/automatic-owner-gpu/final-v2-review.json",
+    "sha256": "6324ed9b514a6b4da57ad47b84479b161c02b1cc76535f6f766f976fd73fe8ef",
+    "checksPassed": 39,
+    "scope": "Read-only raw JSON/CSV/class/source/native-log revalidation; no new target run."
+  }
+}

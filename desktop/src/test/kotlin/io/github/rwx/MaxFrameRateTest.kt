@@ -5,6 +5,17 @@ import kotlin.test.assertEquals
 
 class MaxFrameRateTest {
     @Test
+    fun `owner deadlines default on and explicit overrides preserve the combined pacing option`() {
+        assertEquals(true, resolveStableOwnerFrameDeadlines(null, null))
+        assertEquals(false, resolveStableOwnerFrameDeadlines("0", null))
+        assertEquals(false, resolveStableOwnerFrameDeadlines(null, "0"))
+        assertEquals(true, resolveStableOwnerFrameDeadlines(null, "1"))
+        assertEquals(false, resolveStableOwnerFrameDeadlines("0", "1"))
+        assertEquals(true, resolveStableOwnerFrameDeadlines("1", "0"))
+        assertEquals(false, resolveStableOwnerFrameDeadlines("invalid", "1"))
+    }
+
+    @Test
     fun `deadline retains a slightly late phase but resets after a missed interval`() {
         val period = 3_333_333L
         val deadline = 100_000_000L

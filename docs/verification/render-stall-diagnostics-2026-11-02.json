@@ -1,0 +1,1255 @@
+{
+  "date": "2026-11-02",
+  "applicationVersion": "1.4.3",
+  "goalComplete": false,
+  "originalComparisonMeasured": false,
+  "kind": "Real-scene diagnostic and atlas lookup CPU correction; not original-level smoothness acceptance",
+  "changes": {
+    "atlas": "Maintain append-history fingerprint from size, padded destination bounds and actual ARGB texels already read in the blit. Page uses pool.intern(bytes,fingerprint); no full16MiB page hash. Full byte equality still confirms every reuse. Fingerprint is skipped entirely for unshared atlases.",
+    "compatibility": "No change to atlas placement, UV, pixel bytes, shader, GPU texture or fence ownership. Different construction histories may miss reuse; collisions cannot merge distinct bytes.",
+    "newRegression": "Different source IDs with equal payload/layout (including a new shelf row) still share, and explicitly colliding provided fingerprints still require byte equality.",
+    "originalProbe": "Do not drive/reflection-read engine before a completed game render; suppress briefing only after replay begins. Early Display.create→initContext→Display.update can otherwise initialize GameEngine out of normal order. This does not prove native startup crash resolved."
+  },
+  "diagnosticHarness": {
+    "scope": "Test-only optional observer around real patched renderFrame, fixed primitive capacity, no per-frame file IO. Existing per-frame resource/lease/fence assertions preserved; detailed scene JSON sampled every60cycles.",
+    "timing": "Whole frame includes real fixed60Hz pacer. JFR begin/end native timestamps bracketed by same-process nanoTime reads, paired threads and valid current-thread CPU. Exact recorded JFR retention checked post-run against primitive timings.",
+    "roundtripSmoke": {
+      "passed": true,
+      "timingRows": 43,
+      "matchingJfrEvents": 43,
+      "sampleGeneratedFrames": 3,
+      "maximumBeginBracketWidthNs": 5292,
+      "maximumEndBracketWidthNs": 5792,
+      "scope": "Roundtrip observation proof only, not display FPS or earlier visible-stall reproduction."
+    },
+    "compileEvidence": {
+      "path": "build/windowless-gpu-20261102/frame-diagnostics-compiled.json",
+      "sha256": "7a6f88b433fcf6164850c756b3f65c4d5045c915a317a21b8632e6db3951a55a",
+      "bytes": 2286
+    },
+    "exporter": {
+      "path": "desktop/tools/CompactJfr.java",
+      "sha256": "0fc095371e096c500776ab613d97a54b346a48c872aec7822e7b6b4fc5f578e3",
+      "bytes": 6602
+    },
+    "limitations": [
+      "Synchronous test producer differs from independent production engine owner.",
+      "JFR/VK trace/observer instrumentation perturbs timing; no screen FPS/input latency claim.",
+      "Low priority nice15, G1 Xms512m/Xmx1000m,2logicalCPUs; concurrent user apps/OS/GPU contention uncontrolled.",
+      "These runs do not reproduce or attribute the earlier185.6235ms visible interval."
+    ]
+  },
+  "profileProtocol": {
+    "replaySha256": "d19b132ec8866f87496b3c1c91627e7ef35a99b1627e2a9550f74c0e0e57f6d1",
+    "seekTick": 0,
+    "warmupFrames": 1200,
+    "sampleFrames": 1200,
+    "fogDisplay": false,
+    "unitsInjected": false,
+    "simulation": "Ordinary1x gameLoop(1f,17), fixed frame-index camera tape/60, pan period20s/zoom period4s, zoom constrained0.45–1.5; not wall-clock adaptive desktop producer.",
+    "stageTrace": "Vulkan only; high-volume CanvasTrace disabled.",
+    "statistics": "One sequential JVM per arm. Distribution differences are observations, not robust or causal FPS/P99 estimates."
+  },
+  "before": {
+    "roundtrip": {
+      "timingRows": 2425,
+      "exactlyMatchingJfrEvents": 2425,
+      "allMetadataValid": true,
+      "allCompletedWithoutFailure": true,
+      "cpuInvalidRows": 0,
+      "beginBracketMaxNs": 14791,
+      "endBracketMaxNs": 18833
+    },
+    "sample": {
+      "requestedWarmupFrames": 1200,
+      "producedSampleFrames": 1200,
+      "selection": "generatedAfter>warm && <=warm+frames && >generatedBefore",
+      "startGenerated": 1201,
+      "endGenerated": 2400,
+      "startTick": 605,
+      "endTick": 1205,
+      "actualWindowSeconds": 20.302457542,
+      "fullFrameWall": {
+        "count": 1200,
+        "p50Ms": 16.731916,
+        "p95Ms": 20.545625,
+        "p99Ms": 29.969666,
+        "p999Ms": 56.222333,
+        "maxMs": 57.371541,
+        "over33_333Ms": 10,
+        "over50Ms": 2,
+        "over100Ms": 0
+      },
+      "completionIntervals": {
+        "count": 1200,
+        "p50Ms": 16.749542,
+        "p95Ms": 20.570917,
+        "p99Ms": 29.985875,
+        "p999Ms": 56.254208,
+        "maxMs": 57.382166,
+        "over33_333Ms": 10,
+        "over50Ms": 2,
+        "over100Ms": 0
+      },
+      "interFrameObserverAdapterGaps": {
+        "count": 1200,
+        "p50Ms": 0.017041,
+        "p95Ms": 0.056083,
+        "p99Ms": 0.099708,
+        "p999Ms": 0.147084,
+        "maxMs": 0.178708,
+        "over33_333Ms": 0,
+        "over50Ms": 0,
+        "over100Ms": 0
+      },
+      "threadCpu": {
+        "count": 1200,
+        "p50Ms": 2.04,
+        "p95Ms": 6.488,
+        "p99Ms": 13.322,
+        "p999Ms": 41.839,
+        "maxMs": 43.388,
+        "over33_333Ms": 2,
+        "over50Ms": 0,
+        "over100Ms": 0
+      },
+      "nativeSubmissionsObserved": 1200,
+      "gcPauseCount": 5,
+      "gcPauseDurationSumMs": 78.753124,
+      "gcPauseMaxMs": 24.4695
+    },
+    "longestFrames": [
+      {
+        "frameIndex": 2288,
+        "generatedBefore": 2266,
+        "generatedAfter": 2267,
+        "adoptedAfter": 2267,
+        "tickAfter": 1138,
+        "cpuValid": true,
+        "nativeOrdinalBefore": 2287,
+        "nativeOrdinalAfter": 2288,
+        "wallMs": 57.371541,
+        "cpuMs": 41.839,
+        "jfrDurationMs": 57.376875,
+        "gcPauseOverlapMs": 0.0,
+        "gcPauseCount": 0,
+        "topOverlappingVkStages": [
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 17.002333,
+            "overlapMs": 17.002333,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "frame-pacing-wait",
+            "durationMs": 14.917541,
+            "overlapMs": 14.917541,
+            "value0": 14597916,
+            "value1": 14915750,
+            "value2": 6
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 14.004041,
+            "overlapMs": 14.004041,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "backend-frame",
+            "durationMs": 5.843584,
+            "overlapMs": 5.843584,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "backend-prepare-pipelines",
+            "durationMs": 2.802125,
+            "overlapMs": 2.802125,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "backend-execute-passes",
+            "durationMs": 2.620791,
+            "overlapMs": 2.620791,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "texture-load",
+            "durationMs": 1.26025,
+            "overlapMs": 1.26025,
+            "value0": 16777216,
+            "value1": 2048,
+            "value2": 2048
+          },
+          {
+            "stage": "texture-load",
+            "durationMs": 1.073584,
+            "overlapMs": 1.073584,
+            "value0": 16777216,
+            "value1": 2048,
+            "value2": 2048
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 0.818542,
+            "overlapMs": 0.818542,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 0.502084,
+            "overlapMs": 0.502084,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          }
+        ],
+        "renderThreadSampleLeaves": [
+          {
+            "method": "jdk.internal.util.ArraysSupport.hashCode",
+            "samples": 2
+          }
+        ]
+      },
+      {
+        "frameIndex": 2283,
+        "generatedBefore": 2261,
+        "generatedAfter": 2262,
+        "adoptedAfter": 2262,
+        "tickAfter": 1136,
+        "cpuValid": true,
+        "nativeOrdinalBefore": 2282,
+        "nativeOrdinalAfter": 2283,
+        "wallMs": 56.222333,
+        "cpuMs": 43.388,
+        "jfrDurationMs": 56.231041,
+        "gcPauseOverlapMs": 0.053083,
+        "gcPauseCount": 1,
+        "topOverlappingVkStages": [
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 22.15925,
+            "overlapMs": 22.15925,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "backend-frame",
+            "durationMs": 12.809583,
+            "overlapMs": 12.809583,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "frame-pacing-wait",
+            "durationMs": 11.700167,
+            "overlapMs": 11.700167,
+            "value0": 11461999,
+            "value1": 11698750,
+            "value2": 5
+          },
+          {
+            "stage": "backend-prepare-pipelines",
+            "durationMs": 9.240208,
+            "overlapMs": 9.240208,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "texture-load",
+            "durationMs": 4.831708,
+            "overlapMs": 4.831708,
+            "value0": 16777216,
+            "value1": 2048,
+            "value2": 2048
+          },
+          {
+            "stage": "backend-execute-passes",
+            "durationMs": 2.978417,
+            "overlapMs": 2.978417,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "texture-load",
+            "durationMs": 2.284125,
+            "overlapMs": 2.284125,
+            "value0": 16777216,
+            "value1": 2048,
+            "value2": 2048
+          },
+          {
+            "stage": "texture-load",
+            "durationMs": 1.235625,
+            "overlapMs": 1.235625,
+            "value0": 16777216,
+            "value1": 2048,
+            "value2": 2048
+          },
+          {
+            "stage": "graphics-pipeline-create",
+            "durationMs": 0.729291,
+            "overlapMs": 0.729291,
+            "value0": 1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "submit",
+            "durationMs": 0.470167,
+            "overlapMs": 0.470167,
+            "value0": 0,
+            "value1": 2283,
+            "value2": -1
+          }
+        ],
+        "renderThreadSampleLeaves": [
+          {
+            "method": "jdk.internal.misc.ScopedMemoryAccess.copyMemoryInternal",
+            "samples": 1
+          },
+          {
+            "method": "jdk.internal.util.ArraysSupport.hashCode",
+            "samples": 1
+          },
+          {
+            "method": "de.fabmax.kool.util.LongHashBuilder.plusAssign",
+            "samples": 1
+          },
+          {
+            "method": "java.nio.Buffer.limit",
+            "samples": 1
+          }
+        ]
+      },
+      {
+        "frameIndex": 1568,
+        "generatedBefore": 1546,
+        "generatedAfter": 1547,
+        "adoptedAfter": 1547,
+        "tickAfter": 778,
+        "cpuValid": true,
+        "nativeOrdinalBefore": 1567,
+        "nativeOrdinalAfter": 1568,
+        "wallMs": 49.406458,
+        "cpuMs": 10.014,
+        "jfrDurationMs": 49.41525,
+        "gcPauseOverlapMs": 23.363958,
+        "gcPauseCount": 1,
+        "topOverlappingVkStages": [
+          {
+            "stage": "frame-pacing-wait",
+            "durationMs": 15.405875,
+            "overlapMs": 15.405875,
+            "value0": 15405791,
+            "value1": 15368667,
+            "value2": 7
+          },
+          {
+            "stage": "backend-frame",
+            "durationMs": 3.852125,
+            "overlapMs": 3.852125,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "backend-execute-passes",
+            "durationMs": 2.843917,
+            "overlapMs": 2.843917,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 2.1395,
+            "overlapMs": 2.1395,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 0.957333,
+            "overlapMs": 0.957333,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "backend-prepare-pipelines",
+            "durationMs": 0.513083,
+            "overlapMs": 0.513083,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "submit",
+            "durationMs": 0.378209,
+            "overlapMs": 0.378209,
+            "value0": 0,
+            "value1": 1568,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 0.252166,
+            "overlapMs": 0.252166,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 0.243541,
+            "overlapMs": 0.243541,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "graphics-pipeline-create",
+            "durationMs": 0.190292,
+            "overlapMs": 0.190292,
+            "value0": 1,
+            "value1": -1,
+            "value2": -1
+          }
+        ],
+        "renderThreadSampleLeaves": []
+      }
+    ],
+    "poolCounters": {
+      "atlasPixelPool_internRequests": 4,
+      "atlasPixelPool_reuseHits": 3,
+      "atlasPixelPool_uploadRequests": 4,
+      "atlasPixelPool_uploadReuseHits": 3
+    },
+    "coreJarSha256": "b94ab82e9348d4d1bbc194e65cb0c8bb901baa568158e95e66984e966ddac430",
+    "artifacts": [
+      {
+        "path": "build/windowless-stalls-20261102/opening-default-g1-jfr-v1/command.json",
+        "sha256": "7218c5ef3929d41950738a0550ea7565308789d26a0ca0c4d0ebaed4bc693b66",
+        "bytes": 23272
+      },
+      {
+        "path": "build/windowless-stalls-20261102/opening-default-g1-jfr-v1/process-result.json",
+        "sha256": "ea73a3eedfcf80eefebdccde5acde0c2ada8b48dfc7106c4f2f37681a2fd7af8",
+        "bytes": 23349
+      },
+      {
+        "path": "build/windowless-stalls-20261102/opening-default-g1-jfr-v1/analysis.json",
+        "sha256": "b6485fd260654fcce13340c057ff1ef0c45393823518248ee51786fce4a32dc7",
+        "bytes": 63295
+      },
+      {
+        "path": "build/windowless-stalls-20261102/opening-default-g1-jfr-v1/profile.jfr",
+        "sha256": "98ce4f3ee9f45e612d04a2849ab1102eac31e060e8d0cecd844afec4e4d0ad32",
+        "bytes": 3058630
+      },
+      {
+        "path": "build/windowless-stalls-20261102/opening-default-g1-jfr-v1/compact-profile.ndjson",
+        "sha256": "ff824fa3d8c3b3d3b0deb42edbe51ee32838ae97cf2a9bc53de48b356f1dd2b8",
+        "bytes": 12974226
+      },
+      {
+        "path": "build/windowless-stalls-20261102/opening-default-g1-jfr-v1/vulkan-stages.csv",
+        "sha256": "15f964632b11cef3c50666be2e4bfbec515a78f559f13f49c4cb7564e626eefc",
+        "bytes": 3559467
+      },
+      {
+        "path": "build/windowless-stalls-20261102/opening-default-g1-jfr-v1/gc.log",
+        "sha256": "4768b287d29c3199e524e9bfd1417223eed79aaa1827ec8d5f97fb4c8c40192e",
+        "bytes": 56630
+      },
+      {
+        "path": "build/windowless-stalls-20261102/opening-default-g1-jfr-v1/capture/timings.ndjson",
+        "sha256": "13348a6dcc6642f0c9839ea3b9ab183c26b0a1bede78d4c5ebd8285dae2da4e0",
+        "bytes": 2244978
+      },
+      {
+        "path": "build/windowless-stalls-20261102/opening-default-g1-jfr-v1/capture/result.json",
+        "sha256": "d0f875ffe8c2c55886583ef715921798959c3524b5faa678102dd8a3e4ea131e",
+        "bytes": 5390
+      }
+    ]
+  },
+  "afterFirstFingerprintCorrection": {
+    "roundtrip": {
+      "timingRows": 2437,
+      "exactlyMatchingJfrEvents": 2437,
+      "allMetadataValid": true,
+      "allCompletedWithoutFailure": true,
+      "cpuInvalidRows": 0,
+      "beginBracketMaxNs": 21292,
+      "endBracketMaxNs": 16208
+    },
+    "sample": {
+      "requestedWarmupFrames": 1200,
+      "producedSampleFrames": 1200,
+      "selection": "generatedAfter>warm && <=warm+frames && >generatedBefore",
+      "startGenerated": 1201,
+      "endGenerated": 2400,
+      "startTick": 605,
+      "endTick": 1205,
+      "actualWindowSeconds": 20.2770915,
+      "fullFrameWall": {
+        "count": 1200,
+        "p50Ms": 16.717708,
+        "p95Ms": 20.551917,
+        "p99Ms": 30.656958,
+        "p999Ms": 48.600084,
+        "maxMs": 49.601416,
+        "over33_333Ms": 9,
+        "over50Ms": 0,
+        "over100Ms": 0
+      },
+      "completionIntervals": {
+        "count": 1200,
+        "p50Ms": 16.7305,
+        "p95Ms": 20.563042,
+        "p99Ms": 30.664,
+        "p999Ms": 48.6335,
+        "maxMs": 49.613833,
+        "over33_333Ms": 9,
+        "over50Ms": 0,
+        "over100Ms": 0
+      },
+      "interFrameObserverAdapterGaps": {
+        "count": 1200,
+        "p50Ms": 0.013583,
+        "p95Ms": 0.040958,
+        "p99Ms": 0.063417,
+        "p999Ms": 0.172375,
+        "maxMs": 0.18675,
+        "over33_333Ms": 0,
+        "over50Ms": 0,
+        "over100Ms": 0
+      },
+      "threadCpu": {
+        "count": 1200,
+        "p50Ms": 1.614,
+        "p95Ms": 5.634,
+        "p99Ms": 14.152,
+        "p999Ms": 31.803,
+        "maxMs": 32.397,
+        "over33_333Ms": 0,
+        "over50Ms": 0,
+        "over100Ms": 0
+      },
+      "nativeSubmissionsObserved": 1200,
+      "gcPauseCount": 5,
+      "gcPauseDurationSumMs": 67.971126,
+      "gcPauseMaxMs": 23.061667
+    },
+    "longestFrames": [
+      {
+        "frameIndex": 1941,
+        "generatedBefore": 1907,
+        "generatedAfter": 1908,
+        "adoptedAfter": 1908,
+        "tickAfter": 959,
+        "cpuValid": true,
+        "nativeOrdinalBefore": 1940,
+        "nativeOrdinalAfter": 1941,
+        "wallMs": 49.601416,
+        "cpuMs": 2.404,
+        "jfrDurationMs": 49.612333,
+        "gcPauseOverlapMs": 0.0,
+        "gcPauseCount": 0,
+        "topOverlappingVkStages": [
+          {
+            "stage": "frame-pacing-wait",
+            "durationMs": 14.615708,
+            "overlapMs": 14.615708,
+            "value0": 13842332,
+            "value1": 14613916,
+            "value2": 6
+          },
+          {
+            "stage": "backend-frame",
+            "durationMs": 1.624083,
+            "overlapMs": 1.624083,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "submit",
+            "durationMs": 1.312833,
+            "overlapMs": 1.312833,
+            "value0": 0,
+            "value1": 1941,
+            "value2": -1
+          },
+          {
+            "stage": "frontend-sync-data",
+            "durationMs": 0.251708,
+            "overlapMs": 0.251708,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "backend-execute-passes",
+            "durationMs": 0.096167,
+            "overlapMs": 0.096167,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "backend-prepare-pipelines",
+            "durationMs": 0.095292,
+            "overlapMs": 0.095292,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 0.092333,
+            "overlapMs": 0.092333,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 0.076917,
+            "overlapMs": 0.076917,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "frontend-pipeline-data",
+            "durationMs": 0.043458,
+            "overlapMs": 0.043458,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "acquire",
+            "durationMs": 0.022958,
+            "overlapMs": 0.022958,
+            "value0": 0,
+            "value1": 1941,
+            "value2": -1
+          }
+        ],
+        "renderThreadSampleLeaves": [
+          {
+            "method": "com.corrodinggames.rts.gameFramework.ReplayEngine.update",
+            "samples": 1
+          }
+        ]
+      },
+      {
+        "frameIndex": 1300,
+        "generatedBefore": 1266,
+        "generatedAfter": 1267,
+        "adoptedAfter": 1267,
+        "tickAfter": 638,
+        "cpuValid": true,
+        "nativeOrdinalBefore": 1299,
+        "nativeOrdinalAfter": 1300,
+        "wallMs": 48.600084,
+        "cpuMs": 32.397,
+        "jfrDurationMs": 48.606291,
+        "gcPauseOverlapMs": 0.0,
+        "gcPauseCount": 0,
+        "topOverlappingVkStages": [
+          {
+            "stage": "frame-pacing-wait",
+            "durationMs": 14.419875,
+            "overlapMs": 14.419875,
+            "value0": 14055500,
+            "value1": 14417125,
+            "value2": 6
+          },
+          {
+            "stage": "backend-frame",
+            "durationMs": 10.134125,
+            "overlapMs": 10.134125,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "backend-execute-passes",
+            "durationMs": 8.112167,
+            "overlapMs": 8.112167,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 4.255625,
+            "overlapMs": 4.255625,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 4.065208,
+            "overlapMs": 4.065208,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 1.864959,
+            "overlapMs": 1.864959,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 1.627542,
+            "overlapMs": 1.627542,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "backend-prepare-pipelines",
+            "durationMs": 1.303334,
+            "overlapMs": 1.303334,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 1.241833,
+            "overlapMs": 1.241833,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 1.054542,
+            "overlapMs": 1.054542,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          }
+        ],
+        "renderThreadSampleLeaves": [
+          {
+            "method": "java.nio.Bits.setMemory",
+            "samples": 2
+          }
+        ]
+      },
+      {
+        "frameIndex": 2260,
+        "generatedBefore": 2226,
+        "generatedAfter": 2227,
+        "adoptedAfter": 2227,
+        "tickAfter": 1118,
+        "cpuValid": true,
+        "nativeOrdinalBefore": 2259,
+        "nativeOrdinalAfter": 2260,
+        "wallMs": 46.009375,
+        "cpuMs": 31.803,
+        "jfrDurationMs": 46.003791,
+        "gcPauseOverlapMs": 0.0,
+        "gcPauseCount": 0,
+        "topOverlappingVkStages": [
+          {
+            "stage": "frame-pacing-wait",
+            "durationMs": 12.507625,
+            "overlapMs": 12.507625,
+            "value0": 12506000,
+            "value1": 12434250,
+            "value2": 6
+          },
+          {
+            "stage": "backend-frame",
+            "durationMs": 10.36975,
+            "overlapMs": 10.36975,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "backend-execute-passes",
+            "durationMs": 7.850458,
+            "overlapMs": 7.850458,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 4.742417,
+            "overlapMs": 4.742417,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 4.277459,
+            "overlapMs": 4.277459,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "backend-prepare-pipelines",
+            "durationMs": 1.561542,
+            "overlapMs": 1.561542,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 1.449042,
+            "overlapMs": 1.449042,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 1.301542,
+            "overlapMs": 1.301542,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 1.254292,
+            "overlapMs": 1.254292,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          },
+          {
+            "stage": "scene-pass-collect",
+            "durationMs": 1.11125,
+            "overlapMs": 1.11125,
+            "value0": -1,
+            "value1": -1,
+            "value2": -1
+          }
+        ],
+        "renderThreadSampleLeaves": [
+          {
+            "method": "org.lwjgl.system.JNI.callPJPPPI",
+            "samples": 1
+          },
+          {
+            "method": "de.fabmax.kool.util.BufferedList.toArray",
+            "samples": 1
+          },
+          {
+            "method": "java.util.Arrays.copyOf",
+            "samples": 1
+          }
+        ]
+      }
+    ],
+    "poolCounters": {
+      "atlasPixelPool_internRequests": 4,
+      "atlasPixelPool_reuseHits": 3,
+      "atlasPixelPool_uploadRequests": 4,
+      "atlasPixelPool_uploadReuseHits": 3
+    },
+    "coreJarSha256": "190d8639f5d0feefc30bfd2c197164cc22d62067fa48bfbf700d8ee291e753cc",
+    "artifacts": [
+      {
+        "path": "build/windowless-stalls-20261102/opening-fingerprint-g1-jfr-v1/command.json",
+        "sha256": "9203d51c6634af0d9d1f634cecfe8afa4a9052d8ea580d4d3e68ebbe28d16922",
+        "bytes": 23308
+      },
+      {
+        "path": "build/windowless-stalls-20261102/opening-fingerprint-g1-jfr-v1/process-result.json",
+        "sha256": "ec59dc3baaa57070c6e62e8227f0109d395bd0a9789628f99f78b593be42a3f1",
+        "bytes": 23385
+      },
+      {
+        "path": "build/windowless-stalls-20261102/opening-fingerprint-g1-jfr-v1/analysis.json",
+        "sha256": "50ff1936005a479ae9060fcc4fa6b76cf549f6a60bfdeaaf972fe5378574af41",
+        "bytes": 63637
+      },
+      {
+        "path": "build/windowless-stalls-20261102/opening-fingerprint-g1-jfr-v1/profile.jfr",
+        "sha256": "1f2ec4ffd6e70b2f0ac177e49d5c6940b96bfa05c480be83f6a8508ad63a5772",
+        "bytes": 3043298
+      },
+      {
+        "path": "build/windowless-stalls-20261102/opening-fingerprint-g1-jfr-v1/compact-profile.ndjson",
+        "sha256": "08896089e39302fb481005ca851cc8712c3101af436792dee7881c0efedbf8ea",
+        "bytes": 12837414
+      },
+      {
+        "path": "build/windowless-stalls-20261102/opening-fingerprint-g1-jfr-v1/vulkan-stages.csv",
+        "sha256": "1343a3fc562f52846680a586e0a523f1dc2be6fc7ab676175e0688d2d064854b",
+        "bytes": 3566370
+      },
+      {
+        "path": "build/windowless-stalls-20261102/opening-fingerprint-g1-jfr-v1/gc.log",
+        "sha256": "477b9b1789b7f34f81d640156e347acf237abc2123bfb31a8445cc41e41c24fe",
+        "bytes": 56653
+      },
+      {
+        "path": "build/windowless-stalls-20261102/opening-fingerprint-g1-jfr-v1/capture/timings.ndjson",
+        "sha256": "81294e94cdf798841b09eecdb1340f085ebeb42c729011e9f431822b049ed8e7",
+        "bytes": 2255712
+      },
+      {
+        "path": "build/windowless-stalls-20261102/opening-fingerprint-g1-jfr-v1/capture/result.json",
+        "sha256": "4d6522333e3811a7cfdc892116a6b6719d99a329e6fb3ca3b046562d6155c93d",
+        "bytes": 5394
+      }
+    ]
+  },
+  "interpretation": {
+    "observedBefore": "The two longest frames57.37/56.22ms had41.84/43.39ms thread CPU, sampled whole-page ArraysSupport.hashCode and long scene collection. Sample had4execution samples in pool.intern, all hashCode.",
+    "observedAfter": "Pool.intern hash samples0; same4intern/3reuse and4upload/3reuse counts. Largest frame49.60ms; >50ms frames2→0, but P99 slightly worsened29.97→30.66ms. Do not claim consistent tail/FPS improvement from one pair.",
+    "remaining": "Sample still had5GCPhasePause events, max23.06ms. GC overlap uses the common JFR clock and only stop-the-world phase events; G1Old concurrent duration is not counted as a full pause.",
+    "finalCodeDifference": "Final build additionally skips fingerprint bookkeeping when no shared pool is configured. The after JFR preceded this small unused-work gating; final build has separate pixel/regression/package evidence."
+  },
+  "correctness": {
+    "finalRealMapCells": {
+      "correctnessOnly": true,
+      "performanceInvalid": true,
+      "completed": true,
+      "passed": true,
+      "sequence": 300,
+      "simulationTick": 6150,
+      "tolerance": 3,
+      "contextMsaaSamples": 4,
+      "directTargetTexturesVerified": false,
+      "sharedAtlasPixelsVerified": true,
+      "atlasPixelInternRequests": 19,
+      "atlasPixelReuseHits": 18,
+      "atlasPixelUploadRequests": 19,
+      "atlasPixelUploadReuseHits": 18,
+      "expectedCells": 6,
+      "comparedCells": 6,
+      "checkedPixels": 1572864,
+      "mismatches": 0,
+      "maxChannelDelta": 0,
+      "referenceAtlasPages": 4,
+      "referenceAtlasMeshes": 4,
+      "referenceUploadedAtlasTextures": 4,
+      "referenceRenderedGpuAtlasMeshes": 4,
+      "cells": [
+        {
+          "id": "legacy-texture-47/cpu-1-v1029/gpu-132",
+          "width": 512,
+          "height": 512,
+          "commands": 2696,
+          "slotVersion": "legacy-texture-47/cpu-1-v1029/gpu-132",
+          "logicalId": "legacy-texture-47",
+          "installedSlotAliases": [
+            "legacy-texture-47/cpu-1-v1029/gpu-132"
+          ],
+          "recordedFrameMatchesFrozen": true,
+          "hostAttachmentIdentityVerified": true,
+          "checkedPixels": 262144,
+          "mismatches": 0,
+          "maxChannelDelta": 0,
+          "actualSamples": 1,
+          "referenceSamples": 1,
+          "referenceAtlasPages": 1,
+          "referenceAtlasMeshes": 1,
+          "referenceUploadedAtlasTextures": 1,
+          "referenceRenderedGpuAtlasMeshes": 1
+        },
+        {
+          "id": "legacy-texture-49/cpu-1-v1030/gpu-133",
+          "width": 512,
+          "height": 512,
+          "commands": 2966,
+          "slotVersion": "legacy-texture-49/cpu-1-v1030/gpu-133",
+          "logicalId": "legacy-texture-49",
+          "installedSlotAliases": [
+            "legacy-texture-49/cpu-1-v1030/gpu-133"
+          ],
+          "recordedFrameMatchesFrozen": true,
+          "hostAttachmentIdentityVerified": true,
+          "checkedPixels": 262144,
+          "mismatches": 0,
+          "maxChannelDelta": 0,
+          "actualSamples": 1,
+          "referenceSamples": 1,
+          "referenceAtlasPages": 1,
+          "referenceAtlasMeshes": 1,
+          "referenceUploadedAtlasTextures": 1,
+          "referenceRenderedGpuAtlasMeshes": 1
+        },
+        {
+          "id": "legacy-texture-57/cpu-1-v1031/gpu-134",
+          "width": 512,
+          "height": 512,
+          "commands": 2746,
+          "slotVersion": "legacy-texture-57/cpu-1-v1031/gpu-134",
+          "logicalId": "legacy-texture-57",
+          "installedSlotAliases": [
+            "legacy-texture-57/cpu-1-v1031/gpu-134"
+          ],
+          "recordedFrameMatchesFrozen": true,
+          "hostAttachmentIdentityVerified": true,
+          "checkedPixels": 262144,
+          "mismatches": 0,
+          "maxChannelDelta": 0,
+          "actualSamples": 1,
+          "referenceSamples": 1,
+          "referenceAtlasPages": 1,
+          "referenceAtlasMeshes": 1,
+          "referenceUploadedAtlasTextures": 1,
+          "referenceRenderedGpuAtlasMeshes": 1
+        },
+        {
+          "id": "legacy-texture-59/cpu-1-v1032/gpu-135",
+          "width": 512,
+          "height": 512,
+          "commands": 3039,
+          "slotVersion": "legacy-texture-59/cpu-1-v1032/gpu-135",
+          "logicalId": "legacy-texture-59",
+          "installedSlotAliases": [
+            "legacy-texture-59/cpu-1-v1032/gpu-135"
+          ],
+          "recordedFrameMatchesFrozen": true,
+          "hostAttachmentIdentityVerified": true,
+          "checkedPixels": 262144,
+          "mismatches": 0,
+          "maxChannelDelta": 0,
+          "actualSamples": 1,
+          "referenceSamples": 1,
+          "referenceAtlasPages": 1,
+          "referenceAtlasMeshes": 1,
+          "referenceUploadedAtlasTextures": 1,
+          "referenceRenderedGpuAtlasMeshes": 1
+        },
+        {
+          "id": "legacy-texture-67/cpu-1-v1033/gpu-136",
+          "width": 512,
+          "height": 512,
+          "commands": 1067,
+          "slotVersion": "legacy-texture-67/cpu-1-v1033/gpu-136",
+          "logicalId": "legacy-texture-67",
+          "installedSlotAliases": [
+            "legacy-texture-67/cpu-1-v1033/gpu-136"
+          ],
+          "recordedFrameMatchesFrozen": true,
+          "hostAttachmentIdentityVerified": true,
+          "checkedPixels": 262144,
+          "mismatches": 0,
+          "maxChannelDelta": 0,
+          "actualSamples": 1,
+          "referenceSamples": 1,
+          "referenceAtlasPages": 0,
+          "referenceAtlasMeshes": 0,
+          "referenceUploadedAtlasTextures": 0,
+          "referenceRenderedGpuAtlasMeshes": 0
+        },
+        {
+          "id": "legacy-texture-69/cpu-1-v1034/gpu-137",
+          "width": 512,
+          "height": 512,
+          "commands": 1154,
+          "slotVersion": "legacy-texture-69/cpu-1-v1034/gpu-137",
+          "logicalId": "legacy-texture-69",
+          "installedSlotAliases": [
+            "legacy-texture-69/cpu-1-v1034/gpu-137"
+          ],
+          "recordedFrameMatchesFrozen": true,
+          "hostAttachmentIdentityVerified": true,
+          "checkedPixels": 262144,
+          "mismatches": 0,
+          "maxChannelDelta": 0,
+          "actualSamples": 1,
+          "referenceSamples": 1,
+          "referenceAtlasPages": 0,
+          "referenceAtlasMeshes": 0,
+          "referenceUploadedAtlasTextures": 0,
+          "referenceRenderedGpuAtlasMeshes": 0
+        }
+      ],
+      "scope": "Frozen real map-cell attachments only; no final-screen correctness or FPS claim"
+    },
+    "pixelEvidence": {
+      "path": "build/windowless-gpu-20261102/real-replay-fingerprint-reference-300-final-v1/capture/cell-reference.json",
+      "sha256": "5c1e1071e9db5b8d117ba8fcd77bf93550b2baf45441c4d9bc44a53263d9106e",
+      "bytes": 3824
+    },
+    "regression": {
+      "core": {
+        "tests": 480,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "desktop": {
+        "tests": 145,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "regressionLog": {
+      "path": "build/windowless-stalls-20261102/fingerprint-final-regression.log",
+      "sha256": "a2db3c07b7498cc47eda3e4ad172fcc3926f7c6d4a5d9fbd512db089897ce09b",
+      "bytes": 3147
+    },
+    "targetedRegression": {
+      "path": "build/windowless-stalls-20261102/atlas-fingerprint-core-tests.json",
+      "sha256": "36507107ae9a64ca18dde5397092e15126974807834cbf439ef8cd346f098b45",
+      "bytes": 2776
+    },
+    "scope": "6final real512²map-cell attachments against independent unshared atlas reference. Actual GPU atlas rendering/upload and strict version/frame/registry/attachment provenance required; no final UI or all-mods claim."
+  },
+  "originalNoAgentControl": {
+    "userAuthorization": "现在运行一次 in reply to a35second single visible startup-control request.",
+    "executionReview": {
+      "path": "build/original-comparison-20261102/no-agent-startup-control-v1/execution-review.json",
+      "sha256": "197a31ef20d6a5c432f0a4f3006813829ffd6fbd50cf421955ee348d3c57dfdc",
+      "bytes": 14051
+    },
+    "result": {
+      "attemptConsumed": true,
+      "fpsMeasured": false,
+      "screenshotsCaptured": false,
+      "automaticActivationOrFocusRestoration": false,
+      "launchCount": 1,
+      "pid": 12697,
+      "returnCode": 143,
+      "stopReason": "bounded-stop-after-term",
+      "signals": [
+        {
+          "signal": "SIGTERM",
+          "elapsedSeconds": 28.005588500003796
+        }
+      ],
+      "elapsedSeconds": 28.515865791996475,
+      "preferencesAfterSha256": "13675fe65b689d6144783f9497a3b0109804b9156b1c9e99991aedfce566fad6",
+      "processReturnCodeAfterCleanup": 143
+    },
+    "interpretation": "Survived to planned28s TERM and entered menu-background/MissionEngine/music processing, then PC0 SIGSEGV during shutdown/audio cleanup. Not clean exit, not FPS, not proof of a unique crash cause. CUA inventory observed Main but getApp failed; no screenshot or forced activation."
+  },
+  "originalProbeCorrection": {
+    "validation": {
+      "path": "build/original-probe-validity-20261102/startup-readiness-v1/validation.json",
+      "sha256": "0bb3abdb54bd819d267392e097cd0a978cd63a10a63785b56bccfa8c548fcaed",
+      "bytes": 6751
+    },
+    "source": {
+      "path": "desktop/tools/original_probe/OrigPresentProbe.java",
+      "sha256": "2e6d5660c3a0e5ea88aac67dcdf3a8e51d9c633d55b7648a59ca36dd61fb35c9",
+      "bytes": 25693
+    },
+    "preparedProbe": {
+      "path": "build/original-probe-validity-20261102/startup-readiness-v1/prepare-only/original-probe.jar",
+      "sha256": "ba14f2162b519d2567928f2609c26efc68d46c4aaed75be2096ec3089e34b2e1",
+      "bytes": 274602
+    },
+    "pythonTests": 23,
+    "offlineFixtures": "Old probe reproduces early engine initialization failure; new guard passes menu/auto-start and existing fresh-count/transform fixtures.",
+    "realGameRelaunchedAfterCorrection": false,
+    "limitations": "A completed render may still be a loading image. Game ready/replay ready and native startup success are not established by this guard alone. Old frozen tool fingerprint8df and probe367b remain historical."
+  },
+  "release": {
+    "zip": {
+      "path": "desktop/build/distributions/RWXX-1.4.3-macos-arm64-desktop.zip",
+      "sha256": "7e3c22b1cc16154cf68007eaa522e3f454ccd817161dcd6d37ef247a9998bcc5",
+      "bytes": 162215171
+    },
+    "jar": {
+      "path": "desktop/build/libs/RWXX-1.4.3-macos-arm64.jar",
+      "sha256": "86d3f86a41ce051124d462b280d41dbde0e5b8820c5d477e38900651ea89a090",
+      "bytes": 125277197
+    },
+    "coreJar": {
+      "path": "core/build/libs/core-1.4.3.jar",
+      "sha256": "8773d742b14a7de65772dd6515281eb2f093151ae2d977fad2b0a92a7df3c181",
+      "bytes": 6369037
+    },
+    "buildLog": {
+      "path": "build/windowless-stalls-20261102/fingerprint-package.log",
+      "sha256": "fe6d1ce1cf844a645e8327de30b30f601eb57d50b9a3ddb25ff92e4bdd495b46",
+      "bytes": 29852
+    },
+    "packageAcceptance": {
+      "path": "build/real-release-20261102/fingerprint-mac-jni/acceptance.json",
+      "sha256": "5902ffe6e0b1ccfc6e9c1c99304ac4dd6e713e5f0a4297aac4d65e707b55acbc",
+      "bytes": 100460
+    },
+    "packageValid": true,
+    "acceptanceScope": "CRC,classfamilies,codesign,bundled JVM headless120tick only; no native app launcher/GPU/FPS/focus telemetry.",
+    "previousReleasePreserved": {
+      "path": "build/real-release-20261102/pre-fingerprint/manifest.json",
+      "sha256": "6f31b196b619a3d7f58e22919ca0e2d1d3aef4099ded8b3ecd6269fee2e12b16",
+      "bytes": 668
+    }
+  },
+  "provenanceLimit": {
+    "baselinePreservation": {
+      "path": "build/windowless-stalls-20261102/baseline-runtime/preservation-status.json",
+      "sha256": "d07ee31fa3fbd21f8163a83b730fcfd6cb2fcfbcde087fccb9f5fff719b3a232",
+      "bytes": 639
+    },
+    "publishedBaseline": {
+      "path": "build/windowless-stalls-20261102/baseline-runtime/published-baseline.jar",
+      "sha256": "6acefd500384f00ff10cbdf9b6c0f64d5addbc4ae98bfbf21de6ceab226445a1",
+      "bytes": 125276874
+    },
+    "note": "The measured b94 core ZIP itself was replaced before archival. Published pre-fingerprint6ace runtime retained; baseline raw artifacts retain observed jar SHA. No standalone full runtime snapshot is asserted."
+  },
+  "installedApp": {
+    "observedAtUtc": "2026-11-02T13:50:27.431815+00:00",
+    "app": "/Applications/RWXX.app",
+    "version": "1.4.2",
+    "runningPidObserved": 90057,
+    "modifiedOrTerminated": false,
+    "jars": [
+      {
+        "name": "RWXX-1.4.2-macos-arm64.jar",
+        "sha256": "23b33f372bffc1e752d5a185fba5c1365366f801418d3d39debfc063719c6e6c"
+      }
+    ],
+    "finalRecheck": {
+      "previouslyObservedPid": 90057,
+      "pidStillPresent": false,
+      "installedVersion": "1.4.2",
+      "terminatedOrReplacedByAgent": false
+    }
+  },
+  "remainingRequirements": [
+    "Valid same-machine official benchmark with corrected probe; startup/exit issues still require runtime validation.",
+    "New installed/visible build frame pacing, physical input and continuity; running installed1.4.2 remains untouched.",
+    "Reduce remaining real-scene allocation/GC and rendering spikes; earlier185ms visible interval still unattributed.",
+    "Broader realistic combat/mod/compatibility coverage; no completion claim."
+  ]
+}

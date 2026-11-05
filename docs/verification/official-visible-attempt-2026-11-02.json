@@ -1,0 +1,285 @@
+{
+  "date": "2026-11-02",
+  "applicationVersion": "1.4.3",
+  "purpose": "One authorized visible attempt per product, official original first then current RWXX release. No automatic activation/focus restoration/retry.",
+  "userAuthorization": "现在可以开始, in reply to the explicit approximately3minute two-window timing request.",
+  "comparisonValid": false,
+  "goalComplete": false,
+  "retryPerformed": false,
+  "official": {
+    "identity": "official Rusted Warfare PC1.15, not RWPP",
+    "coreSha256": "8a550a37e2d8a5430866090d4e7d5892f9010b47f52a5a09350fc66c620deec9",
+    "runnerResult": {
+      "authorized": true,
+      "authorization": "User answered 现在可以开始 for two sequential visible games, approximately3minutes; no automatic focus activation/restoration/retry.",
+      "name": "official",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "19",
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "/Users/wty/code/RWXX/build/original-comparison-20261102/rwxx-context/tooling/original_interaction_benchmark.py",
+        "--output",
+        "/Users/wty/code/RWXX/build/original-comparison-20261102/official-visible-pan-zoom-v3",
+        "--original-root",
+        "/Users/wty/code/RWXX/build/original-comparison-20261102/runtime",
+        "--java",
+        "/Users/wty/code/RWXX/build/original-comparison-20261102/runtime/jvm-mac/Contents/Home/bin/Rusted Warfare",
+        "--javac",
+        "/opt/homebrew/opt/openjdk@25/bin/javac",
+        "--camera-mode",
+        "pan-zoom",
+        "--replay",
+        "/Users/wty/code/RWXX/build/original-comparison-20261102/runtime/replays/bridges-fixed.replay",
+        "--warmup-seconds",
+        "20",
+        "--sample-seconds",
+        "20",
+        "--load-seconds",
+        "30"
+      ],
+      "cwd": "/Users/wty/code/RWXX",
+      "environmentOverrides": {
+        "RWX_BENCHMARK_TOOL_ROOT": "/Users/wty/code/RWXX/build/original-comparison-20261102/rwxx-context/tooling",
+        "RWX_BENCHMARK_TOOLING_SHA256": "8dfda3a89d1f7284d2aca820473db1e9b108fa86294cd6f4174617023935fb8a"
+      },
+      "hardTimeoutSeconds": 150,
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedSeconds": 8.730623249997734
+    },
+    "measurementPerformed": false,
+    "failure": "Instrumented isolated launch exited SIGABRT(-6) after Java8u141-b15 x64 reported SIGSEGV on native libdispatch worker in os_unfair_lock_lock, before replay load/measurement.",
+    "log": {
+      "path": "build/original-comparison-20261102/official-visible-pan-zoom-v3/original.log",
+      "sha256": "d584a55dff3448754539c846bb4edf15dfc2458a7c3e2fdf7cd25809b840a318",
+      "bytes": 2635
+    },
+    "fatalLog": {
+      "path": "build/original-comparison-20261102/runtime/hs_err_pid75154.log",
+      "sha256": "0acc8caebcf7c709756f9dc5673ed401be5252cb3f0bc394b7ca72822339711e",
+      "bytes": 124740
+    },
+    "interpretation": "This failed isolated instrumented launch does not establish that the user stock game launch crashes, or that original performance is low.",
+    "readOnlyDiagnosis": {
+      "path": "build/original-comparison-20261102/official-java8-crash-diagnosis-20261102/diagnosis.json",
+      "sha256": "f7f310aa8af89f3181db2ec202d02957711e89d6c7fc4c3decc6db3b8165bbdb",
+      "rootCauseProven": false,
+      "noVisibleRetryPerformed": true
+    }
+  },
+  "rwxx": {
+    "runtimeSha256": "0dfcacdd910fa15ffd9e70c60ee476e13368184dc389f926b2211f3d92e0ba20",
+    "runnerResult": {
+      "authorized": true,
+      "authorization": "User answered 现在可以开始 for two sequential visible games, approximately3minutes; no automatic focus activation/restoration/retry.",
+      "name": "rwxx",
+      "command": [
+        "/usr/bin/nice",
+        "-n",
+        "19",
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "/Users/wty/code/RWXX/build/original-comparison-20261102/rwxx-context/tooling/map_pan_replay.py",
+        "--jar",
+        "/Users/wty/code/RWXX/build/original-comparison-20261102/rwxx-context/inputs/runtime.jar",
+        "--replay",
+        "/Users/wty/code/RWXX/build/original-comparison-20261102/rwxx-context/inputs/comparison.replay",
+        "--java",
+        "/opt/homebrew/Cellar/openjdk@25/25.0.4.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "--output",
+        "/Users/wty/code/RWXX/build/original-comparison-20261102/rwxx-context/run",
+        "--warmup-seconds",
+        "20",
+        "--sample-seconds",
+        "20",
+        "--repetitions",
+        "1",
+        "--camera-mode",
+        "pan-zoom",
+        "--camera-period-seconds",
+        "20",
+        "--zoom-period-seconds",
+        "4",
+        "--zoom-min",
+        "0.35",
+        "--zoom-max",
+        "1.5",
+        "--fog",
+        "off",
+        "--window-width",
+        "1280",
+        "--window-height",
+        "720",
+        "--target-fps",
+        "120",
+        "--heap-mb",
+        "1000",
+        "--msaa",
+        "4",
+        "--prepared-map-tiles",
+        "--frozen-reuse",
+        "--share-texture-registrations",
+        "--no-perf-window-log"
+      ],
+      "cwd": "/Users/wty/code/RWXX/build/original-comparison-20261102/rwxx-context/project",
+      "environmentOverrides": {
+        "RWX_BENCHMARK_PROJECT_ROOT": "/Users/wty/code/RWXX/build/original-comparison-20261102/rwxx-context/project",
+        "RWX_BENCHMARK_TOOL_ROOT": "/Users/wty/code/RWXX/build/original-comparison-20261102/rwxx-context/tooling",
+        "RWX_BENCHMARK_TOOLING_SHA256": "8dfda3a89d1f7284d2aca820473db1e9b108fa86294cd6f4174617023935fb8a"
+      },
+      "hardTimeoutSeconds": 170,
+      "exitCode": 0,
+      "timedOut": false,
+      "elapsedSeconds": 43.37822829200013
+    },
+    "rawMeasurementValidByExistingAnalyzer": true,
+    "awtWholeRunGate": {
+      "validAwtWholeRunGate": false,
+      "validMeasurementWithAwtGate": false,
+      "invalidReasons": [
+        "AWT foreground was lost after the first explicit foreground observation"
+      ],
+      "scope": "Conservative AWT-event-level whole-run gate, including loading and warmup",
+      "perPresentAtomicProof": false,
+      "physicalVisibilityOrScanoutProof": false,
+      "firstForegroundLine": 7,
+      "replayPreparationLines": [
+        133
+      ],
+      "activityObservationCount": 4,
+      "activityObservations": [
+        {
+          "line": 5,
+          "active": false,
+          "showing": true,
+          "iconified": false,
+          "refreshRate": 60
+        },
+        {
+          "line": 7,
+          "active": true,
+          "showing": true,
+          "iconified": false,
+          "refreshRate": 60
+        },
+        {
+          "line": 513,
+          "active": false,
+          "showing": true,
+          "iconified": false,
+          "refreshRate": 60
+        },
+        {
+          "line": 595,
+          "active": true,
+          "showing": true,
+          "iconified": false,
+          "refreshRate": 60
+        }
+      ],
+      "malformedActivityLines": [],
+      "foregroundViolations": [
+        {
+          "line": 513,
+          "active": false,
+          "showing": true,
+          "iconified": false,
+          "refreshRate": 60
+        }
+      ],
+      "completenessEvidence": {
+        "normalExitFromLauncherReport": true,
+        "measurementReportValid": true,
+        "allWindowsCompleted": true,
+        "foregroundEstablishedBeforeReplayLoad": true,
+        "startupMarkersPresent": true,
+        "logTerminatedNormally": true
+      },
+      "captureContract": "Use only the original, unedited stdout+stderr file captured from process creation through exit by the frozen launcher; a detached text excerpt cannot prove completeness.",
+      "limitations": [
+        "AWT events and their logging are not atomic with accepted presents.",
+        "No intrinsic shutdown marker exists; exit0/report plus original launcher capture are the completeness evidence.",
+        "Intentional shutdown/dispose foreground loss is not exempt and can cause a false rejection."
+      ],
+      "summaryPath": "/Users/wty/code/RWXX/build/original-comparison-20261102/rwxx-context/run/diagnostic-summary.json",
+      "logPath": "/Users/wty/code/RWXX/build/original-comparison-20261102/rwxx-context/run/replay-pan.log",
+      "logSha256": "743799e0edab7f37321c6707f448a6030eb451bf7385556fb499d14d6dc24b21"
+    },
+    "strictComparisonAcceptance": false,
+    "diagnosticMetrics": {
+      "acceptedPresentFps": 116.46118057698416,
+      "freshSnapshotHz": 114.56181368345395,
+      "repeatRatio": 0.01630901287553648,
+      "freshSnapshotIntervalP95Ms": 13.357666,
+      "freshSnapshotIntervalP99Ms": 17.42825,
+      "freshSnapshotIntervalP999Ms": 24.559417,
+      "freshSnapshotIntervalMaxMs": 185.6235,
+      "freshSnapshotIntervalCount": 2292,
+      "freshSnapshotIntervalsOver16_667Ms": 43,
+      "freshSnapshotIntervalsOver33_333Ms": 1,
+      "freshSnapshotIntervalsOver100Ms": 1,
+      "sampleStartTick": 605,
+      "sampleEndTick": 1205,
+      "minimumLivingUnits": 23,
+      "maximumLivingUnits": 38,
+      "maximumMovingUnits": 23,
+      "actualZoomMinimum": 0.45,
+      "actualZoomMaximum": 1.5
+    },
+    "expectedConfiguration": {
+      "targetFps": 120,
+      "viewport": [
+        1280,
+        720
+      ],
+      "msaaSamples": 4,
+      "fogDisplay": false,
+      "warmupSeconds": 20,
+      "sampleSeconds": 20,
+      "ordinaryReplay1x": true,
+      "directTargetTextures": false,
+      "preparedMapTiles": true,
+      "frozenContentReuse": true,
+      "sharedTextureRegistrations": true,
+      "hudFps": false,
+      "nativeBgraUploads": true
+    },
+    "backend": "Apple M5 MoltenVK, framebuffer1280x720 samples4, presentMode0,vsync=false,targetFps120 confirmed by native log.",
+    "gateInterpretation": "Complete run had AWT foreground loss during warmup (17:56:40.495→17:56:43.907) and thus failed the preregistered conservative whole-run gate. Metrics remain diagnostic; original cross-product ratio is unavailable.",
+    "summary": {
+      "path": "build/original-comparison-20261102/rwxx-context/run/diagnostic-summary.json",
+      "sha256": "0a0a6f06d4c44c9e26c8dcd38fa4e4ddb3e7801728e1ed6265591b27bf6d0708",
+      "bytes": 38023
+    },
+    "console": {
+      "path": "build/original-comparison-20261102/rwxx-context/run/replay-pan.log",
+      "sha256": "743799e0edab7f37321c6707f448a6030eb451bf7385556fb499d14d6dc24b21",
+      "bytes": 95472
+    },
+    "independentPosthocAudit": {
+      "path": "build/original-comparison-20261102/rwxx-context/posthoc-independent-audit.json",
+      "sha256": "7593f6f39a25c938235868e9d2bb207184728a94a4852eb8dffac8159a551a5c",
+      "allRawCadenceMetricsRecomputed": true,
+      "strictGateUnchanged": true,
+      "strictGateStatus": "FAILED",
+      "longestGapAttribution": "UNATTRIBUTED",
+      "clockMappingQualification": "No JVM-side clock anchor or proven cross-clock error bound; conditional mapping cannot make the failed whole-run gate pass."
+    }
+  },
+  "frozenTools": {
+    "sha256": "8dfda3a89d1f7284d2aca820473db1e9b108fa86294cd6f4174617023935fb8a",
+    "location": "build/original-comparison-20261102/rwxx-context/tooling"
+  },
+  "limitations": [
+    "One process/sample only, no statistical repeatability claim.",
+    "Accepted native present/new snapshot cadence does not prove physical display scanout or input latency.",
+    "No original measurement, so no original-vs-RWXX performance ratio.",
+    "Whole-run focus gate is explicitly retained failed; no rows deleted to improve results.",
+    "Visible RWXX shutdown reported native memory cleanup warnings including4leaked images; test-harness-only cleanup proof is not production cleanup proof."
+  ],
+  "nextSteps": [
+    "Read-only diagnosis of the original instrumented launch; do not automatically repeat visible launches.",
+    "Inspect the approximately185.6ms fresh-picture stall and qualify focus timing using retained raw evidence.",
+    "Continue memory residency investigation without enabling direct candidate or relaxing pixel tolerance."
+  ]
+}

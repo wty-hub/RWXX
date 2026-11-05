@@ -1,0 +1,122 @@
+{
+  "date": "2026-11-03",
+  "createdUtc": "2026-11-03T09:25:04.652648+00:00",
+  "applicationVersion": "1.4.3",
+  "goalComplete": false,
+  "status": "virtual-display-created-first-control-invalid-corrected-launcher-prepared-not-retried",
+  "userSteering": {
+    "backgroundDisplayRequested": true,
+    "physicalDisplayPerformanceValidationRequired": false,
+    "previousOffOnAuthorization": "received before steering; one control attempt consumed, ON unstarted",
+    "failureStopNoAutomaticRetryPreserved": true,
+    "newQuestion": "Permission for necessary future background comparisons or this corrected pair only; issued, no reply yet"
+  },
+  "rootCauseEvidence": {
+    "confirmedBottleneck": "Original120 fresh/s versus RWXX engine100.295 and fresh99.425/s with117.421 accepted presents/s;15.326% repeats. Real-replay phase and cadence deficit, not simulation-rate evidence.",
+    "strongestMechanism": "Owner default schedules next deadline from actual pre-tick start, carrying wake oversleep into subsequent cycles. Original Display.sync uses accumulated nextFrame; candidate preserves small-late scheduled phase and actual wall elapsed simulation delta.",
+    "candidateCpuAbbaFreezeHz": [
+      83.5,
+      111.225
+    ],
+    "candidateCpuPercentChange": 33.20359281437124,
+    "gpuCorrectness": {
+      "path": "/Users/wty/code/RWXX/docs/verification/owner-gpu-compatibility-2026-11-03.json",
+      "sha256": "0fdf209d0c47d017b451099f5ddf969242b8232d3fa60de05a2a4989c1da1afc"
+    },
+    "remaining": "Full contribution and tail behavior need valid same-environment OFF/ON; no sole-root-cause or completed-parity claim.",
+    "background30Cap": "Separate test-environment issue, not explanation for earlier valid foreground120-target comparison."
+  },
+  "virtualDisplay": {
+    "creator": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/display-manager-v5",
+      "sha256": "edbbcf995996f56eb265b1c3c1bc6ac2a17057e4982fe565e67e81fee8cd95fa"
+    },
+    "source": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/display-manager-v5.m",
+      "sha256": "b544371750cc69c8dd94144199a66716b593cde142d13faea56adf3c7932e046"
+    },
+    "executionLog": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/create-5.ndjson",
+      "sha256": "417c491aaa3e79b8e3db407c68b32eb7e8703d10db8e57ff675858b939a721a0"
+    },
+    "readyId": 8,
+    "bounds": {
+      "x": 1920,
+      "y": 0,
+      "width": 1920,
+      "height": 1080
+    },
+    "actualPixels": [
+      1920,
+      1080
+    ],
+    "registeredMode": {
+      "width": 1920,
+      "height": 1080,
+      "requestedRefreshHz": 60
+    },
+    "publicActiveModeAvailable": false,
+    "privateHiDpiPropertyObserved": 2,
+    "oneToOneBasis": "actual CGDisplayPixelsWide/High equal logical bounds; private hiDPI property is not used as boolean proof. Actual application framebuffer remains a separate gate.",
+    "physicalDisplayProtected": "Original bounds/main/mirroring and initially active/main current mode retained. Inactive mirrored display1 metadata temporarily changed. No claim that all physical metadata was unchanged while connected.",
+    "cleanup": {
+      "removed": true,
+      "exitCode": 0,
+      "signal": 15,
+      "originalFullConfigurationRestored": true
+    },
+    "earlierCreatorAttempts": "create1 lacked transient-mode handling;2 mode neverready;3 physical mirror metadata gate;4 privatehiDPI strict0 gate. All kept and no game launched by those attempts.",
+    "sourceProvenance": "API declarations reference Chromium virtual_display_util_mac.mm, recorded in source and bundled BSD license."
+  },
+  "firstGameControl": {
+    "directory": "/Users/wty/code/RWXX/build/background-display-20261103/rwxx-pair-v1/control-off",
+    "acceptedAsBackgroundMeasurement": false,
+    "nativeGameCompleted": true,
+    "rawAcceptedPresentHz": 117.2897055144506,
+    "rawFreshHz": 99.19900530301851,
+    "rawP99Ms": 22.2535,
+    "reason": "JFrame was initially constructed on default graphics device; changing location before show did not keep it on virtual display. First shown and sample-boundary events show mainDisplay3 bounds320,179,1280,752.",
+    "windowEverActive": false,
+    "candidateOnStarted": false,
+    "independentReview": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/control-invalid-independent-review.json",
+      "sha256": "caf412d0bdd5ad94d0294a469c9609a33bff2bed73963e964e353b78aba04442"
+    },
+    "useLimit": "Raw cadence is diagnostic only; it is not a valid background OFF control and cannot support candidate effect/parity."
+  },
+  "correctedBackgroundProtocol": {
+    "preparedCommands": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/background-pair-v2-plan/future-commands.json",
+      "sha256": "2b46c4a37764fd293df2216a1b9fddc20bfc6ea3205476f7d53d283440d70d54"
+    },
+    "platformJarSha256": "64a96fa4fbe66a0f814a46930eae4d6eb69117ea9a31b48ad143ecc3fe00d206",
+    "externalAgent": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/rwxx-background-agent-v4/rwxx-background-display-agent.jar",
+      "sha256": "388cc763af8333750b07d472316717e1e1a77de322544f638d6238c91fb11460"
+    },
+    "agentDelivery": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/rwxx-background-agent-v4/delivery.json",
+      "sha256": "991ae840b136dd7179ffb26870a9d1d9868f12f0147dee4d15981624ff66f73c"
+    },
+    "wrapper": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/run_background_arm_v2.py",
+      "sha256": "f41e1198b49b0cfd9b105014dc647051ac6ebf7b24fc9f8a34b2ea4a4bafdd06"
+    },
+    "mode": "Actual inactive game, common full-rate adapter, virtual graphics configuration chosen at JFrame creation and position set before firstshow. No fake active flag, no product owner/render-pacer rewrite.",
+    "commonCapAdaptation": "desktopPresentationFrameRate returns original target120 instead of background30; affects both engine owner and presentation targets equally for OFF/ON.",
+    "immediateInvalidation": "Shown activation/focus/virtual-bounds escape flushes evidence thenhalt79; no repair, retry or focus restoration.",
+    "gates": [
+      "normal exit0 and no timeout/controller signal/owned survivor",
+      "same agent/wrapper/displayID/bounds for pair",
+      "visible/noniconified/actuallyinactive sample with left boundary anchor",
+      "real1280x720 framebuffer/MSAA4/vsyncOFF/target120",
+      "actual ownerOFF/ON and global renderer stableflag unset",
+      "old full scenario/trace/camera/replay evidence retained"
+    ],
+    "newGameRunPerformed": false,
+    "onlyOfflineCompilationAndAsmValidation": true,
+    "newAuthorizationGranted": false
+  },
+  "artifactsAndUserInstallation": "No production code/default, canonical release artifacts, Steam installation or installed app changed. Test adapters reside under build only.",
+  "nextAction": "Await new explicit response, then execute concrete corrected background plan. User may authorize later necessary background pairs so repeated time-slot confirmation is not required. The fluidity goal remains incomplete."
+}

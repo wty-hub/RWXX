@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.locks.LockSupport
 import io.github.rwx.desktopScheduledFrameStartNanos
+import io.github.rwx.resolveStableOwnerFrameDeadlines
 
 /** One owner for the legacy engine; presentation never supplies its clock or waits for it. */
 internal class EngineOwnerLoop(
@@ -17,7 +18,8 @@ internal class EngineOwnerLoop(
         System.getenv("RWX_HYBRID_OWNER_PACING") != "1",
     private val legacyShortOwnerPark: Boolean = System.getenv("RWX_GUARD_SHORT_OWNER_PARK") != "1" ||
         System.getenv("RWX_LEGACY_SHORT_OWNER_PARK") == "1",
-    private val stableFrameDeadlines: Boolean = System.getenv("RWX_STABLE_FRAME_DEADLINES") == "1",
+    private val stableFrameDeadlines: Boolean = resolveStableOwnerFrameDeadlines(
+        System.getenv("RWX_STABLE_OWNER_DEADLINES"), System.getenv("RWX_STABLE_FRAME_DEADLINES")),
 ) : AutoCloseable {
     private data class InputTransition(val identity: String, val down: Boolean)
     private data class Task(val transition: InputTransition?, val execute: () -> Unit)
@@ -69,6 +71,8 @@ internal class EngineOwnerLoop(
         var pacingPeriod = Long.MAX_VALUE
         val inputStates = mutableMapOf<String, Boolean>()
         val transitionsObserved = mutableSetOf<String>()
+        val frameTiming = EngineOwnerFrameTiming.attachOwner()
+        try {
         while (running.get() || tasks.isNotEmpty()) {
             while (true) {
                 val next = tasks.peek() ?: break
@@ -101,8 +105,12 @@ internal class EngineOwnerLoop(
                 continue
             }
             val delta = ((now - previous).coerceAtLeast(0L) / 1_000_000_000.0).toFloat()
+            val frameStart = previous
             previous = now
-            try { tick(delta) } catch (error: Throwable) { onFailure(error) }
+            try {
+                frameTiming.begin(frameStart, now)
+                try { tick(delta) } finally { frameTiming.clear() }
+            } catch (error: Throwable) { onFailure(error) }
             transitionsObserved.clear()
             // This is the original outer throttle, not a fixed simulation accumulator.
             val previousPeriod = pacingPeriod
@@ -110,6 +118,9 @@ internal class EngineOwnerLoop(
             val pacingStart = if (stableFrameDeadlines && previousPeriod == pacingPeriod)
                 desktopScheduledFrameStartNanos(deadline, now, pacingPeriod) else now
             deadline = pacingStart + pacingPeriod
+        }
+        } finally {
+            EngineOwnerFrameTiming.detachOwner(frameTiming)
         }
     }
 

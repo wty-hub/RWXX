@@ -1,0 +1,81 @@
+{
+  "date": "2026-11-03",
+  "task": "Build a10000-real-unit test scene",
+  "completeForSceneConstructionAndActualLoad": true,
+  "overallPerformanceGoalComplete": false,
+  "scene": {
+    "status": "actual-headless-load-and-count-passed",
+    "map": {
+      "path": "/Users/wty/code/RWXX/build/stress-scenes-20261103/ten-thousand-tanks-v2/[p2]Ten_Thousand_Tanks_64cols_(5000v5000).tmx",
+      "sha256": "09232b22a1cc72511269895bf388eb1b2c2d2516aa12ef53416d97de845e0373"
+    },
+    "actualAliveOfficialTanks": 10000,
+    "teams": [
+      {
+        "teamId": 0,
+        "teamColorId": 0,
+        "aliveTankCount": 5000
+      },
+      {
+        "teamId": 1,
+        "teamColorId": 1,
+        "aliveTankCount": 5000
+      }
+    ],
+    "collisionCircleOverlapPairs": 0,
+    "outOfMap": 0,
+    "exitCode": 0,
+    "loadAndOneTickSeconds": 1.5253254999988712,
+    "allProcessChecksPassed": true,
+    "allObjectChecksPassed": true,
+    "canonicalOfficialTank": {
+      "query": "tank",
+      "resolver": "UnitTypeEnum.getUnitTypeByName (same MapObject unit-property route)",
+      "effectiveTypeClass": "com.corrodinggames.rts.game.units.custom.CustomUnitConfig",
+      "effectiveTypeName": "c_tank",
+      "sameIdentityAsBuiltinTankOverride": true,
+      "modInfoAbsent": true,
+      "activeModCount": 0,
+      "configPath": "units/tanks/tank.ini",
+      "sourceFilePath": "assets/units/tanks/tank.ini",
+      "parsedOverrideAndReplace": "tank",
+      "officialIni": "/Users/wty/code/RWXX/build/stress-scenes-20261103/ten-thousand-tanks-load-v3/assets/units/tanks/tank.ini",
+      "officialIniSha256": "96f6a51c07dadcdd811337a54f60b5058afb64c36678c77fa2d11a8a45af0432",
+      "officialIniMatchesFrozen1bccJar": true,
+      "provenancePassed": true,
+      "acceptanceUsesEffectiveTypeObjectIdentity": true
+    },
+    "rawObjectCount": {
+      "path": "/Users/wty/code/RWXX/build/stress-scenes-20261103/ten-thousand-tanks-load-v3/object-count.json",
+      "sha256": "8d6d1f61aebe16c40ab3883287ea711353ce34c5ce2b620281f408738d213882"
+    },
+    "process": {
+      "path": "/Users/wty/code/RWXX/build/stress-scenes-20261103/ten-thousand-tanks-load-v3/process-result.json",
+      "sha256": "6dd5eb3d4748cf949efae8483c423e9f3c47f0f914f9830d16c380d41f0c828b"
+    },
+    "priorVerifierFailuresPreserved": [
+      "ten-thousand-tanks-load-v1: checker assumed legacy enum instead of official builtin override",
+      "ten-thousand-tanks-load-v2: checker confused relative configPath with assets-prefixed sourceFilePath"
+    ],
+    "noUnitInjectionOrCapOrSpeedMutation": true,
+    "nominalCamera": {
+      "framebuffer": [
+        1792,
+        1008
+      ],
+      "zoom": 0.45,
+      "worldCenter": [
+        2240,
+        1440
+      ],
+      "sidebarAwareGeometryFitsAll10000": true
+    },
+    "fpsMeasured": false,
+    "actualGpu10000VisibleProven": false
+  },
+  "package": {
+    "path": "/Users/wty/code/RWXX/build/stress-scenes-20261103/Ten_Thousand_Tanks_5000v5000.zip",
+    "sha256": "bbaa2e7a0486fd02901d6ff6a08898075f951474d82a2e38ab7624879266c4eb"
+  },
+  "limits": "No real GPU10000-visible or FPS/combat proof; those remain performance-goal work."
+}

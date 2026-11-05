@@ -18,6 +18,12 @@ import de.fabmax.kool.util.Viewport
 import io.github.rwx.diagnostics.RuntimeDiagnostics
 import java.util.concurrent.atomic.AtomicInteger
 
+internal fun resolveMapNodeModelUpdatesOnly(value: String?): Boolean = value == "1"
+
+internal fun updateGpuTargetModelMatricesAfterReplay(node: Node, modelUpdatesOnly: Boolean) {
+    if (modelUpdatesOnly) node.updateModelMatRecursive()
+}
+
 /**
  * Render-thread owner of GPU offscreen targets (`RenderTargetMode.GPU_TARGET`).
  *
@@ -42,6 +48,9 @@ internal class KoolCanvasGpuTargetPasses(
     private val idlePassLimit: Int = IDLE_PASS_LIMIT,
 ) : AutoCloseable {
     private val directTargetTextures = System.getenv("RWX_DIRECT_TARGET_TEXTURES") == "1"
+    private val mapNodeModelUpdatesOnly = resolveMapNodeModelUpdatesOnly(System.getenv("RWX_MAP_NODE_MODEL_UPDATES_ONLY"))
+    private val sharedAtlasPixels = if (System.getenv("RWX_SHARE_MAP_ATLAS_PIXELS") != "0")
+        KoolCanvasAtlasPixelPool() else null
     private val sharedTextureMaterials = if (System.getenv("RWX_SHARE_MAP_TEXTURE_MATERIALS") == "1")
         KoolCanvasInstancedTextureMaterials() else null
     /**
@@ -413,6 +422,7 @@ internal class KoolCanvasGpuTargetPasses(
             useSpriteAtlas = !directTargetTextures,
             reuseInstancedTextureShaders = sharedTextureMaterials != null || System.getenv("RWX_REUSE_INSTANCED_TEXTURE_SHADERS") == "1")
         sharedTextureMaterials?.let(renderer::shareInstancedTextureMaterials)
+        sharedAtlasPixels?.let(renderer::shareAtlasPixels)
         val pass = OffscreenPass2d(
             drawNode = node,
             attachmentConfig = AttachmentConfig {
@@ -427,6 +437,10 @@ internal class KoolCanvasGpuTargetPasses(
             isMirrorY = false
             viewport = Viewport(0, 0, width, height)
             this.camera = camera
+            // Fixed for this fresh, private slot's whole lifetime. Its flat canvas meshes have no
+            // node callbacks / animation / picking, and canvas transforms are in their geometry.
+            // Bounds remain empty, so this path deliberately does not use Node's frustum culling.
+            isUpdateDrawNode = !mapNodeModelUpdatesOnly
         }
         val colour = checkNotNull(pass.colorTexture) { "GPU target pass has no colour attachment" }
         createdPasses++
@@ -434,7 +448,7 @@ internal class KoolCanvasGpuTargetPasses(
             supportReported = true
             // The A/B harness only accepts a GPU map cell run whose log states real offscreen support;
             // reaching this point is the proof, because the backend created the pass attachment.
-            println("RWXVulkanConfiguration gpuMapCellSupported=true singleMapCellRender=$singleRenderPerVersion shareMapTextureMaterials=${sharedTextureMaterials != null} directTargetTextures=$directTargetTextures")
+            println("RWXVulkanConfiguration gpuMapCellSupported=true singleMapCellRender=$singleRenderPerVersion shareMapTextureMaterials=${sharedTextureMaterials != null} directTargetTextures=$directTargetTextures shareMapAtlasPixels=${sharedAtlasPixels != null} mapNodeModelUpdatesOnly=${!pass.isUpdateDrawNode}")
         }
         val nearest = Texture2d(
             format = colour.format,
@@ -453,6 +467,9 @@ internal class KoolCanvasGpuTargetPasses(
                 slot.renderer.renderInto(slot.node, slot.camera, pending) { color ->
                     pass.colorAttachments.single().clearColor = color
                 }
+                // Newly created meshes also need a dirty model matrix for KslUnlitShader's model
+                // UBO, even when that matrix is identity. Keep this after every complete replay.
+                updateGpuTargetModelMatricesAfterReplay(slot.node, mapNodeModelUpdatesOnly)
                 // Retain the old cold-content compensation only as the controlled baseline. A net
                 // child count is not proof of GPU readiness, and queue retention is repaired separately.
                 if (!singleRenderPerVersion && slot.node.children.size > childrenBefore) {
@@ -499,6 +516,7 @@ internal class KoolCanvasGpuTargetPasses(
     override fun close() {
         if (closed) return
         closed = true
+        sharedAtlasPixels?.close()
         collectionDiagnostics?.close()
         rootScene = null
         pendingReleases.forEach { it.release() }
@@ -514,7 +532,8 @@ internal class KoolCanvasGpuTargetPasses(
         "gpuTargets[active=${installed.size} pooled=${idle.size} limit=$idlePassLimit]"
 
     private companion object {
-        private val singleRenderPerVersion = System.getenv("RWX_SINGLE_MAP_CELL_RENDER") == "1"
+        // Versioned map contents need one pass; 0 retains the previous redraw compensation.
+        private val singleRenderPerVersion = System.getenv("RWX_SINGLE_MAP_CELL_RENDER") != "0"
         /**
          * Idle passes are the GPU counterpart of the CPU target pixel pool: bounded so a long session
          * cannot grow attachments without limit, large enough that a zoom reset reusing the same cell

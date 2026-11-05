@@ -10,6 +10,8 @@ class CompactJfr {
         "jdk.GarbageCollection", "jdk.GCPhasePause", "jdk.ThreadPark", "jdk.ThreadSleep",
         "jdk.JavaMonitorEnter", "jdk.JavaMonitorWait", "jdk.FileWrite", "jdk.FileRead", "jdk.SafepointBegin",
         "jdk.SystemGC", "jdk.DirectBufferStatistics", "jdk.ObjectAllocationSample", "rwx.ClockSync",
+        "rwx.WindowlessGpuFrame", "jdk.ExecuteVMOperation", "jdk.SafepointStateSynchronization",
+        "jdk.SafepointCleanup", "jdk.SafepointCleanupTask", "jdk.SafepointEnd",
         // Per-thread CPU is the load-independent metric: wall clock on a busy desktop measures the
         // machine, not the build, and this session measured the same jar swinging between 66 and 231
         // presents per second.
@@ -68,6 +70,18 @@ class CompactJfr {
                     row.append(']');
                     for (String field : new String[] {"monoStart", "monoEnd", "epochMillis"}) {
                         row.append(',').append(quote(field)).append(':').append(event.getLong(field));
+                    }
+                    row.append('}');
+                } else if (type.equals("rwx.WindowlessGpuFrame")) {
+                    row.append(']');
+                    for (var field : event.getFields()) {
+                        String fieldName = field.getName();
+                        if (Set.of("startTime", "duration", "eventThread", "stackTrace").contains(fieldName)) continue;
+                        Object value = event.getValue(fieldName);
+                        if (value instanceof Number || value instanceof Boolean || value instanceof String) {
+                            row.append(',').append(quote(fieldName)).append(':')
+                               .append(value instanceof String ? quote((String) value) : value.toString());
+                        }
                     }
                     row.append('}');
                 } else if (type.equals("jdk.DirectBufferStatistics")) {

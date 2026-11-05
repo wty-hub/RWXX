@@ -1,0 +1,521 @@
+{
+  "date": "2026-11-02",
+  "applicationVersion": "1.4.3",
+  "kind": "true-windowless-production-gpu-diagnostic",
+  "goalComplete": false,
+  "officialComparisonMeasured": false,
+  "screenFpsMeasured": false,
+  "platform": "macOS ARM64 Apple M5, MoltenVK 1.2.11",
+  "scope": "Test-only memory window adapter and VK_EXT_headless_surface execute real Vulkan production host/offscreen submissions at a real 60 Hz limiter; no native game window/input/display measurement.",
+  "windowingEvidence": {
+    "adapter": "desktop/src/test/kotlin/io/github/rwx/kool/vulkan/HeadlessVulkanWindowSubsystem.kt",
+    "forbiddenWindowApisUsed": false,
+    "independentOsWindowOrForegroundMonitoring": false,
+    "headlessMoltenVkSourceCommit": "81541f6488c5feeace53867fc8ab612e578766da",
+    "moltenVkDylibSha1": "529d3f0cf2f50e8df3d0dd2ec5fe8b9230a037a0"
+  },
+  "fixtures": {
+    "map-cell": {
+      "flags": {
+        "RWX_RUN_WINDOWLESS_VULKAN_ORACLE": "1",
+        "RWX_GPU_MAP_CELL_TARGETS": "1",
+        "RWX_REAL_MAP_CELL_ORACLE": "1",
+        "RWX_GPU_MAP_CELL_ORACLE_MSAA": "4",
+        "MVK_CONFIG_SWITCH_SYSTEM_GPU": "0",
+        "MVK_CONFIG_AUTO_GPU_CAPTURE_SCOPE": "0",
+        "MVK_CONFIG_LOG_LEVEL": "2"
+      },
+      "hardTimeoutSeconds": 75,
+      "mode": "real-map-layer-gpu-pixel-correctness",
+      "performanceMeasurementsValid": false,
+      "surface": "VK_EXT_headless_surface",
+      "windowAdapter": "memory-only",
+      "exitCode": 0,
+      "elapsedSeconds": 3.844379125002888,
+      "originalPixelOracleSuccess": true,
+      "windowlessRunnerSuccess": true,
+      "passed": true,
+      "processEvidence": {
+        "path": "build/windowless-gpu-20261102/map-cell/result.json",
+        "sha256": "a3751aedb403153858d081e4ad56b384877f9eef10b518bbd3777799e755e0c8",
+        "bytes": 21571
+      },
+      "commandEvidence": {
+        "path": "build/windowless-gpu-20261102/map-cell/command.json",
+        "sha256": "eea9915a96edc574a90922d0b5b295c09a054f0d180722041ca41b185e1ed0e3",
+        "bytes": 21424
+      },
+      "stdout": {
+        "path": "build/windowless-gpu-20261102/map-cell/stdout.log",
+        "sha256": "bcf79f913624273be4b3f084880d60840ced7bc7242600365ca2549600285260",
+        "bytes": 12025
+      },
+      "fixtureChecks": 3844,
+      "tolerance": 3,
+      "texelsCompared": 3840,
+      "maxChannelDelta": 1,
+      "actualCellPassSamples": 1,
+      "contextAndSwapchainMsaaSamples": 4
+    },
+    "map-cell-direct": {
+      "flags": {
+        "RWX_RUN_WINDOWLESS_VULKAN_ORACLE": "1",
+        "RWX_GPU_MAP_CELL_TARGETS": "1",
+        "RWX_REAL_MAP_CELL_ORACLE": "1",
+        "RWX_GPU_MAP_CELL_ORACLE_MSAA": "4",
+        "MVK_CONFIG_SWITCH_SYSTEM_GPU": "0",
+        "MVK_CONFIG_AUTO_GPU_CAPTURE_SCOPE": "0",
+        "MVK_CONFIG_LOG_LEVEL": "2",
+        "RWX_DIRECT_TARGET_TEXTURES": "1"
+      },
+      "hardTimeoutSeconds": 75,
+      "performanceMeasurementsValid": false,
+      "oneChangedCandidate": "RWX_DIRECT_TARGET_TEXTURES=1",
+      "exitCode": 0,
+      "elapsedSeconds": 3.264789374996326,
+      "directTargetRuntimeConfirmed": true,
+      "leakedImageWarning": false,
+      "passed": true,
+      "processEvidence": {
+        "path": "build/windowless-gpu-20261102/map-cell-direct/result.json",
+        "sha256": "f5c21b8334dbb35ea0e0d265580a82f1312837b5a5839688cc67e9b959505c77",
+        "bytes": 21165
+      },
+      "commandEvidence": {
+        "path": "build/windowless-gpu-20261102/map-cell-direct/command.json",
+        "sha256": "26a5e3b46c4fbfe2769e952b6688c7c5d40e8ed8a5e1dc22f122bf34c68efe2c",
+        "bytes": 21020
+      },
+      "stdout": {
+        "path": "build/windowless-gpu-20261102/map-cell-direct/stdout.log",
+        "sha256": "031887577b1aad6191c7847ab1a1cd7eab58d43d4f4e6b8b1f139bce97f224b8",
+        "bytes": 12024
+      },
+      "fixtureChecks": 3844,
+      "tolerance": 3,
+      "texelsCompared": 3840,
+      "maxChannelDelta": 1,
+      "actualCellPassSamples": 1,
+      "contextAndSwapchainMsaaSamples": 4
+    }
+  },
+  "realReplay": {
+    "currentDefault512MiB": {
+      "flags": {
+        "RWX_RUN_WINDOWLESS_VULKAN_ORACLE": "1",
+        "RWX_RUN_REAL_REPLAY_WINDOWLESS_GPU": "1",
+        "RWX_GPU_MAP_CELL_TARGETS": "1",
+        "RWX_GPU_MAP_CELL_ORACLE_MSAA": "4",
+        "MVK_CONFIG_SWITCH_SYSTEM_GPU": "0",
+        "MVK_CONFIG_AUTO_GPU_CAPTURE_SCOPE": "0",
+        "MVK_CONFIG_LOG_LEVEL": "2"
+      },
+      "hardTimeoutSeconds": 120,
+      "profileOnly": true,
+      "screenFpsMeasurement": false,
+      "exitCode": 1,
+      "elapsedSeconds": 10.308264666004106,
+      "leakedImageWarning": false,
+      "processEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-default/process-result.json",
+        "sha256": "b932bcb14afb025be086e6dea73bfe1c2cd352733de2b42c8ce357f94145032f",
+        "bytes": 21529
+      },
+      "commandEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-default/command.json",
+        "sha256": "31f1ccb5079b1d6952ee079f2ce409454a0b09de64b7fd21fe2fe802a2bd18d4",
+        "bytes": 21441
+      },
+      "stdout": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-default/stdout.log",
+        "sha256": "0347b7e9865accf2b8b09c285ca5c4ba1b94ffb6629e53f9cd2d6b4b2d9086e1",
+        "bytes": 189754
+      }
+    },
+    "directCandidate512MiB": {
+      "flags": {
+        "RWX_RUN_WINDOWLESS_VULKAN_ORACLE": "1",
+        "RWX_RUN_REAL_REPLAY_WINDOWLESS_GPU": "1",
+        "RWX_GPU_MAP_CELL_TARGETS": "1",
+        "RWX_GPU_MAP_CELL_ORACLE_MSAA": "4",
+        "MVK_CONFIG_SWITCH_SYSTEM_GPU": "0",
+        "MVK_CONFIG_AUTO_GPU_CAPTURE_SCOPE": "0",
+        "MVK_CONFIG_LOG_LEVEL": "2",
+        "RWX_DIRECT_TARGET_TEXTURES": "1"
+      },
+      "hardTimeoutSeconds": 120,
+      "profileOnly": true,
+      "screenFpsMeasurement": false,
+      "oneChangedCandidate": "RWX_DIRECT_TARGET_TEXTURES=1",
+      "exitCode": 0,
+      "elapsedSeconds": 11.630438042004243,
+      "leakedImageWarning": false,
+      "directTargetRuntimeConfirmed": true,
+      "processEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-direct/process-result.json",
+        "sha256": "97b46774bdb5dd44101a8bce7f54ee9a63c76c0d3545009b13794b43c4892035",
+        "bytes": 21660
+      },
+      "commandEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-direct/command.json",
+        "sha256": "b3b2bcc0bc1b479d1ed0b9eaf14b68c896d48db282574d3612dadb66638bffe7",
+        "bytes": 21532
+      },
+      "stdout": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-direct/stdout.log",
+        "sha256": "9960d7235742bec617003aa8b9e911e422983f5cba9e5c4d8007e0ab723aac46",
+        "bytes": 190441
+      },
+      "capture": {
+        "kind": "real-replay-production-windowless-gpu-diagnostic",
+        "completed": true,
+        "profileOnly": true,
+        "screenFpsMeasurement": false,
+        "performanceClaim": "none",
+        "pixelCorrectnessVerified": false,
+        "surface": "VK_EXT_headless_surface",
+        "windowAdapter": "memory-only",
+        "frameLimitHz": 60,
+        "replay": "/Users/wty/code/RWXX/build/windowless-gpu-20261102/real-replay-pan-zoom-direct/sandbox/replays/bridges-fixed.replay",
+        "replaySha256": "d19b132ec8866f87496b3c1c91627e7ef35a99b1627e2a9550f74c0e0e57f6d1",
+        "assetRoot": "/Users/wty/code/RWXX/assets",
+        "tankSha256": "ba7a15e3d4c8f406ad4f8257716b2355003c0324e935d5633260e2a29944dca3",
+        "fontMetadataSha256": "85cc85ca6e75e283e1651c524bf3e6223cdc864485d8c0c37786b95aad4d159b",
+        "fontAtlasSha256": "153bbd9c6a49fb69e8efaf3c0de4182f436d41830f82a26fa4cd4915b2eb48bb",
+        "fontGpuAtlasUploaded": true,
+        "mode": "pan-zoom",
+        "warmupFrames": 120,
+        "frames": 240,
+        "requestedReplayFog": true,
+        "fontGlyphs": 7656,
+        "cameraTape": "frame index/60; 20-second diagonal pan, 4-second constrained 0.35-1.5 zoom; same tape as CPU capture",
+        "requestedSeekTick": 6000,
+        "preAdvanceFrames": 11990,
+        "captureStartTick": 6000,
+        "lastTick": 6180,
+        "generatedSequence": 360,
+        "adoptedSequence": 360,
+        "fenceCompletedSequence": 360,
+        "gpuTargets": "gpuTargets[active=6 pooled=26 limit=32]",
+        "gpuTargetInstalls": 168,
+        "gpuTargetRenderCallbacks": 411,
+        "nativeSubmissionsAfterSceneInstalled": 364,
+        "recordedGpuTargetResources": 2760,
+        "pendingRetirementsAfterDeviceIdle": 0,
+        "readback": false,
+        "fixtureUnitsInjected": false,
+        "simulationStep": "ordinary gameLoop(1f,17), 1x; one draw per step",
+        "limitations": "Fixed 60Hz true-windowless diagnostic only. Host adoption is CPU state; fenceCompletedSequence covers prior real Vulkan submissions. No readback/pixel validation, screen presentation/FPS, input latency, or official-build equivalence. JSON/scalar inspection perturbs CPU timing; all rows retained including cold-target preparation and drain callbacks."
+      },
+      "captureEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-direct/capture/result.json",
+        "sha256": "082e974c3cab6134d7ee80c75f09c4e207c7602e6bb36c81b0772a51cda2c079",
+        "bytes": 2114
+      }
+    },
+    "ordinaryScene": true,
+    "fixtureUnitsInjected": false,
+    "sampleScene": {
+      "units": [
+        90,
+        93
+      ],
+      "visibleUnits": [
+        31,
+        92
+      ],
+      "movingUnits": [
+        0,
+        2
+      ],
+      "zoom": [
+        0.45,
+        1.5
+      ],
+      "fogDisplay": true,
+      "seekTick": 6000
+    },
+    "interpretation": "Current per-slot atlas path failed with Java heap OOM at a real 2048x2048 RGBA page allocation. Direct candidate completed 360 generated/adopted/fence-completed frames at the same 512 MiB cap. This is memory feasibility, not FPS or a wall-clock speedup comparison.",
+    "rootCauseEvidence": {
+      "pageBytes": 16777216,
+      "defaultPooledSlots": 32,
+      "allocation": "KoolCanvasSpriteAtlas.Page.rgbaPixels is renderer-owned, each offscreen slot owns a renderer; pages and upload owners can remain in pooled slots."
+    }
+  },
+  "realCellCorrectness": {
+    "result": {
+      "correctnessOnly": true,
+      "performanceInvalid": true,
+      "completed": true,
+      "passed": false,
+      "sequence": 300,
+      "simulationTick": 6150,
+      "tolerance": 3,
+      "contextMsaaSamples": 4,
+      "directTargetTexturesVerified": true,
+      "expectedCells": 6,
+      "comparedCells": 6,
+      "checkedPixels": 1572864,
+      "mismatches": 215,
+      "maxChannelDelta": 64,
+      "referenceAtlasPages": 4,
+      "referenceAtlasMeshes": 4,
+      "referenceUploadedAtlasTextures": 4,
+      "referenceRenderedGpuAtlasMeshes": 4,
+      "cells": [
+        {
+          "id": "legacy-texture-47/cpu-1-v1029/gpu-132",
+          "width": 512,
+          "height": 512,
+          "commands": 2696,
+          "slotVersion": "legacy-texture-47/cpu-1-v1029/gpu-132",
+          "logicalId": "legacy-texture-47",
+          "installedSlotAliases": [
+            "legacy-texture-47/cpu-1-v1029/gpu-132"
+          ],
+          "recordedFrameMatchesFrozen": true,
+          "hostAttachmentIdentityVerified": true,
+          "checkedPixels": 262144,
+          "mismatches": 0,
+          "maxChannelDelta": 0,
+          "actualSamples": 1,
+          "referenceSamples": 1,
+          "referenceAtlasPages": 1,
+          "referenceAtlasMeshes": 1,
+          "referenceUploadedAtlasTextures": 1,
+          "referenceRenderedGpuAtlasMeshes": 1
+        },
+        {
+          "id": "legacy-texture-49/cpu-1-v1030/gpu-133",
+          "width": 512,
+          "height": 512,
+          "commands": 2966,
+          "slotVersion": "legacy-texture-49/cpu-1-v1030/gpu-133",
+          "logicalId": "legacy-texture-49",
+          "installedSlotAliases": [
+            "legacy-texture-49/cpu-1-v1030/gpu-133"
+          ],
+          "recordedFrameMatchesFrozen": true,
+          "hostAttachmentIdentityVerified": true,
+          "checkedPixels": 262144,
+          "mismatches": 33,
+          "maxChannelDelta": 31,
+          "actualSamples": 1,
+          "referenceSamples": 1,
+          "referenceAtlasPages": 1,
+          "referenceAtlasMeshes": 1,
+          "referenceUploadedAtlasTextures": 1,
+          "referenceRenderedGpuAtlasMeshes": 1
+        },
+        {
+          "id": "legacy-texture-57/cpu-1-v1031/gpu-134",
+          "width": 512,
+          "height": 512,
+          "commands": 2746,
+          "slotVersion": "legacy-texture-57/cpu-1-v1031/gpu-134",
+          "logicalId": "legacy-texture-57",
+          "installedSlotAliases": [
+            "legacy-texture-57/cpu-1-v1031/gpu-134"
+          ],
+          "recordedFrameMatchesFrozen": true,
+          "hostAttachmentIdentityVerified": true,
+          "checkedPixels": 262144,
+          "mismatches": 97,
+          "maxChannelDelta": 44,
+          "actualSamples": 1,
+          "referenceSamples": 1,
+          "referenceAtlasPages": 1,
+          "referenceAtlasMeshes": 1,
+          "referenceUploadedAtlasTextures": 1,
+          "referenceRenderedGpuAtlasMeshes": 1
+        },
+        {
+          "id": "legacy-texture-59/cpu-1-v1032/gpu-135",
+          "width": 512,
+          "height": 512,
+          "commands": 3039,
+          "slotVersion": "legacy-texture-59/cpu-1-v1032/gpu-135",
+          "logicalId": "legacy-texture-59",
+          "installedSlotAliases": [
+            "legacy-texture-59/cpu-1-v1032/gpu-135"
+          ],
+          "recordedFrameMatchesFrozen": true,
+          "hostAttachmentIdentityVerified": true,
+          "checkedPixels": 262144,
+          "mismatches": 85,
+          "maxChannelDelta": 64,
+          "actualSamples": 1,
+          "referenceSamples": 1,
+          "referenceAtlasPages": 1,
+          "referenceAtlasMeshes": 1,
+          "referenceUploadedAtlasTextures": 1,
+          "referenceRenderedGpuAtlasMeshes": 1
+        },
+        {
+          "id": "legacy-texture-67/cpu-1-v1033/gpu-136",
+          "width": 512,
+          "height": 512,
+          "commands": 1067,
+          "slotVersion": "legacy-texture-67/cpu-1-v1033/gpu-136",
+          "logicalId": "legacy-texture-67",
+          "installedSlotAliases": [
+            "legacy-texture-67/cpu-1-v1033/gpu-136"
+          ],
+          "recordedFrameMatchesFrozen": true,
+          "hostAttachmentIdentityVerified": true,
+          "checkedPixels": 262144,
+          "mismatches": 0,
+          "maxChannelDelta": 0,
+          "actualSamples": 1,
+          "referenceSamples": 1,
+          "referenceAtlasPages": 0,
+          "referenceAtlasMeshes": 0,
+          "referenceUploadedAtlasTextures": 0,
+          "referenceRenderedGpuAtlasMeshes": 0
+        },
+        {
+          "id": "legacy-texture-69/cpu-1-v1034/gpu-137",
+          "width": 512,
+          "height": 512,
+          "commands": 1154,
+          "slotVersion": "legacy-texture-69/cpu-1-v1034/gpu-137",
+          "logicalId": "legacy-texture-69",
+          "installedSlotAliases": [
+            "legacy-texture-69/cpu-1-v1034/gpu-137"
+          ],
+          "recordedFrameMatchesFrozen": true,
+          "hostAttachmentIdentityVerified": true,
+          "checkedPixels": 262144,
+          "mismatches": 0,
+          "maxChannelDelta": 0,
+          "actualSamples": 1,
+          "referenceSamples": 1,
+          "referenceAtlasPages": 0,
+          "referenceAtlasMeshes": 0,
+          "referenceUploadedAtlasTextures": 0,
+          "referenceRenderedGpuAtlasMeshes": 0
+        }
+      ],
+      "scope": "Frozen real map-cell attachments only; no final-screen correctness or FPS claim"
+    },
+    "evidence": {
+      "path": "build/windowless-gpu-20261102/real-replay-cell-reference-300-v2/capture/cell-reference.json",
+      "sha256": "2a856c799d90244ff4b645b268821e38e2e8aafb6447b229a1d236868797492b",
+      "bytes": 3684
+    },
+    "process": {
+      "exitCode": 1,
+      "timedOut": false,
+      "elapsedSeconds": 12.142888541988214,
+      "flags": {
+        "RWX_RUN_WINDOWLESS_VULKAN_ORACLE": "1",
+        "RWX_RUN_REAL_REPLAY_WINDOWLESS_GPU": "1",
+        "RWX_GPU_MAP_CELL_TARGETS": "1",
+        "RWX_GPU_MAP_CELL_ORACLE_MSAA": "4",
+        "MVK_CONFIG_SWITCH_SYSTEM_GPU": "0",
+        "MVK_CONFIG_AUTO_GPU_CAPTURE_SCOPE": "0",
+        "MVK_CONFIG_LOG_LEVEL": "2",
+        "RWX_DIRECT_TARGET_TEXTURES": "1",
+        "RWX_REAL_REPLAY_CELL_REFERENCE": "1"
+      },
+      "correctnessOnly": true,
+      "performanceInvalid": true,
+      "processEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-cell-reference-300-v2/process-result.json",
+        "sha256": "482c702cfc6edc6245591a49889c61bd47d36ffc3ab7d5b64c6c954daa5df10c",
+        "bytes": 21512
+      },
+      "commandEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-cell-reference-300-v2/command.json",
+        "sha256": "68958e4e0779a21e439741829b8b5cd92c20c91656fa3d9575be1eaa5a558f6b",
+        "bytes": 21793
+      },
+      "stdout": {
+        "path": "build/windowless-gpu-20261102/real-replay-cell-reference-300-v2/stdout.log",
+        "sha256": "5871174de79e67d8b05c6449b11b238d450b4fcdac64987252a7fa9821d67acd",
+        "bytes": 198459
+      }
+    },
+    "gatePassed": false,
+    "interpretation": "6 actual frozen 512x512 map-cell attachments were compared to independent atlas renderers, with strict version/frame/registry/attachment guards. 215 of 1572864 pixels exceeded channel tolerance 3, max delta 64. All differences localized to nearest-sampled 200x40 scorch texture integer source-texel boundaries; this diagnosis is not an exact-equality pass.",
+    "candidateDefaultChanged": false,
+    "retainedEarlierFailure": {
+      "path": "build/windowless-gpu-20261102/real-replay-cell-reference-300/capture/failure.txt",
+      "reason": "Test reflection compared an unboxed JVM String against boxed inline texture ID. Fixed in test helper only; initial run compared zero pixels."
+    },
+    "secondPlanned360RunExecuted": false,
+    "boundaryAnalysis": {
+      "report": {
+        "path": "build/windowless-gpu-20261102/real-replay-cell-reference-300-v2/nearest-boundary-analysis.json",
+        "sha256": "5523595c6c7c3166e682be336cf3ca99511e75cc407d915a6a45d9b64a7d6db2"
+      },
+      "script": {
+        "path": "build/windowless-gpu-20261102/real-replay-cell-reference-300-v2/analyze-nearest-boundaries.py",
+        "sha256": "d4fe66238a456f1a578d7131388ee47d735e8a5c15cf1ee3fbdc6383bba74670"
+      },
+      "observation": "All 215 differences map to integer source-texel boundaries of the same Nearest scorch texture; output-alpha mismatches0.",
+      "modelLimitation": "Adjacent source-alpha selection can explain both outputs with inferred common background (max RGB fitting error1). This explanatory model did not independently capture actual GPU texel selection and is not a pixel-equality or relaxed-tolerance pass."
+    },
+    "postRunCompiledProvenance": {
+      "path": "build/windowless-gpu-20261102/real-replay-cell-reference-300-v2/compiled-provenance.json",
+      "sha256": "8583f3794b941d326b0bd46f626fb55b0377202b40e7d09e50edb959889e1121"
+    }
+  },
+  "testHarnessCleanup": {
+    "initialSmokeImageLeaks": 4,
+    "laterSmokeAfterHarnessOnlyCleanupImageLeaks": 0,
+    "productionCleanupChanged": false
+  },
+  "limitations": [
+    "No display FPS, physical input, original-vs-RWXX timing or ten-minute continuity proof.",
+    "Real scene has few moving units, not dense combat.",
+    "Readback correctness mode is performance-invalid.",
+    "Context MSAA4 does not mean map-cell passes MSAA4; actual cell pass samples are1.",
+    "Direct candidate remains default OFF; nearest-texel boundary differences are retained and not hidden by relaxing tolerance."
+  ],
+  "packageAcceptance": {
+    "artifact": {
+      "path": "desktop/build/distributions/RWXX-1.4.3-macos-arm64-desktop.zip",
+      "sha256": "eb93e9a4aa36de2a543e6f8a189ee4b7aa96dac9d344b59096b677061ca32fa4",
+      "bytes": 162208637
+    },
+    "jar": {
+      "path": "desktop/build/libs/RWXX-1.4.3-macos-arm64.jar",
+      "sha256": "0dfcacdd910fa15ffd9e70c60ee476e13368184dc389f926b2211f3d92e0ba20",
+      "bytes": 125271041
+    },
+    "qualifiedReport": {
+      "path": "build/real-release-20261102/mac-jni/qualified-acceptance.json",
+      "sha256": "0bf0d58e4010599354db8fdf4fe0e17da4507375fc43cd0e8efcbcfdf9dfe48f",
+      "bytes": 14678
+    },
+    "scope": "Version/CRC/class equivalence/codesign and real bundled-JVM 120-tick headless map execution. No native GUI launcher/FPS acceptance."
+  },
+  "sources": [
+    {
+      "path": "desktop/src/test/kotlin/io/github/rwx/kool/vulkan/HeadlessVulkanWindowSubsystem.kt",
+      "sha256": "061a938a48e1916455c06eb6539db6a72be9a8d476e699ab615a32227c5691b7",
+      "bytes": 5652
+    },
+    {
+      "path": "desktop/src/test/kotlin/io/github/rwx/kool/vulkan/WindowlessKoolGpuOracle.kt",
+      "sha256": "589a6942a07cda7fc898958d5b8108e449c14a6d7e699c3a5864761590a0dc0f",
+      "bytes": 7536
+    },
+    {
+      "path": "desktop/src/test/java/io/github/rwx/kool/vulkan/WindowlessKoolBridge.java",
+      "sha256": "555e273f8448f75209ab1fdceb1908394fca72c15439077eb20f836d7e45f086",
+      "bytes": 704
+    },
+    {
+      "path": "desktop/src/test/kotlin/io/github/rwx/benchmark/RealReplayWindowlessGpuOracle.kt",
+      "sha256": "43e2b94d3725df56ac889a8c12b79e39e2723f3a9971a40bb04416cffd1b40b4",
+      "bytes": 27178
+    },
+    {
+      "path": "desktop/src/test/kotlin/io/github/rwx/benchmark/RealReplayCellReference.kt",
+      "sha256": "e9b7b14d9e9ac4dec890536406530306f14082aff2b59b5aad637bbf6f7b33e1",
+      "bytes": 13958
+    }
+  ]
+}

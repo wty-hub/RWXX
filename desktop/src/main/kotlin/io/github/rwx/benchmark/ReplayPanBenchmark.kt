@@ -34,7 +34,7 @@ object ReplayPanBenchmark {
         require(requestedMode in setOf("pan", "jump", "edge-jump", "pan-zoom", "static")) { "Camera mode must be pan, jump, edge-jump, pan-zoom or static" }
         val mode = if (requestedMode == "pan-zoom") "pan" else requestedMode
         val zoomMode = environment["RWX_REPLAY_PAN_ZOOM_MODE"] ?: if (requestedMode == "pan-zoom") "cycle" else "none"
-        require(zoomMode == "none" || zoomMode == "cycle") { "Zoom mode must be none or cycle" }
+        require(zoomMode in setOf("none", "fixed", "cycle")) { "Zoom mode must be none, fixed or cycle" }
         require(requestedMode != "pan-zoom" || zoomMode == "cycle") { "pan-zoom requires cycle zoom" }
         fun number(name: String, default: Int, minimum: Int = 1): Int {
             val raw = environment[name] ?: return default
@@ -49,7 +49,7 @@ object ReplayPanBenchmark {
         }
         val zoomMinimum = zoomNumber("RWX_REPLAY_PAN_ZOOM_MIN", .35f)
         val zoomMaximum = zoomNumber("RWX_REPLAY_PAN_ZOOM_MAX", 1.5f)
-        require(zoomMaximum > zoomMinimum) { "Zoom maximum must exceed minimum" }
+        require(zoomMode == "fixed" || zoomMaximum > zoomMinimum) { "Zoom maximum must exceed minimum" }
         val localFogMode = if (mapOutput != null) when (environment["RWX_BENCHMARK_FOG"]) {
             null -> null; "off" -> 0; "on" -> 2
             else -> error("Local benchmark fog must be off or on")
@@ -181,9 +181,12 @@ object ReplayPanBenchmark {
                 put("repetitions", options.repetitions); put("cameraPeriodSeconds", options.cameraPeriodSeconds)
                 put("zoomMode", options.zoomMode); put("zoomPeriodSeconds", options.zoomPeriodSeconds)
                 put("zoomRequestedMinimum", options.zoomMinimum); put("zoomRequestedMaximum", options.zoomMaximum)
-                put("zoomRules", if (options.zoomMode == "cycle")
-                    "Smooth targetZoom cycle 1 -> minimum -> maximum -> 1; constrained to ordinary UI bounds; ordinary game loop applies density scale and camera update"
-                    else "Preserve ordinary replay zoom; no benchmark zoom writes")
+                put("densityZoomScale", engine.densityZoomScale)
+                put("zoomRules", when (options.zoomMode) {
+                    "cycle" -> "Smooth targetZoom cycle 1 -> minimum -> maximum -> 1; constrained to ordinary UI bounds; ordinary game loop applies density scale and camera update"
+                    "fixed" -> "Constant targetZoom uses zoom-min; zoom-max is unused; constrained to ordinary UI bounds; ordinary game loop applies density scale and camera update"
+                    else -> "Preserve ordinary replay zoom; no benchmark zoom writes"
+                })
                 put("cameraTraceEnabled", options.cameraTrace != null)
                 put("cameraTraceObservation", "Owner observation before the ordinary game loop: actualZoom is the last applied zoom; requestedTargetZoom is the next constrained request")
                 put("cameraRequestedAmplitude", PAN_AMPLITUDE)
@@ -226,8 +229,8 @@ object ReplayPanBenchmark {
         val zoomPeriodNanos = options.zoomPeriodSeconds * SECOND
         val zoomPhase = ((now - startedAt) % zoomPeriodNanos).toDouble() / zoomPeriodNanos
         val observedTargetZoom = engine.targetZoom
-        val requestedTargetZoom = if (options.zoomMode == "cycle") {
-            constrainedTargetZoom(cycleZoom(zoomPhase, options.zoomMinimum, options.zoomMaximum),
+        val requestedTargetZoom = if (options.zoomMode == "cycle" || options.zoomMode == "fixed") {
+            constrainedTargetZoom(scriptedTargetZoom(options.zoomMode, zoomPhase, options.zoomMinimum, options.zoomMaximum, observedTargetZoom),
                 engine.currentScreenWidthPixels, engine.currentScreenHeightPixels,
                 engine.tileMap.worldWidth, engine.tileMap.worldHeight, engine.densityZoomScale)
                 .also { engine.targetZoom = it }
@@ -321,6 +324,7 @@ object ReplayPanBenchmark {
             put("cameraSpanX", cameraMaximumX - cameraMinimumX); put("cameraSpanY", cameraMaximumY - cameraMinimumY)
             put("cameraPeriodSeconds", options.cameraPeriodSeconds)
             put("zoomMode", options.zoomMode); put("zoomPeriodSeconds", options.zoomPeriodSeconds)
+            put("densityZoomScale", engine.densityZoomScale)
             put("actualZoomMinimum", actualZoomMinimum); put("actualZoomMaximum", actualZoomMaximum)
             put("actualZoomEnd", engine.zoom); put("requestedTargetZoomEnd", requestedTargetZoom)
             put("zoomStartPhaseSeconds", ((sampleStart - startedAt) % zoomPeriodNanos).toDouble() / SECOND)
@@ -337,6 +341,14 @@ object ReplayPanBenchmark {
             cameraTrace?.close()
             cameraTrace = null
         }
+    }
+
+    /** Harness-only request selection. None preserves ordinary zoom; fixed uses zoom-min exactly. */
+    internal fun scriptedTargetZoom(mode: String, phase: Double, minimum: Float, maximum: Float, ordinaryTarget: Float): Float = when (mode) {
+        "none" -> ordinaryTarget
+        "fixed" -> minimum
+        "cycle" -> cycleZoom(phase, minimum, maximum)
+        else -> error("Unknown benchmark zoom mode: $mode")
     }
 
     /** A complete smooth cycle starts and ends at ordinary zoom 1, limited to the requested range. */

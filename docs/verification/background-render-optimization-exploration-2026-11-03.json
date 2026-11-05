@@ -1,0 +1,246 @@
+{
+  "date": "2026-11-03",
+  "version": "1.4.3",
+  "goalComplete": false,
+  "status": "exploration-complete-owner-default-package-and-actual-default-verified",
+  "protocol": "Each independent pair: same frozen64a96 runtime, owner explicitly1, actual1280x720/MSAA4/target120/vsyncOFF, same d19 replay ordinary1x, pan20/zoom4,20s warm+20s sample, real inactive visible window on CGVirtualDisplay; no performance pooling across pairs.",
+  "ownerDefaultChange": {
+    "sourceDefaultOn": true,
+    "packagedAcceptanceAtThisRecord": "Complete in separate owner-default-adoption record: new904061 platform/f526ZIP,32package+8post gates; actual unoverridden background default verified. Historical artifacts/results preserved.",
+    "scope": "Only resolveStableOwnerFrameDeadlines default; actual-delta/runloop/FIFO/lifetime and renderer unchanged. Explicit owner0 or fallback global0 retain legacy policy.",
+    "reason": "Owner source cumulative phase corrects small wake-up drift. Independent CPU ABBA, actual automatic-owner GPU correctness, and prior background supply gain support partial adoption; remaining stutter has not been solved.",
+    "compatibility": "core490 tests(1skip),desktop148 tests,0 failures/errors; actual owner GPU cells exactmaxDelta0 and final fence/lease/retirement gates passed in separate evidence.",
+    "regressionLog": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/owner-default-regression.log",
+      "sha256": "c7fc8644b4efe419c7fd806513cd1c4ada41e35700c24190a7321f697b8c99c7"
+    },
+    "priorBackgroundOwnerPair": {
+      "path": "/Users/wty/code/RWXX/docs/verification/background-owner-deadline-pair-2026-11-03.json",
+      "sha256": "6fa2fd034d1fa4086af4fcf3b261ac2e89c96397621ef73d942140e3df940773"
+    },
+    "automaticOwnerGpu": {
+      "path": "/Users/wty/code/RWXX/docs/verification/owner-gpu-compatibility-2026-11-03.json",
+      "sha256": "0fdf209d0c47d017b451099f5ddf969242b8232d3fa60de05a2a4989c1da1afc"
+    },
+    "benchmarkProtocolNote": "With the new defaultON package, missing --stable-owner-deadlines no longer means OFF. Future OFF arms must explicitly set owner=0; existing frozen64a96 OFF arm remains correct."
+  },
+  "explorations": {
+    "renderer-pair-v1": {
+      "onlyTreatment": "renderer stable-deadline unset versus1",
+      "defaultCandidateAdopted": false,
+      "decision": "Keep renderer stable deadlines defaultOFF; candidate fresh cadence lower and tails worse.",
+      "arms": {
+        "control-off": {
+          "validBackgroundGate": true,
+          "exitCode": 0,
+          "metrics": {
+            "engineFps": 119.82314593146562,
+            "acceptedPresentFps": 118.91752139520344,
+            "freshSnapshotHz": 115.918340527733,
+            "repeatRatio": 0.025220680958385876,
+            "freshSnapshotIntervalP99Ms": 16.847,
+            "freshSnapshotIntervalMaxMs": 35.239417,
+            "freshSnapshotIntervalsOver33_333Ms": 1,
+            "freshSnapshotIntervalsOver50Ms": 0
+          },
+          "summary": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/renderer-pair-v1/control-off/run/diagnostic-summary.json",
+            "sha256": "ceff01d8c4863b02f712dfcc9a51669d950479725402f7b645c9ecd2304f7295"
+          },
+          "execution": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/renderer-pair-v1/control-off/target-execution-result.json",
+            "sha256": "1c15a1d623a762b5a6ea243d151d58f8737ddb5e090b8a81331e7a77b526d3ea"
+          },
+          "backgroundGate": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/renderer-pair-v1/control-off/background-gate.json",
+            "sha256": "e3eb8c5209aca7d75351e19f297e8e63a74157321078d37c7c5fc35c82983294"
+          }
+        },
+        "candidate-on": {
+          "validBackgroundGate": true,
+          "exitCode": 0,
+          "metrics": {
+            "engineFps": 119.08358931505629,
+            "acceptedPresentFps": 117.70702418261727,
+            "freshSnapshotHz": 112.30899504812783,
+            "repeatRatio": 0.045859872611464965,
+            "freshSnapshotIntervalP99Ms": 20.053292,
+            "freshSnapshotIntervalMaxMs": 61.702167,
+            "freshSnapshotIntervalsOver33_333Ms": 5,
+            "freshSnapshotIntervalsOver50Ms": 2
+          },
+          "summary": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/renderer-pair-v1/candidate-on/run/diagnostic-summary.json",
+            "sha256": "1049ef3b4535bfa8933fd31f9b5b245bdb64e5cb6e646f963c783d3a38f6ec13"
+          },
+          "execution": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/renderer-pair-v1/candidate-on/target-execution-result.json",
+            "sha256": "bae8c2ac0f020eff8611497fee724f59d1fd9b4f0a0c93a53499285954d0a743"
+          },
+          "backgroundGate": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/renderer-pair-v1/candidate-on/background-gate.json",
+            "sha256": "c5400e0aac3f583d2223a2c46ed873df8fb4ef0546777542d4e1ac86d3db1433"
+          }
+        }
+      },
+      "independentReview": {
+        "path": "/Users/wty/code/RWXX/build/background-display-20261103/renderer-pair-independent-review/delivery.json",
+        "sha256": "8ebd1d8eb9aff64f27ad2023db0fefb00e737bfd0f5cc28ca99c4abb0929f83e"
+      }
+    },
+    "gc-pair-v1": {
+      "onlyTreatment": "JVM UseG1GC versusUseZGC; actual collector names observed",
+      "defaultCandidateAdopted": false,
+      "decision": "Keep default G1; candidate averages/P99 worse and max better: mixed single-pair result.",
+      "arms": {
+        "control-off": {
+          "validBackgroundGate": true,
+          "exitCode": 0,
+          "metrics": {
+            "engineFps": 119.99309852272367,
+            "acceptedPresentFps": 117.5260753637458,
+            "freshSnapshotHz": 114.0267877093595,
+            "repeatRatio": 0.029774564015312633,
+            "freshSnapshotIntervalP99Ms": 19.583334,
+            "freshSnapshotIntervalMaxMs": 46.081083,
+            "freshSnapshotIntervalsOver33_333Ms": 2,
+            "freshSnapshotIntervalsOver50Ms": 0
+          },
+          "summary": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/gc-pair-v1/control-off/run/diagnostic-summary.json",
+            "sha256": "782ec6542ae964453b199579aa12dfecde35fc9766d741b3ce3030bfd95ca0d1"
+          },
+          "execution": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/gc-pair-v1/control-off/target-execution-result.json",
+            "sha256": "e208ee52a14628c07eb8d2457d5e6095984258c2671fdb73aae480095f39f898"
+          },
+          "backgroundGate": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/gc-pair-v1/control-off/background-gate.json",
+            "sha256": "497b99c95aa77b9f6fc1910cc19929e60d734329be452c5e60e4bb359f4e976c"
+          }
+        },
+        "candidate-on": {
+          "validBackgroundGate": true,
+          "exitCode": 0,
+          "metrics": {
+            "engineFps": 119.74019176788613,
+            "acceptedPresentFps": 116.1070299957117,
+            "freshSnapshotHz": 112.85823234193587,
+            "repeatRatio": 0.027981058975462762,
+            "freshSnapshotIntervalP99Ms": 21.383625,
+            "freshSnapshotIntervalMaxMs": 41.799875,
+            "freshSnapshotIntervalsOver33_333Ms": 2,
+            "freshSnapshotIntervalsOver50Ms": 0
+          },
+          "summary": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/gc-pair-v1/candidate-on/run/diagnostic-summary.json",
+            "sha256": "e3c81869417055eb319ab942463a7f4e7e6d3bd0ecd49b2418448cb5c6a16921"
+          },
+          "execution": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/gc-pair-v1/candidate-on/target-execution-result.json",
+            "sha256": "bedc5ab22c296167048806f81d3803ace5aee371041fa1f497f44ddf74ac1cf7"
+          },
+          "backgroundGate": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/gc-pair-v1/candidate-on/background-gate.json",
+            "sha256": "db7944c6caa47eb3920755e5f37edbcd1c3dd2053e49f5e3ad167b11fd654b7c"
+          }
+        }
+      },
+      "independentReview": {
+        "path": "/Users/wty/code/RWXX/build/background-display-20261103/gc-pair-independent-review/delivery.json",
+        "sha256": "687798938e9ed33c021c22ae9ac3a690d42c8dc648ca60813745058ffce47009"
+      }
+    },
+    "shader-pair-v1": {
+      "onlyTreatment": "RWX_REUSE_INSTANCED_TEXTURE_SHADERS absent versus1",
+      "defaultCandidateAdopted": false,
+      "decision": "Keep shader reuse defaultOFF for now; one pair has small fresh/P99 gains but max regression, no MSAA4 cross-mesh exact-pixel acceptance.",
+      "arms": {
+        "control-off": {
+          "validBackgroundGate": true,
+          "exitCode": 0,
+          "metrics": {
+            "engineFps": 119.68170937128524,
+            "acceptedPresentFps": 117.01333704189936,
+            "freshSnapshotHz": 112.66469956960323,
+            "repeatRatio": 0.037163605296881674,
+            "freshSnapshotIntervalP99Ms": 18.907583,
+            "freshSnapshotIntervalMaxMs": 39.715083,
+            "freshSnapshotIntervalsOver33_333Ms": 4,
+            "freshSnapshotIntervalsOver50Ms": 0
+          },
+          "summary": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/shader-pair-v1/control-off/run/diagnostic-summary.json",
+            "sha256": "c05c6f1e274fdb27fe6892c295fb834b0de020aae15e2dba75fc9d93848a31b8"
+          },
+          "execution": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/shader-pair-v1/control-off/target-execution-result.json",
+            "sha256": "5ee4ba594d28e25a50e7050aedc3af493d87953800257cf30f6f5792a807a372"
+          },
+          "backgroundGate": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/shader-pair-v1/control-off/background-gate.json",
+            "sha256": "53f4e49357ec9a2ccef24ffab24c14a3ef173136f742b2914727f232bf549ce7"
+          }
+        },
+        "candidate-on": {
+          "validBackgroundGate": true,
+          "exitCode": 0,
+          "metrics": {
+            "engineFps": 119.57225511815051,
+            "acceptedPresentFps": 117.4607397285429,
+            "freshSnapshotHz": 114.46174211845245,
+            "repeatRatio": 0.02553191489361702,
+            "freshSnapshotIntervalP99Ms": 17.887833,
+            "freshSnapshotIntervalMaxMs": 42.883916,
+            "freshSnapshotIntervalsOver33_333Ms": 1,
+            "freshSnapshotIntervalsOver50Ms": 0
+          },
+          "summary": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/shader-pair-v1/candidate-on/run/diagnostic-summary.json",
+            "sha256": "d8fb91dd14ea9c4d8b12899cff311ae6570bfa3b5fcbd47759b34a53f0ff2661"
+          },
+          "execution": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/shader-pair-v1/candidate-on/target-execution-result.json",
+            "sha256": "767119807d9117619abfb8b3b382f79ca1ef2cc379ce344fdee133a449f1604a"
+          },
+          "backgroundGate": {
+            "path": "/Users/wty/code/RWXX/build/background-display-20261103/shader-pair-v1/candidate-on/background-gate.json",
+            "sha256": "47e60eeda801368f39230a8594b6d405c5aea7294a29ab7dc7fec5950485a5b3"
+          }
+        }
+      },
+      "independentReview": {
+        "path": "/Users/wty/code/RWXX/build/background-display-20261103/shader-pair-independent-review/delivery.json",
+        "sha256": "346e23defd0d392407e2b0d388fbec9791d2ec2ed1f2a3143102c6280eb5d001"
+      },
+      "nextAction": "Strict MSAA4 same-frozen-frame OFF/ON pixel and actual cross-mesh reuse/fence/lease acceptance; candidate remains defaultOFF. Single-pair gain is not repeatability evidence."
+    }
+  },
+  "instrumentedStallDiagnostic": {
+    "performanceAcceptance": false,
+    "evidence": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/stall-diagnostic-v1/evaluation/independent-stall-analysis.json",
+      "sha256": "70b2c27fc1a6a5ad2b7edecb428f76304894b7edf7a2b38a8b640b3e112bebed"
+    },
+    "findings": [
+      "No-GC43.695750ms present gap includes20.454164ms scene-pass-collect and11.970167ms backend execution;87 graphics-pipeline creates totaling8.313883ms are nested in backend, not additive. Owner produced6 snapshots while fence/acquire/submit/present each stayed under0.7ms.",
+      "Other sample gaps overlap real GC pauses; another includes19.564583ms image acquire. These are multiple observed mechanisms, not proof of a single driver or GC root cause."
+    ],
+    "nextPriority": "Reduce bulk mesh/shader/pipeline recreation at existing safe lifecycle boundaries; any reuse flag still needs actual pixel/resource-lifetime and uninstrumented performance validation.",
+    "limitations": [
+      "Synchronous traces perturb execution; these are wall-time stages including GC/descheduling.",
+      "Stage rows lack thread/pass/mesh identity;87 creations are not assigned to a particular map target.",
+      "No attribution of earlier78ms owner-pair gap, no physical-scanout or input-latency claim."
+    ]
+  },
+  "limits": [
+    "One sequential run per treatment per exploration, not replicated ABBA; dependent frame intervals do not establish statistical significance.",
+    "Different pairs are separate experiments and cannot be pooled to claim a cumulative improvement.",
+    "Historical foreground original120fresh/s is context, not a same-environment virtual-screen remeasurement.",
+    "No slow frames filtered; no claim of original parity or stutter-free behavior."
+  ],
+  "virtualDisplayCleanup": {
+    "path": "/Users/wty/code/RWXX/build/background-display-20261103/create-10.ndjson",
+    "sha256": "1c47af74b9a48234d69dca0c0d608f5dee6dc587fe8f62bb33f494859e039fbe"
+  }
+}

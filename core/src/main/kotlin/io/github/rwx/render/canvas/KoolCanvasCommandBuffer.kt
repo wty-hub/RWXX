@@ -19,8 +19,7 @@ class KoolCanvasCommandBuffer(
         if (fogSize == 0) return
         val command = KoolCanvasCommand.DrawFogBatch(fogTexture,
             KoolCanvasFogBatch.copyOf(fogCoordinates, fogSize), fogFilter, fogState)
-        commands += command
-        commandSignature = commandSignature * 31 + command.hashCode() + 0x9E3779B9.toInt()
+        appendRecordedCommand(command)
         fogSize = 0
         fogTexture = null
     }
@@ -72,10 +71,8 @@ class KoolCanvasCommandBuffer(
 
     private fun flushRectBatch() {
         if (rectBatchSize == 0) return
-        commands += KoolCanvasCommand.DrawRectBatch(
-            KoolCanvasRectBatch.copyOf(rectBatchCoordinates, rectBatchSize), rectBatchPaint, rectBatchState).also {
-            commandSignature = commandSignature * 31 + it.hashCode() + 0x9E3779B9.toInt()
-        }
+        appendRecordedCommand(KoolCanvasCommand.DrawRectBatch(
+            KoolCanvasRectBatch.copyOf(rectBatchCoordinates, rectBatchSize), rectBatchPaint, rectBatchState))
         rectBatchSize = 0
     }
 
@@ -87,10 +84,8 @@ class KoolCanvasCommandBuffer(
 
     private fun flushTextureBatch() {
         val texture = batchTexture ?: return
-        commands += KoolCanvasCommand.DrawTextureBatch(texture,
-            KoolCanvasTextureBatch.copyOf(batchCoordinates, batchSize), batchPaint, batchState).also {
-            commandSignature = commandSignature * 31 + it.hashCode() + 0x9E3779B9.toInt()
-        }
+        appendRecordedCommand(KoolCanvasCommand.DrawTextureBatch(texture,
+            KoolCanvasTextureBatch.copyOf(batchCoordinates, batchSize), batchPaint, batchState))
         batchTexture = null
         batchSize = 0
     }
@@ -109,13 +104,43 @@ class KoolCanvasCommandBuffer(
      * the signature as well.
      */
     private var commandSignature: Int = 0
+    private var signatureCommandCount: Int = 0
+    // Root snapshots never request this hash; retain the exact polynomial when a target needs it.
+    // RWX_LAZY_CANVAS_SIGNATURE=0 restores eager recording for comparison / rollback.
+    private var lazySignature: Boolean = System.getenv("RWX_LAZY_CANVAS_SIGNATURE") != "0"
 
-    val signature: Int get() { flushBatches(); return commandSignature }
+    /** Configure a fresh test buffer without changing its public constructor ABI. */
+    @JvmSynthetic
+    internal fun configureLazySignatureForTest(enabled: Boolean) {
+        check(recordingGeneration == 0L && isEmpty) { "Configure signature policy before recording" }
+        lazySignature = enabled
+    }
+
+    val signature: Int get() {
+        flushBatches()
+        // Root canvases are published through snapshot(), which does not need a recording hash.
+        // Only target-content reuse requests it. Commands and copied batch payloads are immutable,
+        // so each requested prefix can be folded later with exactly the existing arithmetic.
+        if (lazySignature) {
+            while (signatureCommandCount < commands.size) {
+                commandSignature = commandSignature * 31 + commands[signatureCommandCount].hashCode() + 0x9E3779B9.toInt()
+                signatureCommandCount++
+            }
+        }
+        return commandSignature
+    }
+
+    private fun appendRecordedCommand(command: KoolCanvasCommand) {
+        commands += command
+        if (!lazySignature) {
+            commandSignature = commandSignature * 31 + command.hashCode() + 0x9E3779B9.toInt()
+            signatureCommandCount++
+        }
+    }
 
     private fun note(command: KoolCanvasCommand) {
         flushBatches()
-        commands += command
-        commandSignature = commandSignature * 31 + command.hashCode() + 0x9E3779B9.toInt()
+        appendRecordedCommand(command)
     }
 
     var viewport: KoolCanvasViewport = viewport
@@ -143,6 +168,7 @@ class KoolCanvasCommandBuffer(
         batchSize = 0
         rectBatchSize = 0
         commandSignature = 0
+        signatureCommandCount = 0
         stateStack.clear()
         state = KoolCanvasState.Default
     }
@@ -203,7 +229,8 @@ class KoolCanvasCommandBuffer(
         if (blendMode != KoolCanvasBlendMode.ClearAlpha) {
             // The signature covers the surviving commands, so a removal has to fold it back in.
             commands.removeAll { it.renderTarget == renderTarget }
-            commandSignature = signatureOf(commands)
+            commandSignature = if (lazySignature) 0 else signatureOf(commands)
+            signatureCommandCount = if (lazySignature) 0 else commands.size
         }
         note(KoolCanvasCommand.Clear(
             color = color,

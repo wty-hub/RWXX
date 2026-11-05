@@ -42,6 +42,12 @@ class KoolGraphicsEngine private constructor(
     private val textureStore: KoolCanvasTextureStore = KoolCanvasTextureRegistry,
     private val targetStates: MutableMap<Texture, KoolTargetState> = IdentityHashMap(),
     private val textureMetadata: MutableMap<Texture, TextureMetadata> = WeakHashMap(),
+    private val shareTextureRegistrations: Boolean = System.getenv("RWX_SHARE_TEXTURE_REGISTRATIONS") != "0",
+    // All sibling engines publish into the same store. A per-engine stamp would republish one
+    // sprite revision once per map cell and invalidate every dependent frozen target again. Sharing
+    // is enabled by default after real-replay CPU screening and source/pixel lifetime checks;
+    // RWX_SHARE_TEXTURE_REGISTRATIONS=0 retains the independent registration control path.
+    private val registeredTexturePixelRevisions: MutableMap<KoolCanvasTextureId, TexturePixelRegistration> = mutableMapOf(),
     private val assetBytes: (String) -> ByteArray? = ::readAssetBytesFromFileSystem,
     private val enableTextureAtlas: Boolean = false,
     /**
@@ -77,6 +83,12 @@ class KoolGraphicsEngine private constructor(
         targetStates = IdentityHashMap(),
         assetBytes = assetBytes,
         enableTextureAtlas = enableTextureAtlas,
+    )
+
+    internal constructor(textureStore: KoolCanvasTextureStore, shareTextureRegistrations: Boolean) : this(
+        commandBuffer = KoolCanvasCommandBuffer(),
+        textureStore = textureStore,
+        shareTextureRegistrations = shareTextureRegistrations,
     )
 
     private var viewport = KoolCanvasViewport(0, 0)
@@ -132,10 +144,27 @@ class KoolGraphicsEngine private constructor(
     private val pendingFrameDependencySnapshotIds = linkedSetOf<KoolCanvasTextureId>()
     private val pendingFrameDependencySnapshots = mutableMapOf<KoolCanvasTextureId, ImmediateFrameSnapshot>()
     private val pendingPixelDependencySnapshots = mutableMapOf<KoolCanvasTextureId, ImmediatePixelSnapshot>()
-    private val registeredTexturePixelRevisions = mutableMapOf<KoolCanvasTextureId, TexturePixelRegistration>()
     private val registeredImmediatePixels = mutableMapOf<KoolCanvasTextureId, RegisteredImmediatePixels>()
     private val registeredImmediateFrames = mutableMapOf<KoolCanvasTextureId, RegisteredImmediateFrame>()
     private var directBlitActive = false
+    private var unionOpaquePoints = UNION_OPAQUE_POINTS
+    private var opaquePointUnionCountersEnabled = System.getenv("RWX_FRAME_METRICS") != null
+    private var opaquePointUnionReported = false
+    private var opaquePointUnionBatches = 0L
+    private var opaquePointUnionInputPoints = 0L
+    private var opaquePointUnionOutputRects = 0L
+
+    @JvmSynthetic
+    internal fun configureUnionOpaquePointsForTest(enabled: Boolean) {
+        check(commandBuffer.recordingGeneration <= 1L)
+        unionOpaquePoints = enabled
+        opaquePointUnionCountersEnabled = true
+    }
+
+    @JvmSynthetic
+    internal fun opaquePointUnionCountersForTest(): List<Long> =
+        listOf(opaquePointUnionBatches, opaquePointUnionInputPoints, opaquePointUnionOutputRects)
+
     private val drawRoleStack = ArrayDeque<Pair<KoolCanvasDrawRole, Long>>()
     var hudLayout: io.github.rwx.session.GameHudLayoutSnapshot? = null
         private set
@@ -169,27 +198,38 @@ class KoolGraphicsEngine private constructor(
 
     override fun b(texture: Texture?): GraphicsEngine = b(texture, RenderTargetMode.DEFAULT)
 
+    private fun childTextureRegistrations(): MutableMap<KoolCanvasTextureId, TexturePixelRegistration> {
+        if (!shareTextureRegistrations) return mutableMapOf()
+        if (sharedTextureRegistrationsReported.compareAndSet(0, 1))
+            println("RWXSharedTextureRegistrations sharingConfirmed=true")
+        return registeredTexturePixelRevisions
+    }
+
     override fun b(texture: Texture?, mode: RenderTargetMode): GraphicsEngine {
         if (texture == null) {
             return KoolGraphicsEngine(
                 textureStore = textureStore,
                 targetStates = targetStates,
                 textureMetadata = textureMetadata,
+                shareTextureRegistrations = shareTextureRegistrations,
+                registeredTexturePixelRevisions = childTextureRegistrations(),
                 assetBytes = assetBytes,
                 enableTextureAtlas = enableTextureAtlas,
             )
         }
         val offscreen = KoolGraphicsEngine(
             commandBuffer = KoolCanvasCommandBuffer(textureBatches =
-                mode == RenderTargetMode.GPU_TARGET && System.getenv("RWX_MAP_TEXTURE_BATCHES") == "1",
+                mode == RenderTargetMode.GPU_TARGET && System.getenv("RWX_MAP_TEXTURE_BATCHES") != "0",
                 rectBatches = mode == RenderTargetMode.GPU_TARGET &&
-                    System.getenv("RWX_MAP_TEXTURE_BATCHES") == "1" && System.getenv("RWX_MAP_RECT_BATCHES") != "0",
-                fogBatches = mode == RenderTargetMode.GPU_TARGET && System.getenv("RWX_MAP_FOG_BATCHES") == "1"),
+                    System.getenv("RWX_MAP_TEXTURE_BATCHES") != "0" && System.getenv("RWX_MAP_RECT_BATCHES") != "0",
+                fogBatches = mode == RenderTargetMode.GPU_TARGET && System.getenv("RWX_MAP_FOG_BATCHES") != "0"),
             targetTexture = texture,
             targetMode = mode,
             textureStore = textureStore,
             targetStates = targetStates,
             textureMetadata = textureMetadata,
+            shareTextureRegistrations = shareTextureRegistrations,
+            registeredTexturePixelRevisions = childTextureRegistrations(),
             assetBytes = assetBytes,
             // Offscreen cells draw terrain one tile at a time (measured: ~6 570 `drawTexture` commands per
             // 512x512 cell, i.e. ~40 screen pixels per draw). Textures packed into one atlas share a single
@@ -404,6 +444,27 @@ class KoolGraphicsEngine private constructor(
         var index = i.coerceAtLeast(0)
         val pointPaint = paint.toCanvasPaint().copy(style = KoolCanvasPaintStyle.Fill)
         val size = pointPaint.strokeWidth.coerceAtLeast(1f)
+        val state = commandBuffer.state
+        if (unionOpaquePoints && KoolCanvasOpaquePointUnion.isEligible(
+                viewport, state, pointPaint, targetTexture == null && !gpuReplayTarget)) {
+            val union = KoolCanvasOpaquePointUnion.tryUnion(fArr, index, end, size)
+            if (union != null) {
+                if (opaquePointUnionCountersEnabled) {
+                    opaquePointUnionBatches++
+                    opaquePointUnionInputPoints += union.inputPoints
+                    opaquePointUnionOutputRects += union.rectCount
+                    if (!opaquePointUnionReported) {
+                        opaquePointUnionReported = true
+                        println("[RWX canvas] opaquePointUnion inputPoints=${union.inputPoints} " +
+                            "outputRects=${union.rectCount} exactIntegerUnion=true")
+                    }
+                }
+                for (rect in 0 until union.rectCount) commandBuffer.drawRect(KoolCanvasRect(
+                    union.coordinate(rect, 0).toFloat(), union.coordinate(rect, 1).toFloat(),
+                    union.coordinate(rect, 2).toFloat(), union.coordinate(rect, 3).toFloat()), pointPaint)
+                return
+            }
+        }
         while (index + 1 <= end) {
             val x = fArr[index]
             val y = fArr[index + 1]
@@ -2727,7 +2788,7 @@ class KoolGraphicsEngine private constructor(
     }
 
     private fun releasePendingImmediateFrameSnapshots() {
-        pendingFrameDependencySnapshotIds.forEach(textureStore::unregister)
+        if (pendingFrameDependencySnapshotIds.isNotEmpty()) pendingFrameDependencySnapshotIds.forEach(textureStore::unregister)
         pendingFrameDependencySnapshotIds.clear()
         pendingFrameDependencySnapshots.clear()
         pendingPixelDependencySnapshots.clear()
@@ -2888,6 +2949,7 @@ class KoolGraphicsEngine private constructor(
             // upload for it, once per cell and frame.
             pixelRevision = getPixelRevision(),
             premultipliedAlpha = usesPremultipliedAlpha(),
+            alphaBleed = alphaBleedRequired,
         )
 
     private fun Texture.fullSourceRect(): KoolCanvasRect =
@@ -3021,11 +3083,12 @@ class KoolGraphicsEngine private constructor(
         val height: Int,
         val pixelRevision: Int,
         val premultipliedAlpha: Boolean,
+        val alphaBleed: Boolean,
     ) {
         fun matchesTexture(texture: Texture, width: Int = texture.width().coerceAtLeast(1),
             height: Int = texture.height().coerceAtLeast(1)): Boolean =
             this.width == width && this.height == height && pixelRevision == texture.getPixelRevision() &&
-                premultipliedAlpha == texture.usesPremultipliedAlpha()
+                premultipliedAlpha == texture.usesPremultipliedAlpha() && alphaBleed == texture.alphaBleedRequired
     }
 
     // Values never retain their weak Texture key. Shared offscreen engines keep one ID string and
@@ -3154,9 +3217,13 @@ class KoolGraphicsEngine private constructor(
 
     internal companion object {
         private val preparedMapTilesReported = AtomicInteger()
+        private val sharedTextureRegistrationsReported = AtomicInteger()
         private val PREPARED_MAP_TILES_ENABLED = System.getenv("RWX_PREPARED_MAP_TILES") != "0"
-        private val AVOID_TEXTURE_PAINT_COPIES = System.getenv("RWX_AVOID_TEXTURE_PAINT_COPIES") == "1"
+        private val AVOID_TEXTURE_PAINT_COPIES = System.getenv("RWX_AVOID_TEXTURE_PAINT_COPIES") != "0"
         private val REUSE_PAINT_SNAPSHOTS = System.getenv("RWX_REUSE_PAINT_SNAPSHOTS") == "1"
+        // Exact same-color coverage reduces dense minimap geometry; 0 keeps the legacy point path.
+        private val UNION_OPAQUE_POINTS = (System.getenv("RWX_UNION_OPAQUE_POINTS") != "0")
+            .also { println("[RWX canvas] unionOpaquePoints=$it") }
         /**
          * Pack offscreen-cell textures into one atlas so consecutive tile draws share a texture id.
          *

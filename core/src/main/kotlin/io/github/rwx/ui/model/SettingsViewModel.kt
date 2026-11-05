@@ -184,13 +184,13 @@ class SettingsModel {
     val sendReports: MutableStateValue<Boolean> = mutableStateOf(true)
 
     // Audio (engine-only, no UI toggle)
-    val enableSounds: MutableStateValue<Boolean> = mutableStateOf(true)
+    val enableSounds: MutableStateValue<Boolean> = mutableStateOf(false)
 
     // Volume
     val masterVolume: MutableStateValue<Float> = mutableStateOf(0.5f)
     val gameVolume: MutableStateValue<Float> = mutableStateOf(1.0f)
     val interfaceVolume: MutableStateValue<Float> = mutableStateOf(0.8f)
-    val musicVolume: MutableStateValue<Float> = mutableStateOf(0.25f)
+    val musicVolume: MutableStateValue<Float> = mutableStateOf(0f)
 
     // Scroll
     val scrollSpeed: MutableStateValue<Float> = mutableStateOf(1.0f)

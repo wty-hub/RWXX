@@ -1,0 +1,958 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-02",
+  "applicationVersion": "1.4.3",
+  "status": "default-enabled-real-replay-cpu-improvement-original-parity-unverified",
+  "goalComplete": false,
+  "userScope": "Optimize ordinary real-game pan/zoom. Shared-source-pixels changing every frame is optional diagnostic only and is not a performance/default-enablement veto.",
+  "changesThisPhase": {
+    "frozenContentReuseDefault": true,
+    "sharedTextureRegistrationDefault": true,
+    "fallbackEnvironment": {
+      "RWX_FROZEN_CONTENT_REUSE": "0",
+      "RWX_SHARE_TEXTURE_REGISTRATIONS": "0"
+    },
+    "benchmarkControls": "live/replay CLI retains explicit OFF when omitted and ON when passed, independent of product defaults",
+    "versionBump": "No additional bump within the existing 1.4.3 batch",
+    "protocolOrSimulationRulesChanged": false,
+    "newPackageBuilt": false
+  },
+  "screen": {
+    "kind": "real-replay-production-cpu-capture",
+    "diagnosticOnly": true,
+    "replaySha256": "d19b132ec8866f87496b3c1c91627e7ef35a99b1627e2a9550f74c0e0e57f6d1",
+    "seekTick": 6000,
+    "fogDisplay": true,
+    "fogTeam": 0,
+    "viewport": [
+      1280,
+      720
+    ],
+    "fixtureUnitsInjected": false,
+    "modes": [
+      "static",
+      "pan-zoom"
+    ],
+    "orderPerMode": [
+      "A1",
+      "B1",
+      "B2",
+      "A2"
+    ],
+    "independentJvmsPerArm": 2,
+    "warmupFramesPerRun": 120,
+    "sampleFramesPerRun": 240,
+    "totalRawFrames": 2880,
+    "sampleRawFrames": 1920,
+    "nominalPacingHz": 60,
+    "actualMeanStartIntervalMillisByRun": {
+      "screen-static-A1": 19.341833679166665,
+      "screen-static-B1": 19.6437362875,
+      "screen-static-B2": 19.288458158333334,
+      "screen-static-A2": 19.2633638875,
+      "screen-pan-zoom-A1": 19.19892552083333,
+      "screen-pan-zoom-B1": 19.433405904166666,
+      "screen-pan-zoom-B2": 19.59361822916667,
+      "screen-pan-zoom-A2": 19.329270833333332
+    },
+    "sameFrameIndexedSceneScalarsAcrossArms": {
+      "static": true,
+      "pan-zoom": true
+    },
+    "matchingScalarKeys": [
+      "tick",
+      "gameTimeMillis",
+      "cameraX",
+      "cameraY",
+      "targetZoom",
+      "actualZoom",
+      "densityZoomScale",
+      "visibleWorldWidth",
+      "visibleWorldHeight",
+      "units",
+      "visibleUnits",
+      "movingUnits",
+      "roomFogMode",
+      "fogDisplayEnabled",
+      "fogDisplayTeamId",
+      "mapFogEnabled",
+      "mapFogPeriodicMaintenanceEnabled"
+    ],
+    "comparison": {
+      "static": {
+        "medianOfTwoProcessMeans": {
+          "A": {
+            "snapshotFreeze": {
+              "cpuNanos": 704804.1666666666,
+              "wallNanos": 724427.44375,
+              "allocatedBytes": 447054.81666666665
+            },
+            "productionStagesTotal": {
+              "cpuNanos": 2256716.6666666665,
+              "wallNanos": 2290668.689583333,
+              "allocatedBytes": 664002.25
+            }
+          },
+          "B": {
+            "snapshotFreeze": {
+              "cpuNanos": 260050.0,
+              "wallNanos": 267901.0375,
+              "allocatedBytes": 95684.41666666666
+            },
+            "productionStagesTotal": {
+              "cpuNanos": 1739958.3333333333,
+              "wallNanos": 1754203.35,
+              "allocatedBytes": 312957.18333333335
+            }
+          }
+        },
+        "changePercent": {
+          "snapshotFreeze": {
+            "cpuNanos": -63.10322607343648,
+            "wallNanos": -63.01892759429298,
+            "allocatedBytes": -78.59671496660981
+          },
+          "productionStagesTotal": {
+            "cpuNanos": -22.898680236036128,
+            "wallNanos": -23.419595423069005,
+            "allocatedBytes": -52.86805378546031
+          }
+        }
+      },
+      "pan-zoom": {
+        "medianOfTwoProcessMeans": {
+          "A": {
+            "snapshotFreeze": {
+              "cpuNanos": 784166.6666666666,
+              "wallNanos": 805881.2562500001,
+              "allocatedBytes": 577096.0333333333
+            },
+            "productionStagesTotal": {
+              "cpuNanos": 2282854.1666666665,
+              "wallNanos": 2349083.625,
+              "allocatedBytes": 870893.3999999999
+            }
+          },
+          "B": {
+            "snapshotFreeze": {
+              "cpuNanos": 240887.5,
+              "wallNanos": 240978.71041666667,
+              "allocatedBytes": 131638.88333333336
+            },
+            "productionStagesTotal": {
+              "cpuNanos": 1693254.1666666665,
+              "wallNanos": 1730245.4,
+              "allocatedBytes": 423125.2
+            }
+          }
+        },
+        "changePercent": {
+          "snapshotFreeze": {
+            "cpuNanos": -69.28108395324124,
+            "wallNanos": -70.09749159100551,
+            "allocatedBytes": -77.189431961093
+          },
+          "productionStagesTotal": {
+            "cpuNanos": -25.827317776540703,
+            "wallNanos": -26.343814175623493,
+            "allocatedBytes": -51.41481150276256
+          }
+        }
+      }
+    },
+    "runMeansAndObservedScene": [
+      {
+        "name": "screen-static-A1",
+        "mode": "static",
+        "arm": "A1",
+        "flags": {
+          "RWX_FROZEN_CONTENT_REUSE": "0",
+          "RWX_SHARE_TEXTURE_REGISTRATIONS": "0"
+        },
+        "elapsedSeconds": 9.397749900817871,
+        "observations": {
+          "units": [
+            90,
+            93
+          ],
+          "movingUnits": [
+            0,
+            2
+          ],
+          "visibleUnits": [
+            19,
+            19
+          ],
+          "rootCommands": [
+            362,
+            492
+          ],
+          "nestedCommands": [
+            7117,
+            7647
+          ],
+          "gpuTargets": [
+            8,
+            8
+          ],
+          "actualZoom": [
+            1.0,
+            1.0
+          ]
+        },
+        "means": {
+          "updateRecord": {
+            "cpuNanos": 1335241.6666666667,
+            "wallNanos": 1366771.5333333334,
+            "allocatedBytes": 101222.06666666667
+          },
+          "visibleRedraw": {
+            "cpuNanos": 181425,
+            "wallNanos": 180171.89583333334,
+            "allocatedBytes": 115657.6
+          },
+          "snapshotFreeze": {
+            "cpuNanos": 719591.6666666666,
+            "wallNanos": 736050.1958333333,
+            "allocatedBytes": 447048.9666666667
+          },
+          "offscreenBackground": {
+            "cpuNanos": 7095.833333333333,
+            "wallNanos": 5512.866666666667,
+            "allocatedBytes": 0
+          },
+          "diagnosticInspection": {
+            "cpuNanos": 146150,
+            "wallNanos": 146639.60416666666,
+            "allocatedBytes": 16823.633333333335
+          },
+          "productionStagesTotal": {
+            "cpuNanos": 2243354.1666666665,
+            "wallNanos": 2288506.4916666667,
+            "allocatedBytes": 663928.6333333333
+          }
+        }
+      },
+      {
+        "name": "screen-static-B1",
+        "mode": "static",
+        "arm": "B1",
+        "flags": {
+          "RWX_FROZEN_CONTENT_REUSE": "1",
+          "RWX_SHARE_TEXTURE_REGISTRATIONS": "1"
+        },
+        "elapsedSeconds": 9.420846223831177,
+        "observations": {
+          "units": [
+            90,
+            93
+          ],
+          "movingUnits": [
+            0,
+            2
+          ],
+          "visibleUnits": [
+            19,
+            19
+          ],
+          "rootCommands": [
+            363,
+            492
+          ],
+          "nestedCommands": [
+            7117,
+            7647
+          ],
+          "gpuTargets": [
+            8,
+            8
+          ],
+          "actualZoom": [
+            1.0,
+            1.0
+          ]
+        },
+        "means": {
+          "updateRecord": {
+            "cpuNanos": 1226983.3333333333,
+            "wallNanos": 1239385.6083333334,
+            "allocatedBytes": 102528.56666666667
+          },
+          "visibleRedraw": {
+            "cpuNanos": 166304.16666666666,
+            "wallNanos": 164529.1875,
+            "allocatedBytes": 115657.8
+          },
+          "snapshotFreeze": {
+            "cpuNanos": 254550,
+            "wallNanos": 271000.85,
+            "allocatedBytes": 95708.7
+          },
+          "offscreenBackground": {
+            "cpuNanos": 5891.666666666667,
+            "wallNanos": 4340.108333333334,
+            "allocatedBytes": 0
+          },
+          "diagnosticInspection": {
+            "cpuNanos": 125691.66666666667,
+            "wallNanos": 124899.8125,
+            "allocatedBytes": 16756.1
+          },
+          "productionStagesTotal": {
+            "cpuNanos": 1653729.1666666665,
+            "wallNanos": 1679255.7541666667,
+            "allocatedBytes": 313895.06666666665
+          }
+        }
+      },
+      {
+        "name": "screen-static-B2",
+        "mode": "static",
+        "arm": "B2",
+        "flags": {
+          "RWX_FROZEN_CONTENT_REUSE": "1",
+          "RWX_SHARE_TEXTURE_REGISTRATIONS": "1"
+        },
+        "elapsedSeconds": 9.23670220375061,
+        "observations": {
+          "units": [
+            90,
+            93
+          ],
+          "movingUnits": [
+            0,
+            2
+          ],
+          "visibleUnits": [
+            19,
+            19
+          ],
+          "rootCommands": [
+            362,
+            491
+          ],
+          "nestedCommands": [
+            7117,
+            7647
+          ],
+          "gpuTargets": [
+            8,
+            8
+          ],
+          "actualZoom": [
+            1.0,
+            1.0
+          ]
+        },
+        "means": {
+          "updateRecord": {
+            "cpuNanos": 1388025,
+            "wallNanos": 1381875.5458333334,
+            "allocatedBytes": 100701.56666666667
+          },
+          "visibleRedraw": {
+            "cpuNanos": 165741.66666666666,
+            "wallNanos": 177209.92916666667,
+            "allocatedBytes": 115657.6
+          },
+          "snapshotFreeze": {
+            "cpuNanos": 265550,
+            "wallNanos": 264801.225,
+            "allocatedBytes": 95660.13333333333
+          },
+          "offscreenBackground": {
+            "cpuNanos": 6870.833333333333,
+            "wallNanos": 5264.245833333333,
+            "allocatedBytes": 0
+          },
+          "diagnosticInspection": {
+            "cpuNanos": 144575,
+            "wallNanos": 143445.1375,
+            "allocatedBytes": 16755.3
+          },
+          "productionStagesTotal": {
+            "cpuNanos": 1826187.5,
+            "wallNanos": 1829150.9458333333,
+            "allocatedBytes": 312019.3
+          }
+        }
+      },
+      {
+        "name": "screen-static-A2",
+        "mode": "static",
+        "arm": "A2",
+        "flags": {
+          "RWX_FROZEN_CONTENT_REUSE": "0",
+          "RWX_SHARE_TEXTURE_REGISTRATIONS": "0"
+        },
+        "elapsedSeconds": 9.216460943222046,
+        "observations": {
+          "units": [
+            90,
+            93
+          ],
+          "movingUnits": [
+            0,
+            2
+          ],
+          "visibleUnits": [
+            19,
+            19
+          ],
+          "rootCommands": [
+            361,
+            490
+          ],
+          "nestedCommands": [
+            7117,
+            7647
+          ],
+          "gpuTargets": [
+            8,
+            8
+          ],
+          "actualZoom": [
+            1.0,
+            1.0
+          ]
+        },
+        "means": {
+          "updateRecord": {
+            "cpuNanos": 1388250,
+            "wallNanos": 1391065.1291666667,
+            "allocatedBytes": 101357.4
+          },
+          "visibleRedraw": {
+            "cpuNanos": 184287.5,
+            "wallNanos": 183035.025,
+            "allocatedBytes": 115657.8
+          },
+          "snapshotFreeze": {
+            "cpuNanos": 690016.6666666666,
+            "wallNanos": 712804.6916666667,
+            "allocatedBytes": 447060.6666666667
+          },
+          "offscreenBackground": {
+            "cpuNanos": 7525,
+            "wallNanos": 5926.041666666667,
+            "allocatedBytes": 0
+          },
+          "diagnosticInspection": {
+            "cpuNanos": 154204.16666666666,
+            "wallNanos": 156928.48333333334,
+            "allocatedBytes": 16823.5
+          },
+          "productionStagesTotal": {
+            "cpuNanos": 2270079.1666666665,
+            "wallNanos": 2292830.8875,
+            "allocatedBytes": 664075.8666666667
+          }
+        }
+      },
+      {
+        "name": "screen-pan-zoom-A1",
+        "mode": "pan-zoom",
+        "arm": "A1",
+        "flags": {
+          "RWX_FROZEN_CONTENT_REUSE": "0",
+          "RWX_SHARE_TEXTURE_REGISTRATIONS": "0"
+        },
+        "elapsedSeconds": 9.314437866210938,
+        "observations": {
+          "units": [
+            90,
+            93
+          ],
+          "movingUnits": [
+            0,
+            2
+          ],
+          "visibleUnits": [
+            31,
+            92
+          ],
+          "rootCommands": [
+            503,
+            733
+          ],
+          "nestedCommands": [
+            2794,
+            15777
+          ],
+          "gpuTargets": [
+            4,
+            16
+          ],
+          "actualZoom": [
+            0.45,
+            1.5
+          ]
+        },
+        "means": {
+          "updateRecord": {
+            "cpuNanos": 1390308.3333333333,
+            "wallNanos": 1422914.2208333334,
+            "allocatedBytes": 227050.26666666666
+          },
+          "visibleRedraw": {
+            "cpuNanos": 81916.66666666667,
+            "wallNanos": 80538.025,
+            "allocatedBytes": 59823.63333333333
+          },
+          "snapshotFreeze": {
+            "cpuNanos": 777241.6666666666,
+            "wallNanos": 798758.525,
+            "allocatedBytes": 575540.4666666667
+          },
+          "offscreenBackground": {
+            "cpuNanos": 17800,
+            "wallNanos": 16430.041666666668,
+            "allocatedBytes": 7134.766666666666
+          },
+          "diagnosticInspection": {
+            "cpuNanos": 174345.83333333334,
+            "wallNanos": 173825.20833333334,
+            "allocatedBytes": 29840.633333333335
+          },
+          "productionStagesTotal": {
+            "cpuNanos": 2267266.6666666665,
+            "wallNanos": 2318640.8125,
+            "allocatedBytes": 869549.1333333333
+          }
+        }
+      },
+      {
+        "name": "screen-pan-zoom-B1",
+        "mode": "pan-zoom",
+        "arm": "B1",
+        "flags": {
+          "RWX_FROZEN_CONTENT_REUSE": "1",
+          "RWX_SHARE_TEXTURE_REGISTRATIONS": "1"
+        },
+        "elapsedSeconds": 9.466248989105225,
+        "observations": {
+          "units": [
+            90,
+            93
+          ],
+          "movingUnits": [
+            0,
+            2
+          ],
+          "visibleUnits": [
+            31,
+            92
+          ],
+          "rootCommands": [
+            502,
+            733
+          ],
+          "nestedCommands": [
+            2794,
+            15777
+          ],
+          "gpuTargets": [
+            4,
+            16
+          ],
+          "actualZoom": [
+            0.45,
+            1.5
+          ]
+        },
+        "means": {
+          "updateRecord": {
+            "cpuNanos": 1340016.6666666667,
+            "wallNanos": 1378408.5125,
+            "allocatedBytes": 225568
+          },
+          "visibleRedraw": {
+            "cpuNanos": 90158.33333333333,
+            "wallNanos": 89237.67916666667,
+            "allocatedBytes": 59823.63333333333
+          },
+          "snapshotFreeze": {
+            "cpuNanos": 239808.33333333334,
+            "wallNanos": 239966.09166666667,
+            "allocatedBytes": 131717.7
+          },
+          "offscreenBackground": {
+            "cpuNanos": 16833.333333333332,
+            "wallNanos": 15541.6625,
+            "allocatedBytes": 6531.7
+          },
+          "diagnosticInspection": {
+            "cpuNanos": 160466.66666666666,
+            "wallNanos": 159899.84583333333,
+            "allocatedBytes": 29790.633333333335
+          },
+          "productionStagesTotal": {
+            "cpuNanos": 1686816.6666666667,
+            "wallNanos": 1723153.9458333333,
+            "allocatedBytes": 423641.0333333333
+          }
+        }
+      },
+      {
+        "name": "screen-pan-zoom-B2",
+        "mode": "pan-zoom",
+        "arm": "B2",
+        "flags": {
+          "RWX_FROZEN_CONTENT_REUSE": "1",
+          "RWX_SHARE_TEXTURE_REGISTRATIONS": "1"
+        },
+        "elapsedSeconds": 9.469628810882568,
+        "observations": {
+          "units": [
+            90,
+            93
+          ],
+          "movingUnits": [
+            0,
+            2
+          ],
+          "visibleUnits": [
+            31,
+            92
+          ],
+          "rootCommands": [
+            502,
+            729
+          ],
+          "nestedCommands": [
+            2794,
+            15777
+          ],
+          "gpuTargets": [
+            4,
+            16
+          ],
+          "actualZoom": [
+            0.45,
+            1.5
+          ]
+        },
+        "means": {
+          "updateRecord": {
+            "cpuNanos": 1362120.8333333333,
+            "wallNanos": 1360625.875,
+            "allocatedBytes": 224693.76666666666
+          },
+          "visibleRedraw": {
+            "cpuNanos": 79908.33333333333,
+            "wallNanos": 120391.66666666667,
+            "allocatedBytes": 59823.833333333336
+          },
+          "snapshotFreeze": {
+            "cpuNanos": 241966.66666666666,
+            "wallNanos": 241991.32916666666,
+            "allocatedBytes": 131560.06666666668
+          },
+          "offscreenBackground": {
+            "cpuNanos": 15695.833333333334,
+            "wallNanos": 14327.983333333334,
+            "allocatedBytes": 6531.7
+          },
+          "diagnosticInspection": {
+            "cpuNanos": 151966.66666666666,
+            "wallNanos": 151004.49166666667,
+            "allocatedBytes": 29826.866666666665
+          },
+          "productionStagesTotal": {
+            "cpuNanos": 1699691.6666666665,
+            "wallNanos": 1737336.8541666667,
+            "allocatedBytes": 422609.3666666667
+          }
+        }
+      },
+      {
+        "name": "screen-pan-zoom-A2",
+        "mode": "pan-zoom",
+        "arm": "A2",
+        "flags": {
+          "RWX_FROZEN_CONTENT_REUSE": "0",
+          "RWX_SHARE_TEXTURE_REGISTRATIONS": "0"
+        },
+        "elapsedSeconds": 9.266927003860474,
+        "observations": {
+          "units": [
+            90,
+            93
+          ],
+          "movingUnits": [
+            0,
+            2
+          ],
+          "visibleUnits": [
+            31,
+            92
+          ],
+          "rootCommands": [
+            501,
+            733
+          ],
+          "nestedCommands": [
+            2794,
+            15777
+          ],
+          "gpuTargets": [
+            4,
+            16
+          ],
+          "actualZoom": [
+            0.45,
+            1.5
+          ]
+        },
+        "means": {
+          "updateRecord": {
+            "cpuNanos": 1402391.6666666667,
+            "wallNanos": 1464386.7916666667,
+            "allocatedBytes": 226627.66666666666
+          },
+          "visibleRedraw": {
+            "cpuNanos": 87945.83333333333,
+            "wallNanos": 86631.45416666666,
+            "allocatedBytes": 59823.63333333333
+          },
+          "snapshotFreeze": {
+            "cpuNanos": 791091.6666666666,
+            "wallNanos": 813003.9875,
+            "allocatedBytes": 578651.6
+          },
+          "offscreenBackground": {
+            "cpuNanos": 17012.5,
+            "wallNanos": 15504.204166666666,
+            "allocatedBytes": 7134.766666666666
+          },
+          "diagnosticInspection": {
+            "cpuNanos": 170770.83333333334,
+            "wallNanos": 171912.50833333333,
+            "allocatedBytes": 29879.866666666665
+          },
+          "productionStagesTotal": {
+            "cpuNanos": 2298441.6666666665,
+            "wallNanos": 2379526.4375,
+            "allocatedBytes": 872237.6666666666
+          }
+        }
+      }
+    ],
+    "aggregation": "Arithmetic average of two independent process means per arm; equivalently the median of two, without robustness or confidence-interval claims. Modes are not randomized against each other.",
+    "scope": "Current engine-thread update/record, visible redraw, snapshot/freeze, background redraw CPU/wall/allocation; excludes workers, GPU, upload, renderer geometry, presentation and physical input.",
+    "sourceVersionAtMeasurement": {
+      "captureSourceSha256": "31189b296cc855c7de50569852433d12229efc08a295bbb46e74cb697f006be4",
+      "coreJarSha256": "0f67b02af039c1c37eba5d4fc9bba9ae5639803236e45d41da156a7717b6738c",
+      "projectRuntimeArchiveSha256": "f0fdae41d4af8bb13e01780a87ecbc69c082c33ecda8cd9cba78cd5dd2750148",
+      "sourcePreserved": true
+    },
+    "limitations": [
+      "Current engine-thread CPU and allocation only; no GPU or presentation.",
+      "Inspection is outside counters but can perturb GC and wall-clock map-cache policy.",
+      "Fixed input tape with actual poses reported; real-time map budgets can differ.",
+      "User work is uncontrolled. Two independent JVMs per arm only.",
+      "No FPS, input latency, official parity, or complete compatibility claim.",
+      "Cross-process command graphs are not byte-identical: root HUD command counts vary and one sampled pan-zoom frame has a different nested count due to real-time cache scheduling. Same-scene scalar equality is not a pixel oracle.",
+      "Real replay has 90–93 units with up to two moving units in this interval. It does not establish dense-combat or network-game performance.",
+      "Both candidates are enabled together; this screen cannot attribute savings to either candidate separately."
+    ]
+  },
+  "freezeCorrectness": {
+    "correctnessOnly": true,
+    "performanceMeasurementsInvalid": true,
+    "checkedFrames": 360,
+    "passedFrames": 360,
+    "failedFrames": 0,
+    "candidateReuseAttempts": 2579,
+    "candidateReuseHits": 2579,
+    "candidateReuseObserved": true,
+    "evidencePassed": true,
+    "comparison": "Exact data-object equals for Frame (including visualStats) and complete resource Map; no normalization",
+    "controlGuard": "reuseFrozenContent=false and restored=true readback; REUSE_ATTEMPTS delta must equal zero",
+    "rawReport": "build/real-replay-capture-20261102/full-freeze-real-pan-zoom/full-freeze-verification.json",
+    "sameRecordedFrame": true,
+    "candidateBeforeControl": true,
+    "controlBeforeBackgroundRedraw": true,
+    "normalizationUsed": false,
+    "note": "Only freeze reuse is validated against full traversal in the same already-shared source store. Sharing itself is covered by independent registration/pixel/lease tests, not this oracle.",
+    "missingResources": 0,
+    "gpuInstallCalls": 0,
+    "oldLeaseFingerprintStable": true,
+    "allMetricsFromThisCorrectnessRunExcludedFromPerformance": true
+  },
+  "regressions": {
+    "headlessGradle": {
+      "core": {
+        "tests": 474,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "desktop": {
+        "tests": 145,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "headlessCommand": "build/real-replay-capture-20261102/default-on-tests-command.json",
+    "pythonCameraToolTests": {
+      "tests": 26,
+      "failures": 0,
+      "execution": "Delegated agent actual unittest run; mock tools only, no Java or window.",
+      "firstFixtureFailure": "One new mock fixture initially omitted the already-required frozenContentReuse=true runtime marker. Fixed the fixture only; the runtime evidence gate was not weakened."
+    },
+    "sharingCoverage": [
+      "Explicit enabled and disabled registration counts across root/detached/cell engines",
+      "Real pixel revisions and old retained frame pixel stability",
+      "Alpha bleed, premultiplication and dimension changes",
+      "IMMEDIATE editing and recorded Frame fallback",
+      "Texture release/unregister"
+    ],
+    "priorReplayCompatibility": "The preceding phase has equal 1000-tick fixed-replay checksums for baseline/default/candidates; retained in canvas-parity-candidates-2026-11-02.json. Not repeated for this default-policy-only change."
+  },
+  "productAndFallbackSmokes": {
+    "product-default": {
+      "frames": 5,
+      "sampledFrames": 3,
+      "flags": {},
+      "coreJarSha256": "15fd607a5b022d89ef66711b3e28e6ac309f34c00ada8e4bef08fc3cabe5f18d",
+      "reuseTrueLogged": true,
+      "reuseFalseLogged": false,
+      "sharingOnMarkerObserved": true,
+      "missingResources": 0,
+      "gpuInstallCalls": 0,
+      "unresolvedImageAssets": [],
+      "command": "build/real-replay-capture-20261102/product-default-command.json"
+    },
+    "explicit-fallback": {
+      "frames": 5,
+      "sampledFrames": 3,
+      "flags": {
+        "RWX_FROZEN_CONTENT_REUSE": "0",
+        "RWX_SHARE_TEXTURE_REGISTRATIONS": "0"
+      },
+      "coreJarSha256": "15fd607a5b022d89ef66711b3e28e6ac309f34c00ada8e4bef08fc3cabe5f18d",
+      "reuseTrueLogged": false,
+      "reuseFalseLogged": true,
+      "sharingOnMarkerObserved": false,
+      "missingResources": 0,
+      "gpuInstallCalls": 0,
+      "unresolvedImageAssets": [],
+      "command": "build/real-replay-capture-20261102/explicit-fallback-command.json"
+    }
+  },
+  "safetyAndEnvironment": {
+    "windowOrKoolContextCreated": false,
+    "gpuInstallCalls": 0,
+    "javaAwtHeadless": true,
+    "nice": 15,
+    "maxTestForks": 1,
+    "screenActiveProcessorCount": 1,
+    "screenHeapMiB": {
+      "initial": 192,
+      "maximum": 384
+    },
+    "screenGc": "SerialGC",
+    "foregroundActivationRequested": false,
+    "steamDirectoryModified": false,
+    "steamRestoreApproval": "Still pending; no restoration attempted",
+    "originalBaselinePreparation": "docs/verification/original-macos-baseline-2026-11-02.json"
+  },
+  "preservedSanityFailures": [
+    {
+      "file": "build/real-replay-capture-20261102/sanity-seek6000/failure.txt",
+      "reason": "java.lang.IllegalArgumentException: The isolated launch directory must not contain mods",
+      "sha256": "5c8e135ab78d20f8ed571e87a8006c4abae9e0f46f4c61242923a6b19a6eff3f"
+    },
+    {
+      "file": "build/real-replay-capture-20261102/sanity-static/failure.txt",
+      "reason": "java.lang.IllegalArgumentException: Real drawable assets are missing",
+      "sha256": "10e120e334bd6eef936133da05e8bd945ff1636cae50746f7fdc40fcdea291ff"
+    }
+  ],
+  "finalFilesSha256": {
+    "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasFrameEnvelope.kt": "a5e89401de7c355e7b9f933fe65404d9926cd46cbab1638bc27740118f672c9a",
+    "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasFreezeScratchPool.kt": "41f57f6c9791f5c480f57e5c0f04749bdf3717d20a3291f8b88e75d27595dcbb",
+    "core/src/main/kotlin/io/github/rwx/render/canvas/KoolGraphicsEngine.kt": "413141ad6de0c5276437c7d69c1052ef8972576d9f05af40ee3b6a96d4b2e3a3",
+    "desktop/src/test/kotlin/io/github/rwx/benchmark/RealReplayCanvasCapture.kt": "1e9738bd4388e5f50b3151949729bd5d84dd7f2436e7d9b54649c4bd34ec7206",
+    "desktop/tools/map_pan_live.py": "586a075b313691ff6f0ad0ca06ef2828cb66f6486e2cbce0b3b081dfc3efae71",
+    "desktop/tools/map_pan_replay.py": "8a3f0983c5c1120a1716dcaeb045521ebdf2644b96ba92f85ccc2a2e66fffaeb",
+    "desktop/tools/test_map_pan_camera.py": "d29d763c3eaab49ce6908bb9911411e294208f4463b503df75bcc57d7f284092",
+    "core/build/libs/core-1.4.3.jar": "15fd607a5b022d89ef66711b3e28e6ac309f34c00ada8e4bef08fc3cabe5f18d",
+    "mod-api/build/libs/mod-api-1.4.3.jar": "96c834d5111ab140d4032059fcbee08c663bbd369ae01d22880c527017661e65",
+    "gradle.properties": "20f80a96f674b8ed8754b7c8129c209d5080a3e6938c301bc2b8fe057b09bf9d",
+    "core/src/main/kotlin/io/github/rwx/PlatformBridge.kt": "98d3d97e8bff043cae19f299196148d28ff0546b4037e9f638af95c287884d6c"
+  },
+  "rawArtifactsSha256": {
+    "build/real-replay-capture-20261102/screen-plan.json": "a6928c8696ccbe55662b2c66fc0f0d066aa9b1d663f1e0528718a2dbe0414794",
+    "build/real-replay-capture-20261102/screen-summary.json": "84bf21a3ca138530c1cd71536ef745be23c7e7c0b45a88500c7a5e7ccfdbd519",
+    "build/real-replay-capture-20261102/screen-runtime-manifest.json": "616f956617a7ae2fbc14b87386636cc1da3fde556ba70dc1372a4be95fc2b12c",
+    "build/real-replay-capture-20261102/screen-project-runtime.zip": "f0fdae41d4af8bb13e01780a87ecbc69c082c33ecda8cd9cba78cd5dd2750148",
+    "build/real-replay-capture-20261102/run-screen.py": "8fd83a3381c74bb65e761dca8f0056a1fa00a7346319687aae3226ca5ddd9c8e",
+    "build/real-replay-capture-20261102/full-freeze-real-pan-zoom-command.json": "47bd656378ef968b12e8bb9058d448ec72a3f17ed428d4faf343e7b5e2d46293",
+    "build/real-replay-capture-20261102/full-freeze-real-pan-zoom/full-freeze-verification.json": "408e35c20410df2bcb514197a7accf006eedd31d79dd3cbfe6c2e981ae30eeed",
+    "build/real-replay-capture-20261102/full-freeze-real-pan-zoom/summary.json": "17d1c593d7415593ae1bc40c4d2f435b029500c2341a1c55bc8e5cdf6efe9774",
+    "build/real-replay-capture-20261102/full-freeze-real-pan-zoom/frames.ndjson": "18616592d19e49b1c2261688341b674d94c50fc5bf9bd1922a4a7b824f4cddb5",
+    "build/real-replay-capture-20261102/default-on-tests-command.json": "6981a6fe4cfab5b8e65bc96efe3fbb7250d03c90a3785d36f9d1470635051510",
+    "build/real-replay-capture-20261102/default-on-tests.log": "5d641b34ec27688e46ce802da1ff09adc48c01dc7cf94e06a00cae5f911c77fb",
+    "build/real-replay-capture-20261102/default-on-tests-summary.json": "f04a6df6a9e140542cb51be6d7fd9e24b92bbb56b686a6a8fc01ea351d93e3e8",
+    "build/real-replay-capture-20261102/screen-static-A1.log": "6a84ac66b1777d270415b8fd676b88e40ecc776dc142a92afa059cb7272660aa",
+    "build/real-replay-capture-20261102/screen-static-A1-command.json": "a1cf0509068bb6b9f6198458897f14c73da75b31315b1be32eeb3a41fad9d0a0",
+    "build/real-replay-capture-20261102/screen-static-A1/manifest.json": "7f57384f1c07dd2cb10bb8d42f0b60d5f037283b474c4d50045f8236be002d72",
+    "build/real-replay-capture-20261102/screen-static-A1/summary.json": "400b0f46e2b8fd2336fc4dab734e3bbe91b0074f089e174c3b0c79bf2c84334b",
+    "build/real-replay-capture-20261102/screen-static-A1/frames.ndjson": "90ae3f27ddb99abed6020b517bdd4f7499b72a253b75541289ac32e328a3d12f",
+    "build/real-replay-capture-20261102/screen-static-B1.log": "ff68124f07e3f150d82badf6db4ebc0614f5f2e774267f0459d89fcc0223600f",
+    "build/real-replay-capture-20261102/screen-static-B1-command.json": "4ea877bb7a3e3f063d63ad2caeb9fa3949a8d4b93e2fc027a1bb3fb133c03278",
+    "build/real-replay-capture-20261102/screen-static-B1/manifest.json": "3dd04fbd5f017f2a30cffc80345e84f476a63a120ec77de455a0d8be44b5cc0f",
+    "build/real-replay-capture-20261102/screen-static-B1/summary.json": "64dd4d5b272147fedf1338a5f5c34f8ae26918f116a6fb5a29b2896f60d9985e",
+    "build/real-replay-capture-20261102/screen-static-B1/frames.ndjson": "f07a83d71f52c5f6cfa96ad8db5d652ddaff8c2526f7e0d68ed13d476e6322a3",
+    "build/real-replay-capture-20261102/screen-static-B2.log": "942c1002827f4c3a6b47324a175309e4bbb837004d4969e80b124732b1438963",
+    "build/real-replay-capture-20261102/screen-static-B2-command.json": "1df263b52cec45d08e962cdb902a27d9c3bad040836f0beeb37dbb2773f617a3",
+    "build/real-replay-capture-20261102/screen-static-B2/manifest.json": "ee08eab0a5ad8ed56e31804266963d5c0b25894b13a5a03c18c58cbb1caeadb6",
+    "build/real-replay-capture-20261102/screen-static-B2/summary.json": "ad65416a095eedc78f8e023df7e23741d22e9942594680ea58b18036873bceaf",
+    "build/real-replay-capture-20261102/screen-static-B2/frames.ndjson": "4f453185c3855f8bc7a2b6cb5cf6b7bb5b38024c8669abfe1523350e25bda063",
+    "build/real-replay-capture-20261102/screen-static-A2.log": "2d492e9d773a0c0acc59b9d44396ff9fe9b39b5e4df33d9323645afb9f7fa8e3",
+    "build/real-replay-capture-20261102/screen-static-A2-command.json": "1ab46560db614cad3cb4e578dea75ca28b5748bb6bb2c5715a95be4fe3977152",
+    "build/real-replay-capture-20261102/screen-static-A2/manifest.json": "31ab0b6f10584c354941b0e77e877b71dd43e7f7af8e3a48012b0248e61c9e04",
+    "build/real-replay-capture-20261102/screen-static-A2/summary.json": "7567d99ff8ebf2e40c83a81a9d3c530e24c3535e2e386bd01926e5820dcd82c5",
+    "build/real-replay-capture-20261102/screen-static-A2/frames.ndjson": "b86dbf1c25c0994435d2da9dd16c8095afc72b7bf36b1b677b1c6d551d155345",
+    "build/real-replay-capture-20261102/screen-pan-zoom-A1.log": "93829650200bf18af9e3cafbe71e4291a1f6c78f881f442937ca3de506f4efb9",
+    "build/real-replay-capture-20261102/screen-pan-zoom-A1-command.json": "857708e94072643e419c019db125888ceea02371c1fa329743e8660c37d229a8",
+    "build/real-replay-capture-20261102/screen-pan-zoom-A1/manifest.json": "eb5b870d290d34891b25ca82561a0e588797c6056fd217efebc5e20c5ac20d24",
+    "build/real-replay-capture-20261102/screen-pan-zoom-A1/summary.json": "13bc776aac7b02ce2bf2c4afbf68d888e072eea01ac292e65347341ec9819c3a",
+    "build/real-replay-capture-20261102/screen-pan-zoom-A1/frames.ndjson": "540f3aa9fca24158226d5889275f0361346d02b377bb2d536cddde65eaaa1c94",
+    "build/real-replay-capture-20261102/screen-pan-zoom-B1.log": "8d782ee72fe8510d06433525e747690eb611e6a665085d54f112885754ee7f39",
+    "build/real-replay-capture-20261102/screen-pan-zoom-B1-command.json": "f8fcafa43076259abdb733f27db99340221a1def32869e24f860c43e0bdee7f1",
+    "build/real-replay-capture-20261102/screen-pan-zoom-B1/manifest.json": "5094dde4733ef09a9082bcd14a9a310badc4c4fb9d30f4beadab48af1c7312b1",
+    "build/real-replay-capture-20261102/screen-pan-zoom-B1/summary.json": "8118da57449a55e24fc7543a1350e9784b3313599e13c9d230dec1cac2203414",
+    "build/real-replay-capture-20261102/screen-pan-zoom-B1/frames.ndjson": "f3124b1b1bb3a2c93ec2aac357373ebe525f1086d6acdff7ad956b57190e1625",
+    "build/real-replay-capture-20261102/screen-pan-zoom-B2.log": "10d03fa9d69820f9ff8a7a77d18ba7f2700f945e6c5ee3155d686b92ffb44387",
+    "build/real-replay-capture-20261102/screen-pan-zoom-B2-command.json": "4243e3c273d42d06476aaf5ff7db6e3fda086881c1898818c633a1ba32da0999",
+    "build/real-replay-capture-20261102/screen-pan-zoom-B2/manifest.json": "5058118aa382bc73da45c901906df5ee0fa91b4139cba8fc28db2cab3b59c466",
+    "build/real-replay-capture-20261102/screen-pan-zoom-B2/summary.json": "a295278f345305e20732a40b005a7a5482a8864263091ca97deae9d08a2c9329",
+    "build/real-replay-capture-20261102/screen-pan-zoom-B2/frames.ndjson": "90d9eafb24b520fdcd8cf6e65bbfbf2b50877ca7b6c088ff74b22cabe80adca3",
+    "build/real-replay-capture-20261102/screen-pan-zoom-A2.log": "b051e9c59699b15cfcff84a1b887f61a30299d43b3a435d829b5a44c7ec0b16e",
+    "build/real-replay-capture-20261102/screen-pan-zoom-A2-command.json": "f2068fc0a939264e1b058524b4aadd11219e112550280dab809f791f8333de45",
+    "build/real-replay-capture-20261102/screen-pan-zoom-A2/manifest.json": "a54f51591492da3f02aba7f42ecae5e64038e25610e031625c5d72f74801919e",
+    "build/real-replay-capture-20261102/screen-pan-zoom-A2/summary.json": "45b64f7811ad4758a5f8008be7524a02bb56a9b9921ecec9898a52bd075a11db",
+    "build/real-replay-capture-20261102/screen-pan-zoom-A2/frames.ndjson": "4529eab6d45106e5b8426828e2e77209385543de9b2d00e9430287e579803bfe",
+    "build/real-replay-capture-20261102/product-default.log": "7906f6238064ed858f081ae0531d86729fafc434549efb9e1c67621a9e917f64",
+    "build/real-replay-capture-20261102/product-default-command.json": "279a5a3bf2aea6da0169f072b643ac9c1d75ba03f237aec3b1bce3993dca3d3d",
+    "build/real-replay-capture-20261102/product-default/manifest.json": "b98027e991362a14d62ab2af64ebee8c26e8d33ed93efaef2a8c11103fa962a5",
+    "build/real-replay-capture-20261102/product-default/summary.json": "f127fe396378693b85d057c3ca0b96e76f2b991a294813da2341384d46216310",
+    "build/real-replay-capture-20261102/product-default/frames.ndjson": "962410a38e33f95d57883a2131bbc8ff42df70b243cc29550642333807192e3e",
+    "build/real-replay-capture-20261102/explicit-fallback.log": "76983416ee8754134c43d9319a2a49d2ffbfd89d27080ce2b1288da7eb0afa67",
+    "build/real-replay-capture-20261102/explicit-fallback-command.json": "5f8c2d884f09b4f2f5ba5f6db05b46c90c88f7a6692a2714aee6a32305a974d7",
+    "build/real-replay-capture-20261102/explicit-fallback/manifest.json": "c3a46f0ca2ca31dba856308377e87ac284a73e280342dacf7ed3fbbd657f7770",
+    "build/real-replay-capture-20261102/explicit-fallback/summary.json": "ae63117e24a02945b3f89b2972760d3d73ff1891f34c2668fb7ee9f8a6d4c080",
+    "build/real-replay-capture-20261102/explicit-fallback/frames.ndjson": "c68b409a9492ec67408550e1a9d44e481fb4359fca7c548442df4ed93cc47219"
+  },
+  "notYetVerified": [
+    "Official original complete assets and same-machine baseline",
+    "GPU execution/presentation and pixel comparison of final defaults",
+    "Physical OS input latency",
+    "Ten-minute pan/zoom continuity",
+    "Normal network-game and dense-combat performance"
+  ]
+}

@@ -18,8 +18,39 @@ internal class KoolCanvasSpriteAtlas(
         )
     }
 
-    internal class Page(val serial: Int, val size: Int) {
-        val rgbaPixels = ByteArray(size * size * 4)
+    internal class Page(val serial: Int, val size: Int, private val pixelPool: KoolCanvasAtlasPixelPool? = null) {
+        var rgbaPixels = pixelPool?.blankPagePixels(size * size * 4) ?: ByteArray(size * size * 4)
+            private set
+        // Append-history fingerprint: hash only texels already visited by the guarded blit, not
+        // the untouched zero page. Equal bytes reached by different histories may miss reuse;
+        // the pool always checks every byte before sharing. Texture IDs never enter this value.
+        var contentFingerprint = size
+            private set
+        fun finishBlitFingerprint(value: Int) { contentFingerprint = value }
+        private var pixelsShared = false
+        // This prefix covers whole padded rows. It can overestimate writes, but its suffix must
+        // stay zero; arbitrary callers use the full-size default instead of inferring a bound.
+        private var writtenPrefixBytes = 0
+        fun writablePixels(writtenThrough: Int = rgbaPixels.size): ByteArray {
+            require(writtenThrough in 0..rgbaPixels.size)
+            if (pixelsShared) {
+                rgbaPixels = pixelPool?.copyPagePixels(rgbaPixels, writtenPrefixBytes) ?: rgbaPixels.copyOf()
+                pixelsShared = false
+            }
+            // Preserve the OLD bound until COW completes, including when the next blit is taller.
+            if (pixelPool != null) writtenPrefixBytes = maxOf(writtenPrefixBytes, writtenThrough)
+            return rgbaPixels
+        }
+        fun sharePixels() {
+            val pool = pixelPool ?: return
+            if (!pixelsShared) {
+                val unpublished = rgbaPixels
+                val canonical = pool.intern(unpublished, contentFingerprint)
+                rgbaPixels = canonical
+                pixelsShared = true
+                pool.recycleDuplicatePage(unpublished, canonical, writtenPrefixBytes)
+            }
+        }
         var cursorX = 0
         var cursorY = 0
         var rowHeight = 0
@@ -40,6 +71,12 @@ internal class KoolCanvasSpriteAtlas(
     // At most 32 MiB for default pages. An in-flight texture never lends its upload memory.
     private val freeUploads = ArrayDeque<Uint8Buffer>()
     private var poolEpoch = 0L
+    private var sharedPixels: KoolCanvasAtlasPixelPool? = null
+
+    fun sharePixels(pool: KoolCanvasAtlasPixelPool) {
+        check(pages.isEmpty()) { "Atlas pixel sharing must be configured before recording" }
+        sharedPixels = pool
+    }
 
     private fun retireTexture(texture: Texture2d, recycle: Boolean = true) {
         val data = uploadOwners.remove(texture)
@@ -49,7 +86,7 @@ internal class KoolCanvasSpriteAtlas(
             // retain its complete page after release; detach it only after its last GPU fence.
             texture.uploadData = null
             texture.release()
-            if (recycle && epoch == poolEpoch && data != null && freeUploads.size < 2) freeUploads.addLast(data)
+            if (sharedPixels == null && recycle && epoch == poolEpoch && data != null && freeUploads.size < 2) freeUploads.addLast(data)
         }
     }
 
@@ -64,17 +101,38 @@ internal class KoolCanvasSpriteAtlas(
         // Resolve nested recorded canvases before any atlas payload is published. A late slot used
         // to sample the previous full image for one frame, until the next prepare rebuilt the page.
         visitedFrames.clear(); prepareStack.clear(); prepareStack.addLast(commands)
-        while (prepareStack.isNotEmpty()) for (command in prepareStack.removeLast()) {
-            val textureCommand = when (command) {
-                is KoolCanvasCommand.DrawTexture -> command
-                is KoolCanvasCommand.DrawTextureRepeat -> KoolCanvasCommand.DrawTexture(
-                    command.texture, command.source, command.destination, command.paint, command.state)
-                else -> null
-            }
-            if (textureCommand != null && isSupported(textureCommand)) {
-                slot(textureCommand)?.page?.lastUsed = frameNumber
-                if (prepareNestedFrames && visitedFrames.add(textureCommand.texture.id)) {
-                    textureStore.frame(textureCommand.texture.id)?.let { prepareStack.addLast(it.commands) }
+        while (prepareStack.isNotEmpty()) {
+            val current = prepareStack.removeLast()
+            // A custom store may legally expose static pixels lazily between lookups. Only the
+            // version-pinned registry guarantees stable availability throughout this render pass.
+            val packed = if (textureStore === KoolCanvasTextureRegistry) current as? KoolCanvasPackedTextureCommands else null
+            val prepared = packed?.let { BooleanArray(it.textures.size) }
+            for (index in current.indices) {
+                val row = packed?.rowAt(index) ?: -1
+                if (row >= 0) {
+                    val packedCommands = packed!!
+                    val textureIndex = packedCommands.textureIndex(row)
+                    if (!prepared!![textureIndex]) {
+                        prepared[textureIndex] = true
+                        val ref = packedCommands.textures[textureIndex]
+                        slotForValidatedTexture(ref)?.page?.lastUsed = frameNumber
+                        if (prepareNestedFrames && visitedFrames.add(ref.id))
+                            textureStore.frame(ref.id)?.let { prepareStack.addLast(it.commands) }
+                    }
+                    continue
+                }
+                val command = packed?.legacyAt(index) ?: current[index]
+                val textureCommand = when (command) {
+                    is KoolCanvasCommand.DrawTexture -> command
+                    is KoolCanvasCommand.DrawTextureRepeat -> KoolCanvasCommand.DrawTexture(
+                        command.texture, command.source, command.destination, command.paint, command.state)
+                    else -> null
+                }
+                if (textureCommand != null && isSupported(textureCommand)) {
+                    slot(textureCommand)?.page?.lastUsed = frameNumber
+                    if (prepareNestedFrames && visitedFrames.add(textureCommand.texture.id)) {
+                        textureStore.frame(textureCommand.texture.id)?.let { prepareStack.addLast(it.commands) }
+                    }
                 }
             }
         }
@@ -91,6 +149,7 @@ internal class KoolCanvasSpriteAtlas(
 
     private fun commitAppends(page: Page) {
         if (!page.dirty) return
+        page.sharePixels()
         val updated = incrementalUploads && page.textures.values.all { texture ->
             KoolCanvasAtlasUpdates.append(texture, page.appended) }
         if (!updated) {
@@ -103,13 +162,18 @@ internal class KoolCanvasSpriteAtlas(
 
     fun slot(command: KoolCanvasCommand.DrawTexture): Slot? {
         if (!isSupported(command)) return null
-        slots[command.texture.id]?.let { return it }
-        val image = textureStore.staticArgbImage(command.texture.id) ?: return null
-        if (image.premultipliedAlpha || image.width != command.texture.width || image.height != command.texture.height ||
+        return slotForValidatedTexture(command.texture)
+    }
+
+    /** Root packing already checked command support; pixel/image validation remains identical. */
+    internal fun slotForValidatedTexture(texture: KoolCanvasTextureRef): Slot? {
+        slots[texture.id]?.let { return it }
+        val image = textureStore.staticArgbImage(texture.id) ?: return null
+        if (image.premultipliedAlpha || image.width != texture.width || image.height != texture.height ||
             image.width <= 0 || image.height <= 0 || image.width + 4 > pageSize || image.height + 4 > pageSize) return null
         val slotStart = CanvasRenderStageTrace.start()
         val page = pages.firstOrNull { fits(it, image.width, image.height) }
-            ?: if (pages.size < maxPages) Page(++serial, pageSize).also { pages += it } else return null
+            ?: if (pages.size < maxPages) Page(++serial, pageSize, sharedPixels).also { pages += it } else return null
         val paddedWidth = image.width + 4
         val paddedHeight = image.height + 4
         if (page.cursorX + paddedWidth > pageSize) {
@@ -119,20 +183,32 @@ internal class KoolCanvasSpriteAtlas(
         }
         val x = page.cursorX + 2
         val y = page.cursorY + 2
+        val fingerprintNeeded = sharedPixels != null
+        val rgbaPixels = if (fingerprintNeeded) page.writablePixels((y + image.height + 2) * pageSize * 4)
+            else page.writablePixels()
+        var fingerprint = page.contentFingerprint
+        if (fingerprintNeeded) {
+            fingerprint = fingerprint * 31 + x
+            fingerprint = fingerprint * 31 + y
+            fingerprint = fingerprint * 31 + paddedWidth
+            fingerprint = fingerprint * 31 + paddedHeight
+        }
         // Repeat edge texels into two guard pixels, including corners, to preserve filtered edges.
         for (dy in -2 until image.height + 2) {
             val sy = dy.coerceIn(0, image.height - 1)
             for (dx in -2 until image.width + 2) {
                 val sx = dx.coerceIn(0, image.width - 1)
                 val pixel = image.pixels[sy * image.width + sx]
+                if (fingerprintNeeded) fingerprint = fingerprint * 31 + pixel
                 val offset = ((y + dy) * pageSize + x + dx) * 4
                 // Convert only the new sprite and its guard region, preserving transparent RGB.
-                page.rgbaPixels[offset] = (pixel ushr 16).toByte()
-                page.rgbaPixels[offset + 1] = (pixel ushr 8).toByte()
-                page.rgbaPixels[offset + 2] = pixel.toByte()
-                page.rgbaPixels[offset + 3] = (pixel ushr 24).toByte()
+                rgbaPixels[offset] = (pixel ushr 16).toByte()
+                rgbaPixels[offset + 1] = (pixel ushr 8).toByte()
+                rgbaPixels[offset + 2] = pixel.toByte()
+                rgbaPixels[offset + 3] = (pixel ushr 24).toByte()
             }
         }
+        if (fingerprintNeeded) page.finishBlitFingerprint(fingerprint)
         page.cursorX += paddedWidth
         page.rowHeight = maxOf(page.rowHeight, paddedHeight)
         page.dirty = true
@@ -146,7 +222,7 @@ internal class KoolCanvasSpriteAtlas(
         }
         page.lastUsed = frameNumber
         CanvasRenderStageTrace.record("atlas-slot", slotStart, image.width.toLong() * image.height * 4, page.serial.toLong())
-        return Slot(page, x, y, image.width, image.height).also { slots[command.texture.id] = it }
+        return Slot(page, x, y, image.width, image.height).also { slots[texture.id] = it }
     }
 
     fun texture(page: Page, filter: KoolCanvasTextureFilter): Texture2d {
@@ -154,16 +230,20 @@ internal class KoolCanvasSpriteAtlas(
         // replace it with an immutable complete payload rather than showing a one-frame hole.
         if (incrementalUploads) commitAppends(page)
         return page.textures.getOrPut(filter) {
+        // Late expansion can reach texture() before the next prepare()/commit. Sharing only the
+        // CPU bytes preserves that path's existing upload publication and retirement rules.
+        page.sharePixels()
         val textureStart = CanvasRenderStageTrace.start()
-        // Bulk-copy into an independent upload owner; later page growth must not change memory
-        // still referenced by an in-flight texture. Each filter retains its own immutable payload.
+        // Each texture owns its cursor and retirement reference; equal pages may share read-only
+        // upload bytes. Growth cannot change any payload still referenced by an in-flight texture.
         val allocateStart = CanvasRenderStageTrace.start()
-        val data = freeUploads.removeFirstOrNull() ?: Uint8Buffer(page.rgbaPixels.size)
+        val data = sharedPixels?.uploadView(page.rgbaPixels)
+            ?: freeUploads.removeFirstOrNull() ?: Uint8Buffer(page.rgbaPixels.size)
         data.position = 0
         data.limit = data.capacity
         CanvasRenderStageTrace.record("atlas-allocate", allocateStart, page.rgbaPixels.size.toLong())
         val copyStart = CanvasRenderStageTrace.start()
-        data.put(page.rgbaPixels)
+        if (sharedPixels == null) data.put(page.rgbaPixels)
         CanvasRenderStageTrace.record("atlas-copy", copyStart, page.rgbaPixels.size.toLong())
         data.position = 0
         val name = "rwx-sprite-atlas-$owner-${page.serial}-$frameNumber-$filter"

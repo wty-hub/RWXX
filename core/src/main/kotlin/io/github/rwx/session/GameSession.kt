@@ -591,6 +591,21 @@ abstract class GameSession {
         }
     }
 
+    /**
+     * Creates a new UI-selected local room using the saved difficulty, after engine startup has
+     * loaded preferences. Explicit launch configurations continue through [enterLocalBattleRoomLive].
+     */
+    internal open fun enterLocalBattleRoomWithSavedDefaults(config: BattleRoomLaunchConfig): Boolean =
+        executeEngineTask("prepare local battle room with saved defaults") {
+            val viewport = lastViewport.takeIf { it.width > 0 && it.height > 0 } ?: defaultPreloadViewport
+            ensureStartedOutsideGameLock(viewport)
+            val difficulty = runEngineCommand("read saved local AI difficulty") { engine ->
+                engine.settingsEngine?.aiDifficulty
+            } ?: return@executeEngineTask false
+            val options = config.room.options.clone().apply { aiDifficulty = difficulty }
+            enterLocalBattleRoomLive(config.copy(room = config.room.copy(options = options)))
+        }
+
     open fun enterLocalBattleRoomLive(config: BattleRoomLaunchConfig): Boolean =
         runBattleRoomCommand("enter local battle room") { engine, networkEngine ->
             if (networkEngine.networkGameActive && !networkEngine.gameHasBeenStarted) {

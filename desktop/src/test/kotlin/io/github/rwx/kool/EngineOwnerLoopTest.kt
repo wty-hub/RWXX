@@ -9,12 +9,13 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class EngineOwnerLoopTest {
-    @Test fun `default high refresh pacing yields the CPU between ticks`() {
+    @Test fun `full park high refresh pacing yields the CPU with either deadline policy`() = forEachDeadlineMode { stable ->
         val threadMetrics = ManagementFactory.getThreadMXBean()
-        if (!threadMetrics.isCurrentThreadCpuTimeSupported) return
+        if (!threadMetrics.isCurrentThreadCpuTimeSupported) return@forEachDeadlineMode
         if (!threadMetrics.isThreadCpuTimeEnabled) threadMetrics.isThreadCpuTimeEnabled = true
         val warmedUp = CountDownLatch(30)
-        val loop = EngineOwnerLoop({ 3_333_333L }, { warmedUp.countDown() }, { throw it })
+        val loop = EngineOwnerLoop({ 3_333_333L }, { warmedUp.countDown() }, { throw it },
+            legacyPacing = true, legacyShortOwnerPark = true, stableFrameDeadlines = stable)
         try {
             assertTrue(warmedUp.await(5, TimeUnit.SECONDS))
             val before = loop.call { System.nanoTime() to threadMetrics.currentThreadCpuTime }
@@ -28,10 +29,10 @@ class EngineOwnerLoopTest {
         } finally { loop.close() }
     }
 
-    @Test fun `full interval parking still wakes immediately for queued work and close`() {
+    @Test fun `full interval parking still wakes immediately for queued work and close`() = forEachDeadlineMode { stable ->
         val firstTick = CountDownLatch(1)
         val loop = EngineOwnerLoop({ TimeUnit.SECONDS.toNanos(30) }, { firstTick.countDown() }, { throw it },
-            legacyPacing = true)
+            legacyPacing = true, legacyShortOwnerPark = true, stableFrameDeadlines = stable)
         try {
             assertTrue(firstTick.await(5, TimeUnit.SECONDS))
             val ownerThread = loop.submit { Thread.currentThread() }.get(1, TimeUnit.SECONDS)
@@ -55,7 +56,7 @@ class EngineOwnerLoopTest {
             release.countDown(); producer.join(5000)
         } finally { release.countDown(); loop.close() }
     }
-    @Test fun `rapid key and pointer transitions reach separate original loops in FIFO order`() = forEachPacingMode { legacy, legacyShort ->
+    @Test fun `rapid key and pointer transitions reach separate original loops in FIFO order`() = forEachPacingMode { legacy, legacyShort, stable ->
         var keyDown = false
         var pointerDown = false
         var pointerX = 0
@@ -63,7 +64,7 @@ class EngineOwnerLoopTest {
         val executed = mutableListOf<String>()
         val loop = EngineOwnerLoop({ 1_000_000L }, {
             synchronized(observed) { observed += Triple(keyDown, pointerDown, pointerX) }
-        }, { throw it }, legacyPacing = legacy, legacyShortOwnerPark = legacyShort)
+        }, { throw it }, legacyPacing = legacy, legacyShortOwnerPark = legacyShort, stableFrameDeadlines = stable)
         try {
             val futures = listOf(
                 loop.submitInput("key/65", true) { executed += "key down"; keyDown = true },
@@ -101,10 +102,10 @@ class EngineOwnerLoopTest {
         } finally { loop.close() }
     }
 
-    @Test fun `clock reset excludes serialized loading time from next simulation delta`() = forEachPacingMode { legacy, legacyShort ->
+    @Test fun `clock reset excludes serialized loading time from next simulation delta`() = forEachPacingMode { legacy, legacyShort, stable ->
         val samples = mutableListOf<Float>()
         val loop = EngineOwnerLoop({ 1_000_000L }, { synchronized(samples) { samples += it } }, { throw it },
-            legacyPacing = legacy, legacyShortOwnerPark = legacyShort)
+            legacyPacing = legacy, legacyShortOwnerPark = legacyShort, stableFrameDeadlines = stable)
         try {
             loop.call {
                 Thread.sleep(80)
@@ -119,15 +120,16 @@ class EngineOwnerLoopTest {
         } finally { loop.close() }
     }
 
-    @Test fun `close drains accepted operations and rejects later operations`() = forEachPacingMode { legacy, legacyShort ->
-        val loop = EngineOwnerLoop({ 1_000_000L }, {}, { throw it }, legacyPacing = legacy, legacyShortOwnerPark = legacyShort)
+    @Test fun `close drains accepted operations and rejects later operations`() = forEachPacingMode { legacy, legacyShort, stable ->
+        val loop = EngineOwnerLoop({ 1_000_000L }, {}, { throw it }, legacyPacing = legacy,
+            legacyShortOwnerPark = legacyShort, stableFrameDeadlines = stable)
         val values = (0 until 500).map { loop.submit { it } }
         loop.close()
         assertEquals((0 until 500).toList(), values.map { it.get(5, TimeUnit.SECONDS) })
         assertTrue(loop.submit { 42 }.isCompletedExceptionally)
     }
 
-    @Test fun `pacing period is sampled once after each tick across refresh changes`() = forEachPacingMode { legacy, legacyShort ->
+    @Test fun `pacing period is sampled once after each tick across refresh changes`() = forEachPacingMode { legacy, legacyShort, stable ->
         val events = mutableListOf<String>()
         val ready = CountDownLatch(6)
         var ticks = 0
@@ -140,7 +142,7 @@ class EngineOwnerLoopTest {
             events += "tick"
             ticks++
             ready.countDown()
-        }, { throw it }, legacyPacing = legacy, legacyShortOwnerPark = legacyShort)
+        }, { throw it }, legacyPacing = legacy, legacyShortOwnerPark = legacyShort, stableFrameDeadlines = stable)
         try {
             assertTrue(ready.await(5, TimeUnit.SECONDS))
             val snapshot = loop.call { Triple(ticks, periodCalls, events.toList()) }
@@ -149,9 +151,55 @@ class EngineOwnerLoopTest {
         } finally { loop.close() }
     }
 
-    private inline fun forEachPacingMode(test: (Boolean, Boolean) -> Unit) {
-        test(true, false) // Original full park.
-        test(false, true) // Version 13 hybrid, including tiny coarse parks.
-        test(false, false) // Hybrid with the minimum coarse-park guard.
+    @Test fun `reset while parked clears both elapsed loading time and the old deadline`() = forEachDeadlineMode { stable ->
+        val samples = mutableListOf<Float>()
+        val firstTick = CountDownLatch(1)
+        val resetTick = CountDownLatch(1)
+        val loop = EngineOwnerLoop({ TimeUnit.SECONDS.toNanos(30) }, { delta ->
+            synchronized(samples) {
+                samples += delta
+                if (samples.size == 1) firstTick.countDown() else resetTick.countDown()
+            }
+        }, { throw it }, legacyPacing = true, legacyShortOwnerPark = true, stableFrameDeadlines = stable)
+        try {
+            assertTrue(firstTick.await(5, TimeUnit.SECONDS))
+            loop.submit { Thread.sleep(80); loop.resetClock() }.get(5, TimeUnit.SECONDS)
+            assertTrue(resetTick.await(1, TimeUnit.SECONDS), "Reset retained the old 30 second frame deadline")
+            assertEquals(0f, synchronized(samples) { samples[1] }, "Loading time leaked through reset")
+        } finally { loop.close() }
+    }
+
+    @Test fun `overrun keeps actual elapsed delta then starts a new paced interval`() = forEachDeadlineMode { stable ->
+        val period = TimeUnit.MILLISECONDS.toNanos(40)
+        val samples = mutableListOf<Float>()
+        val ready = CountDownLatch(3)
+        val loop = EngineOwnerLoop({ period }, { delta ->
+            val first = synchronized(samples) {
+                samples += delta
+                samples.size == 1
+            }
+            if (first) Thread.sleep(120)
+            ready.countDown()
+        }, { throw it }, legacyPacing = true, legacyShortOwnerPark = true, stableFrameDeadlines = stable)
+        try {
+            assertTrue(ready.await(5, TimeUnit.SECONDS))
+            val snapshot = synchronized(samples) { samples.take(3) }
+            assertEquals(0f, snapshot.first())
+            assertTrue(snapshot[1] >= 0.100f, "Overrun was replaced with a fixed delta: $snapshot")
+            // Once the delayed tick starts, the missed periods must not produce immediate catch-up ticks.
+            assertTrue(snapshot[2] >= 0.020f,
+                "A missed interval caused a burst of catch-up ticks: $snapshot")
+        } finally { loop.close() }
+    }
+
+    private inline fun forEachDeadlineMode(test: (Boolean) -> Unit) {
+        test(false)
+        test(true)
+    }
+
+    private inline fun forEachPacingMode(test: (Boolean, Boolean, Boolean) -> Unit) = forEachDeadlineMode { stable ->
+        test(true, false, stable) // Original full park.
+        test(false, true, stable) // Version 13 hybrid, including tiny coarse parks.
+        test(false, false, stable) // Hybrid with the minimum coarse-park guard.
     }
 }

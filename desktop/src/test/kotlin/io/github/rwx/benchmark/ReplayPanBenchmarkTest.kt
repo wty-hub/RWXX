@@ -81,6 +81,30 @@ class ReplayPanBenchmarkTest {
         assertFailsWith<IllegalArgumentException> {
             ReplayPanBenchmark.options(enabled + mapOf("RWX_REPLAY_PAN_CAMERA_MODE" to "pan-zoom", "RWX_REPLAY_PAN_ZOOM_MODE" to "none"))
         }
+        assertFailsWith<IllegalArgumentException> {
+            ReplayPanBenchmark.options(enabled + mapOf("RWX_REPLAY_PAN_CAMERA_MODE" to "pan-zoom", "RWX_REPLAY_PAN_ZOOM_MODE" to "fixed"))
+        }
+    }
+
+    @Test fun `fixed uses zoom minimum exactly at every phase and retains ordinary bounds`() {
+        val fixed = ReplayPanBenchmark.options(enabled + mapOf("RWX_REPLAY_PAN_ZOOM_MODE" to "fixed",
+            "RWX_REPLAY_PAN_ZOOM_MIN" to ".45", "RWX_REPLAY_PAN_ZOOM_MAX" to ".45"))!!
+        assertEquals("fixed", fixed.zoomMode)
+        for (index in 0..1000) {
+            val request = ReplayPanBenchmark.scriptedTargetZoom(fixed.zoomMode, index / 1000.0, fixed.zoomMinimum, fixed.zoomMaximum, 1f)
+            assertEquals(.45f.toBits(), request.toBits())
+            assertEquals(.45f, ReplayPanBenchmark.constrainedTargetZoom(request, 1792f, 1008f, 4480f, 2880f, 1f))
+        }
+        val lower = ReplayPanBenchmark.scriptedTargetZoom("fixed", .75, .1f, 1.5f, 1f)
+        assertEquals(.32f, ReplayPanBenchmark.constrainedTargetZoom(lower, 1280f, 720f, 4000f, 2000f, 1f))
+        assertEquals(.16f, ReplayPanBenchmark.constrainedTargetZoom(lower, 1280f, 720f, 4000f, 2000f, 2f))
+        val upper = ReplayPanBenchmark.scriptedTargetZoom("fixed", .25, 10f, .1f, 1f)
+        assertEquals(2.3f, ReplayPanBenchmark.constrainedTargetZoom(upper, 1280f, 720f, 4000f, 2000f, 2f))
+        for (phase in listOf(0.0, .25, .75, 1.0)) {
+            assertEquals(.73f, ReplayPanBenchmark.scriptedTargetZoom("none", phase, .35f, 1.5f, .73f))
+            assertEquals(ReplayPanBenchmark.cycleZoom(phase, .35f, 1.5f),
+                ReplayPanBenchmark.scriptedTargetZoom("cycle", phase, .35f, 1.5f, .73f))
+        }
     }
 
     @Test fun `cycle starts at ordinary zoom and visits both bounds continuously`() {

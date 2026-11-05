@@ -6,6 +6,7 @@ import com.corrodinggames.rts.java.OpenALMusicFactory
 import com.corrodinggames.rts.java.audio.Sound
 import com.corrodinggames.rts.java.audio.lwjgl.OpenALAudio
 import com.corrodinggames.rts.java.audio.util.AudioFile
+import io.github.rwx.settings.InstallationIdentity
 import org.slf4j.LoggerFactory
 import java.awt.Desktop
 import java.io.File
@@ -30,7 +31,7 @@ class DesktopPlatformBridge(
     override val storage: DesktopPlatformStorage = DesktopPlatformStorage()
     override val preferenceStorage: PreferenceStorage = TomlPreferenceStorage(
         storage.location("/SD/rustedWarfare/", File(storage.rootDir.file, "${PREFERENCE_NAME}.toml"))
-    )
+    ).also { InstallationIdentity.loadOrCreate(it) }
     override val appMetadata: AppMetadata = AppMetadata()
     override val logger: AppLogger = DesktopLogger()
     override val crashReporter: CrashReporter = FileCrashReporter.get(

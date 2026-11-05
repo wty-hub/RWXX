@@ -1,0 +1,47 @@
+{
+  "date": "2026-11-03",
+  "version": "1.4.3",
+  "goalComplete": false,
+  "status": "valid-external-attribution-next-optimization-used-mesh-work",
+  "performanceAcceptance": false,
+  "evidence": {
+    "path": "/Users/wty/code/RWXX/build/background-display-20261103/pipeline-identity-diagnostic-v1/evaluation/independent-attribution-v1/delivery.json",
+    "sha256": "8f1aa28fe376622e50a037cadfab3099c51e7f968ccacfa7f55a78c632a57695"
+  },
+  "runtime": "Accepted904061 actual game, same ordinary replay20warm20sample/virtualDisplay16/actualinactive/framebuffer1280x720/MSAA4/target120. DefaultownerON/renderstableOFF/G1; no reuse candidate. Instrumented stage/GC/lifecycle and externalV7 creation-only bounded identity trace.",
+  "sample": {
+    "nativeCreationCount": 1324,
+    "unmatchedSampleNativeCreates": 0,
+    "rootCount": 286,
+    "rootNativeMs": 56.379374,
+    "mapCount": 1038,
+    "mapNativeMs": 66.109295,
+    "methodOuterMs": 144.590191,
+    "nativeInnerMs": 122.488669,
+    "ownerNameHashGroups": 1324,
+    "observedRepeatedOwnerGroups": 0
+  },
+  "longestFresh": {
+    "ms": 34.48425,
+    "beforeSequence": 2606,
+    "afterSequence": 2608,
+    "creates": 62,
+    "nativeCreateMs": 4.314248,
+    "pacingStageMs": 13.7,
+    "collectStageMs": 9.592,
+    "nearGc": false
+  },
+  "interpretation": [
+    "Map targets account for most creation count, while root has a sizable native time share.",
+    "No repeated(name,identityHash) owner/group was observed, so sharing compatible pass variants within one existing DrawPipelineVk is not supported as the main current optimization.",
+    "Creation is only part of a long gap; collect includes pass.onUpdate/canvas replay and generic Node collection, not just traversal."
+  ],
+  "nextChange": "Reset only previous used meshes and finish only current used meshes; preserve replay, texture resolution, prune/fence retirement and old constructor ABI. Actual same-package OFF/ON pending.",
+  "limits": [
+    "Identity hashes are not collision-free source object IDs; bounded grouping is not allocation-site proof.",
+    "One startup native row is unmatched byV7 and remains unknown, outside sample.",
+    "No cross-run FPS/adoption or original parity claim; instrumentation perturbs runtime.",
+    "All slow frames retained in independent JSON."
+  ],
+  "virtualDisplayRemoved": true
+}

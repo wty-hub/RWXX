@@ -1,0 +1,473 @@
+{
+  "schema": "rwxx-opaque-point-union-2026-11-05-v1",
+  "applicationVersion": "1.4.3",
+  "status": "correctness-passed-small-positive-performance-signal-default-adoption-decided-validation-pending",
+  "goalAchieved": false,
+  "candidate": {
+    "name": "exact opaque point geometry union",
+    "environment": "RWX_UNION_OPAQUE_POINTS",
+    "measuredPackageDefaultEnabled": false,
+    "measuredOnArmsExplicitEnvironment": "1",
+    "productionDecisionDefaultEnabled": true,
+    "fallbackEnvironment": "RWX_UNION_OPAQUE_POINTS=0",
+    "defaultConfigurationValidation": {
+      "status": "passed-with-documented-scope",
+      "owner": "root",
+      "scope": "Unset product flag uses the union path in the real recorder; explicit0 preserves legacy commands. Existing forcedON/OFF exact coverage and GPU checks remain unchanged. Final default-combination runtime and rollback tests are linked; historical b530 remains a separate measured package.",
+      "report": "/Users/wty/code/RWXX/docs/verification/default-optimizations-2026-11-05.json"
+    },
+    "adoptionDecision": {
+      "owner": "root",
+      "userDirection": "Include this as one component of the combined optimization.",
+      "basis": "Exact CPU/GPU correctness, bounded strict eligibility and complete fallback, with both paired fresh rates positive. This is adoption of a modest component; every tail metric need not improve to adopt it.",
+      "notClaimed": [
+        "All tail metrics improve",
+        "Statistically stable gain",
+        "Stable50percent-over-original",
+        "Stutter-free dragging or zooming"
+      ]
+    },
+    "scope": "Only one root drawPoints call with identity transform, no clip/target, Generic role, fully opaque SourceOver paint without texture effect, integer coordinates and integer square side1..8. Point squares extend from(x,y) to(x+side,y+side).",
+    "bounds": {
+      "minimumPoints": 64,
+      "maximumGridWidth": 512,
+      "maximumGridHeight": 512,
+      "maximumCells": 262144,
+      "maximumMaskBytes": 32768,
+      "maximumOutputRectangles": 4096,
+      "maximumViewportDimension": 65536,
+      "coordinateAbsoluteLimit": 1048576,
+      "acceptedOutputCondition": "outputRectangles*2<inputPoints"
+    },
+    "semantics": "Validate all points before emitting any replacement. Emit nonoverlapping integer horizontal spans for the exact covered-cell union; preserve paint and call order, legacy inclusive offset/count behavior and all unsupported fallbacks. Never merge across calls or drop displayed points.",
+    "offscreen": "Actual targetTexture children in DEFAULT,IMMEDIATE,GPU_TARGET modes retain the old path, in addition to state.renderTarget and gpuReplayTarget guards.",
+    "minimapScope": "The usual renderWithLineWidth=true bulk-point Minimap path is covered; the alternate false path is not claimed."
+  },
+  "measuredArtifacts": {
+    "manifestPath": "build/opaque-point-union-20261105/perf-inputs-v1/manifest.json",
+    "packagePath": "/Users/wty/code/RWXX/build/opaque-point-union-20261105/perf-inputs-v1/RWXX-1.4.3-opaque-point-union-candidates.jar",
+    "packageSha256": "b5306625f8a8ee7fe96fc21cc98e7ca7c88bc5d808875103a5a5542957b859c3",
+    "corePath": "build/opaque-point-union-20261105/cpu-inputs-v1/core.jar",
+    "coreSha256": "78fdf84fe8dc8c88c26b594df2a761ae61c8ca2b0e7c52bc87367f8277f1e7cb",
+    "desktopSha256": "8da0039153ba2143da066dc2c14c4e67174eb45aec60d84201662042328b296d",
+    "scopeReviewPath": "build/opaque-point-union-20261105/perf-inputs-v1/scope-review.json",
+    "scopeReviewSha256": "2f7e28c04a2ad701d64098a3ae5d25080e21c42116ca9aa36c3a747261091327",
+    "scopeChecks": 63,
+    "existingConstructorDescriptorsAndAccessPreserved": true,
+    "existingConstructorCount": 5,
+    "measuredSourceSha256": {
+      "/Users/wty/code/RWXX/core/src/main/kotlin/io/github/rwx/render/canvas/KoolGraphicsEngine.kt": "a89458d42e273e3e0496fd0786923155b81a01e1e9e871648ff6d0d799d3ecbd",
+      "/Users/wty/code/RWXX/core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasOpaquePointUnion.kt": "3a9e7328d0a9d4574c3027f5d871ede5595232aed12b0c7e01e2dca56024dc11"
+    },
+    "sourceShaScope": "These fingerprints bind the tested defaultOFF implementation; the subsequent default change is a separate pending validation."
+  },
+  "cpuVerification": {
+    "core": {
+      "path": "build/opaque-point-union-20261105/core-regression-v2/result.json",
+      "tests": 534,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "testSourceSha256": "6bd54c16000cd25145b54eabf1e474d9541e3b50c12c78f910fa8859d8a7ced5"
+    },
+    "desktop": {
+      "path": "build/opaque-point-union-20261105/desktop-regression-v1/result.json",
+      "tests": 159,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "interactiveFullscreenExplicitlyExcluded": true
+    },
+    "scope": "Full core and the noninteractive desktop suite passed. Native interactive fullscreen was explicitly excluded; no all-desktop/fullscreen pass is claimed.",
+    "initialCompileFailure": {
+      "preservedPath": "build/opaque-point-union-20261105/compile-failure-v1",
+      "reason": "New test used a texture ID where renderTarget requires a render-target ID. Root corrected only that test line before fresh core-v2. Production engine/helper were unchanged."
+    },
+    "independentSourceReviewPath": "build/opaque-point-union-20261105/independent-static-review-v1.json",
+    "independentRealChildScopeAddendumPath": "build/opaque-point-union-20261105/independent-child-scope-addendum-v1.json"
+  },
+  "gpuVerification": {
+    "resultPath": "build/opaque-point-union-20261105/gpu-exact-v1/process-result.json",
+    "resultSha256": "3f937171c170d169efe337269130195e919945ec8f78a40276491a63be9e632d",
+    "stdoutPath": "build/opaque-point-union-20261105/gpu-exact-v1/stdout.log",
+    "stdoutSha256": "36f2560d882fa647a445fcd69fdc17cd5465ae9d6c941c4907889b169f8f7121",
+    "valid": true,
+    "exitCode": 0,
+    "viewports": [
+      [
+        64,
+        64
+      ],
+      [
+        63,
+        47
+      ]
+    ],
+    "actualReadbackSamples": 4,
+    "casePairs": 22,
+    "rgbaPixelsCompared": 77627,
+    "exactMaximumChannelDelta": 0,
+    "actualAcceptedUnionCalls": 16,
+    "acceptedInputPoints": 9216,
+    "outputRectangles": 94,
+    "fenceCheckpoints": 44,
+    "retirementsRequested": 44,
+    "retirementsCompleted": 44,
+    "actualFenceRelease": true,
+    "proofChain": "Actual FloatArray GraphicsEngine API, OFF/ON fresh recorders, snapshot and freezeFrame, ordinary SceneHost adoption, explicitly4sample OffscreenPass2d resolved attachment download, native submission/last-use fences, exact all-RGBA comparison.",
+    "scope": "Windowless correctness only; not FPS, whole-game image equivalence, or evidence of real-game trigger frequency.",
+    "historicalSampleScopeErrataPath": "build/opaque-point-union-20261105/readback-sample-scope-errata-v1.json",
+    "historicalSampleScope": "Older Sprite/MapCell readback compositors that omitted numSamples used1 even with a4sample main context. Their raw records remain unchanged. This new union oracle explicitly uses and asserts4."
+  },
+  "realMotionVerification": {
+    "independentReviewPath": "build/stress-scenes-20261105/opaque-points-motion-v1/independent-v1/delivery.json",
+    "independentChecksPath": "build/stress-scenes-20261105/opaque-points-motion-v1/independent-v1/checks.json",
+    "independentChecks": 133,
+    "independentPassed": true,
+    "historicalReviewRecommendation": "The immutable independent-v1 report recommended defaultOFF and left final adoption to root. The later root decision above supersedes that recommendation, not its measurements.",
+    "protocol": {
+      "order": [
+        "control",
+        "union",
+        "union-repeat",
+        "control-repeat"
+      ],
+      "changedEnvironmentOnly": "RWX_UNION_OPAQUE_POINTS0/1",
+      "driverSynchronousQueueSubmits": 1,
+      "otherExperiments": "Held identical; frame candidates disabled in the prepared protocol",
+      "actualAi": "Medium0",
+      "ordinarySpeed": 1,
+      "initialMapUnits": 10000,
+      "mapSha256": "09232b22a1cc72511269895bf388eb1b2c2d2516aa12ef53416d97de845e0373",
+      "framebuffer": [
+        1792,
+        1008
+      ],
+      "msaa": 4,
+      "vsync": false,
+      "softwareCap": 300,
+      "warmupSeconds": 2,
+      "sampleSeconds": 20,
+      "camera": "20s pan and4s ordinary constrained zoom cycle .35..1.5",
+      "silentFromStartup": true,
+      "actualBackground": true,
+      "sameVirtualDisplayID": 37,
+      "commonNativeWrapper": "Read-only global initial/shutdown config and exact FFM/LWJGL native-image binding. No setter or simulation modification. Not a per-instance/queue snapshot or backend-teardown proof."
+    },
+    "arms": [
+      {
+        "name": "control",
+        "unionEnvironment": 0,
+        "summaryPath": "build/stress-scenes-20261105/opaque-points-motion-v1/control/completed-summary.json",
+        "configurationSha256": "e8d852e44fac153d384f11c38abd9cc327a025a987047598cb968ceb41e5407a",
+        "backgroundGatePath": "build/stress-scenes-20261105/opaque-points-motion-v1/control/background-gate.json",
+        "triggerGatePath": "build/stress-scenes-20261105/opaque-points-motion-v1/control/opaque-union-gate.json",
+        "metrics": {
+          "sampleSeconds": 20.002851167,
+          "rawRows": 5730,
+          "freshCount": 4830,
+          "acceptedCount": 5249,
+          "freshHz": 241.46557706575172,
+          "acceptedHz": 262.4125908940229,
+          "repeatPercent": 7.982472851971804,
+          "p95Ms": 7.28075,
+          "p99Ms": 11.024583,
+          "p999Ms": 26.423666,
+          "maxMs": 50.875167,
+          "overMs": {
+            "16.667": 18,
+            "33.333": 3,
+            "50": 1,
+            "100": 0
+          }
+        },
+        "unitSample": {
+          "minimumLivingUnits": 9222,
+          "maximumLivingUnits": 10000,
+          "minimumVisibleUnits": 1334,
+          "maximumMovingUnits": 615,
+          "framesWithProjectiles": 5256,
+          "acceptedPresentFps": 262.4125908940229,
+          "freshSnapshotHz": 241.46557706575172,
+          "freshSnapshotIntervalP99Ms": 11.024583,
+          "freshSnapshotIntervalMaxMs": 50.875167
+        },
+        "firstAcceptedBatchPerRecorder": [],
+        "exitCode": 0,
+        "actualBackgroundPassed": true
+      },
+      {
+        "name": "union",
+        "unionEnvironment": 1,
+        "summaryPath": "build/stress-scenes-20261105/opaque-points-motion-v1/union/completed-summary.json",
+        "configurationSha256": "1783e6d0a59713649636fc585fca89702557b390762eb3c8edbecaa4b434799b",
+        "backgroundGatePath": "build/stress-scenes-20261105/opaque-points-motion-v1/union/background-gate.json",
+        "triggerGatePath": "build/stress-scenes-20261105/opaque-points-motion-v1/union/opaque-union-gate.json",
+        "metrics": {
+          "sampleSeconds": 20.001542625,
+          "rawRows": 5985,
+          "freshCount": 4897,
+          "acceptedCount": 5413,
+          "freshHz": 244.83111586999405,
+          "acceptedHz": 270.62912603722236,
+          "repeatPercent": 9.532606687603916,
+          "p95Ms": 7.005292,
+          "p99Ms": 11.196667,
+          "p999Ms": 21.069833,
+          "maxMs": 38.818042,
+          "overMs": {
+            "16.667": 18,
+            "33.333": 2,
+            "50": 0,
+            "100": 0
+          }
+        },
+        "unitSample": {
+          "minimumLivingUnits": 9224,
+          "maximumLivingUnits": 10000,
+          "minimumVisibleUnits": 1336,
+          "maximumMovingUnits": 616,
+          "framesWithProjectiles": 5311,
+          "acceptedPresentFps": 270.62912603722236,
+          "freshSnapshotHz": 244.83111586999405,
+          "freshSnapshotIntervalP99Ms": 11.196667,
+          "freshSnapshotIntervalMaxMs": 38.818042
+        },
+        "firstAcceptedBatchPerRecorder": [
+          {
+            "inputPoints": 5000,
+            "outputRects": 166
+          }
+        ],
+        "exitCode": 0,
+        "actualBackgroundPassed": true
+      },
+      {
+        "name": "union-repeat",
+        "unionEnvironment": 1,
+        "summaryPath": "build/stress-scenes-20261105/opaque-points-motion-v1/union-repeat/completed-summary.json",
+        "configurationSha256": "1e3e1f45608c6eeeb96d683eceea7ab00ca412d3e5fb6be3b30a313865465266",
+        "backgroundGatePath": "build/stress-scenes-20261105/opaque-points-motion-v1/union-repeat/background-gate.json",
+        "triggerGatePath": "build/stress-scenes-20261105/opaque-points-motion-v1/union-repeat/opaque-union-gate.json",
+        "metrics": {
+          "sampleSeconds": 20.003538833,
+          "rawRows": 5956,
+          "freshCount": 4876,
+          "acceptedCount": 5408,
+          "freshHz": 243.75686925735477,
+          "acceptedHz": 270.3521634421195,
+          "repeatPercent": 9.837278106508876,
+          "p95Ms": 7.097625,
+          "p99Ms": 10.79525,
+          "p999Ms": 21.344042,
+          "maxMs": 41.469542,
+          "overMs": {
+            "16.667": 15,
+            "33.333": 1,
+            "50": 0,
+            "100": 0
+          }
+        },
+        "unitSample": {
+          "minimumLivingUnits": 9234,
+          "maximumLivingUnits": 10000,
+          "minimumVisibleUnits": 1336,
+          "maximumMovingUnits": 617,
+          "framesWithProjectiles": 5313,
+          "acceptedPresentFps": 270.3521634421195,
+          "freshSnapshotHz": 243.75686925735477,
+          "freshSnapshotIntervalP99Ms": 10.79525,
+          "freshSnapshotIntervalMaxMs": 41.469542
+        },
+        "firstAcceptedBatchPerRecorder": [
+          {
+            "inputPoints": 5000,
+            "outputRects": 166
+          }
+        ],
+        "exitCode": 0,
+        "actualBackgroundPassed": true
+      },
+      {
+        "name": "control-repeat",
+        "unionEnvironment": 0,
+        "summaryPath": "build/stress-scenes-20261105/opaque-points-motion-v1/control-repeat/completed-summary.json",
+        "configurationSha256": "16fa15fd947b361e815ddc29c193865a26dd149a980ca44f6504aa713d4df014",
+        "backgroundGatePath": "build/stress-scenes-20261105/opaque-points-motion-v1/control-repeat/background-gate.json",
+        "triggerGatePath": "build/stress-scenes-20261105/opaque-points-motion-v1/control-repeat/opaque-union-gate.json",
+        "metrics": {
+          "sampleSeconds": 20.002893584,
+          "rawRows": 5829,
+          "freshCount": 4793,
+          "acceptedCount": 5286,
+          "freshHz": 239.61533264536516,
+          "acceptedHz": 264.2617668189861,
+          "repeatPercent": 9.326522890654559,
+          "p95Ms": 7.242375,
+          "p99Ms": 12.212958,
+          "p999Ms": 19.722167,
+          "maxMs": 43.294208,
+          "overMs": {
+            "16.667": 14,
+            "33.333": 1,
+            "50": 0,
+            "100": 0
+          }
+        },
+        "unitSample": {
+          "minimumLivingUnits": 9231,
+          "maximumLivingUnits": 10000,
+          "minimumVisibleUnits": 1338,
+          "maximumMovingUnits": 616,
+          "framesWithProjectiles": 5233,
+          "acceptedPresentFps": 264.2617668189861,
+          "freshSnapshotHz": 239.61533264536516,
+          "freshSnapshotIntervalP99Ms": 12.212958,
+          "freshSnapshotIntervalMaxMs": 43.294208
+        },
+        "firstAcceptedBatchPerRecorder": [],
+        "exitCode": 0,
+        "actualBackgroundPassed": true
+      }
+    ],
+    "pooledDescriptive": {
+      "control": {
+        "n": 2,
+        "freshHz": 240.54045387467661,
+        "repeatPercent": 8.656858092074039,
+        "p95Ms": 7.263458,
+        "p99Ms": 11.617,
+        "p999Ms": 22.772666,
+        "maxMs": 50.875167,
+        "overMs": {
+          "16.667": 32,
+          "33.333": 4,
+          "50": 1,
+          "100": 0
+        }
+      },
+      "union": {
+        "n": 2,
+        "freshHz": 244.2939657618332,
+        "repeatPercent": 9.68487200813234,
+        "p95Ms": 7.051875,
+        "p99Ms": 10.978708,
+        "p999Ms": 21.344042,
+        "maxMs": 41.469542,
+        "overMs": {
+          "16.667": 33,
+          "33.333": 3,
+          "50": 0,
+          "100": 0
+        }
+      }
+    },
+    "pairEffects": {
+      "union_versus_control": {
+        "freshChangePercent": 1.3937965175573996,
+        "p99ChangeMs": 0.1720839999999999,
+        "maxChangeMs": -12.057125
+      },
+      "union-repeat_versus_control-repeat": {
+        "freshChangePercent": 1.72841051791921,
+        "p99ChangeMs": -1.417708000000001,
+        "maxChangeMs": -1.8246660000000006
+      }
+    },
+    "pooledFreshChangePercent": 1.5604493243004391,
+    "interpretation": "Small positive throughput signal: both pair effects are positive, pooled fresh240.540454→244.293966Hz(+1.560449%). Pooled P99/max improve; first pair P99, pooled repeat ratio and >16.667ms count worsen slightly. n2 per mode is descriptive, not a stability guarantee.",
+    "actualTrigger": {
+      "onArmsFirstAcceptedBatch": {
+        "inputPoints": 5000,
+        "outputRectangles": 166
+      },
+      "meaning": "One-shot first accepted batch per recorder, not aggregate all-frame statistics. The separate GPU oracle total9216→94 has a different scope.",
+      "independentPath": "build/stress-scenes-20261105/opaque-points-motion-v1/independent-v1/trigger-review.json",
+      "independentSha256": "01cffc1961432b59567c60ce990b9459257ee40d6f201f922037d77f1d2f0368"
+    }
+  },
+  "retainedOriginalReferences": [
+    {
+      "name": "v1",
+      "path": "build/original-10000-background-20261104/run-moving-panzoom-v1/summary.json",
+      "freshHz": 146.05,
+      "freshIntervalMs": {
+        "p95": 12.385459,
+        "p99": 16.001459,
+        "p999": 22.667125,
+        "max": 50.061708
+      },
+      "newSameDisplayReference": false
+    },
+    {
+      "name": "v2",
+      "path": "build/original-10000-background-20261104/run-moving-panzoom-v2/summary.json",
+      "freshHz": 152.6,
+      "freshIntervalMs": {
+        "p95": 11.811917,
+        "p99": 14.420208,
+        "p999": 20.05225,
+        "max": 45.611042
+      },
+      "newSameDisplayReference": false
+    },
+    {
+      "name": "v3",
+      "path": "build/original-10000-background-20261104/run-moving-panzoom-v3/summary.json",
+      "freshHz": 142.2,
+      "freshIntervalMs": {
+        "p95": 12.654208,
+        "p99": 17.068333,
+        "p999": 23.868,
+        "max": 52.741625
+      },
+      "newSameDisplayReference": false
+    }
+  ],
+  "originalComparisonScope": {
+    "newSameDisplayOriginalRun": false,
+    "denominatorSelected": false,
+    "stableFiftyPercentEstablished": false,
+    "stutterFreeEstablished": false,
+    "meaning": "All three existing146.05/152.6/142.2Hz references are retained. Independent AI seeds, displays and runtime stacks limit cross-product percentages; these records do not establish a new same-display original comparison or stable50percent advantage."
+  },
+  "virtualDisplayCleanup": {
+    "path": "build/background-display-20261104/create-19.ndjson",
+    "displayID": 37,
+    "exitCode": 0,
+    "signal": 0,
+    "removed": true,
+    "originalDisplaysUnchanged": true,
+    "observation": "Final cleanup row observed after the independent-v1 review; the historical review managerCleanupObserved=false is preserved."
+  },
+  "subsequentDiagnosticSeries": {
+    "recordPath": "build/stress-scenes-20261105/opaque-points-motion-v1/diagnostic-series-stop-v1.json",
+    "launchLogPath": "build/stress-scenes-20261105/opaque-points-motion-v1/diagnostic-off-launch.log",
+    "offControllerEntered": true,
+    "offTargetLaunched": false,
+    "offTopLevelAttemptConsumedRecordExists": false,
+    "failure": "Prelaunch AssertionError requiring the last display-log row to be ready; it was already cleanup.",
+    "jvmOrGpuLaunched": false,
+    "onTargetLaunched": false,
+    "seriesStopped": true,
+    "automaticRetry": false,
+    "performanceMeasurementsAvailable": false,
+    "priorAbbaResultsUnaffected": true
+  },
+  "limitations": [
+    "Independent ordinary battles, not seed-locked or lockstep. Initially10000; living and shouldDraw-visible counts vary during combat and zoom.",
+    "Engine shouldDraw counts do not prove10000 fine tank models or strategic icons were each rendered. No performance-arm screenshot or per-unit pixel proof is claimed.",
+    "Product presented-fresh cadence, not physical scanout or physical mouse input latency.",
+    "Opaque union exactness is limited to strict eligibility; transparent, transformed, clipped, offscreen, sparse or unsupported batches use the original path.",
+    "One ABBA sequence with two arms per mode does not establish broad platform compatibility, stable50percent improvement, or no dropped frames.",
+    "This report reuses frozen manifests and verification records; it does not rehash whole packages, rebuild, run a JVM/GPU, change the installed application or modify historical raw data."
+  ],
+  "installed": false,
+  "steamModified": false,
+  "systemVolumeChanged": false,
+  "reportProductionSourceModified": false,
+  "reportJvmGpuBuildWindowExecuted": false,
+  "newDefaultValidationPending": false,
+  "newDefaultValidationReport": "/Users/wty/code/RWXX/docs/verification/default-optimizations-2026-11-05.json",
+  "newDefaultValidationScope": "Default recorder regression and final default-combination CPU/GPU checks passed; inherited readback sample/tolerance scopes and sprite controller failure preserved in the linked report."
+}

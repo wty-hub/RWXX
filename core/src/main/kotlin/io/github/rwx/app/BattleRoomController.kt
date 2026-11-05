@@ -1,6 +1,5 @@
 package io.github.rwx.app
 
-import com.corrodinggames.rts.gameFramework.GameEngine
 import com.corrodinggames.rts.gameFramework.network.GameModeType
 import com.corrodinggames.rts.gameFramework.network.GameRoomSettings
 import io.github.rwx.logger
@@ -176,8 +175,9 @@ internal class BattleRoomController(
     private fun prepareLocalSinglePlayerRoom(config: BattleRoomLaunchConfig) {
         val requestSequence = ++roomRequestSequence
         gameSession.requestSessionTask(action = {
-            config.room.options.aiDifficulty = GameEngine.getInstance()?.settingsEngine?.aiDifficulty ?: 1
-            check(gameSession.enterLocalBattleRoomLive(config)) { "Game session rejected local room preparation" }
+            check(gameSession.enterLocalBattleRoomWithSavedDefaults(config)) {
+                "Game session rejected local room preparation"
+            }
             gameSession.currentBattleRoom()
         }, onComplete = { result ->
             if (requestSequence != roomRequestSequence) return@requestSessionTask

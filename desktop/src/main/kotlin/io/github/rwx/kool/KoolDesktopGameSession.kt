@@ -26,7 +26,6 @@ import io.github.rwx.session.GameSession
 import io.github.rwx.session.GameSessionRendererProfile
 import io.github.rwx.ui.BattleRoomUiBridge
 import io.github.rwx.ui.InGameMenuController
-import kotlin.math.roundToInt
 
 /** The complete legacy loop records immutable CPU frames on its unique owner thread. */
 internal class KoolDesktopGameSession(
@@ -49,6 +48,7 @@ internal class KoolDesktopGameSession(
     private val postInputFrameWait = System.getenv("RWX_POST_INPUT_FRAME_WAIT") == "1"
     private val inputPublication = InputPublicationFence()
     private var reportedPostInputWait = false
+    private val gameLoopDelta = DesktopGameLoopDelta()
     private var sequence = 0L
     private var viewportRevision = 0L
     private var nextUiPublication = 0L
@@ -184,6 +184,10 @@ internal class KoolDesktopGameSession(
     override fun close() {
         canvasPresentationTracker.close()
         owner.close()
+        if (gameLoopDelta.originalIntegerMillis) {
+            println("RWXGameDelta originalIntegerMs=true ownerCalls=${gameLoopDelta.originalOwnerCalls} " +
+                "missingOwnerFallbacks=${gameLoopDelta.missingOwnerFallbacks} explicitCalls=${gameLoopDelta.explicitCalls}")
+        }
         if (System.getenv("RWX_CANVAS_PIXEL_POOL_METRICS") == "1") {
             logger.info { "RWX pixel pool: ${cpuTextures.pixelPoolDiagnostics()}" }
             logger.info { "RWX upload buffer pool: ${KoolCanvasTextureRegistry.uploadBufferPoolDiagnostics()}" }
@@ -208,6 +212,9 @@ internal class KoolDesktopGameSession(
     private var resumeBackgroundFrameReady = false
 
     init {
+        if (gameLoopDelta.originalIntegerMillis || System.getenv("RWX_FRAME_METRICS") != null) {
+            println("RWXGameDelta originalIntegerMs=${gameLoopDelta.originalIntegerMillis} ordinaryOwnerOnly=true")
+        }
         configureRendererProfile(
             GameSessionRendererProfile(
                 rendersIntoKoolCanvas = true,
@@ -304,7 +311,8 @@ internal class KoolDesktopGameSession(
         // loop ("OrderableUnit.applyPositionChange: tileMap is null"), which is what killed a measured
         // fog-enabled benchmark run; the neighbouring layer-buffer work guards on the same condition.
         if (engine.hasLoadedLevel && engine.tileMap != null) {
-            runGameLoop(engine, deltaSeconds)
+            // Only this ordinary, owned realtime entry may consume the worker's exact interval.
+            runGameLoop(engine, deltaSeconds, allowOwnerInterval = true)
         }
         frameTimeLog?.endGameWork()
         if (drainLayerBuffers || (engine.hasLoadedLevel && engine.tileMap != null &&
@@ -556,10 +564,11 @@ internal class KoolDesktopGameSession(
         viewportRevision++
     }
 
-    private fun runGameLoop(engine: GameEngine, deltaSeconds: Float) {
+    private fun runGameLoop(engine: GameEngine, deltaSeconds: Float, allowOwnerInterval: Boolean) {
+        gameLoopDelta.resolve(deltaSeconds, allowOwnerInterval)
         engine.gameLoop(
-            deltaSeconds.toGameSpeedDelta(),
-            (deltaSeconds * 1000f).roundToInt().coerceAtLeast(0),
+            gameLoopDelta.speedDelta,
+            gameLoopDelta.millisDelta,
         )
     }
 
@@ -588,7 +597,9 @@ internal class KoolDesktopGameSession(
         resumeBackgroundFrameReady = false
         graphicsEngine.beginFrame(viewport.width.coerceAtLeast(1), viewport.height.coerceAtLeast(1))
         engine.renderGraphicsEngine = graphicsEngine
-        runGameLoop(engine, 0f)
+        // Explicit load-completion first frame stays zero; paused drawing uses drawWorldOnly(0).
+        // Replay seek/menu/headless stepping lives in GameSession and is not adapted here.
+        runGameLoop(engine, 0f, allowOwnerInterval = false)
         publishFrame(engine, viewport)
         return lastFrame
     }

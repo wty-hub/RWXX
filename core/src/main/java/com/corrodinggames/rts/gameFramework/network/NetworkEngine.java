@@ -321,9 +321,6 @@ public final class NetworkEngine {
 
     /* JADX INFO: renamed from: bw */
     public String serverAddress = null;
-    /* JADX INFO: renamed from: by */
-    boolean networkClientIdMachineKeyChecked = false;
-
     /* JADX INFO: renamed from: bz */
     boolean registerConnectionSent = false;
     /* JADX INFO: renamed from: bB */
@@ -3692,24 +3689,8 @@ public final class NetworkEngine {
     /* JADX INFO: renamed from: Z */
     public String getOwnClientIdHashed() {
         GameEngine gameEngine = GameEngine.getInstance();
-        boolean z = false;
+        // The client ID belongs to the installation. Network adapters can change between launches.
         if (gameEngine.settingsEngine.networkClientId == null) {
-            z = true;
-        }
-        if (!this.networkClientIdMachineKeyChecked) {
-            this.networkClientIdMachineKeyChecked = true;
-            if (GameEngine.isPC()) {
-                String hardwareAddressHash = getHardwareAddressHash();
-                if (!hardwareAddressHash.equals(gameEngine.settingsEngine.networkClientIdMachineKey)) {
-                    if (gameEngine.settingsEngine.networkClientIdMachineKey != null) {
-                        GameEngine.log("Machine appears to have changed: " + gameEngine.settingsEngine.networkClientIdMachineKey + " vs " + hardwareAddressHash);
-                    }
-                    gameEngine.settingsEngine.networkClientIdMachineKey = hardwareAddressHash;
-                    z = true;
-                }
-            }
-        }
-        if (z) {
             GameEngine.log("new networkClientId needed");
             gameEngine.settingsEngine.networkClientId = UUID.randomUUID().toString();
             gameEngine.settingsEngine.save();

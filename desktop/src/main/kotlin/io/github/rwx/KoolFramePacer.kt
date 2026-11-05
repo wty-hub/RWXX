@@ -4,9 +4,12 @@ import de.fabmax.kool.platform.Lwjgl3Context
 import java.util.concurrent.locks.LockSupport
 import io.github.rwx.kool.vulkan.VulkanBackendMetrics
 
-private val guardedRenderPark = System.getenv("RWX_GUARD_SHORT_RENDER_PARK") == "1"
+// Avoid short OS parks oversleeping the presentation deadline; 0 retains the 100 us tail.
+// This affects presentation waiting only, never the engine clock or input queue.
+private val guardedRenderPark = System.getenv("RWX_GUARD_SHORT_RENDER_PARK") != "0"
 private val stableFrameDeadlines = System.getenv("RWX_STABLE_FRAME_DEADLINES") == "1"
-private val waitForFreshFrames = System.getenv("RWX_WAIT_FOR_FRESH_FRAME") == "1"
+// Prefer a newly published immutable frame within the existing bounded 1.5 ms wait.
+private val waitForFreshFrames = System.getenv("RWX_WAIT_FOR_FRESH_FRAME") != "0"
 private val postInputFrameWait = System.getenv("RWX_POST_INPUT_FRAME_WAIT") == "1"
 @Volatile private var frameAvailabilityProbe: (() -> Boolean)? = null
 private var reportedFreshFrameWait = false

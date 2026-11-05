@@ -1,0 +1,194 @@
+{
+  "date": "2026-11-03",
+  "version": "1.4.3",
+  "status": "owner-default-on-packaged-and-actual-background-default-verified-partial-optimization",
+  "goalComplete": false,
+  "change": "Missing owner/global overrides now retain cumulative owner phase by default; explicit owner0 or legacy combined0 still select old policy. Small wake-up drift is corrected without catch-up ticks, fixed-delta substitution, or changes to renderer scheduling.",
+  "onlyChangedShippedClassAgainst64a96": "io/github/rwx/DesktopFrameRateKt.class",
+  "shippedClassesCompared": 33602,
+  "artifacts": {
+    "/Users/wty/code/RWXX/desktop/build/distributions/RWXX-1.4.3-macos-arm64-desktop.zip": {
+      "sha256": "f526e3945bed5b70bcc30745e23c1b65d7b0b00a154c2309191f1a211733c753",
+      "bytes": 162218801
+    },
+    "/Users/wty/code/RWXX/desktop/build/libs/RWXX-1.4.3-macos-arm64.jar": {
+      "sha256": "904061f307a637e968e4268f4e22e3e351218de438f9453f9ef806b77fb4470a",
+      "bytes": 125280953
+    },
+    "/Users/wty/code/RWXX/core/build/libs/core-1.4.3.jar": {
+      "sha256": "5d77d01450aa956655abd8c37eede7f6f0b88391bfa426db31cd5d3fa1e703d9",
+      "bytes": 6372539
+    }
+  },
+  "priorArtifacts": {
+    "path": "/Users/wty/code/RWXX/build/real-release-20261103/pre-owner-default/manifest.json",
+    "sha256": "aa9a0ab4d49872d9e202da29ff29ea1ba9fd19b94c6b8654abdae194fa7b585b"
+  },
+  "package": {
+    "valid": true,
+    "checksPassed": 32,
+    "postChecksPassed": 8,
+    "policyCases": [
+      {
+        "name": "default",
+        "actual": {
+          "OWNER": "true",
+          "RENDERER": "false",
+          "RESOLVER": "true"
+        },
+        "exitCode": 0,
+        "ownerThreadStopped": true
+      },
+      {
+        "name": "owner-off",
+        "actual": {
+          "OWNER": "false",
+          "RENDERER": "false",
+          "RESOLVER": "false"
+        },
+        "exitCode": 0,
+        "ownerThreadStopped": true
+      },
+      {
+        "name": "global-off",
+        "actual": {
+          "OWNER": "false",
+          "RENDERER": "false",
+          "RESOLVER": "false"
+        },
+        "exitCode": 0,
+        "ownerThreadStopped": true
+      },
+      {
+        "name": "owner-on-global-off",
+        "actual": {
+          "OWNER": "true",
+          "RENDERER": "false",
+          "RESOLVER": "true"
+        },
+        "exitCode": 0,
+        "ownerThreadStopped": true
+      },
+      {
+        "name": "owner-off-global-on",
+        "actual": {
+          "OWNER": "false",
+          "RENDERER": "true",
+          "RESOLVER": "false"
+        },
+        "exitCode": 0,
+        "ownerThreadStopped": true
+      },
+      {
+        "name": "invalid-owner",
+        "actual": {
+          "OWNER": "false",
+          "RENDERER": "false",
+          "RESOLVER": "false"
+        },
+        "exitCode": 0,
+        "ownerThreadStopped": true
+      }
+    ],
+    "delivery": {
+      "path": "/Users/wty/code/RWXX/build/real-release-20261103/owner-default-mac-jni/delivery.json",
+      "sha256": "a40e87b96c480eb04c7b8e54e4bb07287bdab78fc22b224a92475dd58356c57a"
+    },
+    "acceptance": {
+      "path": "/Users/wty/code/RWXX/build/real-release-20261103/owner-default-mac-jni/acceptance.json",
+      "sha256": "ec003b850aa8036e5c5eac8b3aa4e151b2f91199c33cf8fc57a06bacb882bafc"
+    },
+    "postExecutionIntegrity": {
+      "path": "/Users/wty/code/RWXX/build/real-release-20261103/owner-default-mac-jni/post-execution-integrity.json",
+      "sha256": "1b912e7e30987bdaf2c65646d0fbdd33ae21e0b0eb6e10dc16ca7515c52e8c13"
+    }
+  },
+  "regressions": {
+    "coreTests": 490,
+    "coreSkipped": 1,
+    "desktopTests": 148,
+    "failures": 0,
+    "errors": 0,
+    "log": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/owner-default-regression.log",
+      "sha256": "c7fc8644b4efe419c7fd806513cd1c4ada41e35700c24190a7321f697b8c99c7"
+    }
+  },
+  "actualDefaultBackgroundAcceptance": {
+    "valid": true,
+    "singleRunNotPairedComparison": true,
+    "ownerAndGlobalOverrideAbsent": true,
+    "actualOwnerStableDeadlines": true,
+    "actualRendererStableDeadlines": false,
+    "actualDefaultGc": "G1",
+    "protocol": "Fresh new904061 package; real unactivated window entirely on temporary1920x1080CGVirtualDisplay14, actual1280x720/MSAA4/target120/vsyncOFF.20s warm+20s sample, same d19 ordinary1x replay pan20/zoom4, no shader candidate and no stage/GC trace. External JDK25 runtime matching established prior runtime binding; bundled JVM is separately checked by package JNI.",
+    "metrics": {
+      "engineFps": 119.8847015544172,
+      "acceptedPresentFps": 117.41698357122723,
+      "freshSnapshotHz": 113.5680658466702,
+      "repeatRatio": 0.032779906343124735,
+      "freshSnapshotIntervalP99Ms": 18.065584,
+      "freshSnapshotIntervalMaxMs": 34.417667,
+      "freshSnapshotIntervalsOver33_333Ms": 2,
+      "freshSnapshotIntervalsOver50Ms": 0
+    },
+    "execution": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/owner-default-v1/default/target-execution-result.json",
+      "sha256": "e1e934ade01866bddf3b7c9b5043fe2b81364f0505822dbbd1be82e1f0bfd2af"
+    },
+    "backgroundGate": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/owner-default-v1/default/background-gate.json",
+      "sha256": "d57cd35c3bb7962a0a4c7fd2c737171acfd5ef89a1d979d8cd2e02757b55ba2b"
+    },
+    "actualJavaCommand": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/owner-default-v1/default/actual-java-command.json",
+      "sha256": "62c713f0fac4a01ead26c83705b73df8252e024da41716acdde0d348e91c9485"
+    },
+    "summary": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/owner-default-v1/default/run/diagnostic-summary.json",
+      "sha256": "52c7f3ecd87f367faed7df8672dcf0e50658cbd58f1c308531b2d02a9be0e1d0"
+    },
+    "wrapper": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/run_owner_default_acceptance.py",
+      "sha256": "6a64081b7f4c9a47a56aa0ca26af16b6bc3b652e4b0d4f237910f0813036d79e"
+    },
+    "displayLifecycle": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/create-11.ndjson",
+      "sha256": "aac61609a21f9631c6776e3d8d6ef488a77d3a35892ca308608ce1dfb50797de"
+    },
+    "displayRemovedAndOriginalConfigRestored": true
+  },
+  "adoptionRationale": [
+    "Prior frozen-package OFF/ON background pair raises producer100.47→119.77Hz and fresh99.87→112.01Hz with substantially fewer repeats. That single pair worsened fresh tails, so this is not accepted as complete stutter removal.",
+    "Independent CPU ABBA supports the wake-drift mechanism and automatic-owner GPU resource/cell exact-pixel acceptance supports compatibility.",
+    "New actual packaged default now executes the already-evaluated owner policy with no owner/global override; only the default facade changes among33602 shipped classes."
+  ],
+  "priorEvidence": {
+    "ownerPair": {
+      "path": "/Users/wty/code/RWXX/docs/verification/background-owner-deadline-pair-2026-11-03.json",
+      "sha256": "6fa2fd034d1fa4086af4fcf3b261ac2e89c96397621ef73d942140e3df940773"
+    },
+    "automaticOwnerGpu": {
+      "path": "/Users/wty/code/RWXX/docs/verification/owner-gpu-compatibility-2026-11-03.json",
+      "sha256": "0fdf209d0c47d017b451099f5ddf969242b8232d3fa60de05a2a4989c1da1afc"
+    },
+    "otherExplorations": {
+      "path": "/Users/wty/code/RWXX/docs/verification/background-render-optimization-exploration-2026-11-03.json",
+      "sha256": "95cf01e8c644d54c49c409f7ecb435b78b8067e59efbfccf0ac08b76a4a4622d"
+    }
+  },
+  "remainingDefaultOffCandidates": [
+    "renderer stable deadlines",
+    "instanced texture shader reuse",
+    "map mesh slot reuse",
+    "shared map texture materials",
+    "direct target textures",
+    "atlas scratch"
+  ],
+  "limitations": [
+    "New default acceptance is one run without a contemporaneous old-policy or original baseline; do not subtract averages across separate experiments.",
+    "Fresh113.568Hz with two intervals>33.333ms remains below historical foreground original120fresh/s; parity and stutter-free behavior are not achieved.",
+    "No physical scanout or input latency measurement; physical display validation explicitly waived by user.",
+    "No installation, native jpackage GUI launcher execution, Steam modification, or all-platform compatibility validation."
+  ]
+}

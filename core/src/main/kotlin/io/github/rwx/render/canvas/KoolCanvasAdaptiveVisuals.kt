@@ -20,7 +20,19 @@ internal class KoolCanvasAdaptiveVisuals {
         else if (stats.selectedUnits < 192) simplifiedWaypoints = false
         if (stats.visibleUnits > 512) simplifiedShadows = true
         else if (stats.visibleUnits < 384) simplifiedShadows = false
-        waypointUnitIds = if (simplifiedWaypoints) frame.commands.asSequence()
+        val packed = frame.commands as? KoolCanvasPackedTextureCommands
+        waypointUnitIds = if (simplifiedWaypoints && packed != null) {
+            val ids = mutableSetOf<Long>()
+            for (index in packed.indices) {
+                val row = packed.rowAt(index)
+                if (row >= 0) {
+                    if (packed.role(row) == KoolCanvasDrawRole.Waypoint && packed.unitId(row) >= 0) ids += packed.unitId(row)
+                } else packed.legacyAt(index)?.stateOrNull()?.let { state ->
+                    if (state.drawRole == KoolCanvasDrawRole.Waypoint && state.semanticUnitId >= 0) ids += state.semanticUnitId
+                }
+            }
+            ids.sorted().take(8).toSet()
+        } else if (simplifiedWaypoints) frame.commands.asSequence()
             .mapNotNull { it.stateOrNull() }
             .filter { it.drawRole == KoolCanvasDrawRole.Waypoint && it.semanticUnitId >= 0 }
             .map { it.semanticUnitId }.distinct().sorted().take(8).toSet() else emptySet()
@@ -33,6 +45,12 @@ internal class KoolCanvasAdaptiveVisuals {
             KoolCanvasDrawRole.UnitShadow -> !simplifiedShadows
             else -> true
         }
+    }
+
+    internal fun shouldDraw(role: KoolCanvasDrawRole, unitId: Long): Boolean = when (role) {
+        KoolCanvasDrawRole.Waypoint -> !simplifiedWaypoints || unitId < 0 || unitId in waypointUnitIds
+        KoolCanvasDrawRole.UnitShadow -> !simplifiedShadows
+        else -> true
     }
 }
 

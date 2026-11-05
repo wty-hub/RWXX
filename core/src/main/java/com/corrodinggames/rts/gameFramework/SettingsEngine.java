@@ -306,11 +306,11 @@ public class SettingsEngine {
         this.upgradedToNoPublicStorage = getBooleanPref("upgradedToNoPublicStorage", this.settingsGameVersionFirst <= 160);
         this.upgradedToNoPublicStorageWarningShown = getBooleanPref("upgradedToNoPublicStorageWarningShown", false);
         this.hasPlayedGameOrSeenHelp = getBooleanPref("hasPlayedGameOrSeenHelp", false);
-        this.enableSounds = getBooleanPref("enableSounds", true);
+        this.enableSounds = getBooleanPref("enableSounds", false);
         this.enableMouseCapture = getBooleanPref("enableMouseCapture", false);
         this.androidNoSoundPrioritiesDebug = getBooleanPref("androidNoSoundPrioritiesDebug", false);
         this.disableDigitGrouping = getBooleanPref("disableDigitGrouping", false);
-        this.musicVolume = getFloatPref("musicVolume", 0.25f);
+        this.musicVolume = getFloatPref("musicVolume", 0.0f);
         this.masterVolume = getFloatPref("masterVolume", GameEngine.isPC() ? 0.5f : 1.0f);
         this.gameVolume = getFloatPref("gameVolume", 1.0f);
         this.interfaceVolume = getFloatPref("interfaceVolume", 0.8f);

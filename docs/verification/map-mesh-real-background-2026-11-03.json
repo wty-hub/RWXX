@@ -1,0 +1,92 @@
+{
+  "date": "2026-11-03",
+  "version": "1.4.3",
+  "status": "valid-real-background-pair-candidate-worse-not-adopted",
+  "goalComplete": false,
+  "candidate": "RWX_REUSE_MAP_MESH_SLOTS",
+  "defaultAdopted": false,
+  "protocol": "Same accepted904061 package/72d0frozen tooling/d19ordinary1x replay, same virtual display15/agentV6/wrapper, actual1280x720/MSAA4/target120/vsyncOFF,20s warm20s sample pan20zoom4. Owner/global envabsent→actualownerON,rendererOFF,G1. Instanced shader reuse and shared map materialsOFF; only map mesh-slot reuse flag differs.",
+  "arms": {
+    "control-off": {
+      "metrics": {
+        "engineFps": 119.85020149221623,
+        "acceptedPresentFps": 117.91317203158792,
+        "freshSnapshotHz": 114.91410873277685,
+        "repeatRatio": 0.02543450614667232,
+        "freshSnapshotIntervalP99Ms": 17.946791,
+        "freshSnapshotIntervalMaxMs": 33.305958,
+        "freshSnapshotIntervalsOver33_333Ms": 0,
+        "freshSnapshotIntervalsOver50Ms": 0,
+        "freshSnapshotIntervalP999Ms": 25.769875
+      },
+      "summary": {
+        "path": "/Users/wty/code/RWXX/build/background-display-20261103/map-slots-pair-v1/control-off/run/diagnostic-summary.json",
+        "sha256": "8db493910c3d7dbd1d53a299fe01433e4901c554559aa1d11d7ff2e79b4af198"
+      },
+      "execution": {
+        "path": "/Users/wty/code/RWXX/build/background-display-20261103/map-slots-pair-v1/control-off/target-execution-result.json",
+        "sha256": "3590b854e5b07919caf6989c6cb4973d523fc281da2b9bcf9436b8346900182d"
+      },
+      "backgroundGate": {
+        "path": "/Users/wty/code/RWXX/build/background-display-20261103/map-slots-pair-v1/control-off/background-gate.json",
+        "sha256": "87c2b18f1c4c35e0260977fb85e8fbb987b4a53767b16c4a6bbfd5cbfc97b2fd"
+      }
+    },
+    "candidate-on": {
+      "metrics": {
+        "engineFps": 119.82602755100643,
+        "acceptedPresentFps": 117.17809159890146,
+        "freshSnapshotHz": 113.37880193955142,
+        "repeatRatio": 0.032423208191126277,
+        "freshSnapshotIntervalP99Ms": 18.075125,
+        "freshSnapshotIntervalMaxMs": 41.858792,
+        "freshSnapshotIntervalsOver33_333Ms": 1,
+        "freshSnapshotIntervalsOver50Ms": 0,
+        "freshSnapshotIntervalP999Ms": 24.641709
+      },
+      "summary": {
+        "path": "/Users/wty/code/RWXX/build/background-display-20261103/map-slots-pair-v1/candidate-on/run/diagnostic-summary.json",
+        "sha256": "12ee686fe277e9399ea8dd83db2e151efa1639b268831ae3f1d3d6c668611b0d"
+      },
+      "execution": {
+        "path": "/Users/wty/code/RWXX/build/background-display-20261103/map-slots-pair-v1/candidate-on/target-execution-result.json",
+        "sha256": "7ca561186e47f8ec2a3b26bb956248304fb687ebf256ed635725c056124f4d72"
+      },
+      "backgroundGate": {
+        "path": "/Users/wty/code/RWXX/build/background-display-20261103/map-slots-pair-v1/candidate-on/background-gate.json",
+        "sha256": "e4ce05614c694cadc96a3771aae080444567f74d69505ca64a920b4f3ff91fca"
+      }
+    }
+  },
+  "changesOnVsOffPercent": {
+    "engineFps": -0.020170129802710157,
+    "acceptedPresentFps": -0.623408241862522,
+    "freshSnapshotHz": -1.33604725316685,
+    "repeatRatio": 27.477246871444816,
+    "freshSnapshotIntervalP99Ms": 0.715080484304953,
+    "freshSnapshotIntervalMaxMs": 25.67959162141502
+  },
+  "decision": "Keep defaultOFF. The real compatible-unused-mesh reuse branch was exercised, but fresh cadence/P99/max/repeats all worsen in this single pair. Do not expand pixel oracle or adopt solely from CPU allocation savings. P99.9 improved and is retained separately; do not describe every tail statistic as worse.",
+  "limits": [
+    "One sequential OFF/ON run, not replicated ABBA; no significance claim or across-experiment subtraction.",
+    "No stage/GC trace or resource profile in performance arms; result does not identify the87 pipeline creations or prove a map-mesh causal contribution.",
+    "No GPU-pixel/resource acceptance for this candidate; no original parity or physical-scanout/input-latency claim."
+  ],
+  "nextAction": "Attribute actual pipeline creation to render-pass and draw-pipeline identities before choosing another cache change. Root already preserves frozen logical texture identities; GPUtarget version alone cannot be assumed to invalidate root mesh keys.",
+  "displayLifecycle": {
+    "path": "/Users/wty/code/RWXX/build/background-display-20261103/create-12.ndjson",
+    "sha256": "4b7d728a3eca24998c6b3449e2f601f7e1c7a6fa40df5e2cca6d4b8268c9578e"
+  },
+  "wrapper": {
+    "path": "/Users/wty/code/RWXX/build/background-display-20261103/run_map_slots_arm.py",
+    "sha256": "d6c04539eb42540b0e30dee795bb1365fbcea8ac317e4ffb1be32e8c017ed607"
+  },
+  "sourceAudit": {
+    "path": "/Users/wty/code/RWXX/build/background-display-20261103/map-mesh-slot-readonly-review-v1/review.json",
+    "sha256": "b7c822831668c45fdfaa315d30d85ebaa451023cfd050dfe495b9fcc0656f65a"
+  },
+  "independentReview": {
+    "path": "/Users/wty/code/RWXX/build/background-display-20261103/map-slots-pair-independent-review/delivery.json",
+    "sha256": "98b98eeae0981dfdd1e8ebbea1fd5d36c890bfb159a4aa261a6a4795b0f23e27"
+  }
+}

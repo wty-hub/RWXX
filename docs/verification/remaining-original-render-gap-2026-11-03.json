@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-03",
+  "version": "1.4.3",
+  "status": "remaining-render-path-gap-known-origin-attribution-incomplete",
+  "goalComplete": false,
+  "answer": "Owner production is now near120target, but the conversion from recorded canvas/resource snapshots into ready Kool scenes/meshes and native pipelines still has frame-time spikes; accepted fresh presentation remains below historical original.",
+  "officialStaticFacts": [
+    "Official8a55 u.render binds current Slick Graphics then calls engine; java.e obtains existing Slick Image and emits quad texcoords/vertices through SGL.",
+    "Image is returned from existing field; matching atlas version returns cached alias and existing program uses glUseProgram. Slick internally buffers vertices and flushes.",
+    "Official also has offscreen rendering, buffer/cache management and cold/dirty shader creation; no zero-allocation or no-GPU-wait claim."
+  ],
+  "rwxxStaticFacts": [
+    "Draw commands are recorded/frozen with version/dependency/lease ownership, passed through latest mailbox, installed and replayed into Kool Mesh/Scene/GPU targets.",
+    "These compatibility/concurrency conversions are additional compared with the cited original drawing path. Their total causal cost is not established by static inspection.",
+    "Frozen logical texture identities and mesh version slots already exist; new GPUtarget version is not automatically a new root mesh key."
+  ],
+  "runtimeFacts": [
+    "Prior valid original foreground run:120fresh/s,P9915.399ms,max18.932ms,repeat0.",
+    "Current new-default acceptance on background virtual display:producer119.885,accepted117.417,fresh113.568Hz,repeat3.278%,P9918.066ms,max34.418ms.",
+    "Separate instrumented no-GC43.696ms gap:scene collect20.454ms,backend11.970ms including87graphics-pipeline creation calls totaling8.314ms. Owner produces6snapshots while native fence/acquire/submit/present each<0.7ms.",
+    "Other instrumented gaps overlap GC or acquisition wait; not all stalls share one proven cause."
+  ],
+  "assessment": "The original has a mature, shorter2D draw route with reuse close to backend calls. The port still pays significant preparation/conversion cost, and some work concentrates inside a visible frame. This supports optimizing reuse/lifetime and scene preparation, but does not by itself locate every pipeline creation or establish an inherent ceiling for the architecture.",
+  "limits": [
+    "Original foreground and current background numbers are not a new same-environment pair; no exact current percent-slower claim.",
+    "Pipeline trace has no pass/mesh identity, so do not assert87 belongs to root or offscreen map cells.",
+    "No claim that newerAPI or language/JVMversion alone determines speed.",
+    "No overall stutter-free, mouse-latency or original-level acceptance."
+  ],
+  "evidence": {
+    "officialRoute": {
+      "path": "/Users/wty/code/RWXX/build/original-comparison-20261102/draw-route-readonly-20261103/report.json",
+      "sha256": "f4ba27553da148863601e5ce240daf7548df2e2cad8a9b3fd0c88a7729e7c323"
+    },
+    "officialForegroundComparison": {
+      "path": "/Users/wty/code/RWXX/docs/verification/official-visible-comparison-2026-11-03.json",
+      "sha256": "68f2fd338d5ff8276c4cadc484cfca9df6e1c506a9f24080459d7dfa3c4e69dd"
+    },
+    "currentDefault": {
+      "path": "/Users/wty/code/RWXX/docs/verification/owner-default-adoption-2026-11-03.json",
+      "sha256": "1da703e08d33ed3458ea2b4a7d00542dc92e17fce4ed7e5cac31bf31cad77604"
+    },
+    "stallDiagnostic": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/stall-diagnostic-v1/evaluation/independent-stall-analysis.json",
+      "sha256": "70b2c27fc1a6a5ad2b7edecb428f76304894b7edf7a2b38a8b640b3e112bebed"
+    },
+    "mapSlotsPair": {
+      "path": "/Users/wty/code/RWXX/docs/verification/map-mesh-real-background-2026-11-03.json",
+      "sha256": "6166fdcebf5b5e25bc9753d73b06448a2eeda1c5f48395757e7679aab41b992e"
+    }
+  }
+}

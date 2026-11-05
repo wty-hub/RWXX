@@ -1,0 +1,117 @@
+{
+  "date": "2026-11-02",
+  "status": "prepared-not-measured",
+  "baseline": "Official Rusted Warfare PC1.15; not RWPP",
+  "evidenceType": "Read-only artifact/resource checks, isolated native-path repair, and prepare-only probe compilation; no target game execution.",
+  "core": {
+    "path": "build/original-comparison-20261102/runtime/game-lib.jar",
+    "sha256": "8a550a37e2d8a5430866090d4e7d5892f9010b47f52a5a09350fc66c620deec9"
+  },
+  "replay": {
+    "path": "build/original-comparison-20261102/runtime/replays/bridges-fixed.replay",
+    "sha256": "d19b132ec8866f87496b3c1c91627e7ef35a99b1627e2a9550f74c0e0e57f6d1"
+  },
+  "resources": {
+    "files": 1201,
+    "counts": {
+      "assets": 868,
+      "res": 320,
+      "font": 13
+    },
+    "source": "User-downloaded stock desktop resources",
+    "sourceAndStageManifestsMatch": true,
+    "realContentChecks": "Nontransparent tank/GUI images, parsed desktop/CJK font glyphs, and nonzero decoded PCM samples; no server placeholders or RWXX resources used."
+  },
+  "java": {
+    "executable": "build/original-comparison-20261102/runtime/jvm-mac/Contents/Home/bin/Rusted Warfare",
+    "sha256": "0103774e7429f07639a9a143ca763deae0bed7cd558b8b8de61661e3fad3e2d8",
+    "version": "Oracle Java 1.8.0_141-b15",
+    "architecture": "x86_64",
+    "runtime": "Unchanged copied official jvm-mac; Rosetta on this Apple Silicon host"
+  },
+  "isolatedStage": {
+    "path": "build/original-comparison-20261102/runtime",
+    "classpath": [
+      "game-lib.jar",
+      "libs/*"
+    ],
+    "supportingLibraries": 19,
+    "excludedRwpp": [
+      "RWPP-macos.jar",
+      "generated_lib",
+      "launcher.sh/MainKt"
+    ],
+    "nativeRepairs": "Dependency load paths repaired only inside the isolated stage, including Java8 libjawt; source binaries and per-file hashes are recorded in staging evidence."
+  },
+  "probe": {
+    "path": "build/original-comparison-20261102/official-prepare-pan-zoom-v3/prepared/original-probe.jar",
+    "sha256": "367b7e6e39364ef1a77f2b8f25e19c3959b967fa518b787c01318b703e633215",
+    "javaClassMajorVersion": 52,
+    "originalRunnerSourceSha256": "acf103166d6162d058e323bf30e8581d23a9dc8772f8da080a9ffea4e5299b2a",
+    "tailStallFix": "Repeated swaps at the sample tail remain slow data; closed intervals and last-frame age are separate. Two seconds of trailing capture do not extend the fixed statistics window."
+  },
+  "preparation": {
+    "prepareOnly": true,
+    "cameraMode": "pan-zoom",
+    "warmupSeconds": 20,
+    "sampleSeconds": 20,
+    "loadSeconds": 30,
+    "trailingCaptureSeconds": 2,
+    "startOnFirstThread": false,
+    "stageUnchanged": true
+  },
+  "effects": {
+    "steamDirectoryWrittenByAgent": false,
+    "targetGameStarted": false,
+    "guiCreatedOrActivated": false,
+    "nativeGraphicsLoaded": false,
+    "fpsMeasured": false
+  },
+  "evidence": {
+    "freshSourcePreflight": {
+      "path": "build/rwpp-comparison-20261102/fresh-source-preflight-v2.json",
+      "sha256": "1251be5518fffb795f1dc6b98e02993d9b5b85aa4b75be29555408b73765b5fb"
+    },
+    "officialStage": {
+      "path": "build/original-comparison-20261102/staging-result.json",
+      "sha256": "af91d45f74f7958090ffb1ccbfe6832aa96ecf9b9dd8d1aeab47586444ca5981"
+    },
+    "officialPrepareOnly": {
+      "path": "build/original-comparison-20261102/official-prepare-pan-zoom-v3/preparation-review.json",
+      "sha256": "2c1df0990fe9b20f7e2b24444feedbaf2b37d36c53c3d22a2c03093d4d37a59c"
+    },
+    "preparedManifest": {
+      "path": "build/original-comparison-20261102/official-prepare-pan-zoom-v3/prepared/manifest.json",
+      "sha256": "b3ba654272c97735bba4bf61c04f496904a826ca34b156cc8f7b6b47658e6a79"
+    },
+    "frozenFutureCommand": {
+      "path": "build/original-comparison-20261102/frozen-official-command-ready.json",
+      "sha256": "35226c67bdbf0523852f68b7020d9989bb11dd5588fd445b5444a8087398d092"
+    }
+  },
+  "frozenTooling": {
+    "path": "build/original-comparison-20261102/rwxx-context/tooling",
+    "pyJavaFiles": 59,
+    "fingerprintSha256": "8dfda3a89d1f7284d2aca820473db1e9b108fa86294cd6f4174617023935fb8a",
+    "bothProductRunnersNice": 19,
+    "futureOfficialCommandExecuted": false
+  },
+  "history": {
+    "note": "Earlier missing-resource reports describe the previous installation state and remain unchanged; the newly supplied official resources supersede that availability conclusion.",
+    "retained": [
+      {
+        "path": "docs/verification/original-macos-baseline-2026-11-02.json",
+        "sha256": "19ea320932fe81536d42ebe914a570820775b344de13c96f4add74dd731db3b8"
+      },
+      {
+        "path": "build/rwpp-comparison-20261102/rwpp-resource-dependency-plan.json",
+        "sha256": "809f702c4eafd09dbe7416eecf3454a93cfa540fb3baac54da7fc7b77f4cc35c"
+      }
+    ]
+  },
+  "remainingAcceptance": [
+    "A separately authorized visible run must satisfy observed active/visible and render-sequence gates; no automatic focus changes are authorized.",
+    "Actual GL viewport/engine dimensions/high-DPI alignment and ordinary replay displayed fog remain unverified.",
+    "Preparation establishes fixed inputs and commands, not screen FPS, physical scanout, or a completed product comparison."
+  ]
+}

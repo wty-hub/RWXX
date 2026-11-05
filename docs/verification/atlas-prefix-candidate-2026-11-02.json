@@ -1,0 +1,611 @@
+{
+  "date": "2026-11-02",
+  "applicationVersion": "1.4.3",
+  "status": "prefix-scratch-candidate-default-OFF",
+  "goalComplete": false,
+  "flag": "RWX_REUSE_MAP_ATLAS_SCRATCH=1",
+  "implementation": {
+    "zeroTailInvariant": "Each mutable Page/scratch has a conservative prefix; all bytes at or after it are zero. Arbitrary callers default to fullsize.",
+    "actualWriterBound": "Only guarded atlas blit writes production Page bytes, declaring the exclusive end of its last padded whole row: (y+image.height+2)*pageSize*4. Max is monotonic across short/tall sprites and row wraps.",
+    "cow": "Save old prefix; clear donor[oldPrefix,donorDirtyPrefix) then copy source[0,oldPrefix), publish new mutable Page, then grow prefix for impending rectangle. New rectangles need not overwrite column holes.",
+    "sharing": "Full contentEquals still required; only unpublished losers recycle, canonical/upload/native fence ownership unchanged; at most one16MiB scratch; close drops both array and prefix.",
+    "rollback": "Flag0 retains fresh allocation and full-array COW. Prefix tracking/validation/counters still exist in the source, so this control does not mean no new instructions versus published7e3."
+  },
+  "comparison": {
+    "scope": "Sequential independent JVM A/B/B/A; ordinary 1x seek6000 fogON replay; warm120/sample1200, fixed60Hz true-windowless synchronous Vulkan test loop. Each arm has two JVM samples. Not physical display FPS, original comparison, or production producer-thread equivalence.",
+    "runs": [
+      {
+        "name": "battle-control-a1",
+        "scratchReuse": "0",
+        "coreSha256": "a015273065f84c8d8e2646971d2d2ab11e1340a113b7a5a4f884acadf89d42eb",
+        "sample": {
+          "requestedWarmupFrames": 120,
+          "producedSampleFrames": 1200,
+          "selection": "generatedAfter>warm && <=warm+frames && >generatedBefore",
+          "startGenerated": 121,
+          "endGenerated": 1320,
+          "startTick": 6060,
+          "endTick": 6660,
+          "actualWindowSeconds": 20.555826666,
+          "fullFrameWall": {
+            "count": 1200,
+            "p50Ms": 16.727375,
+            "p95Ms": 22.482167,
+            "p99Ms": 38.355625,
+            "p999Ms": 59.143833,
+            "maxMs": 69.113125,
+            "over33_333Ms": 21,
+            "over50Ms": 7,
+            "over100Ms": 0
+          },
+          "completionIntervals": {
+            "count": 1200,
+            "p50Ms": 16.736959,
+            "p95Ms": 22.494875,
+            "p99Ms": 38.361,
+            "p999Ms": 59.154333,
+            "maxMs": 69.13425,
+            "over33_333Ms": 21,
+            "over50Ms": 7,
+            "over100Ms": 0
+          },
+          "interFrameObserverAdapterGaps": {
+            "count": 1200,
+            "p50Ms": 0.0115,
+            "p95Ms": 0.029375,
+            "p99Ms": 0.047,
+            "p999Ms": 0.094125,
+            "maxMs": 0.22425,
+            "over33_333Ms": 0,
+            "over50Ms": 0,
+            "over100Ms": 0
+          },
+          "threadCpu": {
+            "count": 1200,
+            "p50Ms": 2.519,
+            "p95Ms": 7.408,
+            "p99Ms": 20.312,
+            "p999Ms": 36.784,
+            "maxMs": 42.27,
+            "over33_333Ms": 2,
+            "over50Ms": 0,
+            "over100Ms": 0
+          },
+          "nativeSubmissionsObserved": 1200,
+          "gcPauseCount": 19,
+          "gcPauseDurationSumMs": 213.117416,
+          "gcPauseMaxMs": 25.700166
+        },
+        "validThreadCpuSumMs": 4175.876,
+        "allocationSampleWeightMiB": 1836.1556930541992,
+        "shaderCreationAllocationSampleWeightMiB": 95.7176284790039,
+        "atlasPageAllocationSampleWeightMiB": 272.9493408203125,
+        "poolCounters": {
+          "atlasPixelPool_closedAndScratchReleased": true,
+          "atlasPixelPool_internRequests": 32,
+          "atlasPixelPool_reuseHits": 31,
+          "atlasPixelPool_uploadRequests": 32,
+          "atlasPixelPool_uploadReuseHits": 31,
+          "atlasPixelPool_pageBufferAllocations": 32,
+          "atlasPixelPool_scratchReuseHits": 0,
+          "atlasPixelPool_scratchRecycleHits": 0,
+          "atlasPixelPool_scratchResetBytes": 0,
+          "atlasPixelPool_pageCopyBytes": 0,
+          "atlasPixelPool_blankPageRequests": 32,
+          "atlasPixelPool_pageCopyRequests": 0
+        },
+        "evidence": {
+          "process-result.json": "7875012fac974db093ceec934aa88bffc42155f0e91240675673c4686542b296",
+          "analysis.json": "3092a0cf7b90344e2d4fe30267ab1944e390027db1d1e41bc285dbf6cd34f28c",
+          "capture/result.json": "a8a947bf75ec76a1d61aa0303c27d03aec2d916a7bafed93e8eb092b3aa5694c"
+        }
+      },
+      {
+        "name": "battle-candidate-b1",
+        "scratchReuse": "1",
+        "coreSha256": "a015273065f84c8d8e2646971d2d2ab11e1340a113b7a5a4f884acadf89d42eb",
+        "sample": {
+          "requestedWarmupFrames": 120,
+          "producedSampleFrames": 1200,
+          "selection": "generatedAfter>warm && <=warm+frames && >generatedBefore",
+          "startGenerated": 121,
+          "endGenerated": 1320,
+          "startTick": 6060,
+          "endTick": 6660,
+          "actualWindowSeconds": 20.571614208,
+          "fullFrameWall": {
+            "count": 1200,
+            "p50Ms": 16.831083,
+            "p95Ms": 21.634917,
+            "p99Ms": 36.061125,
+            "p999Ms": 66.781917,
+            "maxMs": 143.692625,
+            "over33_333Ms": 23,
+            "over50Ms": 4,
+            "over100Ms": 1
+          },
+          "completionIntervals": {
+            "count": 1200,
+            "p50Ms": 16.842125,
+            "p95Ms": 21.646417,
+            "p99Ms": 36.076208,
+            "p999Ms": 66.794208,
+            "maxMs": 143.706292,
+            "over33_333Ms": 23,
+            "over50Ms": 4,
+            "over100Ms": 1
+          },
+          "interFrameObserverAdapterGaps": {
+            "count": 1200,
+            "p50Ms": 0.012208,
+            "p95Ms": 0.024917,
+            "p99Ms": 0.044417,
+            "p999Ms": 0.091792,
+            "maxMs": 0.352,
+            "over33_333Ms": 0,
+            "over50Ms": 0,
+            "over100Ms": 0
+          },
+          "threadCpu": {
+            "count": 1200,
+            "p50Ms": 2.553,
+            "p95Ms": 7.538,
+            "p99Ms": 19.435,
+            "p999Ms": 29.385,
+            "maxMs": 39.701,
+            "over33_333Ms": 1,
+            "over50Ms": 0,
+            "over100Ms": 0
+          },
+          "nativeSubmissionsObserved": 1200,
+          "gcPauseCount": 16,
+          "gcPauseDurationSumMs": 188.278959,
+          "gcPauseMaxMs": 22.695416
+        },
+        "validThreadCpuSumMs": 4101.918,
+        "allocationSampleWeightMiB": 1550.1332244873047,
+        "shaderCreationAllocationSampleWeightMiB": 99.79844665527344,
+        "atlasPageAllocationSampleWeightMiB": 0.0,
+        "poolCounters": {
+          "atlasPixelPool_closedAndScratchReleased": true,
+          "atlasPixelPool_internRequests": 32,
+          "atlasPixelPool_reuseHits": 31,
+          "atlasPixelPool_uploadRequests": 32,
+          "atlasPixelPool_uploadReuseHits": 31,
+          "atlasPixelPool_pageBufferAllocations": 2,
+          "atlasPixelPool_scratchReuseHits": 30,
+          "atlasPixelPool_scratchRecycleHits": 31,
+          "atlasPixelPool_scratchResetBytes": 10813440,
+          "atlasPixelPool_pageCopyBytes": 0,
+          "atlasPixelPool_blankPageRequests": 32,
+          "atlasPixelPool_pageCopyRequests": 0
+        },
+        "evidence": {
+          "process-result.json": "721b3f74d0a48d2ee3b2521747bdd4d41bdb32cce4f2ce46d04e4dc0f5bca9cf",
+          "analysis.json": "47ee89f298071c426b9057d187701871492170eac6f2f05a9c9fb2f36743459f",
+          "capture/result.json": "1501683acacbd377926449a0449ae9508fbe72fc286684ed04ceb68eaf3cc604"
+        }
+      },
+      {
+        "name": "battle-candidate-b2",
+        "scratchReuse": "1",
+        "coreSha256": "a015273065f84c8d8e2646971d2d2ab11e1340a113b7a5a4f884acadf89d42eb",
+        "sample": {
+          "requestedWarmupFrames": 120,
+          "producedSampleFrames": 1200,
+          "selection": "generatedAfter>warm && <=warm+frames && >generatedBefore",
+          "startGenerated": 121,
+          "endGenerated": 1320,
+          "startTick": 6060,
+          "endTick": 6660,
+          "actualWindowSeconds": 20.494535125,
+          "fullFrameWall": {
+            "count": 1200,
+            "p50Ms": 16.882083,
+            "p95Ms": 22.313708,
+            "p99Ms": 36.822417,
+            "p999Ms": 61.407375,
+            "maxMs": 65.314334,
+            "over33_333Ms": 16,
+            "over50Ms": 4,
+            "over100Ms": 0
+          },
+          "completionIntervals": {
+            "count": 1200,
+            "p50Ms": 16.893292,
+            "p95Ms": 22.321583,
+            "p99Ms": 36.833,
+            "p999Ms": 61.427166,
+            "maxMs": 65.325375,
+            "over33_333Ms": 16,
+            "over50Ms": 4,
+            "over100Ms": 0
+          },
+          "interFrameObserverAdapterGaps": {
+            "count": 1200,
+            "p50Ms": 0.012416,
+            "p95Ms": 0.035708,
+            "p99Ms": 0.052417,
+            "p999Ms": 0.118875,
+            "maxMs": 0.262,
+            "over33_333Ms": 0,
+            "over50Ms": 0,
+            "over100Ms": 0
+          },
+          "threadCpu": {
+            "count": 1200,
+            "p50Ms": 2.671,
+            "p95Ms": 7.103,
+            "p99Ms": 16.807,
+            "p999Ms": 30.495,
+            "maxMs": 41.935,
+            "over33_333Ms": 1,
+            "over50Ms": 0,
+            "over100Ms": 0
+          },
+          "nativeSubmissionsObserved": 1200,
+          "gcPauseCount": 16,
+          "gcPauseDurationSumMs": 183.119625,
+          "gcPauseMaxMs": 23.65075
+        },
+        "validThreadCpuSumMs": 4141.377,
+        "allocationSampleWeightMiB": 1551.7271575927734,
+        "shaderCreationAllocationSampleWeightMiB": 101.79348754882812,
+        "atlasPageAllocationSampleWeightMiB": 0.0,
+        "poolCounters": {
+          "atlasPixelPool_closedAndScratchReleased": true,
+          "atlasPixelPool_internRequests": 32,
+          "atlasPixelPool_reuseHits": 31,
+          "atlasPixelPool_uploadRequests": 32,
+          "atlasPixelPool_uploadReuseHits": 31,
+          "atlasPixelPool_pageBufferAllocations": 2,
+          "atlasPixelPool_scratchReuseHits": 30,
+          "atlasPixelPool_scratchRecycleHits": 31,
+          "atlasPixelPool_scratchResetBytes": 10813440,
+          "atlasPixelPool_pageCopyBytes": 0,
+          "atlasPixelPool_blankPageRequests": 32,
+          "atlasPixelPool_pageCopyRequests": 0
+        },
+        "evidence": {
+          "process-result.json": "16b911253dad768d0682e1b393fb27a5e5f1d17b236e0f73446eacb582c5a2d6",
+          "analysis.json": "d681129f27294efb20ae80bd2e6a139b78b1215baf5ac306546c44814433a1f9",
+          "capture/result.json": "5576f0eee54c74349a3ae77a2108eceebce8c3daff8409c687e80ef89ff03def"
+        }
+      },
+      {
+        "name": "battle-control-a2",
+        "scratchReuse": "0",
+        "coreSha256": "a015273065f84c8d8e2646971d2d2ab11e1340a113b7a5a4f884acadf89d42eb",
+        "sample": {
+          "requestedWarmupFrames": 120,
+          "producedSampleFrames": 1200,
+          "selection": "generatedAfter>warm && <=warm+frames && >generatedBefore",
+          "startGenerated": 121,
+          "endGenerated": 1320,
+          "startTick": 6060,
+          "endTick": 6660,
+          "actualWindowSeconds": 20.539274542,
+          "fullFrameWall": {
+            "count": 1200,
+            "p50Ms": 16.79075,
+            "p95Ms": 22.088708,
+            "p99Ms": 38.850167,
+            "p999Ms": 57.201375,
+            "maxMs": 67.588917,
+            "over33_333Ms": 19,
+            "over50Ms": 6,
+            "over100Ms": 0
+          },
+          "completionIntervals": {
+            "count": 1200,
+            "p50Ms": 16.808375,
+            "p95Ms": 22.095792,
+            "p99Ms": 38.856958,
+            "p999Ms": 57.214542,
+            "maxMs": 67.607917,
+            "over33_333Ms": 20,
+            "over50Ms": 6,
+            "over100Ms": 0
+          },
+          "interFrameObserverAdapterGaps": {
+            "count": 1200,
+            "p50Ms": 0.012084,
+            "p95Ms": 0.028208,
+            "p99Ms": 0.043375,
+            "p999Ms": 0.102,
+            "maxMs": 0.241416,
+            "over33_333Ms": 0,
+            "over50Ms": 0,
+            "over100Ms": 0
+          },
+          "threadCpu": {
+            "count": 1200,
+            "p50Ms": 2.694,
+            "p95Ms": 7.67,
+            "p99Ms": 19.975,
+            "p999Ms": 40.012,
+            "maxMs": 40.69,
+            "over33_333Ms": 4,
+            "over50Ms": 0,
+            "over100Ms": 0
+          },
+          "nativeSubmissionsObserved": 1200,
+          "gcPauseCount": 19,
+          "gcPauseDurationSumMs": 218.156789,
+          "gcPauseMaxMs": 26.04025
+        },
+        "validThreadCpuSumMs": 4304.468,
+        "allocationSampleWeightMiB": 2084.0086517333984,
+        "shaderCreationAllocationSampleWeightMiB": 97.30290985107422,
+        "atlasPageAllocationSampleWeightMiB": 240.08657836914062,
+        "poolCounters": {
+          "atlasPixelPool_closedAndScratchReleased": true,
+          "atlasPixelPool_internRequests": 31,
+          "atlasPixelPool_reuseHits": 30,
+          "atlasPixelPool_uploadRequests": 31,
+          "atlasPixelPool_uploadReuseHits": 30,
+          "atlasPixelPool_pageBufferAllocations": 31,
+          "atlasPixelPool_scratchReuseHits": 0,
+          "atlasPixelPool_scratchRecycleHits": 0,
+          "atlasPixelPool_scratchResetBytes": 0,
+          "atlasPixelPool_pageCopyBytes": 0,
+          "atlasPixelPool_blankPageRequests": 31,
+          "atlasPixelPool_pageCopyRequests": 0
+        },
+        "evidence": {
+          "process-result.json": "220f1bcb3ea34ed88f76146b85cb5ecfe608f34b0e8ee607d9b7ae3549745052",
+          "analysis.json": "edb51e1c169c3b3f3727cde343f041037df2daac273b399e2bb03f807a5e8075",
+          "capture/result.json": "14549691014c3d129737a175d0e7f317a2a6de80a0b05124a5a26fa1c7ee23be"
+        }
+      }
+    ],
+    "comparison": {
+      "validThreadCpuSumMs": {
+        "control": [
+          4175.876,
+          4304.468
+        ],
+        "candidate": [
+          4101.918,
+          4141.377
+        ],
+        "controlMedian": 4240.1720000000005,
+        "candidateMedian": 4121.6475,
+        "medianChangePercent": -2.795275757681537
+      },
+      "allocationSampleWeightMiB": {
+        "control": [
+          1836.1556930541992,
+          2084.0086517333984
+        ],
+        "candidate": [
+          1550.1332244873047,
+          1551.7271575927734
+        ],
+        "controlMedian": 1960.0821723937988,
+        "candidateMedian": 1550.930191040039,
+        "medianChangePercent": -20.87422594401095
+      },
+      "atlasPageAllocationSampleWeightMiB": {
+        "control": [
+          272.9493408203125,
+          240.08657836914062
+        ],
+        "candidate": [
+          0.0,
+          0.0
+        ],
+        "controlMedian": 256.51795959472656,
+        "candidateMedian": 0.0,
+        "medianChangePercent": -100.0
+      },
+      "pageBufferAllocations": {
+        "control": [
+          32,
+          31
+        ],
+        "candidate": [
+          2,
+          2
+        ],
+        "controlMedian": 31.5,
+        "candidateMedian": 2.0,
+        "medianChangePercent": -93.65079365079364
+      },
+      "gcPauseDurationSumMs": {
+        "control": [
+          213.117416,
+          218.156789
+        ],
+        "candidate": [
+          188.278959,
+          183.119625
+        ],
+        "controlMedian": 215.6371025,
+        "candidateMedian": 185.699292,
+        "medianChangePercent": -13.883422728702255
+      },
+      "fullFrameP99Ms": {
+        "control": [
+          38.355625,
+          38.850167
+        ],
+        "candidate": [
+          36.061125,
+          36.822417
+        ],
+        "controlMedian": 38.602896,
+        "candidateMedian": 36.441771,
+        "medianChangePercent": -5.598349408811187
+      },
+      "fullFrameMaxMs": {
+        "control": [
+          69.113125,
+          67.588917
+        ],
+        "candidate": [
+          143.692625,
+          65.314334
+        ],
+        "controlMedian": 68.351021,
+        "candidateMedian": 104.5034795,
+        "medianChangePercent": 52.89234596802876
+      }
+    },
+    "decision": "Pending final correctness/default decision. Scratch is opt-in for these runs; exact pool counters measure Page backing arrays only. Timing and JFR sample weights are diagnostic, not screen FPS or official parity.",
+    "limits": [
+      "JFR allocation weights are statistical samples, not exact allocated bytes.",
+      "Do not pool frames into independent experimental replicates; the replicate is a JVM run.",
+      "Concurrent user applications and OS/GPU contention are uncontrolled.",
+      "Per-run maxima and two-run medians do not establish a stable tail-latency effect."
+    ]
+  },
+  "wholeCapturePoolCounters": {
+    "battle-control-a1": {
+      "atlasPixelPool_closedAndScratchReleased": true,
+      "atlasPixelPool_internRequests": 32,
+      "atlasPixelPool_reuseHits": 31,
+      "atlasPixelPool_uploadRequests": 32,
+      "atlasPixelPool_uploadReuseHits": 31,
+      "atlasPixelPool_pageBufferAllocations": 32,
+      "atlasPixelPool_scratchReuseHits": 0,
+      "atlasPixelPool_scratchRecycleHits": 0,
+      "atlasPixelPool_scratchResetBytes": 0,
+      "atlasPixelPool_pageCopyBytes": 0,
+      "atlasPixelPool_blankPageRequests": 32,
+      "atlasPixelPool_pageCopyRequests": 0
+    },
+    "battle-candidate-b1": {
+      "atlasPixelPool_closedAndScratchReleased": true,
+      "atlasPixelPool_internRequests": 32,
+      "atlasPixelPool_reuseHits": 31,
+      "atlasPixelPool_uploadRequests": 32,
+      "atlasPixelPool_uploadReuseHits": 31,
+      "atlasPixelPool_pageBufferAllocations": 2,
+      "atlasPixelPool_scratchReuseHits": 30,
+      "atlasPixelPool_scratchRecycleHits": 31,
+      "atlasPixelPool_scratchResetBytes": 10813440,
+      "atlasPixelPool_pageCopyBytes": 0,
+      "atlasPixelPool_blankPageRequests": 32,
+      "atlasPixelPool_pageCopyRequests": 0
+    },
+    "battle-candidate-b2": {
+      "atlasPixelPool_closedAndScratchReleased": true,
+      "atlasPixelPool_internRequests": 32,
+      "atlasPixelPool_reuseHits": 31,
+      "atlasPixelPool_uploadRequests": 32,
+      "atlasPixelPool_uploadReuseHits": 31,
+      "atlasPixelPool_pageBufferAllocations": 2,
+      "atlasPixelPool_scratchReuseHits": 30,
+      "atlasPixelPool_scratchRecycleHits": 31,
+      "atlasPixelPool_scratchResetBytes": 10813440,
+      "atlasPixelPool_pageCopyBytes": 0,
+      "atlasPixelPool_blankPageRequests": 32,
+      "atlasPixelPool_pageCopyRequests": 0
+    },
+    "battle-control-a2": {
+      "atlasPixelPool_closedAndScratchReleased": true,
+      "atlasPixelPool_internRequests": 31,
+      "atlasPixelPool_reuseHits": 30,
+      "atlasPixelPool_uploadRequests": 31,
+      "atlasPixelPool_uploadReuseHits": 30,
+      "atlasPixelPool_pageBufferAllocations": 31,
+      "atlasPixelPool_scratchReuseHits": 0,
+      "atlasPixelPool_scratchRecycleHits": 0,
+      "atlasPixelPool_scratchResetBytes": 0,
+      "atlasPixelPool_pageCopyBytes": 0,
+      "atlasPixelPool_blankPageRequests": 31,
+      "atlasPixelPool_pageCopyRequests": 0
+    }
+  },
+  "counterScope": "Pool counters include warmup+sample+drain. Timing/JFR allocation weights use sample generated121..1320/tick6060..6660 only. They cannot be equated.",
+  "clearRange": {
+    "candidateBattleExplicitResetBytes": 10813440,
+    "candidateBattleReuseHits": 30,
+    "wholePageResetModelBytes": 503316480,
+    "reductionOfExplicitClearRangePercent": 97.8515625,
+    "limits": "Counts describe explicit fill/copy ranges, not JVM allocation implicit zeroing, canonical full comparison, native upload copies or total memory writes. Full-page model assumes the same blank reuse requests; it is not a timing comparison."
+  },
+  "assessment": "Both candidate runs have lower CPU/P99 in this pair of independent JVMs; medians CPU-2.795%, P99-5.598%, GCPhasePause-13.883%, allocation sampling weight-20.874%. Yet one candidate frame is143.692625ms, CPU15.84ms, no GC overlap. Cause unproven; keep default OFF rather than claim stable tail/FPS improvement.",
+  "longFrame": {
+    "retained": true,
+    "run": "battle-candidate-b1",
+    "frameIndex": 1093,
+    "generatedAfter": 1074,
+    "wallMs": 143.692625,
+    "threadCpuMs": 15.84,
+    "gcOverlapMs": 0.0,
+    "cause": "unattributed; wall/CPU gap is not sufficient to blame OS scheduling or exclude candidate effects"
+  },
+  "correctness": {
+    "coreTests": {
+      "tests": 490,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "desktopTests": {
+      "tests": 145,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "newCoverage": [
+      "old-prefix COW donor column holes",
+      "tall then short shelf and late wrap",
+      "empty/full/manual fallback",
+      "donor shorter/longer than source and zero prefix",
+      "invalid range before ownership/state mutation"
+    ],
+    "realGpu": {
+      "heapMiB": 512,
+      "generated": 300,
+      "adopted": 300,
+      "fenceCompleted": 300,
+      "pendingRetirements": 0,
+      "cells": 6,
+      "pixels": 1572864,
+      "maxChannelDelta": 0,
+      "explicitResetBytes": 6127616,
+      "pageCopyRequests": 0,
+      "scratchReleased": true,
+      "scope": "Frozen real map-cell attachments only; actual COW prefix not exercised in this replay (0 requests), covered by unit lifetime/poison tests."
+    }
+  },
+  "runtime": "Four arms use the same immutable copied project class/jar snapshot and byte-verified external jars, corea015273065f84c8d8e2646971d2d2ab11e1340a113b7a5a4f884acadf89d42eb. Each child observed nice15. No benchmark jar was overwritten by subsequent builds.",
+  "evidence": {
+    "battle-comparison.json": {
+      "path": "/Users/wty/code/RWXX/build/atlas-prefix-20261102/battle-comparison.json",
+      "sha256": "1bbd233850e24cb54850fcbbad23bcd236c17b4c5f46cb3fdc775f2e116a7f0f"
+    },
+    "independent-code-review.json": {
+      "path": "/Users/wty/code/RWXX/build/atlas-prefix-20261102/independent-code-review.json",
+      "sha256": "7dbf5ba7f6f257ea282206d0b2faca9f603389923e87f63e620ccddb44bcebc1"
+    },
+    "independent-battle-review.json": {
+      "path": "/Users/wty/code/RWXX/build/atlas-prefix-20261102/independent-battle-review.json",
+      "sha256": "5eaa710f17194603fb7eb2434db71d7f87aafb3499a3beaa26b963b6bc902525"
+    },
+    "source-snapshot/manifest.json": {
+      "path": "/Users/wty/code/RWXX/build/atlas-prefix-20261102/source-snapshot/manifest.json",
+      "sha256": "3143a7447da638d31a5985d28e2f826475f8371998f74fea72f6b9a2b756d3a1"
+    },
+    "pixel-reference-prefix-512-v1/command.json": {
+      "path": "/Users/wty/code/RWXX/build/atlas-prefix-20261102/pixel-reference-prefix-512-v1/command.json",
+      "sha256": "15c1f4fcb5a5461a04f54c81c43af949fe7ea2077268050a971d1a05dbd94981"
+    },
+    "pixel-reference-prefix-512-v1/process-result.json": {
+      "path": "/Users/wty/code/RWXX/build/atlas-prefix-20261102/pixel-reference-prefix-512-v1/process-result.json",
+      "sha256": "d010c288e4f9775ace3b15a8b61a63e74f23d2d84c165bfc516c5cd8cbf22cb7"
+    },
+    "pixel-reference-prefix-512-v1/capture/result.json": {
+      "path": "/Users/wty/code/RWXX/build/atlas-prefix-20261102/pixel-reference-prefix-512-v1/capture/result.json",
+      "sha256": "b814f4211fe36f540a5f3b0acd6bc36f623435ef7181cbfff6c372aa566e5176"
+    }
+  },
+  "limits": [
+    "Two independent sequential JVM samples per arm, not2400 independent experimental replicates.",
+    "Synchronous true-windowless60Hz Vulkan diagnostic, not production producer concurrency, physical scanout/input FPS or official comparison.",
+    "No visible game started, no activation/restoration, no Steam/install changes."
+  ]
+}

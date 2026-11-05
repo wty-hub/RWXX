@@ -24,19 +24,21 @@ from analyze_vulkan_matrix import read_json_lines
 
 def add_camera_arguments(parser, period_default=20):
     parser.add_argument('--camera-period-seconds', type=int, default=period_default)
-    parser.add_argument('--camera-mode', choices=('pan', 'jump', 'edge-jump', 'pan-zoom'), default='pan')
-    parser.add_argument('--zoom-mode', choices=('none', 'cycle'), default=None)
+    parser.add_argument('--camera-mode', choices=('pan', 'jump', 'edge-jump', 'pan-zoom', 'static'), default='pan')
+    parser.add_argument('--zoom-mode', choices=('none', 'fixed', 'cycle'), default=None,
+                        help='fixed uses --zoom-min as a constant target; ordinary UI bounds and density still apply')
     parser.add_argument('--zoom-period-seconds', type=int, default=4)
-    parser.add_argument('--zoom-min', type=float, default=.35)
+    parser.add_argument('--zoom-min', type=float, default=.35, help='Minimum cycle zoom, or the constant target for --zoom-mode fixed')
     parser.add_argument('--zoom-max', type=float, default=1.5)
 
 
 def camera_protocol(args):
     if args.camera_period_seconds < 1 or args.zoom_period_seconds < 1:
         raise ValueError('camera and zoom periods must be >= 1 second')
-    if not (math.isfinite(args.zoom_min) and math.isfinite(args.zoom_max) and 0 < args.zoom_min < args.zoom_max):
-        raise ValueError('zoom limits must be finite and 0 < zoom-min < zoom-max')
     zoom_mode = args.zoom_mode or ('cycle' if args.camera_mode == 'pan-zoom' else 'none')
+    if not (math.isfinite(args.zoom_min) and math.isfinite(args.zoom_max) and args.zoom_min > 0 and args.zoom_max > 0
+            and (zoom_mode == 'fixed' or args.zoom_min < args.zoom_max)):
+        raise ValueError('zoom limits must be finite and positive; none/cycle require zoom-min < zoom-max; fixed uses zoom-min')
     if args.camera_mode == 'pan-zoom' and zoom_mode != 'cycle':
         raise ValueError('pan-zoom requires cycle zoom')
     return {'cameraMode': 'pan' if args.camera_mode == 'pan-zoom' else args.camera_mode,
@@ -68,6 +70,30 @@ def confirm_camera_zoom(run, protocol):
             and window['actualZoomMaximum'] - window['actualZoomMinimum'] > .01 for window in run['windows'])
         if not confirmed:
             run['invalidReasons'].append('continuous zoom request was not confirmed by actual engine zoom changes')
+            run['validMeasurement'] = False
+    elif protocol['zoomMode'] == 'fixed':
+        def positive(value):
+            return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value) and value > 0
+
+        def fixed_window(window):
+            density = window.get('densityZoomScale')
+            if not positive(density):
+                return False
+            minimum = min(setup['actualScreenWidthPixels'] / setup['worldWidth'],
+                          setup['actualScreenHeightPixels'] / setup['worldHeight']) / density
+            target = max(minimum, min(4.6 / density, 4.6, protocol['zoomMinimumRequested']))
+            lo, hi = window.get('actualZoomMinimum'), window.get('actualZoomMaximum')
+            return (window.get('zoomMode') == 'fixed' and positive(lo) and positive(hi) and lo == hi
+                    and positive(window.get('requestedTargetZoomEnd'))
+                    and math.isclose(window['requestedTargetZoomEnd'], target, abs_tol=1e-6)
+                    and math.isclose(lo, target * density, abs_tol=1e-6))
+
+        confirmed = confirmed and positive(setup.get('zoomRequestedMinimum')) and math.isclose(
+            setup['zoomRequestedMinimum'], protocol['zoomMinimumRequested'], abs_tol=1e-6) and all(
+            positive(setup.get(key)) for key in ('actualScreenWidthPixels', 'actualScreenHeightPixels', 'worldWidth', 'worldHeight'))
+        confirmed = confirmed and bool(run.get('windows')) and all(fixed_window(window) for window in run['windows'])
+        if not confirmed:
+            run['invalidReasons'].append('fixed zoom-min request was not confirmed by a constant actual engine zoom within ordinary UI bounds')
             run['validMeasurement'] = False
     run['zoomModeConfirmed'] = confirmed
 

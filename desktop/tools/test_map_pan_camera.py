@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 import map_pan_live
 import map_pan_live_comparison
+import map_pan_comparison
 import map_pan_replay
 
 from map_pan_builtin_comparison import (add_camera_arguments, camera_protocol,
@@ -15,6 +16,31 @@ from map_pan_builtin_comparison import (add_camera_arguments, camera_protocol,
 
 
 class MapPanCameraTest(unittest.TestCase):
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.preference_project = Path(directory.name)
+        self.preference_seed = '[preferences]\n' + ''.join(
+            f'{key} = "{value}"\n' for key, value in {
+                'renderVsync': 'true', 'slick2dFullScreen': 'true', 'maxFrameRate': '60',
+                'highRefreshRate': 'false', 'batterySaving': 'true', 'sendReports': 'true',
+                'enableSounds': 'true', 'musicVolume': '0.8', 'masterVolume': '0.8',
+                'gameVolume': '0.8', 'interfaceVolume': '0.8',
+            }.items())
+        (self.preference_project / 'preferences.toml').write_text(self.preference_seed, encoding='utf-8')
+        project = patch.object(map_pan_comparison, 'PROJECT', self.preference_project)
+        project.start()
+        self.addCleanup(project.stop)
+
+    def test_isolated_preferences_are_silent_and_do_not_modify_the_source_seed(self):
+        seed = map_pan_comparison.isolated_seed()
+        self.assertIn('enableSounds = "false"', seed)
+        self.assertIn('maxFrameRate = "300"', seed)
+        for key in ('musicVolume', 'masterVolume', 'gameVolume', 'interfaceVolume'):
+            self.assertIn(f'{key} = "0.0"', seed)
+        self.assertEqual((self.preference_project / 'preferences.toml').read_text(encoding='utf-8'),
+                         self.preference_seed)
+
     def protocol(self, *arguments):
         parser = argparse.ArgumentParser()
         add_camera_arguments(parser)
@@ -37,6 +63,17 @@ class MapPanCameraTest(unittest.TestCase):
                               for index, second in enumerate((15, 25, 30, 35, 45, 50, 55))]
         return run
 
+    def fixed_run(self, request=.45, density=1):
+        run = self.gpu_run()
+        run['setup'].update(zoomMode='fixed', zoomRequestedMinimum=request,
+                            actualScreenWidthPixels=1280, actualScreenHeightPixels=720,
+                            worldWidth=4000, worldHeight=2000, densityZoomScale=density)
+        target = max(.32 / density, min(4.6 / density, 4.6, request))
+        for window in run['windows']:
+            window.update(zoomMode='fixed', densityZoomScale=density, requestedTargetZoomEnd=target,
+                          actualZoomMinimum=target * density, actualZoomMaximum=target * density)
+        return run
+
     def test_default_and_jump_keep_zoom_disabled(self):
         for arguments, expected in (((), 'pan'), (('--camera-mode', 'jump'), 'jump')):
             with self.subTest(arguments=arguments):
@@ -56,10 +93,22 @@ class MapPanCameraTest(unittest.TestCase):
             'RWX_REPLAY_PAN_ZOOM_MODE': 'cycle', 'RWX_REPLAY_PAN_ZOOM_PERIOD_SECONDS': '4',
             'RWX_REPLAY_PAN_ZOOM_MIN': '0.35', 'RWX_REPLAY_PAN_ZOOM_MAX': '1.5'})
 
+    def test_fixed_uses_zoom_min_without_a_fake_cycle_and_static_supports_zoom_only(self):
+        protocol = self.protocol('--zoom-mode', 'fixed', '--zoom-min', '.45', '--zoom-max', '.45')
+        self.assertEqual(protocol['zoomMode'], 'fixed')
+        self.assertEqual(protocol['zoomMinimumRequested'], .45)
+        self.assertEqual(camera_environment(protocol)['RWX_REPLAY_PAN_ZOOM_MODE'], 'fixed')
+        self.assertEqual(camera_environment(protocol)['RWX_REPLAY_PAN_ZOOM_MIN'], '0.45')
+        self.assertEqual(self.protocol('--zoom-mode', 'fixed', '--zoom-min', '2')['zoomMinimumRequested'], 2)
+        zoom_only = self.protocol('--camera-mode', 'static', '--zoom-mode', 'cycle')
+        self.assertEqual(zoom_only['cameraMode'], 'static')
+        self.assertEqual(zoom_only['zoomMode'], 'cycle')
+
     def test_bad_period_limits_and_conflicting_alias_fail_before_launch(self):
         for arguments in (('--camera-period-seconds', '0'), ('--zoom-period-seconds', '0'),
                           ('--zoom-min', 'nan'), ('--zoom-max', 'inf'), ('--zoom-min', '0'),
-                          ('--zoom-min', '2'), ('--camera-mode', 'pan-zoom', '--zoom-mode', 'none')):
+                          ('--zoom-min', '2'), ('--camera-mode', 'pan-zoom', '--zoom-mode', 'none'),
+                          ('--camera-mode', 'pan-zoom', '--zoom-mode', 'fixed')):
             with self.subTest(arguments=arguments), self.assertRaises(ValueError):
                 self.protocol(*arguments)
 
@@ -95,6 +144,62 @@ class MapPanCameraTest(unittest.TestCase):
         confirm_camera_zoom(run, self.protocol())
         self.assertTrue(run['validMeasurement'])
         self.assertFalse(run['zoomModeConfirmed'])
+
+    def test_fixed_confirms_constant_applied_zoom_with_ordinary_bounds_and_density(self):
+        for request, density in ((.45, 1), (.1, 1), (.1, 2), (10, 2)):
+            with self.subTest(request=request, density=density):
+                run = self.fixed_run(request, density)
+                confirm_camera_zoom(run, self.protocol('--zoom-mode', 'fixed', '--zoom-min', str(request)))
+                self.assertTrue(run['validMeasurement'])
+                self.assertTrue(run['zoomModeConfirmed'])
+                self.assertEqual(run['invalidReasons'], [])
+
+    def test_fixed_rejects_ignored_request_near_constant_cycles_and_missing_actual_evidence(self):
+        original = self.fixed_run()
+        mutations = [('mode', lambda run: run['setup'].update(zoomMode='cycle')),
+                     ('request', lambda run: run['setup'].update(zoomRequestedMinimum=.5)),
+                     ('missing-setup', lambda run: run.update(setup=None)),
+                     ('missing-dimensions', lambda run: run['setup'].pop('worldWidth')),
+                     ('empty-windows', lambda run: run.update(windows=[])),
+                     ('missing-density', lambda run: run['windows'][0].pop('densityZoomScale')),
+                     ('wrong-window-mode', lambda run: run['windows'][0].update(zoomMode='cycle')),
+                     ('wrong-target', lambda run: run['windows'][0].update(requestedTargetZoomEnd=.5)),
+                     ('near-cycle', lambda run: run['windows'][0].update(actualZoomMaximum=.450001)),
+                     ('nan', lambda run: run['windows'][0].update(actualZoomMinimum=float('nan')))]
+        for name, mutate in mutations:
+            with self.subTest(name=name):
+                run = copy.deepcopy(original); mutate(run)
+                confirm_camera_zoom(run, self.protocol('--zoom-mode', 'fixed', '--zoom-min', '.45'))
+                self.assertFalse(run['validMeasurement'])
+                self.assertFalse(run['zoomModeConfirmed'])
+                self.assertEqual(len(run['invalidReasons']), 1)
+
+    def test_fixed_camera_requests_reach_live_and_replay_runners_without_java(self):
+        for module in (map_pan_live, map_pan_replay):
+            with self.subTest(module=module.__name__), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                jar = root / 'runtime.jar'; jar.write_bytes(b'fixture')
+                replay = root / 'fixture.replay'; replay.write_bytes(b'fixture')
+                output = root / 'run'; invoked = {}
+                def fake_launch(command, environment, out, name, timeout):
+                    invoked.update(environment=environment)
+                    (out / f'{name}.log').write_text('RWXVulkanConfiguration gpuMapCellSupported=true\n', encoding='utf-8')
+                    return {'name': name}
+                arguments = [module.__name__, '--jar', str(jar), '--java', 'unused-java', '--output', str(output),
+                             '--camera-mode', 'pan', '--zoom-mode', 'fixed', '--zoom-min', '.45', '--zoom-max', '.45']
+                if module is map_pan_replay:
+                    arguments.extend(['--replay', str(replay)])
+                fixture = [{'kind': 'scenario', 'requestedUnits': 500, 'mode': 'moving', 'teams': 15, 'fogEnabled': False}]
+                with patch('sys.argv', arguments), patch.object(module, 'java_command', return_value=['unused-java']), \
+                        patch.object(module, 'launch', side_effect=fake_launch), \
+                        patch.object(module, 'analyze_run', return_value=self.fixed_run()), \
+                        patch.object(module, 'read_json_lines', return_value=fixture, create=True), patch('builtins.print'):
+                    self.assertEqual(module.main(), 0)
+                self.assertEqual(invoked['environment']['RWX_REPLAY_PAN_ZOOM_MODE'], 'fixed')
+                self.assertEqual(invoked['environment']['RWX_REPLAY_PAN_ZOOM_MIN'], '0.45')
+                report = json.loads((output / 'diagnostic-summary.json').read_text(encoding='utf-8'))
+                self.assertEqual(report['protocol']['zoomMode'], 'fixed')
+                self.assertTrue(report['run']['zoomModeConfirmed'])
 
     def test_opt_in_modes_require_effective_initialization_logs(self):
         for log, stripe, text, valid in (
@@ -258,6 +363,34 @@ class MapPanCameraTest(unittest.TestCase):
                     module.main()
                 self.assertEqual(failure.exception.code, 2)
                 self.assertFalse(output.exists())
+
+    def test_owner_deadline_option_is_isolated_and_requires_actual_owner_confirmation_without_java(self):
+        for module in (map_pan_live, map_pan_replay):
+            for confirmed in (False, True):
+                with self.subTest(module=module.__name__, confirmed=confirmed), tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    jar = root / 'runtime.jar'; jar.write_bytes(b'fixture')
+                    replay = root / 'fixture.replay'; replay.write_bytes(b'fixture')
+                    output = root / 'run'; invoked = {}
+                    def fake_launch(command, environment, out, name, timeout):
+                        invoked.update(environment=environment)
+                        text = 'RWXVulkanConfiguration gpuMapCellSupported=true\n'
+                        if confirmed:
+                            text += 'RWXOwnerPacing hybrid=false stableFrameDeadlines=true\n'
+                        (out / f'{name}.log').write_text(text, encoding='utf-8')
+                        return {'name': name}
+                    arguments = [module.__name__, '--jar', str(jar), '--java', 'unused-java', '--output', str(output),
+                                 '--camera-mode', 'pan-zoom', '--stable-owner-deadlines']
+                    if module is map_pan_replay: arguments.extend(['--replay', str(replay)])
+                    fixture = [{'kind': 'scenario', 'requestedUnits': 500, 'mode': 'moving', 'teams': 15, 'fogEnabled': False}]
+                    with patch('sys.argv', arguments), patch.dict('os.environ', {'RWX_STABLE_FRAME_DEADLINES': '1'}), \
+                            patch.object(module, 'java_command', return_value=['unused-java']), \
+                            patch.object(module, 'launch', side_effect=fake_launch), \
+                            patch.object(module, 'analyze_run', return_value=self.gpu_run()), \
+                            patch.object(module, 'read_json_lines', return_value=fixture, create=True), patch('builtins.print'):
+                        self.assertEqual(module.main(), 0 if confirmed else 1)
+                    self.assertEqual(invoked['environment']['RWX_STABLE_OWNER_DEADLINES'], '1')
+                    self.assertNotIn('RWX_STABLE_FRAME_DEADLINES', invoked['environment'])
 
     def test_replay_runner_preserves_worker_and_profile_flags_with_adaptive_without_java(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -465,6 +598,162 @@ class MapPanCameraTest(unittest.TestCase):
                 summary = json.loads((output / 'diagnostic-summary.json').read_text(encoding='utf-8'))
                 self.assertFalse(summary['run']['validMeasurement'])
                 self.assertIn('prepared map tile recording was not exercised', summary['run']['invalidReasons'])
+
+    def test_frozen_reuse_controls_are_explicit_despite_product_default_and_parent_environment(self):
+        for module in (map_pan_live, map_pan_replay):
+            for requested in (False, True):
+                with self.subTest(module=module.__name__, requested=requested), tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    jar = root / 'frozen.jar'; jar.write_bytes(b'frozen runtime test fixture')
+                    replay = root / 'europe.replay'; replay.write_bytes(b'replay test fixture')
+                    output = root / 'measurement'; invoked = {}
+                    def fake_launch(command, environment, out, name, timeout):
+                        invoked['environment'] = environment
+                        (out / f'{name}.log').write_text('RWXVulkanConfiguration gpuMapCellSupported=true\n' +
+                            ('frozenContentReuse=true' if requested else ''), encoding='utf-8')
+                        return {'name': name}
+                    arguments = [module.__name__, '--jar', str(jar), '--java', 'unused-java', '--output', str(output),
+                                 '--camera-mode', 'pan-zoom']
+                    if module is map_pan_replay:
+                        arguments.extend(['--replay', str(replay)])
+                    if requested:
+                        arguments.append('--frozen-reuse')
+                    fixture = [{'kind': 'scenario', 'requestedUnits': 500, 'mode': 'moving', 'teams': 15, 'fogEnabled': False}]
+                    with patch('sys.argv', arguments), patch.dict('os.environ', {'RWX_FROZEN_CONTENT_REUSE': '1'}), \
+                            patch.object(module, 'java_command', return_value=['unused-java']), \
+                            patch.object(module, 'launch', side_effect=fake_launch), \
+                            patch.object(module, 'analyze_run', return_value=self.gpu_run()), \
+                            patch.object(module, 'read_json_lines', return_value=fixture, create=True), patch('builtins.print'):
+                        self.assertEqual(module.main(), 0)
+                    self.assertEqual(invoked['environment']['RWX_FROZEN_CONTENT_REUSE'], '1' if requested else '0')
+                    summary = json.loads((output / 'diagnostic-summary.json').read_text(encoding='utf-8'))
+                    self.assertEqual(summary['configuration']['frozen_reuse'], requested)
+                    self.assertTrue(summary['run']['validMeasurement'])
+
+    def test_shared_texture_registration_candidate_is_explicit_and_requires_actual_sharing(self):
+        for module in (map_pan_live, map_pan_replay):
+            for requested, confirmed in ((False, False), (True, False), (True, True)):
+                with self.subTest(module=module.__name__, requested=requested, confirmed=confirmed), \
+                        tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    jar = root / 'frozen.jar'; jar.write_bytes(b'frozen runtime test fixture')
+                    replay = root / 'europe.replay'; replay.write_bytes(b'replay test fixture')
+                    output = root / 'measurement'; invoked = {}
+                    def fake_launch(command, environment, out, name, timeout):
+                        invoked['environment'] = environment
+                        marker = 'RWXSharedTextureRegistrations sharingConfirmed=true' if confirmed else ''
+                        (out / f'{name}.log').write_text('RWXVulkanConfiguration gpuMapCellSupported=true\n' + marker,
+                                                       encoding='utf-8')
+                        return {'name': name}
+                    arguments = [module.__name__, '--jar', str(jar), '--java', 'unused-java', '--output', str(output),
+                                 '--camera-mode', 'pan-zoom']
+                    if module is map_pan_replay:
+                        arguments.extend(['--replay', str(replay)])
+                    if requested:
+                        arguments.append('--share-texture-registrations')
+                    fixture = [{'kind': 'scenario', 'requestedUnits': 500, 'mode': 'moving', 'teams': 15, 'fogEnabled': False}]
+                    with patch('sys.argv', arguments), \
+                            patch.dict('os.environ', {'RWX_SHARE_TEXTURE_REGISTRATIONS': '0' if requested else '1'}), \
+                            patch.object(module, 'java_command', return_value=['unused-java']), \
+                            patch.object(module, 'launch', side_effect=fake_launch), \
+                            patch.object(module, 'analyze_run', return_value=self.gpu_run()), \
+                            patch.object(module, 'read_json_lines', return_value=fixture, create=True), patch('builtins.print'):
+                        self.assertEqual(module.main(), 1 if requested and not confirmed else 0)
+                    self.assertEqual(invoked['environment']['RWX_SHARE_TEXTURE_REGISTRATIONS'], '1' if requested else '0')
+                    summary = json.loads((output / 'diagnostic-summary.json').read_text(encoding='utf-8'))
+                    self.assertEqual(summary['protocol']['shareTextureRegistrationsRequested'], requested)
+                    self.assertEqual(summary['configuration']['share_texture_registrations'], requested)
+                    self.assertEqual(summary['run']['validMeasurement'], not requested or confirmed)
+                    reason = 'shared texture registrations were not exercised'
+                    self.assertEqual(reason in summary['run']['invalidReasons'], requested and not confirmed)
+
+    def test_shared_atlas_pixels_require_explicit_switch_and_both_actual_reuse_markers(self):
+        for module in (map_pan_live, map_pan_replay):
+            for requested, cpu_reuse, upload_reuse in (
+                    (False, False, False), (True, False, False), (True, True, False),
+                    (True, False, True), (True, True, True)):
+                with self.subTest(module=module.__name__, requested=requested, cpu_reuse=cpu_reuse,
+                                  upload_reuse=upload_reuse), tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    jar = root / 'frozen.jar'; jar.write_bytes(b'frozen runtime test fixture')
+                    replay = root / 'europe.replay'; replay.write_bytes(b'replay test fixture')
+                    output = root / 'measurement'; invoked = {}
+                    def fake_launch(command, environment, out, name, timeout):
+                        invoked['environment'] = dict(environment)
+                        markers = ['RWXVulkanConfiguration gpuMapCellSupported=true']
+                        if cpu_reuse:
+                            markers.append('RWXAtlasPixelSharing reuseConfirmed=true')
+                        if upload_reuse:
+                            markers.append('RWXAtlasPixelUploads reuseConfirmed=true')
+                        (out / f'{name}.log').write_text('\n'.join(markers), encoding='utf-8')
+                        return {'name': name}
+                    arguments = [module.__name__, '--jar', str(jar), '--java', 'unused-java', '--output', str(output),
+                                 '--camera-mode', 'pan-zoom']
+                    if module is map_pan_replay:
+                        arguments.extend(['--replay', str(replay)])
+                    if requested:
+                        arguments.append('--share-map-atlas-pixels')
+                    fixture = [{'kind': 'scenario', 'requestedUnits': 500, 'mode': 'moving', 'teams': 15, 'fogEnabled': False}]
+                    valid = not requested or cpu_reuse and upload_reuse
+                    with patch('sys.argv', arguments), \
+                            patch.dict('os.environ', {'RWX_SHARE_MAP_ATLAS_PIXELS': '0' if requested else '1'}), \
+                            patch.object(module, 'java_command', return_value=['unused-java']), \
+                            patch.object(module, 'launch', side_effect=fake_launch), \
+                            patch.object(module, 'analyze_run', return_value=self.gpu_run()), \
+                            patch.object(module, 'read_json_lines', return_value=fixture, create=True), patch('builtins.print'):
+                        self.assertEqual(module.main(), 0 if valid else 1)
+                    self.assertEqual(invoked['environment']['RWX_SHARE_MAP_ATLAS_PIXELS'], '1' if requested else '0')
+                    summary = json.loads((output / 'diagnostic-summary.json').read_text(encoding='utf-8'))
+                    self.assertEqual(summary['protocol']['shareMapAtlasPixelsRequested'], requested)
+                    self.assertEqual(summary['configuration']['share_map_atlas_pixels'], requested)
+                    self.assertEqual(summary['run']['validMeasurement'], valid)
+                    for reason, confirmed in (
+                            ('shared atlas CPU pixel reuse was not confirmed', cpu_reuse),
+                            ('shared atlas upload reuse was not confirmed', upload_reuse)):
+                        self.assertEqual(reason in summary['run']['invalidReasons'], requested and not confirmed)
+
+    def test_pacing_and_zoom_metadata_follow_final_environment_without_changing_switches(self):
+        for module in (map_pan_live, map_pan_replay):
+            cases = [((), {}), (('--legacy-owner-pacing',), {'RWX_LEGACY_OWNER_PACING': '1'})]
+            if module is map_pan_replay:
+                cases.extend([
+                    (('--frame-based-zoom-cache',), {'RWX_TIME_BASED_MAP_ZOOM_CACHE': '0'}),
+                    (('--time-based-map-zoom-cache',), {'RWX_TIME_BASED_MAP_ZOOM_CACHE': '1'}),
+                    (('--time-based-map-zoom-cache', '--frame-based-zoom-cache'),
+                     {'RWX_TIME_BASED_MAP_ZOOM_CACHE': '0'})])
+            for flags, expected_switches in cases:
+                with self.subTest(module=module.__name__, flags=flags), tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    jar = root / 'frozen.jar'; jar.write_bytes(b'frozen runtime test fixture')
+                    replay = root / 'europe.replay'; replay.write_bytes(b'replay test fixture')
+                    output = root / 'measurement'; invoked = {}
+                    def fake_launch(command, environment, out, name, timeout):
+                        invoked['environment'] = dict(environment)
+                        (out / f'{name}.log').write_text('RWXVulkanConfiguration gpuMapCellSupported=true', encoding='utf-8')
+                        return {'name': name}
+                    arguments = [module.__name__, '--jar', str(jar), '--java', 'unused-java', '--output', str(output),
+                                 '--camera-mode', 'pan-zoom', *flags]
+                    if module is map_pan_replay:
+                        arguments.extend(['--replay', str(replay)])
+                    fixture = [{'kind': 'scenario', 'requestedUnits': 500, 'mode': 'moving', 'teams': 15, 'fogEnabled': False}]
+                    with patch('sys.argv', arguments), \
+                            patch.dict('os.environ', {'RWX_HYBRID_OWNER_PACING': '1', 'RWX_TIME_BASED_MAP_ZOOM_CACHE': '0'}), \
+                            patch.object(module, 'java_command', return_value=['unused-java']), \
+                            patch.object(module, 'launch', side_effect=fake_launch), \
+                            patch.object(module, 'analyze_run', return_value=self.gpu_run()), \
+                            patch.object(module, 'read_json_lines', return_value=fixture, create=True), patch('builtins.print'):
+                        self.assertEqual(module.main(), 0)
+                    environment = invoked['environment']
+                    observed_switches = {key: environment[key] for key in (
+                        'RWX_HYBRID_OWNER_PACING', 'RWX_LEGACY_OWNER_PACING', 'RWX_TIME_BASED_MAP_ZOOM_CACHE')
+                        if key in environment}
+                    self.assertEqual(observed_switches, expected_switches)
+                    summary = json.loads((output / 'diagnostic-summary.json').read_text(encoding='utf-8'))
+                    self.assertFalse(summary['protocol']['hybridOwnerPacingRequested'])
+                    self.assertEqual(summary['configuration']['legacy_owner_pacing'], '--legacy-owner-pacing' in flags)
+                    if module is map_pan_replay:
+                        self.assertEqual(summary['protocol']['timeBasedMapZoomCacheRequested'],
+                                         expected_switches.get('RWX_TIME_BASED_MAP_ZOOM_CACHE') != '0')
 
     def test_gpu_pass_reuse_runner_is_explicit_and_records_control_protocol_without_java(self):
         for module in (map_pan_live, map_pan_replay):

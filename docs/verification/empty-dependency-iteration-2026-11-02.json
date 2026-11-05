@@ -1,0 +1,1689 @@
+{
+  "date": "2026-11-02",
+  "applicationVersion": "1.4.3",
+  "status": "empty-set-iterator-guard-applied-and-packaged",
+  "goalComplete": false,
+  "change": "Guard only pendingFrameDependencySnapshotIds.forEach(unregister) with isNotEmpty; keep all three following clears unconditional. Nonempty unregister ordering and exception behavior remain the same.",
+  "acceptanceReason": "Empty-set iteration has no unregister side effect; skipping it preserves the subsequent cleanup exactly and avoids creating an iterator in that branch. This local removal of unnecessary work is accepted independently of unproven global FPS effects.",
+  "prototypeDefaults": {
+    "RWX_REUSE_MAP_ATLAS_SCRATCH": false,
+    "RWX_REUSE_INSTANCED_TEXTURE_SHADERS": false,
+    "RWX_SHARE_MAP_TEXTURE_MATERIALS": false,
+    "RWX_DIRECT_TARGET_TEXTURES": false
+  },
+  "benchmark": {
+    "validForDeclaredAuditScope": true,
+    "singleClassJarDiff": {
+      "baselineSha256": "a015273065f84c8d8e2646971d2d2ab11e1340a113b7a5a4f884acadf89d42eb",
+      "candidateSha256": "5d77d01450aa956655abd8c37eede7f6f0b88391bfa426db31cd5d3fa1e703d9",
+      "changedEntries": [
+        "io/github/rwx/render/canvas/KoolGraphicsEngine.class"
+      ]
+    },
+    "runtime": {
+      "record": {
+        "manifest": "/Users/wty/code/RWXX/build/atlas-prefix-20261102/runtimes/f6abb36de264490064a8ed8e7e389d2779533fce9b65ea45c0cd5220a1ee542b/manifest.json",
+        "sha256": "bbf70b8cec3bb1788be08b23f0b5333556f8986a770a68c213f4929739681517",
+        "fingerprint": "f6abb36de264490064a8ed8e7e389d2779533fce9b65ea45c0cd5220a1ee542b"
+      },
+      "validatedLocalFiles": 442,
+      "validatedExternalFiles": 126,
+      "nonexistentOrEmptyCpEntries": [
+        "/Users/wty/code/RWXX/desktop/build/resources/test"
+      ],
+      "limitation": "Post-run on-disk content verification; not an attestation of every class loaded by the JVM."
+    },
+    "runs": [
+      {
+        "name": "battle-control-a1",
+        "coreJar": {
+          "path": "/Users/wty/code/RWXX/build/empty-dependencies-20261102/baseline/core-1.4.3.jar",
+          "sha256": "a015273065f84c8d8e2646971d2d2ab11e1340a113b7a5a4f884acadf89d42eb"
+        },
+        "guardEnabled": false,
+        "wall": {
+          "count": 1200,
+          "sumMs": 20611.444679,
+          "p50Ms": 16.810583,
+          "p95Ms": 23.00425,
+          "p99Ms": 38.7285,
+          "p999Ms": 68.245875,
+          "maxMs": 85.369625,
+          "over33_333Ms": 24,
+          "over50Ms": 6,
+          "over100Ms": 0
+        },
+        "threadCpu": {
+          "count": 1200,
+          "sumMs": 4939.197,
+          "p50Ms": 3.118,
+          "p95Ms": 8.906,
+          "p99Ms": 20.528,
+          "p999Ms": 45.778,
+          "maxMs": 49.248,
+          "over33_333Ms": 4,
+          "over50Ms": 0,
+          "over100Ms": 0
+        },
+        "allocationSampleEvents": 2988,
+        "allocationWeightBytes": 1953741008,
+        "allocationWeightMiB": 1863.2326202392578,
+        "cleanupIteratorSampleEvents": 130,
+        "cleanupIteratorWeightMiB": 67.86077880859375,
+        "cleanupIteratorSampleAbsent": false,
+        "cleanupClasses": [
+          {
+            "name": "java.util.LinkedHashMap$LinkedKeyIterator",
+            "weightBytes": 71157184,
+            "weightMiB": 67.86077880859375
+          }
+        ],
+        "iteratorClassTotalWeightMiB": 70.35580444335938,
+        "topClasses": [
+          {
+            "name": "[B",
+            "weightBytes": 398605888,
+            "weightMiB": 380.14019775390625
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommand$DrawTexture",
+            "weightBytes": 282669624,
+            "weightMiB": 269.5747604370117
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasRect",
+            "weightBytes": 169912992,
+            "weightMiB": 162.04165649414062
+          },
+          {
+            "name": "[Ljava.lang.Object;",
+            "weightBytes": 139544688,
+            "weightMiB": 133.08018493652344
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureId",
+            "weightBytes": 119160600,
+            "weightMiB": 113.6404037475586
+          },
+          {
+            "name": "java.util.LinkedHashMap$Entry",
+            "weightBytes": 77866424,
+            "weightMiB": 74.25920867919922
+          },
+          {
+            "name": "java.util.LinkedHashMap$LinkedKeyIterator",
+            "weightBytes": 73773408,
+            "weightMiB": 70.35580444335938
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommand$DrawRect",
+            "weightBytes": 60393104,
+            "weightMiB": 57.59535217285156
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasPaint",
+            "weightBytes": 56391272,
+            "weightMiB": 53.778907775878906
+          },
+          {
+            "name": "java.util.ArrayList",
+            "weightBytes": 44476776,
+            "weightMiB": 42.416358947753906
+          },
+          {
+            "name": "java.nio.DirectByteBuffer",
+            "weightBytes": 41335544,
+            "weightMiB": 39.42064666748047
+          },
+          {
+            "name": "java.util.LinkedHashMap",
+            "weightBytes": 41335440,
+            "weightMiB": 39.42054748535156
+          },
+          {
+            "name": "[Ljava.util.HashMap$Node;",
+            "weightBytes": 31388600,
+            "weightMiB": 29.93450164794922
+          },
+          {
+            "name": "java.lang.String",
+            "weightBytes": 18318592,
+            "weightMiB": 17.469970703125
+          },
+          {
+            "name": "java.util.ArrayList$Itr",
+            "weightBytes": 18315400,
+            "weightMiB": 17.46692657470703
+          },
+          {
+            "name": "[Z",
+            "weightBytes": 17786144,
+            "weightMiB": 16.962188720703125
+          },
+          {
+            "name": "[I",
+            "weightBytes": 17773160,
+            "weightMiB": 16.949806213378906
+          },
+          {
+            "name": "java.lang.Integer",
+            "weightBytes": 14651064,
+            "weightMiB": 13.972343444824219
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasState",
+            "weightBytes": 11511448,
+            "weightMiB": 10.978172302246094
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasColor",
+            "weightBytes": 10465200,
+            "weightMiB": 9.980392456054688
+          }
+        ],
+        "topProductionOwnFrames": [
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasAtlasPixelPool.pageStorage",
+            "weightBytes": 286143624,
+            "weightMiB": 272.88782501220703
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommandBuffer.drawTexture",
+            "weightBytes": 161744104,
+            "weightMiB": 154.2511978149414
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasInstancedTextureShader.createPipeline$lambda$0",
+            "weightBytes": 138117856,
+            "weightMiB": 131.71945190429688
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommandBuffer.drawTextureCoordinates$io_github_rwx_core",
+            "weightBytes": 130170944,
+            "weightMiB": 124.14068603515625
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommand$DrawTexture.copy",
+            "weightBytes": 120925520,
+            "weightMiB": 115.32356262207031
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureId.box-impl",
+            "weightBytes": 119160600,
+            "weightMiB": 113.6404037475586
+          },
+          {
+            "name": "NO_PRODUCTION_OWN_FRAME",
+            "weightBytes": 114885952,
+            "weightMiB": 109.56378173828125
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureShader.createPipeline$lambda$0",
+            "weightBytes": 92032152,
+            "weightMiB": 87.7686996459961
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolGraphicsEngine.releasePendingImmediateFrameSnapshots",
+            "weightBytes": 71157184,
+            "weightMiB": 67.86077880859375
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasInstancedTextureShader$Model.lambda$0$0",
+            "weightBytes": 66972512,
+            "weightMiB": 63.869964599609375
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommand$DrawRect.copy",
+            "weightBytes": 50214184,
+            "weightMiB": 47.887977600097656
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolGraphicsEngine.toCanvasPaint",
+            "weightBytes": 49708272,
+            "weightMiB": 47.40550231933594
+          },
+          {
+            "name": "io.github.rwx.kool.vulkan.VulkanUploadState$UploadChunk.slice",
+            "weightBytes": 45521768,
+            "weightMiB": 43.412940979003906
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasInstancedTextureShader$Model.lambda$1$0",
+            "weightBytes": 41333992,
+            "weightMiB": 39.419166564941406
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$resourceClosure$commands",
+            "weightBytes": 29703256,
+            "weightMiB": 28.327232360839844
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureShader$Model.lambda$1$0",
+            "weightBytes": 27714472,
+            "weightMiB": 26.430580139160156
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolGraphicsEngine.toCanvasRect",
+            "weightBytes": 26685752,
+            "weightMiB": 25.44951629638672
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.writeText",
+            "weightBytes": 23419744,
+            "weightMiB": 22.334808349609375
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureShader$Model.lambda$0$0",
+            "weightBytes": 20405904,
+            "weightMiB": 19.460586547851562
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.createInstancedTextureMesh-2SWecQM",
+            "weightBytes": 20380728,
+            "weightMiB": 19.43657684326172
+          }
+        ],
+        "sampleGcPauseCount": 16,
+        "sampleGcPauseSumMs": 223.858833,
+        "sampleGcPauseMaxMs": 42.541917,
+        "sampleWindow": {
+          "generated": [
+            121,
+            1320
+          ],
+          "frames": 1200,
+          "jfrTimingFramePairs": 1358,
+          "startJfrEpochBoundsNs": [
+            1793633221094322625,
+            1793633221094322834
+          ],
+          "endJfrEpochBoundsNs": [
+            1793633241728301458,
+            1793633241728301666
+          ],
+          "allocationBoundaryUncertainSamples": 0,
+          "allocationBoundaryUncertainWeightBytes": 0
+        },
+        "longestFrames": [
+          {
+            "frameIndex": 534,
+            "generatedAfter": 500,
+            "tickAfter": 6250,
+            "wallMs": 85.369625,
+            "threadCpuMs": 24.084,
+            "gcPauseOverlapUpperBoundMs": 42.541917,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 312,
+            "generatedAfter": 278,
+            "tickAfter": 6139,
+            "wallMs": 68.245875,
+            "threadCpuMs": 49.248,
+            "gcPauseOverlapUpperBoundMs": 7.368417,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 581,
+            "generatedAfter": 547,
+            "tickAfter": 6273,
+            "wallMs": 65.75975,
+            "threadCpuMs": 45.778,
+            "gcPauseOverlapUpperBoundMs": 0.0,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 1271,
+            "generatedAfter": 1237,
+            "tickAfter": 6618,
+            "wallMs": 64.70225,
+            "threadCpuMs": 22.333,
+            "gcPauseOverlapUpperBoundMs": 29.029541,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 1032,
+            "generatedAfter": 998,
+            "tickAfter": 6499,
+            "wallMs": 55.03775,
+            "threadCpuMs": 29.48,
+            "gcPauseOverlapUpperBoundMs": 12.306709,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 341,
+            "generatedAfter": 307,
+            "tickAfter": 6153,
+            "wallMs": 52.585209,
+            "threadCpuMs": 34.492,
+            "gcPauseOverlapUpperBoundMs": 0.0,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 742,
+            "generatedAfter": 708,
+            "tickAfter": 6354,
+            "wallMs": 45.385334,
+            "threadCpuMs": 40.445,
+            "gcPauseOverlapUpperBoundMs": 0.0,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 373,
+            "generatedAfter": 339,
+            "tickAfter": 6169,
+            "wallMs": 43.937041,
+            "threadCpuMs": 29.191,
+            "gcPauseOverlapUpperBoundMs": 0.0,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 1301,
+            "generatedAfter": 1267,
+            "tickAfter": 6633,
+            "wallMs": 43.733084,
+            "threadCpuMs": 30.399,
+            "gcPauseOverlapUpperBoundMs": 0.0,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 821,
+            "generatedAfter": 787,
+            "tickAfter": 6393,
+            "wallMs": 43.633167,
+            "threadCpuMs": 30.298,
+            "gcPauseOverlapUpperBoundMs": 0.0,
+            "attribution": "No cause assigned by this analyzer"
+          }
+        ],
+        "rawJfrVerification": {
+          "performed": false,
+          "limitation": "Raw JFR hashed; compact allocation export not independently reopened by this invocation"
+        },
+        "inputSha256": {
+          "command.json": "9dcf3e462727a2c62e87d0966335ce941fcf566caf58eef814c615808eaa7bcf",
+          "process-result.json": "3af5ec43032914b66840465b31c9d0e8403828a0a7ee7c8900ea015c5acda0ff",
+          "capture/result.json": "f7d791bc9b56978356053dbe7cd38392c70cddf924c5fc4b29277aac364f48e8",
+          "capture/timings.ndjson": "d4a68a349fdb912c9021069c5352e9c702b716988295870d4b563998de5761ab",
+          "compact-profile.ndjson": "d440a8080dfcaa2d0e8cf46fafc560bb6c92735e536546ee36845c735c4f7f75",
+          "profile.jfr": "2c6ab5ffdec103161305f0133981572a5ca2691b689276aa94759b42cf2859b1"
+        },
+        "limits": [
+          "JFR allocation weights are statistical, not exact byte/object/call counts.",
+          "No iterator samples means not observed by sampling, not proof of zero allocations.",
+          "Longest frames are retained; no unexplained stall is assigned to OS/GC without evidence."
+        ]
+      },
+      {
+        "name": "battle-candidate-b1",
+        "coreJar": {
+          "path": "/Users/wty/code/RWXX/build/empty-dependencies-20261102/candidate/core-1.4.3.jar",
+          "sha256": "5d77d01450aa956655abd8c37eede7f6f0b88391bfa426db31cd5d3fa1e703d9"
+        },
+        "guardEnabled": true,
+        "wall": {
+          "count": 1200,
+          "sumMs": 20631.599754,
+          "p50Ms": 16.778708,
+          "p95Ms": 22.591041,
+          "p99Ms": 39.369709,
+          "p999Ms": 68.748042,
+          "maxMs": 73.857584,
+          "over33_333Ms": 25,
+          "over50Ms": 8,
+          "over100Ms": 0
+        },
+        "threadCpu": {
+          "count": 1200,
+          "sumMs": 4665.028,
+          "p50Ms": 2.87,
+          "p95Ms": 8.383,
+          "p99Ms": 21.535,
+          "p999Ms": 45.995,
+          "maxMs": 53.322,
+          "over33_333Ms": 3,
+          "over50Ms": 1,
+          "over100Ms": 0
+        },
+        "allocationSampleEvents": 3144,
+        "allocationWeightBytes": 2036035056,
+        "allocationWeightMiB": 1941.714340209961,
+        "cleanupIteratorSampleEvents": 0,
+        "cleanupIteratorWeightMiB": 0.0,
+        "cleanupIteratorSampleAbsent": true,
+        "cleanupClasses": [],
+        "iteratorClassTotalWeightMiB": 5.489097595214844,
+        "topClasses": [
+          {
+            "name": "[B",
+            "weightBytes": 410909456,
+            "weightMiB": 391.87379455566406
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureId",
+            "weightBytes": 321677776,
+            "weightMiB": 306.7758331298828
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommand$DrawTexture",
+            "weightBytes": 270829880,
+            "weightMiB": 258.2835006713867
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasRect",
+            "weightBytes": 202659488,
+            "weightMiB": 193.27114868164062
+          },
+          {
+            "name": "[Ljava.lang.Object;",
+            "weightBytes": 141002848,
+            "weightMiB": 134.47079467773438
+          },
+          {
+            "name": "java.util.LinkedHashMap$Entry",
+            "weightBytes": 58063160,
+            "weightMiB": 55.37334442138672
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasPaint",
+            "weightBytes": 48458296,
+            "weightMiB": 46.21343231201172
+          },
+          {
+            "name": "java.util.LinkedHashMap",
+            "weightBytes": 44475056,
+            "weightMiB": 42.41471862792969
+          },
+          {
+            "name": "java.util.ArrayList",
+            "weightBytes": 43953504,
+            "weightMiB": 41.917327880859375
+          },
+          {
+            "name": "java.nio.DirectByteBuffer",
+            "weightBytes": 39337024,
+            "weightMiB": 37.51470947265625
+          },
+          {
+            "name": "[Ljava.util.HashMap$Node;",
+            "weightBytes": 25108808,
+            "weightMiB": 23.94562530517578
+          },
+          {
+            "name": "[I",
+            "weightBytes": 20389128,
+            "weightMiB": 19.44458770751953
+          },
+          {
+            "name": "java.util.ArrayList$Itr",
+            "weightBytes": 19517752,
+            "weightMiB": 18.61357879638672
+          },
+          {
+            "name": "java.lang.String",
+            "weightBytes": 17272376,
+            "weightMiB": 16.47222137451172
+          },
+          {
+            "name": "[Z",
+            "weightBytes": 15693296,
+            "weightMiB": 14.966293334960938
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasPoint",
+            "weightBytes": 15174296,
+            "weightMiB": 14.471336364746094
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommand$DrawRect",
+            "weightBytes": 14635344,
+            "weightMiB": 13.957351684570312
+          },
+          {
+            "name": "java.lang.Integer",
+            "weightBytes": 14128016,
+            "weightMiB": 13.473526000976562
+          },
+          {
+            "name": "java.lang.Character",
+            "weightBytes": 13081464,
+            "weightMiB": 12.475456237792969
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasColor",
+            "weightBytes": 11005136,
+            "weightMiB": 10.495315551757812
+          }
+        ],
+        "topProductionOwnFrames": [
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureId.box-impl",
+            "weightBytes": 321677776,
+            "weightMiB": 306.7758331298828
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasAtlasPixelPool.pageStorage",
+            "weightBytes": 285896656,
+            "weightMiB": 272.6522979736328
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommandBuffer.drawTextureCoordinates$io_github_rwx_core",
+            "weightBytes": 163535808,
+            "weightMiB": 155.95989990234375
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommandBuffer.drawTexture",
+            "weightBytes": 153128048,
+            "weightMiB": 146.03428649902344
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasInstancedTextureShader.createPipeline$lambda$0",
+            "weightBytes": 140210096,
+            "weightMiB": 133.7147674560547
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommand$DrawTexture.copy",
+            "weightBytes": 117701832,
+            "weightMiB": 112.24921417236328
+          },
+          {
+            "name": "NO_PRODUCTION_OWN_FRAME",
+            "weightBytes": 112128608,
+            "weightMiB": 106.93417358398438
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureShader.createPipeline$lambda$0",
+            "weightBytes": 90515312,
+            "weightMiB": 86.32212829589844
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasInstancedTextureShader$Model.lambda$0$0",
+            "weightBytes": 88409104,
+            "weightMiB": 84.31349182128906
+          },
+          {
+            "name": "io.github.rwx.kool.vulkan.VulkanUploadState$UploadChunk.slice",
+            "weightBytes": 45092888,
+            "weightMiB": 43.003929138183594
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolGraphicsEngine.toCanvasPaint",
+            "weightBytes": 38533832,
+            "weightMiB": 36.74872589111328
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.writeText",
+            "weightBytes": 30871880,
+            "weightMiB": 29.44171905517578
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolGraphicsEngine.toCanvasRect",
+            "weightBytes": 27612216,
+            "weightMiB": 26.33306121826172
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureShader$Model.lambda$1$0",
+            "weightBytes": 25115680,
+            "weightMiB": 23.952178955078125
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$texture",
+            "weightBytes": 25097480,
+            "weightMiB": 23.93482208251953
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$resourceClosure$commands",
+            "weightBytes": 23965096,
+            "weightMiB": 22.854896545410156
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureShader$Model.lambda$0$0",
+            "weightBytes": 21975496,
+            "weightMiB": 20.95746612548828
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasPaint.copy",
+            "weightBytes": 20929600,
+            "weightMiB": 19.96002197265625
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasInstancedTextureShader$Model.lambda$1$0",
+            "weightBytes": 20928888,
+            "weightMiB": 19.95934295654297
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.createInstancedTextureMesh-2SWecQM",
+            "weightBytes": 18836416,
+            "weightMiB": 17.96380615234375
+          }
+        ],
+        "sampleGcPauseCount": 19,
+        "sampleGcPauseSumMs": 232.292873,
+        "sampleGcPauseMaxMs": 27.270583,
+        "sampleWindow": {
+          "generated": [
+            121,
+            1320
+          ],
+          "frames": 1200,
+          "jfrTimingFramePairs": 1344,
+          "startJfrEpochBoundsNs": [
+            1793633248682747000,
+            1793633248682747125
+          ],
+          "endJfrEpochBoundsNs": [
+            1793633269334244500,
+            1793633269334244958
+          ],
+          "allocationBoundaryUncertainSamples": 0,
+          "allocationBoundaryUncertainWeightBytes": 0
+        },
+        "longestFrames": [
+          {
+            "frameIndex": 1018,
+            "generatedAfter": 998,
+            "tickAfter": 6499,
+            "wallMs": 73.857584,
+            "threadCpuMs": 20.221,
+            "gcPauseOverlapUpperBoundMs": 24.139333,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 327,
+            "generatedAfter": 307,
+            "tickAfter": 6153,
+            "wallMs": 68.748042,
+            "threadCpuMs": 53.322,
+            "gcPauseOverlapUpperBoundMs": 0.0,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 567,
+            "generatedAfter": 547,
+            "tickAfter": 6273,
+            "wallMs": 67.3075,
+            "threadCpuMs": 45.995,
+            "gcPauseOverlapUpperBoundMs": 0.0,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 807,
+            "generatedAfter": 787,
+            "tickAfter": 6393,
+            "wallMs": 63.359042,
+            "threadCpuMs": 28.943,
+            "gcPauseOverlapUpperBoundMs": 20.581625,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 298,
+            "generatedAfter": 278,
+            "tickAfter": 6139,
+            "wallMs": 59.01575,
+            "threadCpuMs": 35.659,
+            "gcPauseOverlapUpperBoundMs": 8.117458,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 752,
+            "generatedAfter": 732,
+            "tickAfter": 6366,
+            "wallMs": 57.711792,
+            "threadCpuMs": 8.473,
+            "gcPauseOverlapUpperBoundMs": 12.461459,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 749,
+            "generatedAfter": 729,
+            "tickAfter": 6364,
+            "wallMs": 57.515209,
+            "threadCpuMs": 20.18,
+            "gcPauseOverlapUpperBoundMs": 26.627583,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 359,
+            "generatedAfter": 339,
+            "tickAfter": 6169,
+            "wallMs": 56.659041,
+            "threadCpuMs": 27.53,
+            "gcPauseOverlapUpperBoundMs": 13.579125,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 580,
+            "generatedAfter": 560,
+            "tickAfter": 6280,
+            "wallMs": 44.910291,
+            "threadCpuMs": 2.526,
+            "gcPauseOverlapUpperBoundMs": 27.270583,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 329,
+            "generatedAfter": 309,
+            "tickAfter": 6154,
+            "wallMs": 44.101833,
+            "threadCpuMs": 7.471,
+            "gcPauseOverlapUpperBoundMs": 0.0,
+            "attribution": "No cause assigned by this analyzer"
+          }
+        ],
+        "rawJfrVerification": {
+          "performed": false,
+          "limitation": "Raw JFR hashed; compact allocation export not independently reopened by this invocation"
+        },
+        "inputSha256": {
+          "command.json": "392790a5d1c9c7c89753ed0a3b074635c09d86b3aa0d6a721fcc366c438ffe98",
+          "process-result.json": "7f1397792072f1edca48f2f1c2d712e05f70a20879113b3d72b07bbedce54bde",
+          "capture/result.json": "27818ed6c8984371964fcfaae02ea0515205bbd232a16a0c40c81494c65728ba",
+          "capture/timings.ndjson": "7cca2376051b7f2fa14ca3746e7bbf18a710789ba21398ddfb61c4ec29f731ba",
+          "compact-profile.ndjson": "4ecef32cc2b9b2e48af23714815434d39cb39d9358a30ad83e463c6ddb54547b",
+          "profile.jfr": "867bcf93165e197b94ce2fd55ddd67c527f73e471ab8c38f97b3ccc1e7dc9ef8"
+        },
+        "limits": [
+          "JFR allocation weights are statistical, not exact byte/object/call counts.",
+          "No iterator samples means not observed by sampling, not proof of zero allocations.",
+          "Longest frames are retained; no unexplained stall is assigned to OS/GC without evidence."
+        ]
+      },
+      {
+        "name": "battle-candidate-b2",
+        "coreJar": {
+          "path": "/Users/wty/code/RWXX/build/empty-dependencies-20261102/candidate/core-1.4.3.jar",
+          "sha256": "5d77d01450aa956655abd8c37eede7f6f0b88391bfa426db31cd5d3fa1e703d9"
+        },
+        "guardEnabled": true,
+        "wall": {
+          "count": 1200,
+          "sumMs": 20430.880397,
+          "p50Ms": 16.798542,
+          "p95Ms": 21.709541,
+          "p99Ms": 34.679375,
+          "p999Ms": 56.160875,
+          "maxMs": 58.731083,
+          "over33_333Ms": 14,
+          "over50Ms": 4,
+          "over100Ms": 0
+        },
+        "threadCpu": {
+          "count": 1200,
+          "sumMs": 3918.783,
+          "p50Ms": 2.353,
+          "p95Ms": 7.151,
+          "p99Ms": 17.776,
+          "p999Ms": 33.458,
+          "maxMs": 37.666,
+          "over33_333Ms": 2,
+          "over50Ms": 0,
+          "over100Ms": 0
+        },
+        "allocationSampleEvents": 2917,
+        "allocationWeightBytes": 1909286824,
+        "allocationWeightMiB": 1820.8378067016602,
+        "cleanupIteratorSampleEvents": 0,
+        "cleanupIteratorWeightMiB": 0.0,
+        "cleanupIteratorSampleAbsent": true,
+        "cleanupClasses": [],
+        "iteratorClassTotalWeightMiB": 2.9940567016601562,
+        "topClasses": [
+          {
+            "name": "[B",
+            "weightBytes": 427253560,
+            "weightMiB": 407.4607467651367
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommand$DrawTexture",
+            "weightBytes": 250568672,
+            "weightMiB": 238.96090698242188
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasRect",
+            "weightBytes": 200418984,
+            "weightMiB": 191.13443756103516
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureId",
+            "weightBytes": 183089072,
+            "weightMiB": 174.6073455810547
+          },
+          {
+            "name": "[Ljava.lang.Object;",
+            "weightBytes": 175767584,
+            "weightMiB": 167.62503051757812
+          },
+          {
+            "name": "java.util.LinkedHashMap$Entry",
+            "weightBytes": 65210576,
+            "weightMiB": 62.18965148925781
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasPaint",
+            "weightBytes": 53816968,
+            "weightMiB": 51.32386016845703
+          },
+          {
+            "name": "java.util.LinkedHashMap",
+            "weightBytes": 35563480,
+            "weightMiB": 33.915977478027344
+          },
+          {
+            "name": "java.nio.DirectByteBuffer",
+            "weightBytes": 34899512,
+            "weightMiB": 33.28276824951172
+          },
+          {
+            "name": "[I",
+            "weightBytes": 24588208,
+            "weightMiB": 23.449142456054688
+          },
+          {
+            "name": "[Ljava.util.HashMap$Node;",
+            "weightBytes": 21973696,
+            "weightMiB": 20.95574951171875
+          },
+          {
+            "name": "java.lang.String",
+            "weightBytes": 18842040,
+            "weightMiB": 17.96916961669922
+          },
+          {
+            "name": "java.util.ArrayList$Itr",
+            "weightBytes": 17792048,
+            "weightMiB": 16.967819213867188
+          },
+          {
+            "name": "java.lang.Integer",
+            "weightBytes": 17790856,
+            "weightMiB": 16.96668243408203
+          },
+          {
+            "name": "java.util.ArrayList",
+            "weightBytes": 17790640,
+            "weightMiB": 16.966476440429688
+          },
+          {
+            "name": "java.lang.Character",
+            "weightBytes": 17109120,
+            "weightMiB": 16.3165283203125
+          },
+          {
+            "name": "[Z",
+            "weightBytes": 15693672,
+            "weightMiB": 14.966651916503906
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasState",
+            "weightBytes": 14563528,
+            "weightMiB": 13.888862609863281
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommand$DrawRect",
+            "weightBytes": 13518864,
+            "weightMiB": 12.892593383789062
+          },
+          {
+            "name": "de.fabmax.kool.math.MutableVec3f",
+            "weightBytes": 11511544,
+            "weightMiB": 10.978263854980469
+          }
+        ],
+        "topProductionOwnFrames": [
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasAtlasPixelPool.pageStorage",
+            "weightBytes": 302704008,
+            "weightMiB": 288.68103790283203
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureId.box-impl",
+            "weightBytes": 183089072,
+            "weightMiB": 174.6073455810547
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommandBuffer.drawTextureCoordinates$io_github_rwx_core",
+            "weightBytes": 152549440,
+            "weightMiB": 145.48248291015625
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasInstancedTextureShader.createPipeline$lambda$0",
+            "weightBytes": 138570312,
+            "weightMiB": 132.15094757080078
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommandBuffer.drawTexture",
+            "weightBytes": 137039384,
+            "weightMiB": 130.6909408569336
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommand$DrawTexture.copy",
+            "weightBytes": 113529288,
+            "weightMiB": 108.26996612548828
+          },
+          {
+            "name": "NO_PRODUCTION_OWN_FRAME",
+            "weightBytes": 106358080,
+            "weightMiB": 101.43096923828125
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureShader.createPipeline$lambda$0",
+            "weightBytes": 86327240,
+            "weightMiB": 82.32807159423828
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasInstancedTextureShader$Model.lambda$0$0",
+            "weightBytes": 70634800,
+            "weightMiB": 67.36259460449219
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolGraphicsEngine.toCanvasPaint",
+            "weightBytes": 44922160,
+            "weightMiB": 42.84111022949219
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.writeText",
+            "weightBytes": 44841224,
+            "weightMiB": 42.76392364501953
+          },
+          {
+            "name": "io.github.rwx.kool.vulkan.VulkanUploadState$UploadChunk.slice",
+            "weightBytes": 41178568,
+            "weightMiB": 39.27094268798828
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolGraphicsEngine.toCanvasRect",
+            "weightBytes": 40193272,
+            "weightMiB": 38.33129119873047
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$resourceClosure$commands",
+            "weightBytes": 32238608,
+            "weightMiB": 30.745132446289062
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.registerGpuTargetFrame-2SWecQM",
+            "weightBytes": 27164832,
+            "weightMiB": 25.906402587890625
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.createInstancedTextureMesh-2SWecQM",
+            "weightBytes": 25098152,
+            "weightMiB": 23.935462951660156
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasInstancedTextureShader$Model.lambda$1$0",
+            "weightBytes": 23545360,
+            "weightMiB": 22.454605102539062
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureShader$Model.lambda$1$0",
+            "weightBytes": 23545248,
+            "weightMiB": 22.454498291015625
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureShader$Model.lambda$0$0",
+            "weightBytes": 20406112,
+            "weightMiB": 19.460784912109375
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasPaint.copy",
+            "weightBytes": 19359952,
+            "weightMiB": 18.463088989257812
+          }
+        ],
+        "sampleGcPauseCount": 19,
+        "sampleGcPauseSumMs": 173.084501,
+        "sampleGcPauseMaxMs": 20.618458,
+        "sampleWindow": {
+          "generated": [
+            121,
+            1320
+          ],
+          "frames": 1200,
+          "jfrTimingFramePairs": 1343,
+          "startJfrEpochBoundsNs": [
+            1793633275969949709,
+            1793633275969949834
+          ],
+          "endJfrEpochBoundsNs": [
+            1793633296417283458,
+            1793633296417283875
+          ],
+          "allocationBoundaryUncertainSamples": 0,
+          "allocationBoundaryUncertainWeightBytes": 0
+        },
+        "longestFrames": [
+          {
+            "frameIndex": 358,
+            "generatedAfter": 339,
+            "tickAfter": 6169,
+            "wallMs": 58.731083,
+            "threadCpuMs": 29.237,
+            "gcPauseOverlapUpperBoundMs": 14.126583,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 297,
+            "generatedAfter": 278,
+            "tickAfter": 6139,
+            "wallMs": 56.160875,
+            "threadCpuMs": 33.458,
+            "gcPauseOverlapUpperBoundMs": 7.923459,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 806,
+            "generatedAfter": 787,
+            "tickAfter": 6393,
+            "wallMs": 54.660209,
+            "threadCpuMs": 25.017,
+            "gcPauseOverlapUpperBoundMs": 15.122333,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 326,
+            "generatedAfter": 307,
+            "tickAfter": 6153,
+            "wallMs": 54.222084,
+            "threadCpuMs": 37.666,
+            "gcPauseOverlapUpperBoundMs": 0.0,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 1256,
+            "generatedAfter": 1237,
+            "tickAfter": 6618,
+            "wallMs": 46.65725,
+            "threadCpuMs": 18.396,
+            "gcPauseOverlapUpperBoundMs": 14.341375,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 566,
+            "generatedAfter": 547,
+            "tickAfter": 6273,
+            "wallMs": 45.215917,
+            "threadCpuMs": 28.005,
+            "gcPauseOverlapUpperBoundMs": 0.0,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 328,
+            "generatedAfter": 309,
+            "tickAfter": 6154,
+            "wallMs": 44.8395,
+            "threadCpuMs": 6.341,
+            "gcPauseOverlapUpperBoundMs": 0.0,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 748,
+            "generatedAfter": 729,
+            "tickAfter": 6364,
+            "wallMs": 44.516334,
+            "threadCpuMs": 12.483,
+            "gcPauseOverlapUpperBoundMs": 18.955792,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 1017,
+            "generatedAfter": 998,
+            "tickAfter": 6499,
+            "wallMs": 38.5125,
+            "threadCpuMs": 14.389,
+            "gcPauseOverlapUpperBoundMs": 9.442375,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 574,
+            "generatedAfter": 555,
+            "tickAfter": 6277,
+            "wallMs": 37.148375,
+            "threadCpuMs": 1.998,
+            "gcPauseOverlapUpperBoundMs": 20.618458,
+            "attribution": "No cause assigned by this analyzer"
+          }
+        ],
+        "rawJfrVerification": {
+          "performed": false,
+          "limitation": "Raw JFR hashed; compact allocation export not independently reopened by this invocation"
+        },
+        "inputSha256": {
+          "command.json": "c3afbf08d2d93b0de70d5710bd9c0906455bea0ad27a9f45f20f772c23a82714",
+          "process-result.json": "a15deed162695190a68db5b6c02cb837e3102832ca0f02278a99588e8596b076",
+          "capture/result.json": "d05c74596b8d1d88ba2fc5286b99ee8b8bf78440bb257abdb69b0d81ccd362df",
+          "capture/timings.ndjson": "25cd49d971e87b44a73e52b924152958edb846954b2d5c663d89fad1c2e4d9f3",
+          "compact-profile.ndjson": "f470cf26dae18c0f26ab9f812ee1548a42e3722eb95fb6afa9f01f5ac3c34655",
+          "profile.jfr": "8c35aea2846cd1e39ac3dcf8a768f6f4e8b16db98711fdccb19b612061533798"
+        },
+        "limits": [
+          "JFR allocation weights are statistical, not exact byte/object/call counts.",
+          "No iterator samples means not observed by sampling, not proof of zero allocations.",
+          "Longest frames are retained; no unexplained stall is assigned to OS/GC without evidence."
+        ]
+      },
+      {
+        "name": "battle-control-a2",
+        "coreJar": {
+          "path": "/Users/wty/code/RWXX/build/empty-dependencies-20261102/baseline/core-1.4.3.jar",
+          "sha256": "a015273065f84c8d8e2646971d2d2ab11e1340a113b7a5a4f884acadf89d42eb"
+        },
+        "guardEnabled": false,
+        "wall": {
+          "count": 1200,
+          "sumMs": 20432.779473,
+          "p50Ms": 16.823917,
+          "p95Ms": 22.000959,
+          "p99Ms": 35.046166,
+          "p999Ms": 57.018625,
+          "maxMs": 61.364958,
+          "over33_333Ms": 14,
+          "over50Ms": 5,
+          "over100Ms": 0
+        },
+        "threadCpu": {
+          "count": 1200,
+          "sumMs": 4063.615,
+          "p50Ms": 2.487,
+          "p95Ms": 7.519,
+          "p99Ms": 18.735,
+          "p999Ms": 39.474,
+          "maxMs": 39.644,
+          "over33_333Ms": 3,
+          "over50Ms": 0,
+          "over100Ms": 0
+        },
+        "allocationSampleEvents": 2902,
+        "allocationWeightBytes": 1928909376,
+        "allocationWeightMiB": 1839.5513305664062,
+        "cleanupIteratorSampleEvents": 127,
+        "cleanupIteratorWeightMiB": 87.70276641845703,
+        "cleanupIteratorSampleAbsent": false,
+        "cleanupClasses": [
+          {
+            "name": "java.util.LinkedHashMap$LinkedKeyIterator",
+            "weightBytes": 91963016,
+            "weightMiB": 87.70276641845703
+          }
+        ],
+        "iteratorClassTotalWeightMiB": 91.69486236572266,
+        "topClasses": [
+          {
+            "name": "[B",
+            "weightBytes": 403953376,
+            "weightMiB": 385.2399597167969
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommand$DrawTexture",
+            "weightBytes": 260053560,
+            "weightMiB": 248.00640106201172
+          },
+          {
+            "name": "[Ljava.lang.Object;",
+            "weightBytes": 193935480,
+            "weightMiB": 184.95128631591797
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasRect",
+            "weightBytes": 162618488,
+            "weightMiB": 155.08507537841797
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureId",
+            "weightBytes": 137623512,
+            "weightMiB": 131.24800872802734
+          },
+          {
+            "name": "java.util.LinkedHashMap$LinkedKeyIterator",
+            "weightBytes": 96149032,
+            "weightMiB": 91.69486236572266
+          },
+          {
+            "name": "java.util.LinkedHashMap$Entry",
+            "weightBytes": 60696760,
+            "weightMiB": 57.88494110107422
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasPaint",
+            "weightBytes": 55372712,
+            "weightMiB": 52.807533264160156
+          },
+          {
+            "name": "java.nio.DirectByteBuffer",
+            "weightBytes": 43681616,
+            "weightMiB": 41.65803527832031
+          },
+          {
+            "name": "java.util.LinkedHashMap",
+            "weightBytes": 36626912,
+            "weightMiB": 34.930145263671875
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTransform",
+            "weightBytes": 27730648,
+            "weightMiB": 26.446006774902344
+          },
+          {
+            "name": "java.util.ArrayList",
+            "weightBytes": 23023288,
+            "weightMiB": 21.95671844482422
+          },
+          {
+            "name": "[Ljava.util.HashMap$Node;",
+            "weightBytes": 20926640,
+            "weightMiB": 19.957199096679688
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommand$DrawRect",
+            "weightBytes": 20392312,
+            "weightMiB": 19.44762420654297
+          },
+          {
+            "name": "java.lang.Integer",
+            "weightBytes": 20333480,
+            "weightMiB": 19.391517639160156
+          },
+          {
+            "name": "java.lang.String",
+            "weightBytes": 17271888,
+            "weightMiB": 16.471755981445312
+          },
+          {
+            "name": "java.util.ArrayList$Itr",
+            "weightBytes": 17268768,
+            "weightMiB": 16.468780517578125
+          },
+          {
+            "name": "[I",
+            "weightBytes": 17266184,
+            "weightMiB": 16.46631622314453
+          },
+          {
+            "name": "[Z",
+            "weightBytes": 16740440,
+            "weightMiB": 15.964927673339844
+          },
+          {
+            "name": "java.lang.Character",
+            "weightBytes": 16221056,
+            "weightMiB": 15.4696044921875
+          }
+        ],
+        "topProductionOwnFrames": [
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasAtlasPixelPool.pageStorage",
+            "weightBytes": 286301544,
+            "weightMiB": 273.0384292602539
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommandBuffer.drawTexture",
+            "weightBytes": 139888776,
+            "weightMiB": 133.40833282470703
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureId.box-impl",
+            "weightBytes": 137623512,
+            "weightMiB": 131.24800872802734
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasInstancedTextureShader.createPipeline$lambda$0",
+            "weightBytes": 130230272,
+            "weightMiB": 124.197265625
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommandBuffer.drawTextureCoordinates$io_github_rwx_core",
+            "weightBytes": 126534280,
+            "weightMiB": 120.67249298095703
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommand$DrawTexture.copy",
+            "weightBytes": 120164784,
+            "weightMiB": 114.59806823730469
+          },
+          {
+            "name": "NO_PRODUCTION_OWN_FRAME",
+            "weightBytes": 110319088,
+            "weightMiB": 105.20848083496094
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolGraphicsEngine.releasePendingImmediateFrameSnapshots",
+            "weightBytes": 91963016,
+            "weightMiB": 87.70276641845703
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasInstancedTextureShader$Model.lambda$0$0",
+            "weightBytes": 80049680,
+            "weightMiB": 76.34132385253906
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureShader.createPipeline$lambda$0",
+            "weightBytes": 80047232,
+            "weightMiB": 76.3389892578125
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolGraphicsEngine.toCanvasPaint",
+            "weightBytes": 49880496,
+            "weightMiB": 47.56974792480469
+          },
+          {
+            "name": "io.github.rwx.kool.vulkan.VulkanUploadState$UploadChunk.slice",
+            "weightBytes": 45973888,
+            "weightMiB": 43.8441162109375
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasFrameRenderer.writeText",
+            "weightBytes": 41263496,
+            "weightMiB": 39.35193634033203
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCommandBuffer.snapshot",
+            "weightBytes": 40886624,
+            "weightMiB": 38.992523193359375
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$resourceClosure$commands",
+            "weightBytes": 31807584,
+            "weightMiB": 30.334075927734375
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTextureShader$Model.lambda$1$0",
+            "weightBytes": 30870312,
+            "weightMiB": 29.440223693847656
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasTransform.multiply",
+            "weightBytes": 27730648,
+            "weightMiB": 26.446006774902344
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolGraphicsEngine.toCanvasRect",
+            "weightBytes": 23526136,
+            "weightMiB": 22.43627166748047
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasCpuTextureStore.freezeFrame$texture",
+            "weightBytes": 22877920,
+            "weightMiB": 21.818084716796875
+          },
+          {
+            "name": "io.github.rwx.render.canvas.KoolCanvasInstancedTextureShader$Model.lambda$1$0",
+            "weightBytes": 19359440,
+            "weightMiB": 18.462600708007812
+          }
+        ],
+        "sampleGcPauseCount": 19,
+        "sampleGcPauseSumMs": 169.573709,
+        "sampleGcPauseMaxMs": 21.407333,
+        "sampleWindow": {
+          "generated": [
+            121,
+            1320
+          ],
+          "frames": 1200,
+          "jfrTimingFramePairs": 1346,
+          "startJfrEpochBoundsNs": [
+            1793633303165627876,
+            1793633303165628001
+          ],
+          "endJfrEpochBoundsNs": [
+            1793633323616275167,
+            1793633323616275334
+          ],
+          "allocationBoundaryUncertainSamples": 0,
+          "allocationBoundaryUncertainWeightBytes": 0
+        },
+        "longestFrames": [
+          {
+            "frameIndex": 300,
+            "generatedAfter": 278,
+            "tickAfter": 6139,
+            "wallMs": 61.364958,
+            "threadCpuMs": 37.508,
+            "gcPauseOverlapUpperBoundMs": 7.098625,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 329,
+            "generatedAfter": 307,
+            "tickAfter": 6153,
+            "wallMs": 57.018625,
+            "threadCpuMs": 39.644,
+            "gcPauseOverlapUpperBoundMs": 0.0,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 569,
+            "generatedAfter": 547,
+            "tickAfter": 6273,
+            "wallMs": 55.572042,
+            "threadCpuMs": 39.474,
+            "gcPauseOverlapUpperBoundMs": 0.0,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 361,
+            "generatedAfter": 339,
+            "tickAfter": 6169,
+            "wallMs": 54.634834,
+            "threadCpuMs": 26.013,
+            "gcPauseOverlapUpperBoundMs": 11.836417,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 1259,
+            "generatedAfter": 1237,
+            "tickAfter": 6618,
+            "wallMs": 52.950792,
+            "threadCpuMs": 24.159,
+            "gcPauseOverlapUpperBoundMs": 17.336292,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 809,
+            "generatedAfter": 787,
+            "tickAfter": 6393,
+            "wallMs": 49.146084,
+            "threadCpuMs": 21.24,
+            "gcPauseOverlapUpperBoundMs": 12.544583,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 751,
+            "generatedAfter": 729,
+            "tickAfter": 6364,
+            "wallMs": 43.579542,
+            "threadCpuMs": 13.908,
+            "gcPauseOverlapUpperBoundMs": 15.887833,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 1289,
+            "generatedAfter": 1267,
+            "tickAfter": 6633,
+            "wallMs": 38.921042,
+            "threadCpuMs": 24.143,
+            "gcPauseOverlapUpperBoundMs": 0.0,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 572,
+            "generatedAfter": 550,
+            "tickAfter": 6275,
+            "wallMs": 38.867084,
+            "threadCpuMs": 6.366,
+            "gcPauseOverlapUpperBoundMs": 21.407333,
+            "attribution": "No cause assigned by this analyzer"
+          },
+          {
+            "frameIndex": 1020,
+            "generatedAfter": 998,
+            "tickAfter": 6499,
+            "wallMs": 38.54725,
+            "threadCpuMs": 14.086,
+            "gcPauseOverlapUpperBoundMs": 9.386833,
+            "attribution": "No cause assigned by this analyzer"
+          }
+        ],
+        "rawJfrVerification": {
+          "performed": false,
+          "limitation": "Raw JFR hashed; compact allocation export not independently reopened by this invocation"
+        },
+        "inputSha256": {
+          "command.json": "c8fab007119f9255a1928e9ffbe618c361d2523bb5b9de2d83a89b04f24aec22",
+          "process-result.json": "081ef13685eee0a516a933687f952aaccd56176267ef2719fc1a400275b2535b",
+          "capture/result.json": "04c772d9926f987289d1ecc9028bd51c0334681a4c4594dc0fee48c9764ec43e",
+          "capture/timings.ndjson": "da6ca41d22fefdb4534d5dddcd90be54c5be99935180510b785d8c08d2567047",
+          "compact-profile.ndjson": "33df68f96f0deac4b66021e6c1300dc711037e4f9fff82db25af3274c1f1ec25",
+          "profile.jfr": "9c0504ea2bbee2597656b1666e2ffe92154e6ca686aa6ec1684e64729dfad2ea"
+        },
+        "limits": [
+          "JFR allocation weights are statistical, not exact byte/object/call counts.",
+          "No iterator samples means not observed by sampling, not proof of zero allocations.",
+          "Longest frames are retained; no unexplained stall is assigned to OS/GC without evidence."
+        ]
+      }
+    ],
+    "twoJvmPerArmMedianComparison": {
+      "allocationWeightMiB": {
+        "controlMedian": 1851.391975402832,
+        "candidateMedian": 1881.2760734558105,
+        "candidateVsControlPercent": 1.6141421400768594
+      },
+      "cleanupIteratorWeightMiB": {
+        "controlMedian": 77.78177261352539,
+        "candidateMedian": 0.0,
+        "candidateVsControlPercent": -100.0
+      },
+      "threadCpuTotalMs": {
+        "controlMedian": 4501.406,
+        "candidateMedian": 4291.9055,
+        "candidateVsControlPercent": -4.654112515067517
+      },
+      "wallP99Ms": {
+        "controlMedian": 36.887333,
+        "candidateMedian": 37.024542,
+        "candidateVsControlPercent": 0.37196779718392375
+      },
+      "wallMaxMs": {
+        "controlMedian": 73.3672915,
+        "candidateMedian": 66.2943335,
+        "candidateVsControlPercent": -9.640478550308758
+      }
+    },
+    "analyzerSha256": "afef70d32ceb28f46186541160d99a1c236db1b70b87f114b383c3d2f52c3ffe",
+    "scope": "Offline audit of instrumented true-windowless synchronized ABBA; not screen FPS, desktop producer equivalence or official-client comparison.",
+    "noAutomaticAdoption": true,
+    "limits": [
+      "Only two JVMs per arm; mixed tail changes or a lower allocation weight do not prove universal benefit.",
+      "This analyzer never builds or runs application/GPU code. Optional raw verification is offline JFR file inspection only."
+    ]
+  },
+  "assessment": "Target cleanup-iterator allocation sampling weight67.8608/87.7028MiB becomes0/0 samples. Do not call this exactly zero allocation or guaranteed77.78MiB savings. Observed CPU median-4.654%, total allocation sampling weight+1.614%, P99+0.372% mixed; no universal total-allocation, P99 or FPS improvement claim.",
+  "isolation": "One class entry differs between corea015 baseline and core5d77 candidate. Both arms use the same frozen helper/classpath bytes; shader and scratch flags0 in all four sequential JVMs, warm120/sample1200, natural seek6000 fogON at fixed60Hz. Complete long frames retained.",
+  "validation": {
+    "fullRegressions": {
+      "core": {
+        "tests": 490,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "desktop": {
+        "tests": 145,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "formatOnlyAfterRegressions": "Guard layout was condensed to one source line to avoid unrelated debug line-table shifts. Complete final/multiline javap-p-c class listings are identical; no executable change after full regressions.",
+    "realProductDefaultGpu": {
+      "heapMiB": 512,
+      "frames": 300,
+      "generated": 300,
+      "adopted": 300,
+      "fenceCompleted": 300,
+      "retirementsAfterIdle": 0,
+      "mapCells": 6,
+      "comparedPixels": 1572864,
+      "maxChannelDelta": 0,
+      "scratchReuseHits": 0,
+      "poolClosed": true,
+      "scope": "Real frozen map-cell attachments; not whole final canvas/App UI/physical screen."
+    },
+    "release": {
+      "valid": true,
+      "allChecksTrue": true,
+      "coreSha256": "5d77d01450aa956655abd8c37eede7f6f0b88391bfa426db31cd5d3fa1e703d9",
+      "criticalClassCount": 96,
+      "headlessTicks": 120,
+      "headlessExitCode": 0,
+      "guiLauncherExecuted": false,
+      "appOpened": false,
+      "scope": "macOS arm64 archive integrity, packaged class bytes, bundle/runtime metadata, existing signature verification, bundled-JVM JNI 120-tick headless smoke with default asset extraction"
+    }
+  },
+  "artifacts": {
+    "desktop/build/distributions/RWXX-1.4.3-macos-arm64-desktop.zip": {
+      "path": "/Users/wty/code/RWXX/desktop/build/distributions/RWXX-1.4.3-macos-arm64-desktop.zip",
+      "sha256": "516d9580fd6603c3af9d3d563caaf11071ee8e03b8146b88b318c5c6719d12ea"
+    },
+    "desktop/build/libs/RWXX-1.4.3-macos-arm64.jar": {
+      "path": "/Users/wty/code/RWXX/desktop/build/libs/RWXX-1.4.3-macos-arm64.jar",
+      "sha256": "f0e3515879c564f29331b977eae82c6057a0b508a1ff14ad1ff32cdb2c4d7f66"
+    },
+    "core/build/libs/core-1.4.3.jar": {
+      "path": "/Users/wty/code/RWXX/core/build/libs/core-1.4.3.jar",
+      "sha256": "5d77d01450aa956655abd8c37eede7f6f0b88391bfa426db31cd5d3fa1e703d9"
+    }
+  },
+  "previousPublishedArtifacts": {
+    "path": "/Users/wty/code/RWXX/build/real-release-20261102/pre-empty-guard/manifest.json",
+    "sha256": "be3780a3ad13e5acec4105f1cecb8456d59931554b1e7677d9d94b5bdb03f48e"
+  },
+  "evidence": {
+    "jar-diff.json": {
+      "path": "/Users/wty/code/RWXX/build/empty-dependencies-20261102/jar-diff.json",
+      "sha256": "1433f8c1dda64dee14577fc0b562ce139046c697b3ad0d99f70305c1c0205490"
+    },
+    "format-only-proof.json": {
+      "path": "/Users/wty/code/RWXX/build/empty-dependencies-20261102/format-only-proof.json",
+      "sha256": "0e5d074cb4b84f70decd047c9abd6e2faaae41efe79dc088a5321314478f307f"
+    },
+    "independent-allocation-abba-v1/report.json": {
+      "path": "/Users/wty/code/RWXX/build/empty-dependencies-20261102/independent-allocation-abba-v1/report.json",
+      "sha256": "89162b6658aa22faccca6ac6e32406273affa8fffc5dffe216af51afa2bfc251"
+    },
+    "independent-allocation-abba-raw-v1/verification-summary.json": {
+      "path": "/Users/wty/code/RWXX/build/empty-dependencies-20261102/independent-allocation-abba-raw-v1/verification-summary.json",
+      "sha256": "4fe8876b0e29a5dc897e0cc828f820bdf0c2198ca19f0b13fb9f0005f9348c74"
+    },
+    "pixel-reference-product-default-512-v1/command.json": {
+      "path": "/Users/wty/code/RWXX/build/empty-dependencies-20261102/pixel-reference-product-default-512-v1/command.json",
+      "sha256": "65ddb50f97cac46d8c3fcc2087daf17025428c5c033a36a7d714458ca0ad1fb9"
+    },
+    "pixel-reference-product-default-512-v1/process-result.json": {
+      "path": "/Users/wty/code/RWXX/build/empty-dependencies-20261102/pixel-reference-product-default-512-v1/process-result.json",
+      "sha256": "fda18e2eda499550aeb77a02e63ccd4b0131dd41863a06f7277ddb486633c03d"
+    },
+    "pixel-reference-product-default-512-v1/capture/result.json": {
+      "path": "/Users/wty/code/RWXX/build/empty-dependencies-20261102/pixel-reference-product-default-512-v1/capture/result.json",
+      "sha256": "e5d253698f7455e6a0fa63817675f66ceb91e705d7a48514e8122089eb80bf53"
+    }
+  },
+  "packageAcceptance": {
+    "path": "/Users/wty/code/RWXX/build/real-release-20261102/empty-guard-mac-jni/acceptance.json",
+    "sha256": "843525a2a8416682451d8fe0a1c8454dc87bd3e2d6b566e111498eaaa363c22a"
+  },
+  "installedApplicationObservation": {
+    "path": "/Applications/RWXX.app",
+    "InfoPlistVersion": "1.4.2",
+    "replacedOrLaunchedByThisTurn": false
+  },
+  "officialComparison": "No valid official same-machine FPS comparison yet. Original remains8a550...1.15; no Steam changes or further visible game launch this turn. A fresh permitted foreground timeslot is required for real visible acceptance under the user noninterference constraint.",
+  "limitations": [
+    "Two JVM replicates per arm; concurrent user applications and OS/GPU state uncontrolled.",
+    "Synchronous instrumented windowless60Hz test differs from production independent owner thread and physical scanout/input.",
+    "Final package/headless checks do not validate native GUI launcher or official parity.",
+    "Prefix scratch remains OFF because143.69ms candidate long frame is unexplained; do not silently adopt it with the guard."
+  ]
+}

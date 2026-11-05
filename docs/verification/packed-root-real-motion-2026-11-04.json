@@ -1,0 +1,141 @@
+{
+  "schema": "rwxx-packed-root-real-motion-2026-11-04-v1",
+  "status": "correctness-passed-performance-not-adopted",
+  "applicationVersion": "1.4.3",
+  "goalAchieved": false,
+  "candidateDefaultEnabled": false,
+  "userRequirements": [
+    "compatibility",
+    "at least 50 percent faster than original",
+    "stable dragging and zooming",
+    "silent by default"
+  ],
+  "independentReview": {
+    "path": "build/stress-scenes-20261104/packed-real-motion-v1/independent-v1/delivery.json",
+    "sha256": "a4fbb5fbaaabd5a46a13c1cb64dc8bc634a2b784a8be612286afa4a1f4cb8554"
+  },
+  "platformSha256": "859a5f791988502c28b3480b0099e6240578eaae71f8892c12f9a2eac749b8f5",
+  "protocol": {
+    "order": [
+      "control",
+      "packed",
+      "packed-repeat",
+      "control-repeat"
+    ],
+    "changedEnvironmentOnly": "RWX_PACKED_ROOT_TEXTURE_COMMANDS 0/1",
+    "actualAi": "Medium0",
+    "initialUnits": 10000,
+    "mapSha256": "09232b22a1cc72511269895bf388eb1b2c2d2516aa12ef53416d97de845e0373",
+    "viewport": [
+      1792,
+      1008
+    ],
+    "msaa": 4,
+    "vsync": false,
+    "softwareCap": 300,
+    "sampleSeconds": 20,
+    "warmupSeconds": 2,
+    "scriptedCamera": "20-second pan and 4-second .35..1.5 constrained ordinary zoom cycle",
+    "actualForeground": false,
+    "silentFromStartup": true
+  },
+  "arms": [
+    {
+      "name": "control",
+      "summaryPath": "build/stress-scenes-20261104/packed-real-motion-v1/control/completed-summary.json",
+      "summarySha256": "0bf06818853d9bf3ef585b4cf8bc7f8d5403fc6b2329a5d7a0d2063e5a54f2a9",
+      "metrics": {
+        "acceptedPresentFps": 246.25277795166804,
+        "freshSnapshotHz": 220.15778199333047,
+        "freshSnapshotIntervalP99Ms": 13.009959,
+        "freshSnapshotIntervalMaxMs": 70.374208,
+        "freshSnapshotIntervalsOver16_667Ms": 14,
+        "freshSnapshotIntervalsOver33_333Ms": 2,
+        "freshSnapshotIntervalsOver50Ms": 1,
+        "minimumLivingUnits": 9248,
+        "minimumVisibleUnits": 1338,
+        "sampleStartGameTimeMillis": 1872,
+        "sampleEndGameTimeMillis": 21873
+      }
+    },
+    {
+      "name": "packed",
+      "summaryPath": "build/stress-scenes-20261104/packed-real-motion-v1/packed/completed-summary.json",
+      "summarySha256": "6aaed0d412ce278be53485a88d57a7d332c08fc85deb6c59be9e56a13f7e14dd",
+      "metrics": {
+        "acceptedPresentFps": 245.8269783034819,
+        "freshSnapshotHz": 227.1787247124307,
+        "freshSnapshotIntervalP99Ms": 14.105209,
+        "freshSnapshotIntervalMaxMs": 45.470625,
+        "freshSnapshotIntervalsOver16_667Ms": 14,
+        "freshSnapshotIntervalsOver33_333Ms": 2,
+        "freshSnapshotIntervalsOver50Ms": 0,
+        "minimumLivingUnits": 9226,
+        "minimumVisibleUnits": 1333,
+        "sampleStartGameTimeMillis": 1876,
+        "sampleEndGameTimeMillis": 21876
+      }
+    },
+    {
+      "name": "packed-repeat",
+      "summaryPath": "build/stress-scenes-20261104/packed-real-motion-v1/packed-repeat/completed-summary.json",
+      "summarySha256": "305881881c2b7d77623ad651e830f07e907a1a136645d76ad3b99526c405ca05",
+      "metrics": {
+        "acceptedPresentFps": 242.49441252861953,
+        "freshSnapshotHz": 220.2449251935194,
+        "freshSnapshotIntervalP99Ms": 14.532583,
+        "freshSnapshotIntervalMaxMs": 50.904083,
+        "freshSnapshotIntervalsOver16_667Ms": 24,
+        "freshSnapshotIntervalsOver33_333Ms": 2,
+        "freshSnapshotIntervalsOver50Ms": 1,
+        "minimumLivingUnits": 9225,
+        "minimumVisibleUnits": 1335,
+        "sampleStartGameTimeMillis": 1871,
+        "sampleEndGameTimeMillis": 21872
+      }
+    },
+    {
+      "name": "control-repeat",
+      "summaryPath": "build/stress-scenes-20261104/packed-real-motion-v1/control-repeat/completed-summary.json",
+      "summarySha256": "17716e472896e5f2c89319af788c2cf0692030c7363e1d606955b4251f3d32b6",
+      "metrics": {
+        "acceptedPresentFps": 246.71573016121033,
+        "freshSnapshotHz": 223.06901478810954,
+        "freshSnapshotIntervalP99Ms": 13.245458,
+        "freshSnapshotIntervalMaxMs": 65.941792,
+        "freshSnapshotIntervalsOver16_667Ms": 18,
+        "freshSnapshotIntervalsOver33_333Ms": 2,
+        "freshSnapshotIntervalsOver50Ms": 1,
+        "minimumLivingUnits": 9241,
+        "minimumVisibleUnits": 1333,
+        "sampleStartGameTimeMillis": 1874,
+        "sampleEndGameTimeMillis": 21874
+      }
+    }
+  ],
+  "limitations": [
+    "Product/runtime comparisons: official8a55 with compatibility Temurin17x64/OpenGL versus RWXX Java25arm64/Vulkan.",
+    "Independent ordinary AI battles; no seed lock or lockstep equivalence.",
+    "10000 units initially; living/visible counts change during combat and zoom. shouldDraw is not per-unit GPU visibility proof.",
+    "Scripted camera rendering; no physical mouse input latency or display scanout claim.",
+    "Packed diagnostic JFR/stage recording excluded from performance evidence."
+  ],
+  "physicalDisplayChanged": false,
+  "installed": false,
+  "steamModified": false,
+  "contemporaneousOriginal": {
+    "path": "build/original-10000-background-20261104/run-moving-panzoom-v2/summary.json",
+    "sha256": "34ff26995a363470f33d8efbf415161c895421c6345ea606c59753c11cfe8313",
+    "freshHz": 152.6,
+    "p99Ms": 14.420208,
+    "maxMs": 45.611042,
+    "target50PercentFreshHz": 228.89999999999998
+  },
+  "decision": "All four arms below contemporaneous target228.9. Direction reverses between pairs; pooled fresh gain about0.947 percent, pooled P99 worsens, packed still has one >50ms interval. Keep disabled.",
+  "virtualDisplayCleanup": {
+    "path": "build/background-display-20261104/create-14.ndjson",
+    "exitCode": 0,
+    "removed": true,
+    "originalDisplaysUnchanged": true
+  }
+}

@@ -1,5 +1,191 @@
 # Vulkan 本机验收工具
 
+## 真实慢帧诊断与图集索引修正（2026-11-02）
+
+`RWX_WINDOWLESS_FRAME_DIAGNOSTICS=1`仅启用test oracle的可选observer，围住真实renderFrame，
+含pacer／collect／backend，原pacer不替换。固定容量primitive记录结束后写`timings.ndjson`，
+JFR `rwx.WindowlessGpuFrame`逐行核验留存；CPU跨线程或不支持标invalid，不造0。
+同进程nanoTime夹取JFR begin/end；GC overlap直接用共同JFR时钟，避免Python跨进程时钟假设。
+详细scene JSON每60cycle保留，资源／lease／fence正确性仍逐帧检查。全部为有仪器诊断，
+不测显示FPS／物理输入，同步producer也不等于desktop独立owner架构。
+
+完整opening回放诊断各1200预热＋1200采样，G1/Xmx1000m/CPU2/nice15、JFR＋VKtrace，
+禁CanvasTrace。发现新pool整16MiB hash出现在57ms慢帧采样中，现改为原blit中维护fingerprint，
+仍完整byte比较后才共享；未共享root不做无用索引计算。相同pool复用4/3保持，hash采样4→0；
+单轮最大57.37→49.60ms，但P99 29.97→30.66ms，**不支持一致尾延迟或FPS提高的结论**。
+仍有约23ms GCPhasePause，旧可见185ms并未被这里归因或证明消除。
+最新1.4.3包625项回归（1跳过）0失败、真实6格像素maxDelta0、随包JVM验收通过。
+详见[诊断报告](../../docs/verification/render-stall-diagnostics-2026-11-02.json)。
+
+原版无agent控制存活至28秒TERM、退出时PC0崩溃保留。Probe早期Display.update驱动现有ready门禁，
+只prepare-only通过离线回归，实际游戏启动待验证；不沿用旧367b probe或8df工具快照。
+只读观察和启动控制在用户同一次35秒时段授权内，未激活／操控窗口，没有自动重试。
+
+## 保持采样坐标的图集内存共享（2026-11-02）
+
+`RWX_SHARE_MAP_ATLAS_PIXELS`产品默认ON，设0回退。相同atlas页先hash再逐字节确认，只共享
+不可变CPU数组与readonly direct上传内容；每texture仍用独立cursor／limit／fence，增长COW。
+packing、UV、shader、GPU纹理及上传流量不变，`RWX_DIRECT_TARGET_TEXTURES`仍默认OFF。
+live/replay用`--share-map-atlas-pixels`请求ON，省略显式env0，避免新默认污染历史控制臂。
+请求ON须同时有`RWXAtlasPixelSharing reuseConfirmed=true`和
+`RWXAtlasPixelUploads reuseConfirmed=true`，仅初始化开关不算实际复用。
+比较当前产品默认应同时传`--prepared-map-tiles --frozen-reuse --share-texture-registrations
+--share-map-atlas-pixels`；0df…旧包与8df…旧工具快照仍作为已完成尝试的历史证据，不改写。
+
+实际默认512MiB实景完成360个generated／adopted／GPU fence帧，24个相同页各共享一份
+16MiB CPU与upload payload；只共享CPU的中间版仍direct OOM，失败原样保留。
+候选及最终默认三个快照共4,718,592个真实地图格像素与独立旧atlas精确一致，maxDelta0；
+完整core479＋desktop145项无失败（1跳过），工具28项通过。新macOS ARM64包已构建并通过
+随包JVM120tick headless验收；这些不能宣称显示FPS提高或原版差距已消除。
+`atlas-copy`／`atlas-allocate` trace的byte字段仍是逻辑payload大小，共享路径不能据此推导
+物理复制或实际分配字节数。详见[共享验证记录](../../docs/verification/atlas-page-sharing-2026-11-02.json)。
+
+## 真实无窗口 GPU 诊断（2026-11-02）
+
+测试入口 `WindowlessKoolGpuOracle --probe|--map-cell` 和
+`RealReplayWindowlessGpuOracle --profile-only=on` 通过内存窗口适配器＋
+`VK_EXT_headless_surface` 执行真实 MoltenVK，不由 JUnit 自动运行。
+必须显式设置 `RWX_RUN_WINDOWLESS_VULKAN_ORACLE=1`、`RWX_GPU_MAP_CELL_TARGETS=1`；
+真实回放另需 `RWX_RUN_REAL_REPLAY_WINDOWLESS_GPU=1`、独立 launch.dir/user.home、完整真实
+素材和固定回放，外层必须施加进程硬超时。使用真实 60Hz limiter，不提供无上限 tight loop。
+这是 GPU 执行／fence／读回诊断，**不能测显示 FPS、物理输入或原版水平**。
+
+`RWX_REAL_REPLAY_CELL_REFERENCE=1` 要求实际图集共享或direct候选，标记全部性能数据无效；
+受控direct诊断须另设`RWX_SHARE_MAP_ATLAS_PIXELS=0`，避免混入当前默认池。它对最终实际
+地图格逐个创建独立 atlas 参考并读回全图，严格检查 frozen 版本／frame／registry／附件身份，
+还要求参考实际上传和渲染 atlas，不能用空白或两次直接纹理绘制冒充差分。
+上下文 MSAA4，实际地图格 offscreen pass 为1，参考匹配实际 pass。
+
+512 MiB 真实拖动缩放复现 atlas 页 OOM；direct 可完成360帧真实提交，但6格共1,572,864像素中
+215像素超阈值3，最大差64，集中于爆炸痕迹的Nearest整数texel边界。
+**direct仍默认关闭**。两条路径的小型地图格 fixture 均3844项通过，不能代替真实图差分通过。
+macOS ARM64 1.4.3 包已构建且随包 JVM 的120tick headless验收通过，尚无官方FPS对照。
+详见 [真实无窗口 GPU 记录](../../docs/verification/windowless-gpu-2026-11-02.json)。
+
+## 真实回放 CPU 优化与逐帧差分（2026-11-02）
+
+产品现默认开启冻结内容复用和共享像素注册戳；分别用
+`RWX_FROZEN_CONTENT_REUSE=0`、`RWX_SHARE_TEXTURE_REGISTRATIONS=0` 回退。
+live／replay 工具仍是显式控制：只有传入 `--frozen-reuse`／
+`--share-texture-registrations` 才设为 1，省略时强制为 0，避免默认值污染历史控制臂。
+
+新增手动入口 `desktop/src/test/kotlin/io/github/rwx/benchmark/RealReplayCanvasCapture.kt`，
+不会由 JUnit 自动运行。使用 desktop 的 test runtimeClasspath、Java 25、全新隔离的
+`launch.dir`／`user.home` 和显式真实 `rwx.assetsDir`；隔离目录须先放入指定回放。
+不创建窗口或 KoolContext，安装守卫只允许记录 GPU target 命令，实际 GPU 安装即失败。
+完整本机命令、编译目录／依赖指纹及冻结 runtime 见下方验证记录。
+
+参数示例为 `--replay=bridges-fixed.replay --output=<尚不存在的目录>
+--seek-tick=6000 --replay-fog=on --mode=pan-zoom --warmup-frames=120 --frames=240 --fps=60`。
+预推进使用普通 1x gameLoop，计时前启用正常回放迷雾显示；不注入单位或修改对局规则。
+绘制顺序沿用生产的 gameLoop → 可见格重绘 → snapshot/freeze → 后台格重绘。
+固定镜头 tape 与名义 60Hz 等待只用于 CPU 诊断，迟帧不追赶；实际间隔另行记录。
+逐帧只检查资源级标量，详细命令统计限首末帧，JSON／IO 延后到结束。
+
+同一真实双桥回放在 90–93 单位、迷雾开启、实际缩放 0.45–1.5 下，顺序独立 JVM
+A/B/B/A 比较两开关均 OFF／均 ON。拖动缩放的冻结 CPU 降低 69.28%、分配降低
+77.19%；四个已测生产阶段的线程 CPU 合计降低 25.83%、分配降低 51.41%。每臂只有
+两个进程，实际采样间隔约 19.20–19.64 ms；这些不是 FPS、GPU 或原版对照结果。
+
+`--verify-full-freeze=on` 仅允许显式 `RWX_FROZEN_CONTENT_REUSE=1`，标记为
+correctness-only，并使全部性能数据无效。候选先冻结，随后对同一已录制帧暂关复用，
+在后台重绘前完整冻结并精确比较 Frame（含 visualStats）及完整资源 Map；同时断言
+control 没有复用尝试、开关恢复且候选确实命中。完整缩放周期的 360 帧全部通过、
+2579 次实际命中。该差分验证冻结复用；共享注册另由像素更新、透明处理、尺寸、
+回退与旧 lease 回归覆盖，不能混称为两项共同的逐帧正确性证明。
+
+默认开启后完整 headless core 474 项（1 跳过）、desktop 145 项无失败；工具 26 项
+mock 测试通过，清除候选环境的产品默认和显式双 OFF 实际录制检查均通过。
+该 CPU 阶段当时没有新安装包，后续包及 GPU 证据见上节；官方同机 FPS／输入／十分钟
+验收仍未完成。所有这些诊断运行无窗口、低优先级，
+没有恢复或改写 Steam 安装目录。详见
+[真实回放验证记录](../../docs/verification/real-replay-cpu-2026-11-02.json)。
+
+## 官方原版基线准备（macOS / Windows）
+
+`original_interaction_benchmark.py` 支持显式 `--original-root`、`--java`、`--javac`，历史
+Windows 默认不变。Mac 默认遵循原版启动脚本，不加 `-XstartOnFirstThread`；只有显式
+`--start-on-first-thread` 才加入。classpath 使用平台分隔符。
+`--prepare-only` 只校验固定官方核心 SHA、已安装的同字节回放、编译探针并输出 manifest
+和 command.json；不会启动游戏，也不生成性能通过结果。输出目录不得位于原版目录内。
+
+用户已在指定 Steam 目录重新下载官方原版，最新对照是官方 PC 1.15，**不是 RWPP**。
+根目录官方核心 SHA 固定为 `8a550a37e2d8a5430866090d4e7d5892f9010b47f52a5a09350fc66c620deec9`；
+完整官方素材、字体、PC 库及原配 Java 8 已复制到独立 `build/original-comparison-20261102/runtime`，
+排除旧 RWPP／generated_lib／模组文件，不改 Steam 安装。此前缺少资源的记录是历史状态。
+探针分别记录 Display 更新和成功完成的游戏 render 序列，重复显示不能算新画面；样本要求
+窗口可见且活跃，失焦不自动修复。固定采样窗口结束后额外保留两秒追踪，尾部冻结按实际
+低新画面率报告，不能当成无效样本删掉。准备成功不代表启动／视觉／帧率验收。
+历史准备记录见 [官方基线准备记录](../../docs/verification/original-macos-baseline-2026-11-02.json)。
+
+## 启用前的动态冻结与 CPU 候选筛选（2026-11-02）
+
+本节保留默认切换前的局部筛选；当前默认值及真实回放结果以上节为准。
+
+`CanvasFreezeBenchmark.java` 新增 `--update-every=N` 和 `--source-update-every=N`，均默认
+为 0。前者每 N 次迭代轮流重录并注册一个地图格，后者提交并注册一个新源纹理版本；
+迭代编号连续覆盖预热与测量，更新发生在该次冻结之前。动态计时包含指定的重录／注册
+及像素提交成本；两个参数均为 0 时，下节原有“仅冻结与 lease 释放”的范围保持不变。
+
+动态格子重录先发显式 Clear，避免 GPU target 保留旧内容并不断追加命令。计时外检查
+实际命令、像素、冻结版本与旧 lease 内容，而不只检查资源数量；动态计时额外保留一个
+旧 lease。结果同时报告实际更新次数、store revision 变化、重录绘制数、Clear 数及这项
+额外保留。请求的非零间隔若在测量窗口完全不触发会报错；`--update-every` 要求格子数大于 0。
+
+例如使用同一冻结 runtime、先于它放置待比较 core JAR，以顺序独立 JVM A/B/B/A 比较
+`--cells=32 --draws=128 --warmup=2000 --frames=4000 --update-every=1
+--source-update-every=16`；静态结果应单独记录，不能用静态缓存命中收益代表连续源变化。
+`--source-update-every=1` 保留为可选诊断；每帧共享源改写不再作为默认开关或真实
+游戏性能的硬门槛。继续使用 Java 25、`nice -n 15`、强制 headless、192 MiB 堆、SerialGC
+和 `-XX:ActiveProcessorCount=1`，清除继承的候选／诊断环境变量并保存各臂协议与指纹。
+
+`RWX_SHARE_TEXTURE_REGISTRATIONS` 是新的**默认关闭**候选；live／replay 工具通过
+`--share-texture-registrations` 控制，并要求实际日志
+`RWXSharedTextureRegistrations sharingConfirmed=true`。省略参数时工具显式设为 0。
+它共享引擎间的像素注册戳，资源 lease 与 GPU fence 仍各自持有。既有
+`RWX_FROZEN_CONTENT_REUSE` 继续默认关闭；本轮 scope memo 仅在该开关开启时减少重复依赖
+记录，不能把它当作默认配置下的提速。要测两者组合，应明确记录两开关的 0／0 与 1／1。
+
+最终同一 core 的组合筛选中，静态每帧分配降低 87.00%；每帧一格、每 16 帧源更新降低
+63.06%，CPU 降低 58.36%；每帧源更新的诊断结果为分配增加 104.21%、CPU 增加 72.81%。
+该极端诊断不否决候选；候选仍默认关闭，等待真实游戏与纯官方对照。这些只有局部 CPU
+筛选意义，未测 GPU、实际新画面率、物理输入或原版水平。
+协议、三阶段记录、保留的初版 fixture 失败与兼容性边界见
+[候选验证记录](../../docs/verification/canvas-parity-candidates-2026-11-02.json)。
+
+`core/src/test/kotlin/io/github/rwx/render/canvas/CanvasRenderCpuBenchmark.kt` 是另一个手动 main，
+不会由 `core:test` 自动启动。它只测预建命令在 `renderInto` 中的 CPU 分派与网格／实例／
+材质对象构建；不包含录制、冻结、KoolContext、scene collection、shader 编译、原生 pipeline、
+GPU 执行、fence 或呈现。各阶段在计时前后核对绘制顺序、绑定和原始几何位数据，独立 JVM
+还比较几何摘要；该检查不能代替像素验收。运行 `--mode=moving --tiles=128 --phases=32`，
+分别控制 `RWX_REUSE_MAP_MESH_SLOTS`、`RWX_REUSE_INSTANCED_TEXTURE_SHADERS`、
+`RWX_COMPACT_QUAD_STORAGE`、`RWX_COMPACT_TEXTURE_INSTANCES`，不要混入其他候选收益。
+
+本轮没有新安装包，原版同机对照与十分钟流畅性目标仍未完成。用户选择纯官方游戏；
+当前指定 Steam 目录含 RWPP 注入，须先定位未修改的官方包，不能直接当作原版基线。
+所有本地验证继续无窗口、低优先级，不抢焦点、不激活或置顶游戏。
+
+## 无窗口冻结微基准（2026-11-02）
+
+`CanvasFreezeBenchmark.java` 只测生产路径的快照冻结和 lease 释放，不创建窗口或 GPU context。
+它用一个禁止实际安装资源的 installer 守卫来记录 GPU target，随后校验冻结图中 target 的
+类型和嵌套命令数量，防止无窗口时静默落到 CPU 光栅化而测错路径。
+
+先冻结改动前后的 core JAR 与同一份桌面 fat JAR，再编译一次这个类。将 core JAR 放在
+classpath 中 fat JAR 之前；按 baseline/candidate/candidate/baseline 启动独立进程，
+两侧都固定 `RWX_CANVAS_FREEZE_SCRATCH_POOL=1`、`RWX_FROZEN_CONTENT_REUSE=0`、
+`RWX_REUSE_FROZEN_TEXTURE_REFERENCES=0`、`RWX_SHARE_IMMUTABLE_COMMANDS=0`、
+`RWX_MAP_TEXTURE_BATCHES=0`，清除其他继承的 `RWX_*` 诊断变量。
+
+使用 Java 25、`nice -n 15`（支持时）、`-Djava.awt.headless=true -Xms192m -Xmx192m
+-XX:+UseSerialGC -XX:ActiveProcessorCount=1`。命令参数为
+`--cells=32 --draws=128 --warmup=3000 --frames=6000`；另测 `--cells=0 --draws=128`
+和 `--cells=128 --draws=32`。进程顺序运行，不与构建或其他压力测试重叠。
+
+主指标是每帧线程分配字节数；CPU／墙钟只作局部筛选。该工具不包含录制、GPU 绘制、
+输入或呈现，不能用其结果宣称整局帧率提升或拖动缩放已经无顿挫。本轮结果见
+[冻结分配验证记录](../../docs/verification/canvas-freeze-allocation-2026-11-02.json)。
+
 ## 地图层预备绘制与帧关联诊断（2026-10-30）
 
 按用户要求，产品从本轮默认开启地图层预备绘制；`RWX_PREPARED_MAP_TILES=0` 可关闭。

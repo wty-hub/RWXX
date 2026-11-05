@@ -5,12 +5,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 /**
- * Records one line per presented frame of the original desktop build.
- *
- * The original has no RWX frame tracing, so the visible cadence is captured at the one call the game
- * makes for every presented frame: {@code org.lwjgl.opengl.Display.update()}. The output format matches
- * RWX's own {@code RWX_FRAME_TRACE} (`acceptedPresentNanos,sequence`), so the same analyzer computes the
- * same "fresh picture interval" tail for both.
+ * Records native swap returns and the latest completed pinned game-render callback.
+ * A swap can repeat a prior callback's image; the two sequences therefore remain separate.
+ * Neither callback completion nor swap return establishes physical display scanout or OS input delivery.
  */
 public final class OrigPresentProbe {
     /**
@@ -20,6 +17,7 @@ public final class OrigPresentProbe {
 
     private static BufferedWriter writer;
     private static long sequence;
+    private static long gameRenderSequence;
     private static int pending;
     private static boolean failed;
     private static volatile boolean traceClosed;
@@ -117,7 +115,9 @@ public final class OrigPresentProbe {
         System.err.println("[rwx-probe] camera drive: mode=" + cameraMode + " startNanos=" + panStartNanos);
         System.err.println("[rwx-probe] simulation initialTick=" + initialTick + " initialGameTimeMillis=" + initialGameTime);
         new Thread(new Runnable() { public void run() {
-            try { Thread.sleep(Long.getLong("rwx.orig.measure.seconds", 60L) * 1000L); }
+            // Keep the fixed measurement window intact, then collect enough tail to prove swap coverage.
+            try { Thread.sleep((Long.getLong("rwx.orig.measure.seconds", 60L)
+                    + Long.getLong("rwx.orig.trailing.capture.seconds", 2L)) * 1000L); }
             catch (InterruptedException interrupted) { return; }
             System.exit(0);
         }}, "rwx-original-benchmark-exit").start();
@@ -278,7 +278,8 @@ public final class OrigPresentProbe {
             // Visible world extent at the requested zoom; the pan clamp below uses it, like RWX does.
             float actualZoom = engineClass.getField("cX").getFloat(engine);
             long warmup = Long.getLong("rwx.orig.warmup.seconds", 20L) * 1_000_000_000L;
-            if (now >= panStartNanos + warmup) {
+            long measure = Long.getLong("rwx.orig.measure.seconds", 60L) * 1_000_000_000L;
+            if (now >= panStartNanos + warmup && now <= panStartNanos + measure) {
                 int tick = engineClass.getField("bx").getInt(engine);
                 int gameTime = engineClass.getField("by").getInt(engine);
                 if (sampleStartTick < 0) { sampleStartTick = tick; sampleStartGameTime = gameTime; }
@@ -378,14 +379,22 @@ public final class OrigPresentProbe {
         if (traceClosed) return;
         // Display.update() delegates to update(boolean); drive the next camera state once.
         if (!"(Z)V".equals(tag)) return;
+        // Display.create() itself calls update before game initialization has completed.
+        // Keep recording those presents, but wait for a completed game render before touching the engine.
+        if (gameRenderSequence == 0L) return;
         maybeAutoStartReplay();
-        suppressBriefingIfActive();
+        if (panStartNanos != 0L) suppressBriefingIfActive();
         driveCameraIfActive();
         if (OrigNormalInputProbe.ENABLED) OrigNormalInputProbe.drive(panStartNanos);
     }
 
-    /** Record after the native swap returned, analogous to RWX's accepted queue-present hook. */
-    public static synchronized void onPresent(String tag) {
+    /** Called only after the pinned u.render(GameContainer, Graphics) returns successfully. */
+    public static synchronized void onGameRender() {
+        if (!traceClosed) gameRenderSequence++;
+    }
+
+    /** Record swap return, completed callback sequence, and observed display state without activating it. */
+    public static synchronized void onPresent(String tag, boolean active, boolean visible) {
         if (traceClosed || !"(Z)V".equals(tag)) return;
         long nanos = System.nanoTime();
         if (writer == null) {
@@ -402,6 +411,12 @@ public final class OrigPresentProbe {
             writer.write(Long.toString(sequence));
             writer.write(',');
             writer.write(tag);
+            writer.write(',');
+            writer.write(Long.toString(gameRenderSequence));
+            writer.write(',');
+            writer.write(Boolean.toString(active));
+            writer.write(',');
+            writer.write(Boolean.toString(visible));
             writer.write('\n');
         } catch (IOException error) {
             System.err.println("[rwx-probe] trace write failed: " + error);
@@ -421,7 +436,7 @@ public final class OrigPresentProbe {
         }
         try {
             writer = new BufferedWriter(new FileWriter(path, false), 1 << 16);
-            writer.write("acceptedPresentNanos,sequence,overload\n");
+            writer.write("acceptedPresentNanos,sequence,overload,renderSequence,active,visible\n");
             writer.flush();
             System.err.println("[rwx-probe] trace opened: " + path);
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {

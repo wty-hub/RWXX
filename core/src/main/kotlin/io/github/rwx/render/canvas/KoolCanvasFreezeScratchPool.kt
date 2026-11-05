@@ -8,6 +8,8 @@ internal class KoolCanvasFreezeScratchPool(val enabled: Boolean) : AutoCloseable
         val visiting = HashSet<KoolCanvasTextureId>()
         val resolvedIds = HashMap<KoolCanvasTextureId, KoolCanvasTextureId>()
         val frozenReferences = IdentityHashMap<KoolCanvasTextureRef, KoolCanvasTextureRef>()
+        // Memoization belongs to one freeze call; released tables must not retain published frames.
+        val frozenFrames = IdentityHashMap<KoolCanvasFrame, KoolCanvasFrame>()
         val seenPixels = IdentityHashMap<KoolCanvasPixelPool.Allocation, Boolean>()
         var visitingPeak = 0
             private set
@@ -19,6 +21,7 @@ internal class KoolCanvasFreezeScratchPool(val enabled: Boolean) : AutoCloseable
             visiting.clear()
             resolvedIds.clear()
             frozenReferences.clear()
+            frozenFrames.clear()
             seenPixels.clear()
             visitingPeak = 0
         }
@@ -60,7 +63,7 @@ internal class KoolCanvasFreezeScratchPool(val enabled: Boolean) : AutoCloseable
     fun release(scratch: Scratch?) {
         if (scratch == null) return
         check(scratch.borrowed) { "Unbalanced freeze scratch borrow" }
-        val memo = maxOf(scratch.resolvedIds.size, scratch.frozenReferences.size)
+        val memo = maxOf(scratch.resolvedIds.size, scratch.frozenReferences.size, scratch.frozenFrames.size)
         val visiting = maxOf(scratch.visitingPeak, scratch.visiting.size)
         val seen = scratch.seenPixels.size
         peakMemoEntries = maxOf(peakMemoEntries, memo)

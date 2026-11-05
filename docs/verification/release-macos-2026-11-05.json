@@ -1,0 +1,122 @@
+{
+  "date": "2026-11-05",
+  "applicationVersion": "1.4.3",
+  "target": "macos-arm64",
+  "sameBatchVersionIncrementOnlyOnce": true,
+  "includes": [
+    "Fifteen supported performance defaults plus existing default optimizations",
+    "Silent new-install defaults",
+    "Local room saved difficulty and complete room-option initialization fixes",
+    "Persistent installation/client identity with existing identifiers preserved",
+    "Cancel pending joins/starts and return to lobby after a kick"
+  ],
+  "userAuthorizedIdentityAndRoomCloseInclusion": true,
+  "sourceBranch": "codex/release-1.4.3-performance",
+  "sourceBase": "3e6e371492bb24ab448716a1e4553b096e535a81",
+  "sourceSelection": "/Users/wty/code/RWXX/build/release-20261105/source-selection-v2.json",
+  "excludedWorkingFiles": [],
+  "coreTests": {
+    "tests": 535,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1
+  },
+  "desktopTests": {
+    "tests": 159,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "interactiveFullscreenExplicitlyExcluded": true
+  },
+  "toolTests": {
+    "githubScripts": 15,
+    "desktopTools": 130,
+    "failures": 0,
+    "errors": 0,
+    "cleanCheckoutPreferenceFixture": true
+  },
+  "earlierToolFailure": {
+    "tests": 129,
+    "errors": 52,
+    "reason": "Unit camera protocol fixtures implicitly required the ignored developer preferences.toml. Fixed only the test fixture with explicit temporary preferences; production benchmark checks remain unchanged.",
+    "summary": "/Users/wty/code/RWXX/build/release-20261105/python-tools-v1-failure.json"
+  },
+  "packageAcceptance": {
+    "valid": true,
+    "checkCount": 26,
+    "checks": {
+      "expectedCoreJarFingerprint": true,
+      "unchangedReviewedJniHelperSource": true,
+      "existingExactRuntimeSourceReviewMaterialsUnchanged": true,
+      "sourceHeadlessDispatchBeforeGuiInitialization": true,
+      "zipCrcAndSafePaths": true,
+      "bundleMetadataCurrentVersion": true,
+      "packagedJarMatchesPlatformJar": true,
+      "launcherCfgMetadata": true,
+      "bundledRuntimeJava25Metadata": true,
+      "launcherAndBundledJvmArm64": true,
+      "bundledJvmMatchesExactRuntimeOfReviewedHeadlessSourcePath": true,
+      "existingCodesignDeepStrictVerification": true,
+      "bundledJvmHasNoDirectAppKitOrGraphicsLinkage": true,
+      "packagedAndCoreJarCrc": true,
+      "criticalClassesMatchCurrentCoreJar": true,
+      "headlessEntrypointClassFamiliesMatchCurrentCompile": true,
+      "builtInMapBundled": true,
+      "helperHasNoAppKitOrGraphicsLinkage": true,
+      "executedBundledJvmConfirmedByDladdrAndJavaHome": true,
+      "headlessMain120TicksAnd120ChecksumLines": true,
+      "defaultBundledAssetsExtractedFromJar": true,
+      "noGraphicsBackendLibraryLoadedByJvm": true,
+      "noGuiBackendStartupLogObserved": true,
+      "copiedCfgAndJarUnchangedAfterSmoke": true,
+      "inputBuildArtifactsUnchangedDuringAcceptance": true,
+      "allPriorPackageAndHeadlessGatesReevaluated": true
+    },
+    "bundledJvmSmokeTicks": 120,
+    "bundledJvmChecksumLines": 120,
+    "nativeAppGuiLauncherTested": false,
+    "notarizationVerified": false,
+    "source": "/Users/wty/code/RWXX/build/release-20261105/mac-jni-v2/acceptance.json"
+  },
+  "architectureContract": {
+    "platformJar": true,
+    "requiredNativeLibraryHeaders": 11,
+    "target": "macos-arm64",
+    "crossPlatformBuildVerified": false
+  },
+  "artifact": {
+    "filename": "RWXX-1.4.3-macos-arm64-desktop.zip",
+    "path": "/Users/wty/code/RWXX/build/release-20261105/artifacts/RWXX-1.4.3-macos-arm64-desktop.zip",
+    "bytes": 162265359,
+    "sha256": "6598127e1359cf0a8ee8d6031b098f69aae0d57c964da6253a0378ffbda1d3be",
+    "checksumFile": "/Users/wty/code/RWXX/build/release-20261105/artifacts/RWXX-1.4.3-macos-arm64-desktop.zip.sha256",
+    "containsBundledAppAndJavaRuntime": true
+  },
+  "coreJar": {
+    "path": "/Users/wty/.codex/worktrees/release-1-4-3-performance/RWXX/core/build/libs/core-1.4.3.jar",
+    "sha256": "fe425254fdb1b7afb414c1dbdd717c3019e5dda319e03d7f53656d13cec0f387"
+  },
+  "desktopJar": {
+    "path": "/Users/wty/.codex/worktrees/release-1-4-3-performance/RWXX/desktop/build/libs/desktop-1.4.3.jar",
+    "sha256": "ac208249a6f27bab4685ec83f9ae768981ca12a498288b1dead74b906769cb44"
+  },
+  "platformJar": {
+    "path": "/Users/wty/.codex/worktrees/release-1-4-3-performance/RWXX/desktop/build/libs/RWXX-1.4.3-macos-arm64.jar",
+    "sha256": "cb6300f9e539a1c687f22988173bd26b062f2ab34a7654cabb2f11c46ca611bd",
+    "bytes": 125330118
+  },
+  "priorDefaultGpuAndMotionEvidence": {
+    "report": "docs/verification/default-optimizations-2026-11-05.json",
+    "all326CanvasAnd338DesktopClassesByteIdentical": true,
+    "fiveOtherCoreCompilerVariants": "/Users/wty/code/RWXX/build/release-20261105/independent-class-scope-v2.json",
+    "fiveVariantsExecutionAndProtocolEquivalent": true,
+    "metadataDifferenceRemainsToolObservable": true,
+    "noNewPerformanceOrNoStutterClaim": true
+  },
+  "versionAndProtocols": "gradle.properties and AppMetadata.VERSION_NAME are1.4.3; protocol/replay compatibility constants were not incremented.",
+  "installedApplicationChanged": false,
+  "steamInstallationChanged": false,
+  "systemVolumeChanged": false,
+  "releaseNotes": "/Users/wty/code/RWXX/build/release-20261105/release-notes-1.4.3.txt",
+  "performanceGoalComplete": false
+}

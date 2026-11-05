@@ -1,0 +1,1387 @@
+{
+  "date": "2026-11-02",
+  "objective": "保持兼容，同时在真实游戏场景中达到官方铁锈战争的拖动、缩放流畅性",
+  "userPriority": "共享源纹理每帧改写仅为可选诊断，不作为性能硬门槛。优先真实普通对局、正常拖动缩放、迷雾和单位移动。",
+  "selectedReference": "纯官方原版，用户明确不选当前RWPP修改版。",
+  "steamDirectory": "/Users/wty/Library/Application Support/Steam/steamapps/common/Rusted Warfare",
+  "steamInspection": {
+    "date": "2026-11-02",
+    "target": "/Users/wty/Library/Application Support/Steam/steamapps/common/Rusted Warfare",
+    "evidenceType": "Ordinary read-only Python ZIP/header inventory and JDK javap; NOT REA Evidence. No target execution.",
+    "scope": {
+      "installationOnly": true,
+      "readPersonalSettingsOrReplays": false,
+      "startedGame": false,
+      "activatedApplication": false,
+      "modifiedSteamDirectory": false,
+      "downloadedTools": false,
+      "excludedPersonalContentDirectories": [
+        "mods",
+        "replays",
+        "saves",
+        "units"
+      ],
+      "cacheArchiveSearch": "No .jar/.zip/.dylib/.jnilib found under installation cache; no cache content read."
+    },
+    "launchers": {
+      "launcher.sh": {
+        "sha256": "9327965c249db75677bfb1537b87e8a596238402a202cc23845242aa855a4d3e",
+        "observedMainClass": "io.github.rwpp.desktop.MainKt",
+        "classpathOrder": [
+          "RWPP-macos.jar",
+          "generated_lib/*",
+          "extension/* if exists",
+          "libs/* if exists"
+        ]
+      },
+      "启动游戏.command": {
+        "sha256": "9327965c249db75677bfb1537b87e8a596238402a202cc23845242aa855a4d3e",
+        "observedMainClass": "io.github.rwpp.desktop.MainKt",
+        "classpathOrder": [
+          "RWPP-macos.jar",
+          "generated_lib/*",
+          "extension/* if exists",
+          "libs/* if exists"
+        ]
+      }
+    },
+    "jars": {
+      "RWPP-macos.jar": {
+        "size": 79720059,
+        "sha256": "0d9ef93743921717e2fa04798d89ea44a81701db5683c84200753531c4a3db73",
+        "entries": 17631,
+        "classes": 16806,
+        "manifest": "Manifest-Version: 1.0\r\nMain-Class: io.github.rwpp.desktop.MainKt\r\n\r\n",
+        "rwppReferenceClasses": [],
+        "keyClasses": {
+          "io/github/rwpp/desktop/MainKt.class": {
+            "sha256": "f50e8e288fbf406fbae2cecf8480b09621ac9e13c2a90efcdf03d1292d168bc1",
+            "majorVersion": 61,
+            "bytes": 24496,
+            "containsRwppReferences": true
+          }
+        },
+        "requiredClassesPresent": {
+          "org/newdawn/slick/AppGameContainer.class": false,
+          "org/lwjgl/opengl/Display.class": false,
+          "org/lwjgl/LWJGLUtil.class": false,
+          "com/LibRocket.class": false,
+          "com/codedisaster/steamworks/SteamAPI.class": false
+        },
+        "gameAssetsEntries": 0,
+        "nestedJarEntries": [],
+        "macNativeEntries": [
+          {
+            "entry": "liblua5464.dylib",
+            "architectures": [
+              "x86_64"
+            ],
+            "sha256": "642a47aa53e662742147366caac47b8e6d3db750540604b0d777fd6c81cdbc66"
+          },
+          {
+            "entry": "liblua54arm64.dylib",
+            "architectures": [
+              "arm64"
+            ],
+            "sha256": "56b29fd68c91571f4f015c7a0a71bde945b7c0801564f88c07b11ad012bab521"
+          },
+          {
+            "entry": "libskiko-macos-arm64.dylib",
+            "architectures": [
+              "arm64"
+            ],
+            "sha256": "384a41e7bf8dcab7fe3ef7dfb14a2adf281ce448c1f711cac5e69a7b97ae2f4a"
+          },
+          {
+            "entry": "libskiko-macos-x64.dylib",
+            "architectures": [
+              "x86_64"
+            ],
+            "sha256": "1b11c920c31d9cbb2adff33deb338f4224f039f59df772c2e1a92ec64bdcbe2a"
+          }
+        ]
+      },
+      "generated_lib/game-lib.jar": {
+        "size": 2645867,
+        "sha256": "e3be6cd0260ddeb544ed8538ac041cc8535b5db3ecaae2315858d1bf96bc74f3",
+        "entries": 1698,
+        "classes": 1698,
+        "manifest": null,
+        "rwppReferenceClasses": [
+          "android/graphics/Paint.class",
+          "android/graphics/RectF.class",
+          "com/corrodinggames/librocket/a.class",
+          "com/corrodinggames/librocket/b.class",
+          "com/corrodinggames/librocket/scripts/Root.class",
+          "com/corrodinggames/librocket/scripts/ScriptEngine.class",
+          "com/corrodinggames/rts/game/i.class",
+          "com/corrodinggames/rts/game/n.class",
+          "com/corrodinggames/rts/game/units/am.class",
+          "com/corrodinggames/rts/game/units/as.class",
+          "com/corrodinggames/rts/game/units/custom/l.class",
+          "com/corrodinggames/rts/gameFramework/e.class",
+          "com/corrodinggames/rts/gameFramework/e/c.class",
+          "com/corrodinggames/rts/gameFramework/f.class",
+          "com/corrodinggames/rts/gameFramework/f/a.class",
+          "com/corrodinggames/rts/gameFramework/f/g.class",
+          "com/corrodinggames/rts/gameFramework/h/a.class",
+          "com/corrodinggames/rts/gameFramework/j/ac.class",
+          "com/corrodinggames/rts/gameFramework/j/ad.class",
+          "com/corrodinggames/rts/gameFramework/j/c.class",
+          "com/corrodinggames/rts/gameFramework/l.class",
+          "com/corrodinggames/rts/gameFramework/n/d.class",
+          "com/corrodinggames/rts/gameFramework/w.class",
+          "com/corrodinggames/rts/java/Main.class"
+        ],
+        "keyClasses": {
+          "com/corrodinggames/rts/java/Main.class": {
+            "sha256": "e22988f0ce614e0c6ed4d66cd3d3722d0ece113077eb1b82219209db60382d23",
+            "majorVersion": 52,
+            "bytes": 19256,
+            "containsRwppReferences": true
+          },
+          "com/corrodinggames/rts/gameFramework/l.class": {
+            "sha256": "1da9a1efb2f336e0bf34d107d591fddb16bf7305022abff4e1d2563cce9293a9",
+            "majorVersion": 52,
+            "bytes": 33258,
+            "containsRwppReferences": true
+          },
+          "com/corrodinggames/rts/java/audio/lwjgl/OpenALAudio.class": {
+            "sha256": "e6a99315f3d5ae4dbf33cd771755912d01f54ca95f16da76304c20a4c5d616ad",
+            "majorVersion": 52,
+            "bytes": 10406,
+            "containsRwppReferences": false
+          }
+        },
+        "requiredClassesPresent": {
+          "org/newdawn/slick/AppGameContainer.class": false,
+          "org/lwjgl/opengl/Display.class": false,
+          "org/lwjgl/LWJGLUtil.class": false,
+          "com/LibRocket.class": true,
+          "com/codedisaster/steamworks/SteamAPI.class": true
+        },
+        "gameAssetsEntries": 0,
+        "nestedJarEntries": [],
+        "macNativeEntries": []
+      },
+      "jvm-rwpp-x64/lib/jrt-fs.jar": {
+        "size": 110512,
+        "sha256": "ec89b17b7d5dd84d80add7ca01d5b4b8e96f4db90b483b611c8a5307a5ed9fe4",
+        "entries": 61,
+        "classes": 58,
+        "manifest": "Manifest-Version: 1.0\r\nSpecification-Title: Java Platform API Specification\r\nSpecification-Version: 17\r\nSpecification-Vendor: Oracle Corporation\r\nImplementation-Title: Java Runtime Environment\r\nImplementation-Version: 17.0.19\r\nImplementation-Vendor: Eclipse Adoptium\r\nCreated-By: 17.0.18 (Eclipse Adoptium)\r\n\r\n",
+        "rwppReferenceClasses": [],
+        "keyClasses": {},
+        "requiredClassesPresent": {
+          "org/newdawn/slick/AppGameContainer.class": false,
+          "org/lwjgl/opengl/Display.class": false,
+          "org/lwjgl/LWJGLUtil.class": false,
+          "com/LibRocket.class": false,
+          "com/codedisaster/steamworks/SteamAPI.class": false
+        },
+        "gameAssetsEntries": 0,
+        "nestedJarEntries": [],
+        "macNativeEntries": []
+      }
+    },
+    "crossJarDuplicateClasses": [],
+    "looseAudioClass": {
+      "path": "com/corrodinggames/rts/java/audio/lwjgl/OpenALAudio.class",
+      "sha256": "e6a99315f3d5ae4dbf33cd771755912d01f54ca95f16da76304c20a4c5d616ad",
+      "onLauncherClasspath": false,
+      "duplicateInGameLib": true,
+      "identicalToGameLib": true
+    },
+    "nativeHeaders": [
+      {
+        "path": "libjinput-osx.jnilib",
+        "size": 119560,
+        "sha256": "fbcc397b6cf593510ce5713aa1c8ad7cefadb1942d7ec1bc901206fc81f49777",
+        "architectures": [
+          "powerpc",
+          "x86",
+          "x86_64",
+          "arm64"
+        ]
+      },
+      {
+        "path": "libopenal.dylib",
+        "symlinkTarget": "openal.dylib",
+        "targetExists": false
+      },
+      {
+        "path": "native-backup/libRocketControls.1.dylib",
+        "size": 371488,
+        "sha256": "ade6e5d0c670b94346890ce416f0d7cf42a69102976cb3f3517a5701cf85b75a",
+        "architectures": [
+          "x86_64"
+        ]
+      },
+      {
+        "path": "native-backup/libRocketCore.1.dylib",
+        "size": 1030816,
+        "sha256": "bd67bfa5eb5b1df2ce0ce0c13b247c60575b6bea61b4d4c178db830252bff525",
+        "architectures": [
+          "x86_64"
+        ]
+      },
+      {
+        "path": "native-backup/libRocketDebugger.1.dylib",
+        "size": 257400,
+        "sha256": "de5f50d0d083b2c6539a6b60ebbf1104308efdbcb02e596662ace57ee0034720",
+        "architectures": [
+          "x86_64"
+        ]
+      },
+      {
+        "path": "native-backup/libfreetype.6.dylib",
+        "size": 590908,
+        "sha256": "6df3e8093e5eb2b519cbf71f85ddde6d1bc1b266e7ced3d3de9a47b45f6f9971",
+        "architectures": [
+          "x86_64"
+        ]
+      },
+      {
+        "path": "native-backup/libpng16.16.dylib",
+        "size": 172964,
+        "sha256": "16eb38362b524318828c5365c975234bc248e40b28f5ee4090f74b20992a12a3",
+        "architectures": [
+          "x86_64"
+        ]
+      },
+      {
+        "path": "native-backup/librocketConnector.dylib",
+        "size": 160160,
+        "sha256": "31e4117873fb27aa5ba62232cad5bc4fbbf3dd59be936159299f202c5ef53334",
+        "architectures": [
+          "x86_64"
+        ]
+      },
+      {
+        "path": "jvm-rwpp-x64/bin/java",
+        "size": 70464,
+        "sha256": "d460b16235f81cc00a18e45e32e0d700500cc2cf21b7f26580fd1266360fb8b8",
+        "architectures": [
+          "x86_64"
+        ]
+      },
+      {
+        "path": "natives-x86_64-backup/libjinput-osx.dylib",
+        "size": 64608,
+        "sha256": "d155c29cfa7d7b49cab0821d5ba00a8fdc8b386c8bf5669f0313a62e44ba70d6",
+        "architectures": [
+          "powerpc",
+          "x86",
+          "x86_64"
+        ]
+      },
+      {
+        "path": "natives-x86_64-backup/liblwjgl.dylib",
+        "size": 531120,
+        "sha256": "4e9512afc0aa0831cc72591852c47c804c57ed13bd4ab9ba3ac798650616db0e",
+        "architectures": [
+          "x86_64"
+        ]
+      },
+      {
+        "path": "natives-x86_64-backup/libopenal.dylib",
+        "size": 731648,
+        "sha256": "d845fab22fd58425deafbcb1a552633b4a62bd5dfa27b9263c050d91a3fad8c0",
+        "architectures": [
+          "x86",
+          "x86_64"
+        ]
+      },
+      {
+        "path": "natives-x86_64-backup/openal.dylib",
+        "size": 731648,
+        "sha256": "d845fab22fd58425deafbcb1a552633b4a62bd5dfa27b9263c050d91a3fad8c0",
+        "architectures": [
+          "x86",
+          "x86_64"
+        ]
+      }
+    ],
+    "bundledJavaRelease": {
+      "path": "jvm-rwpp-x64/release",
+      "sha256": "72687d4756884d5ca2ab6627ba65fd4a442789ec98e37f1b5e80e8474a3c9cc9",
+      "fields": {
+        "IMPLEMENTOR": "Eclipse Adoptium",
+        "JAVA_RUNTIME_VERSION": "17.0.19+10",
+        "JAVA_VERSION": "17.0.19",
+        "OS_ARCH": "x86_64"
+      }
+    },
+    "staticInstructionEvidence": [
+      {
+        "artifact": "generated_lib/game-lib.jar!com/corrodinggames/rts/java/Main.class",
+        "method": "public void b()",
+        "instruction": "getstatic MainInject.INSTANCE; aload_0; invokevirtual MainInject.onStartGame(Main); return",
+        "javap": "build/parity-optimization-20261102/steam-game-main-javap.txt:1390"
+      },
+      {
+        "artifact": "generated_lib/game-lib.jar!com/corrodinggames/rts/java/Main.class",
+        "method": "public void c()",
+        "instruction": "getstatic MainInject.INSTANCE; invokevirtual MainInject.onRefreshUI(); return",
+        "javap": "build/parity-optimization-20261102/steam-game-main-javap.txt:1488"
+      },
+      {
+        "artifact": "generated_lib/game-lib.jar!com/corrodinggames/rts/gameFramework/l.class",
+        "method": "public static strictfp void c(String)",
+        "instruction": "GameEngineInject.clearLog(String), InterruptResult branch",
+        "javap": "build/parity-optimization-20261102/steam-engine-l-javap.txt:1567"
+      }
+    ],
+    "baselineIdentityConclusion": "The selected installation launchers start RWPP, and generated_lib/game-lib.jar contains direct RWPP injection calls. Neither launcher nor this generated JAR is a clean official Rusted Warfare baseline.",
+    "pureGameLibLaunch": {
+      "available": false,
+      "reason": "The selected installation contains only the already injected game-lib.jar; required Slick AppGameContainer / LWJGL Display classes and game assets are absent from both application JARs. A classpath containing game-lib.jar:RWPP-macos.jar would still execute direct RWPP calls and lacks identified dependencies. No pure standalone launch command can be supported from these bytes.",
+      "notExecutedCandidate": "generated_lib/game-lib.jar:RWPP-macos.jar",
+      "entryPointExists": "com.corrodinggames.rts.java.Main",
+      "noReplacementTargetSelected": true
+    },
+    "limitations": [
+      "Static references establish instrumentation present, not actual runtime frame cost.",
+      "No official pristine artifact was provided or verified; no claim on the original unmodified game can be made from this directory.",
+      "Native architecture was parsed from Mach-O headers only; no native library loading or dependency-resolution test occurred.",
+      "Launcher source includes paths outside this installation, but none were searched or executed."
+    ],
+    "localJavapArtifacts": {
+      "build/parity-optimization-20261102/steam-engine-l-javap.txt": "9de2a440f33ed0a03f6cb1cd97cfe6614a14bf0cce6de33301934d33cbb56ad0",
+      "build/parity-optimization-20261102/steam-game-main-javap.txt": "e93b1a245700d059a687e8c4e335fd8caa5b8852d7b5c56bed5caabf054fdc41",
+      "build/parity-optimization-20261102/steam-rwpp-game-libraries-javap.txt": "fa224267558ae96a22e2ce7ed88d77bc9c7a6045282e48cfcd4a2c23a467d524",
+      "build/parity-optimization-20261102/steam-rwpp-main-inject-javap.txt": "5518a226e04b21007cbc89463c24f1272a5185981731d7e18fb62bce09fe0141"
+    },
+    "internalOriginalBackupSearch": {
+      "searchedOnlySelectedInstallation": true,
+      "allFilenamesWithoutOpeningUserContent": true,
+      "nameCandidates": [
+        "io.github.rwpp.config.Settings.toml",
+        "io.github.rwpp.config.MultiplayerPreferences.toml",
+        "io.github.rwpp.config.EnabledExtensions.toml",
+        "io.github.rwpp.config.Blacklists.toml",
+        "RWPP-ARM64-NATIVES.txt",
+        "io.github.rwpp.config.CoreData.toml",
+        "RWPP-macos.jar",
+        "generated_lib/game-lib.jar"
+      ],
+      "archivePaths": [
+        "RWPP-macos.jar",
+        "jvm-rwpp-x64/lib/jrt-fs.jar",
+        "jvm-rwpp-x64/lib/src.zip",
+        "generated_lib/game-lib.jar"
+      ],
+      "steamMetadataPaths": [],
+      "originalGameLibBackupFound": false,
+      "limits": "Filenames and ZIP entry tables do not establish the identity of opaque payloads. No parent Steam appmanifest was read because it is outside the selected installation directory."
+    },
+    "generatedInjectionConfig": {
+      "path": "generated_lib/config.toml",
+      "sha256": "5cbcab44db99f51fc17efd345c69ba8ec1e2f20dc068133e2a560b6800046ffb",
+      "injectRules": 34,
+      "targetClassCount": 19,
+      "mainRules": [
+        {
+          "className": "com.corrodinggames.rts.java.Main",
+          "hasReceiver": false,
+          "methodName": "c",
+          "methodDesc": "()V",
+          "path": "io.github.rwpp.desktop.impl.inject.MainInject.onRefreshUI",
+          "pathType": "Path",
+          "returnClassIsVoid": true,
+          "injectMode": "Override"
+        },
+        {
+          "className": "com.corrodinggames.rts.java.Main",
+          "hasReceiver": false,
+          "methodName": "c",
+          "methodDesc": "(Lcom/corrodinggames/rts/gameFramework/j/c;Ljava/lang/String;Ljava/lang/String;)V",
+          "path": "io.github.rwpp.desktop.impl.inject.MainInject.onPlayerJoin",
+          "pathType": "Path",
+          "returnClassIsVoid": true,
+          "injectMode": "Override"
+        },
+        {
+          "className": "com.corrodinggames.rts.java.Main",
+          "hasReceiver": true,
+          "methodName": "b",
+          "methodDesc": "()V",
+          "path": "io.github.rwpp.desktop.impl.inject.MainInject.onStartGame",
+          "pathType": "Path",
+          "returnClassIsVoid": true,
+          "injectMode": "Override"
+        }
+      ],
+      "sourceOfficialHashPresent": false
+    },
+    "archiveDuplicateEntryNames": {
+      "RWPP-macos.jar": [],
+      "generated_lib/game-lib.jar": []
+    }
+  },
+  "cleanCoreCandidates": [
+    {
+      "path": "/Users/wty/code/RW-MHPS/Server-Core/libs/game-lib.jar",
+      "size": 2639503,
+      "sha256": "8a550a37e2d8a5430866090d4e7d5892f9010b47f52a5a09350fc66c620deec9",
+      "classes": 1698,
+      "hasPcMain": true,
+      "rwppStringClasses": 0,
+      "sharedSteamClasses": 1698,
+      "differentSteamClasses": 24,
+      "classesMissingFromSteam": 0,
+      "steamClassesMissing": 0,
+      "manifest": "Manifest-Version: 1.0\r\nMain-Class: com.corrodinggames.rts.java.Main\r\nClass-Path: .\r\n\r\n",
+      "diffSample": [
+        "android/graphics/Paint.class",
+        "android/graphics/RectF.class",
+        "com/corrodinggames/librocket/a.class",
+        "com/corrodinggames/librocket/b.class",
+        "com/corrodinggames/librocket/scripts/Root.class",
+        "com/corrodinggames/librocket/scripts/ScriptEngine.class",
+        "com/corrodinggames/rts/game/i.class",
+        "com/corrodinggames/rts/game/n.class",
+        "com/corrodinggames/rts/game/units/am.class",
+        "com/corrodinggames/rts/game/units/as.class"
+      ]
+    },
+    {
+      "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/game-lib.jar",
+      "size": 2639503,
+      "sha256": "8a550a37e2d8a5430866090d4e7d5892f9010b47f52a5a09350fc66c620deec9",
+      "classes": 1698,
+      "hasPcMain": true,
+      "rwppStringClasses": 0,
+      "sharedSteamClasses": 1698,
+      "differentSteamClasses": 24,
+      "classesMissingFromSteam": 0,
+      "steamClassesMissing": 0,
+      "manifest": "Manifest-Version: 1.0\r\nMain-Class: com.corrodinggames.rts.java.Main\r\nClass-Path: .\r\n\r\n",
+      "diffSample": [
+        "android/graphics/Paint.class",
+        "android/graphics/RectF.class",
+        "com/corrodinggames/librocket/a.class",
+        "com/corrodinggames/librocket/b.class",
+        "com/corrodinggames/librocket/scripts/Root.class",
+        "com/corrodinggames/librocket/scripts/ScriptEngine.class",
+        "com/corrodinggames/rts/game/i.class",
+        "com/corrodinggames/rts/game/n.class",
+        "com/corrodinggames/rts/game/units/am.class",
+        "com/corrodinggames/rts/game/units/as.class"
+      ]
+    },
+    {
+      "path": "/Users/wty/code/TuanHun/RW-HPS/Server-Core/libs/game-lib.jar",
+      "size": 2639503,
+      "sha256": "8a550a37e2d8a5430866090d4e7d5892f9010b47f52a5a09350fc66c620deec9",
+      "classes": 1698,
+      "hasPcMain": true,
+      "rwppStringClasses": 0,
+      "sharedSteamClasses": 1698,
+      "differentSteamClasses": 24,
+      "classesMissingFromSteam": 0,
+      "steamClassesMissing": 0,
+      "manifest": "Manifest-Version: 1.0\r\nMain-Class: com.corrodinggames.rts.java.Main\r\nClass-Path: .\r\n\r\n",
+      "diffSample": [
+        "android/graphics/Paint.class",
+        "android/graphics/RectF.class",
+        "com/corrodinggames/librocket/a.class",
+        "com/corrodinggames/librocket/b.class",
+        "com/corrodinggames/librocket/scripts/Root.class",
+        "com/corrodinggames/librocket/scripts/ScriptEngine.class",
+        "com/corrodinggames/rts/game/i.class",
+        "com/corrodinggames/rts/game/n.class",
+        "com/corrodinggames/rts/game/units/am.class",
+        "com/corrodinggames/rts/game/units/as.class"
+      ]
+    },
+    {
+      "path": "/Users/wty/code/TuanHun/origin-rankcn/rankcn排位本体/Server-Core/libs/game-lib.jar",
+      "size": 2639503,
+      "sha256": "8a550a37e2d8a5430866090d4e7d5892f9010b47f52a5a09350fc66c620deec9",
+      "classes": 1698,
+      "hasPcMain": true,
+      "rwppStringClasses": 0,
+      "sharedSteamClasses": 1698,
+      "differentSteamClasses": 24,
+      "classesMissingFromSteam": 0,
+      "steamClassesMissing": 0,
+      "manifest": "Manifest-Version: 1.0\r\nMain-Class: com.corrodinggames.rts.java.Main\r\nClass-Path: .\r\n\r\n",
+      "diffSample": [
+        "android/graphics/Paint.class",
+        "android/graphics/RectF.class",
+        "com/corrodinggames/librocket/a.class",
+        "com/corrodinggames/librocket/b.class",
+        "com/corrodinggames/librocket/scripts/Root.class",
+        "com/corrodinggames/librocket/scripts/ScriptEngine.class",
+        "com/corrodinggames/rts/game/i.class",
+        "com/corrodinggames/rts/game/n.class",
+        "com/corrodinggames/rts/game/units/am.class",
+        "com/corrodinggames/rts/game/units/as.class"
+      ]
+    },
+    {
+      "path": "/Users/wty/code/TuanHun/RWHR-workspace/rankcn/Server-Core/libs/game-lib.jar",
+      "size": 2639503,
+      "sha256": "8a550a37e2d8a5430866090d4e7d5892f9010b47f52a5a09350fc66c620deec9",
+      "classes": 1698,
+      "hasPcMain": true,
+      "rwppStringClasses": 0,
+      "sharedSteamClasses": 1698,
+      "differentSteamClasses": 24,
+      "classesMissingFromSteam": 0,
+      "steamClassesMissing": 0,
+      "manifest": "Manifest-Version: 1.0\r\nMain-Class: com.corrodinggames.rts.java.Main\r\nClass-Path: .\r\n\r\n",
+      "diffSample": [
+        "android/graphics/Paint.class",
+        "android/graphics/RectF.class",
+        "com/corrodinggames/librocket/a.class",
+        "com/corrodinggames/librocket/b.class",
+        "com/corrodinggames/librocket/scripts/Root.class",
+        "com/corrodinggames/librocket/scripts/ScriptEngine.class",
+        "com/corrodinggames/rts/game/i.class",
+        "com/corrodinggames/rts/game/n.class",
+        "com/corrodinggames/rts/game/units/am.class",
+        "com/corrodinggames/rts/game/units/as.class"
+      ]
+    },
+    {
+      "path": "/Users/wty/code/TuanHun/TXJS/lib/game-lib.jar",
+      "size": 2639503,
+      "sha256": "8a550a37e2d8a5430866090d4e7d5892f9010b47f52a5a09350fc66c620deec9",
+      "classes": 1698,
+      "hasPcMain": true,
+      "rwppStringClasses": 0,
+      "sharedSteamClasses": 1698,
+      "differentSteamClasses": 24,
+      "classesMissingFromSteam": 0,
+      "steamClassesMissing": 0,
+      "manifest": "Manifest-Version: 1.0\r\nMain-Class: com.corrodinggames.rts.java.Main\r\nClass-Path: .\r\n\r\n",
+      "diffSample": [
+        "android/graphics/Paint.class",
+        "android/graphics/RectF.class",
+        "com/corrodinggames/librocket/a.class",
+        "com/corrodinggames/librocket/b.class",
+        "com/corrodinggames/librocket/scripts/Root.class",
+        "com/corrodinggames/librocket/scripts/ScriptEngine.class",
+        "com/corrodinggames/rts/game/i.class",
+        "com/corrodinggames/rts/game/n.class",
+        "com/corrodinggames/rts/game/units/am.class",
+        "com/corrodinggames/rts/game/units/as.class"
+      ]
+    }
+  ],
+  "cleanCoreProvenance": {
+    "date": "2026-11-02",
+    "evidenceType": "Ordinary read-only shell/Python ZIP/javap/git inspection; NOT REA Evidence. No target execution.",
+    "candidateCoreSha256": "8a550a37e2d8a5430866090d4e7d5892f9010b47f52a5a09350fc66c620deec9",
+    "pinnedBaselineCrossReference": {
+      "path": "/Users/wty/code/RWXX/desktop/tools/original_interaction_benchmark.py",
+      "line": 17,
+      "symbol": "EXPECTED_HASH",
+      "matchesCandidate": true,
+      "scope": "Same core artifact identity as the repository historical fixed official PC1.15 probe. This does not establish a complete matching macOS installation or fresh distributor attestation."
+    },
+    "repositories": [
+      {
+        "repository": "/Users/wty/code/TuanHun/TXJS",
+        "coreMatchesPinnedBaseline": true,
+        "coreRwppReferenceClasses": [],
+        "whitelistedPcLibraries": [
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/commons-codec-1.6.jar",
+            "name": "commons-codec-1.6.jar",
+            "sha256": "54b34e941b8e1414bd3e40d736efd3481772dc26db3296f6aa45cec9f6203d86",
+            "bytes": 232771,
+            "classes": 76,
+            "manifest": "Manifest-Version: 1.0\r\nArchiver-Version: Plexus Archiver\r\nCreated-By: Apache Maven Bundle Plugin\r\nBuilt-By: ggregory\r\nBuild-Jdk: 1.6.0_29\r\nImplementation-Build: UNKNOWN_BRANCH@r??????; 2011-12-02 21:37:07-0500\r\nImplementation-Title: Commons Codec\r\nImplementation-Vendor: The Apache Software Foundation\r\nImplementation-Vendor-Id: org.apache\r\nImplementation-Version: 1.6\r\nSpecification-Title: Commons Codec\r\nSpecification-Vendor: The Apache Software Foundation\r\nSpecification-Version: 1.6\r\nX-Compile-Source-JDK: 1.5\r\nX-Compile-Target-JDK: 1.5\r\nExport-Package: org.apache.commons.codec;version=\"1.6\",org.apache.comm\r\n ons.codec.net;version=\"1.6\",org.apache.commons.codec.language.bm;vers\r\n ion=\"1.6\",org.apache.commons.codec.language;version=\"1.6\",org.apache.\r\n commons.codec.digest;version=\"1.6\",org.apache.commons.codec.binary;ve\r\n rsion=\"1.6\"\r\nTool: Bnd-1.43.0\r\nBundle-Name: Commons Codec\r\nBundle-Vendor: The Apache Software Foundation\r\nBundle-Version: 1.6.0\r\nBnd-LastModified: 1322879833852\r\nBundle-ManifestVersion: 2\r\nBundle-License: http://www.apache.org/licenses/LICENSE-2.0.txt\r\nBundle-Description: The codec package contains simple encoder and deco\r\n ders for     various formats such as Base64 and Hexadecimal.  In addi\r\n tion to these     widely used encoders and decoders, the codec packag\r\n e also maintains a     collection of phonetic encoding utilities.\r\nBundle-DocURL: http://commons.apache.org/codec/\r\nInclude-Resource: org/apache/commons/codec/language/bm/ash_approx_any.\r\n txt=src/main/resources/org/apache/commons/codec/language/bm/ash_appro\r\n x_any.txt,org/apache/commons/codec/language/bm/ash_approx_common.txt=\r\n src/main/resources/org/apache/commons/codec/language/bm/ash_approx_co\r\n mmon.txt,org/apache/commons/codec/language/bm/ash_approx_cyrillic.txt\r\n =src/main/resources/org/apache/commons/codec/language/bm/ash_approx_c\r\n yrillic.txt,org/apache/commons/codec/language/bm/ash_approx_english.t\r\n xt=src/main/resources/org/apache/commons/codec/language/bm/ash_approx\r\n _english.txt,org/apache/commons/codec/language/bm/ash_approx_french.t\r\n xt=src/main/resources/org/apache/commons/codec/language/bm/ash_approx\r\n _french.txt,org/apache/commons/codec/language/bm/ash_approx_german.tx\r\n t=src/main/resources/org/apache/commons/codec/language/bm/ash_approx_\r\n german.txt,org/apache/commons/codec/language/bm/ash_approx_hebrew.txt\r\n =src/main/resources/org/apache/commons/codec/language/bm/ash_approx_h\r\n ebrew.txt,org/apache/commons/codec/language/bm/ash_approx_hungarian.t\r\n xt=src/main/resources/org/apache/commons/codec/language/bm/ash_approx\r\n _hungarian.txt,org/apache/commons/codec/language/bm/ash_approx_polish\r\n .txt=src/main/resources/org/apache/commons/codec/language/bm/ash_appr\r\n ox_polish.txt,org/apache/commons/codec/language/bm/ash_approx_romania\r\n n.txt=src/main/resources/org/apache/commons/codec/language/bm/ash_app\r\n rox_romanian.txt,org/apache/commons/codec/language/bm/ash_approx_russ\r\n ian.txt=src/main/resources/org/apache/commons/codec/language/bm/ash_a\r\n pprox_russian.txt,org/apache/commons/codec/language/bm/ash_approx_spa\r\n nish.txt=src/main/resources/org/apache/commons/codec/language/bm/ash_\r\n approx_spanish.txt,org/apache/commons/codec/language/bm/ash_exact_any\r\n .txt=src/main/resources/org/apache/commons/codec/language/bm/ash_exac\r\n t_any.txt,org/apache/commons/codec/language/bm/ash_exact_approx_commo\r\n n.txt=src/main/resources/org/apache/commons/codec/language/bm/ash_exa\r\n ct_approx_common.txt,org/apache/commons/codec/language/bm/ash_exact_c\r\n ommon.txt=src/main/resources/org/apache/commons/codec/language/bm/ash\r\n _exact_common.txt,org/apache/commons/codec/language/bm/ash_exact_cyri\r\n llic.txt=src/main/resources/org/apache/commons/codec/language/bm/ash_\r\n exact_cyrillic.txt,org/apache/commons/codec/language/bm/ash_exact_eng\r\n lish.txt=src/main/resources/org/apache/commons/codec/language/bm/ash_\r\n exact_english.txt,org/apache/commons/codec/language/bm/ash_exact_fren\r\n ch.txt=src/main/resources/org/apache/commons/codec/language/bm/ash_ex\r\n act_french.txt,org/apache/commons/codec/language/bm/ash_exact_german.\r\n txt=src/main/resources/org/apache/commons/codec/language/bm/ash_exact\r\n _german.txt,org/apache/commons/codec/language/bm/ash_exact_hebrew.txt\r\n =src/main/resources/org/apache/commons/codec/language/bm/ash_exact_he\r\n brew.txt,org/apache/commons/codec/language/bm/ash_exact_hungarian.txt\r\n =src/main/resources/org/apache/commons/codec/language/bm/ash_exact_hu\r\n ngarian.txt,org/apache/commons/codec/language/bm/ash_exact_polish.txt\r\n =src/main/resources/org/apache/commons/codec/language/bm/ash_exact_po\r\n lish.txt,org/apache/commons/codec/language/bm/ash_exact_romanian.txt=\r\n src/main/resources/org/apache/commons/codec/language/bm/ash_exact_rom\r\n anian.txt,org/apache/commons/codec/language/bm/ash_exact_russian.txt=\r\n src/main/resources/org/apache/commons/codec/language/bm/ash_exact_rus\r\n sian.txt,org/apache/commons/codec/language/bm/ash_exact_spanish.txt=s\r\n rc/main/resources/org/apache/commons/codec/language/bm/ash_exact_span\r\n ish.txt,org/apache/commons/codec/language/bm/ash_hebrew_common.txt=sr\r\n c/main/resources/org/apache/commons/codec/language/bm/ash_hebrew_comm\r\n on.txt,org/apache/commons/codec/language/bm/ash_languages.txt=src/mai\r\n n/resources/org/apache/commons/codec/language/bm/ash_languages.txt,or\r\n g/apache/commons/codec/language/bm/ash_rules_any.txt=src/main/resourc\r\n es/org/apache/commons/codec/language/bm/ash_rules_any.txt,org/apache/\r\n commons/codec/language/bm/ash_rules_cyrillic.txt=src/main/resources/o\r\n rg/apache/commons/codec/language/bm/ash_rules_cyrillic.txt,org/apache\r\n /commons/codec/language/bm/ash_rules_english.txt=src/main/resources/o\r\n rg/apache/commons/codec/language/bm/ash_rules_english.txt,org/apache/\r\n commons/codec/language/bm/ash_rules_french.txt=src/main/resources/org\r\n /apache/commons/codec/language/bm/ash_rules_french.txt,org/apache/com\r\n mons/codec/language/bm/ash_rules_german.txt=src/main/resources/org/ap\r\n ache/commons/codec/language/bm/ash_rules_german.txt,org/apache/common\r\n s/codec/language/bm/ash_rules_hebrew.txt=src/main/resources/org/apach\r\n e/commons/codec/language/bm/ash_rules_hebrew.txt,org/apache/commons/c\r\n odec/language/bm/ash_rules_hungarian.txt=src/main/resources/org/apach\r\n e/commons/codec/language/bm/ash_rules_hungarian.txt,org/apache/common\r\n s/codec/language/bm/ash_rules_polish.txt=src/main/resources/org/apach\r\n e/commons/codec/language/bm/ash_rules_polish.txt,org/apache/commons/c\r\n odec/language/bm/ash_rules_romanian.txt=src/main/resources/org/apache\r\n /commons/codec/language/bm/ash_rules_romanian.txt,org/apache/commons/\r\n codec/language/bm/ash_rules_russian.txt=src/main/resources/org/apache\r\n /commons/codec/language/bm/ash_rules_russian.txt,org/apache/commons/c\r\n odec/language/bm/ash_rules_spanish.txt=src/main/resources/org/apache/\r\n commons/codec/language/bm/ash_rules_spanish.txt,org/apache/commons/co\r\n dec/language/bm/gen_approx_any.txt=src/main/resources/org/apache/comm\r\n ons/codec/language/bm/gen_approx_any.txt,org/apache/commons/codec/lan\r\n guage/bm/gen_approx_arabic.txt=src/main/resources/org/apache/commons/\r\n codec/language/bm/gen_approx_arabic.txt,org/apache/commons/codec/lang\r\n uage/bm/gen_approx_common.txt=src/main/resources/org/apache/commons/c\r\n odec/language/bm/gen_approx_common.txt,org/apache/commons/codec/langu\r\n age/bm/gen_approx_cyrillic.txt=src/main/resources/org/apache/commons/\r\n codec/language/bm/gen_approx_cyrillic.txt,org/apache/commons/codec/la\r\n nguage/bm/gen_approx_czech.txt=src/main/resources/org/apache/commons/\r\n codec/language/bm/gen_approx_czech.txt,org/apache/commons/codec/langu\r\n age/bm/gen_approx_dutch.txt=src/main/resources/org/apache/commons/cod\r\n ec/language/bm/gen_approx_dutch.txt,org/apache/commons/codec/language\r\n /bm/gen_approx_english.txt=src/main/resources/org/apache/commons/code\r\n c/language/bm/gen_approx_english.txt,org/apache/commons/codec/languag\r\n e/bm/gen_approx_french.txt=src/main/resources/org/apache/commons/code\r\n c/language/bm/gen_approx_french.txt,org/apache/commons/codec/language\r\n /bm/gen_approx_german.txt=src/main/resources/org/apache/commons/codec\r\n /language/bm/gen_approx_german.txt,org/apache/commons/codec/language/\r\n bm/gen_approx_greek.txt=src/main/resources/org/apache/commons/codec/l\r\n anguage/bm/gen_approx_greek.txt,org/apache/commons/codec/language/bm/\r\n gen_approx_greeklatin.txt=src/main/resources/org/apache/commons/codec\r\n /language/bm/gen_approx_greeklatin.txt,org/apache/commons/codec/langu\r\n age/bm/gen_approx_hebrew.txt=src/main/resources/org/apache/commons/co\r\n dec/language/bm/gen_approx_hebrew.txt,org/apache/commons/codec/langua\r\n ge/bm/gen_approx_hungarian.txt=src/main/resources/org/apache/commons/\r\n codec/language/bm/gen_approx_hungarian.txt,org/apache/commons/codec/l\r\n anguage/bm/gen_approx_italian.txt=src/main/resources/org/apache/commo\r\n ns/codec/language/bm/gen_approx_italian.txt,org/apache/commons/codec/\r\n language/bm/gen_approx_polish.txt=src/main/resources/org/apache/commo\r\n ns/codec/language/bm/gen_approx_polish.txt,org/apache/commons/codec/l\r\n anguage/bm/gen_approx_portuguese.txt=src/main/resources/org/apache/co\r\n mmons/codec/language/bm/gen_approx_portuguese.txt,org/apache/commons/\r\n codec/language/bm/gen_approx_romanian.txt=src/main/resources/org/apac\r\n he/commons/codec/language/bm/gen_approx_romanian.txt,org/apache/commo\r\n ns/codec/language/bm/gen_approx_russian.txt=src/main/resources/org/ap\r\n ache/commons/codec/language/bm/gen_approx_russian.txt,org/apache/comm\r\n ons/codec/language/bm/gen_approx_spanish.txt=src/main/resources/org/a\r\n pache/commons/codec/language/bm/gen_approx_spanish.txt,org/apache/com\r\n mons/codec/language/bm/gen_approx_turkish.txt=src/main/resources/org/\r\n apache/commons/codec/language/bm/gen_approx_turkish.txt,org/apache/co\r\n mmons/codec/language/bm/gen_exact_any.txt=src/main/resources/org/apac\r\n he/commons/codec/language/bm/gen_exact_any.txt,org/apache/commons/cod\r\n ec/language/bm/gen_exact_approx_common.txt=src/main/resources/org/apa\r\n che/commons/codec/language/bm/gen_exact_approx_common.txt,org/apache/\r\n commons/codec/language/bm/gen_exact_arabic.txt=src/main/resources/org\r\n /apache/commons/codec/language/bm/gen_exact_arabic.txt,org/apache/com\r\n mons/codec/language/bm/gen_exact_common.txt=src/main/resources/org/ap\r\n ache/commons/codec/language/bm/gen_exact_common.txt,org/apache/common\r\n s/codec/language/bm/gen_exact_cyrillic.txt=src/main/resources/org/apa\r\n che/commons/codec/language/bm/gen_exact_cyrillic.txt,org/apache/commo\r\n ns/codec/language/bm/gen_exact_czech.txt=src/main/resources/org/apach\r\n e/commons/codec/language/bm/gen_exact_czech.txt,org/apache/commons/co\r\n dec/language/bm/gen_exact_dutch.txt=src/main/resources/org/apache/com\r\n mons/codec/language/bm/gen_exact_dutch.txt,org/apache/commons/codec/l\r\n anguage/bm/gen_exact_english.txt=src/main/resources/org/apache/common\r\n s/codec/language/bm/gen_exact_english.txt,org/apache/commons/codec/la\r\n nguage/bm/gen_exact_french.txt=src/main/resources/org/apache/commons/\r\n codec/language/bm/gen_exact_french.txt,org/apache/commons/codec/langu\r\n age/bm/gen_exact_german.txt=src/main/resources/org/apache/commons/cod\r\n ec/language/bm/gen_exact_german.txt,org/apache/commons/codec/language\r\n /bm/gen_exact_greek.txt=src/main/resources/org/apache/commons/codec/l\r\n anguage/bm/gen_exact_greek.txt,org/apache/commons/codec/language/bm/g\r\n en_exact_greeklatin.txt=src/main/resources/org/apache/commons/codec/l\r\n anguage/bm/gen_exact_greeklatin.txt,org/apache/commons/codec/language\r\n /bm/gen_exact_hebrew.txt=src/main/resources/org/apache/commons/codec/\r\n language/bm/gen_exact_hebrew.txt,org/apache/commons/codec/language/bm\r\n /gen_exact_hungarian.txt=src/main/resources/org/apache/commons/codec/\r\n language/bm/gen_exact_hungarian.txt,org/apache/commons/codec/language\r\n /bm/gen_exact_italian.txt=src/main/resources/org/apache/commons/codec\r\n /language/bm/gen_exact_italian.txt,org/apache/commons/codec/language/\r\n bm/gen_exact_polish.txt=src/main/resources/org/apache/commons/codec/l\r\n anguage/bm/gen_exact_polish.txt,org/apache/commons/codec/language/bm/\r\n gen_exact_portuguese.txt=src/main/resources/org/apache/commons/codec/\r\n language/bm/gen_exact_portuguese.txt,org/apache/commons/codec/languag\r\n e/bm/gen_exact_romanian.txt=src/main/resources/org/apache/commons/cod\r\n ec/language/bm/gen_exact_romanian.txt,org/apache/commons/codec/langua\r\n ge/bm/gen_exact_russian.txt=src/main/resources/org/apache/commons/cod\r\n ec/language/bm/gen_exact_russian.txt,org/apache/commons/codec/languag\r\n e/bm/gen_exact_spanish.txt=src/main/resources/org/apache/commons/code\r\n c/language/bm/gen_exact_spanish.txt,org/apache/commons/codec/language\r\n /bm/gen_exact_turkish.txt=src/main/resources/org/apache/commons/codec\r\n /language/bm/gen_exact_turkish.txt,org/apache/commons/codec/language/\r\n bm/gen_hebrew_common.txt=src/main/resources/org/apache/commons/codec/\r\n language/bm/gen_hebrew_common.txt,org/apache/commons/codec/language/b\r\n m/gen_languages.txt=src/main/resources/org/apache/commons/codec/langu\r\n age/bm/gen_languages.txt,org/apache/commons/codec/language/bm/gen_rul\r\n es_any.txt=src/main/resources/org/apache/commons/codec/language/bm/ge\r\n n_rules_any.txt,org/apache/commons/codec/language/bm/gen_rules_arabic\r\n .txt=src/main/resources/org/apache/commons/codec/language/bm/gen_rule\r\n s_arabic.txt,org/apache/commons/codec/language/bm/gen_rules_cyrillic.\r\n txt=src/main/resources/org/apache/commons/codec/language/bm/gen_rules\r\n _cyrillic.txt,org/apache/commons/codec/language/bm/gen_rules_czech.tx\r\n t=src/main/resources/org/apache/commons/codec/language/bm/gen_rules_c\r\n zech.txt,org/apache/commons/codec/language/bm/gen_rules_dutch.txt=src\r\n /main/resources/org/apache/commons/codec/language/bm/gen_rules_dutch.\r\n txt,org/apache/commons/codec/language/bm/gen_rules_english.txt=src/ma\r\n in/resources/org/apache/commons/codec/language/bm/gen_rules_english.t\r\n xt,org/apache/commons/codec/language/bm/gen_rules_french.txt=src/main\r\n /resources/org/apache/commons/codec/language/bm/gen_rules_french.txt,\r\n org/apache/commons/codec/language/bm/gen_rules_german.txt=src/main/re\r\n sources/org/apache/commons/codec/language/bm/gen_rules_german.txt,org\r\n /apache/commons/codec/language/bm/gen_rules_greek.txt=src/main/resour\r\n ces/org/apache/commons/codec/language/bm/gen_rules_greek.txt,org/apac\r\n he/commons/codec/language/bm/gen_rules_greeklatin.txt=src/main/resour\r\n ces/org/apache/commons/codec/language/bm/gen_rules_greeklatin.txt,org\r\n /apache/commons/codec/language/bm/gen_rules_hebrew.txt=src/main/resou\r\n rces/org/apache/commons/codec/language/bm/gen_rules_hebrew.txt,org/ap\r\n ache/commons/codec/language/bm/gen_rules_hungarian.txt=src/main/resou\r\n rces/org/apache/commons/codec/language/bm/gen_rules_hungarian.txt,org\r\n /apache/commons/codec/language/bm/gen_rules_italian.txt=src/main/reso\r\n urces/org/apache/commons/codec/language/bm/gen_rules_italian.txt,org/\r\n apache/commons/codec/language/bm/gen_rules_polish.txt=src/main/resour\r\n ces/org/apache/commons/codec/language/bm/gen_rules_polish.txt,org/apa\r\n che/commons/codec/language/bm/gen_rules_portuguese.txt=src/main/resou\r\n rces/org/apache/commons/codec/language/bm/gen_rules_portuguese.txt,or\r\n g/apache/commons/codec/language/bm/gen_rules_romanian.txt=src/main/re\r\n sources/org/apache/commons/codec/language/bm/gen_rules_romanian.txt,o\r\n rg/apache/commons/codec/language/bm/gen_rules_russian.txt=src/main/re\r\n sources/org/apache/commons/codec/language/bm/gen_rules_russian.txt,or\r\n g/apache/commons/codec/language/bm/gen_rules_spanish.txt=src/main/res\r\n ources/org/apache/commons/codec/language/bm/gen_rules_spanish.txt,org\r\n /apache/commons/codec/language/bm/gen_rules_turkish.txt=src/main/reso\r\n urces/org/apache/commons/codec/language/bm/gen_rules_turkish.txt,org/\r\n apache/commons/codec/language/bm/lang.txt=src/main/resources/org/apac\r\n he/commons/codec/language/bm/lang.txt,org/apache/commons/codec/langua\r\n ge/bm/sep_approx_any.txt=src/main/resources/org/apache/commons/codec/\r\n language/bm/sep_approx_any.txt,org/apache/commons/codec/language/bm/s\r\n ep_approx_common.txt=src/main/resources/org/apache/commons/codec/lang\r\n uage/bm/sep_approx_common.txt,org/apache/commons/codec/language/bm/se\r\n p_approx_french.txt=src/main/resources/org/apache/commons/codec/langu\r\n age/bm/sep_approx_french.txt,org/apache/commons/codec/language/bm/sep\r\n _approx_hebrew.txt=src/main/resources/org/apache/commons/codec/langua\r\n ge/bm/sep_approx_hebrew.txt,org/apache/commons/codec/language/bm/sep_\r\n approx_italian.txt=src/main/resources/org/apache/commons/codec/langua\r\n ge/bm/sep_approx_italian.txt,org/apache/commons/codec/language/bm/sep\r\n _approx_portuguese.txt=src/main/resources/org/apache/commons/codec/la\r\n nguage/bm/sep_approx_portuguese.txt,org/apache/commons/codec/language\r\n /bm/sep_approx_spanish.txt=src/main/resources/org/apache/commons/code\r\n c/language/bm/sep_approx_spanish.txt,org/apache/commons/codec/languag\r\n e/bm/sep_exact_any.txt=src/main/resources/org/apache/commons/codec/la\r\n nguage/bm/sep_exact_any.txt,org/apache/commons/codec/language/bm/sep_\r\n exact_approx_common.txt=src/main/resources/org/apache/commons/codec/l\r\n anguage/bm/sep_exact_approx_common.txt,org/apache/commons/codec/langu\r\n age/bm/sep_exact_common.txt=src/main/resources/org/apache/commons/cod\r\n ec/language/bm/sep_exact_common.txt,org/apache/commons/codec/language\r\n /bm/sep_exact_french.txt=src/main/resources/org/apache/commons/codec/\r\n language/bm/sep_exact_french.txt,org/apache/commons/codec/language/bm\r\n /sep_exact_hebrew.txt=src/main/resources/org/apache/commons/codec/lan\r\n guage/bm/sep_exact_hebrew.txt,org/apache/commons/codec/language/bm/se\r\n p_exact_italian.txt=src/main/resources/org/apache/commons/codec/langu\r\n age/bm/sep_exact_italian.txt,org/apache/commons/codec/language/bm/sep\r\n _exact_portuguese.txt=src/main/resources/org/apache/commons/codec/lan\r\n guage/bm/sep_exact_portuguese.txt,org/apache/commons/codec/language/b\r\n m/sep_exact_spanish.txt=src/main/resources/org/apache/commons/codec/l\r\n anguage/bm/sep_exact_spanish.txt,org/apache/commons/codec/language/bm\r\n /sep_hebrew_common.txt=src/main/resources/org/apache/commons/codec/la\r\n nguage/bm/sep_hebrew_common.txt,org/apache/commons/codec/language/bm/\r\n sep_languages.txt=src/main/resources/org/apache/commons/codec/languag\r\n e/bm/sep_languages.txt,org/apache/commons/codec/language/bm/sep_rules\r\n _any.txt=src/main/resources/org/apache/commons/codec/language/bm/sep_\r\n rules_any.txt,org/apache/commons/codec/language/bm/sep_rules_french.t\r\n xt=src/main/resources/org/apache/commons/codec/language/bm/sep_rules_\r\n french.txt,org/apache/commons/codec/language/bm/sep_rules_hebrew.txt=\r\n src/main/resources/org/apache/commons/codec/language/bm/sep_rules_heb\r\n rew.txt,org/apache/commons/codec/language/bm/sep_rules_italian.txt=sr\r\n c/main/resources/org/apache/commons/codec/language/bm/sep_rules_itali\r\n an.txt,org/apache/commons/codec/language/bm/sep_rules_portuguese.txt=\r\n src/main/resources/org/apache/commons/codec/language/bm/sep_rules_por\r\n tuguese.txt,org/apache/commons/codec/language/bm/sep_rules_spanish.tx\r\n t=src/main/resources/org/apache/commons/codec/language/bm/sep_rules_s\r\n panish.txt,META-INF/LICENSE.txt=LICENSE.txt,META-INF/NOTICE.txt=NOTIC\r\n E.txt\r\nBundle-SymbolicName: org.apache.commons.codec\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/commons-logging-1.1.3.jar",
+            "name": "commons-logging-1.1.3.jar",
+            "sha256": "70903f6fc82e9908c8da9f20443f61d90f0870a312642991fe8462a0b9391784",
+            "bytes": 62050,
+            "classes": 28,
+            "manifest": "Manifest-Version: 1.0\r\nExport-Package: org.apache.commons.logging;version=\"1.1.3\",org.apache.\r\n commons.logging.impl;version=\"1.1.3\"\r\nImplementation-Title: Commons Logging\r\nBuilt-By: tn\r\nTool: Bnd-1.50.0\r\nImplementation-Vendor: The Apache Software Foundation\r\nImplementation-Vendor-Id: org.apache\r\nSpecification-Title: Commons Logging\r\nBundle-License: http://www.apache.org/licenses/LICENSE-2.0.txt\r\nBundle-SymbolicName: org.apache.commons.logging\r\nX-Compile-Target-JDK: 1.1\r\nImplementation-Version: 1.1.3\r\nSpecification-Vendor: The Apache Software Foundation\r\nBundle-Name: Commons Logging\r\nCreated-By: Apache Maven Bundle Plugin\r\nX-Compile-Source-JDK: 1.2\r\nBundle-Vendor: The Apache Software Foundation\r\nBuild-Jdk: 1.7.0_21\r\nBundle-Version: 1.1.3\r\nBnd-LastModified: 1368734689105\r\nBundle-ManifestVersion: 2\r\nBundle-Description: Commons Logging is a thin adapter allowing configu\r\n rable bridging to other,    well known logging systems.\r\nBundle-DocURL: http://commons.apache.org/proper/commons-logging/\r\nImport-Package: javax.servlet;resolution:=optional;version=\"[2.1.0,3.0\r\n .0)\",org.apache.avalon.framework.logger;resolution:=optional;version=\r\n \"[4.1.3,4.1.5]\",org.apache.log;resolution:=optional;version=\"[1.0.1,1\r\n .0.1]\",org.apache.log4j;resolution:=optional;version=\"[1.2.15,2.0.0)\"\r\nInclude-Resource: META-INF/NOTICE.txt=NOTICE.txt,META-INF/LICENSE.txt=\r\n LICENSE.txt\r\nSpecification-Version: 1.1.3\r\nImplementation-Build: tags/LOGGING_1_1_3_RC2@r1483540; 2013-05-16 22:0\r\n 4:41+0200\r\nArchiver-Version: Plexus Archiver\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/fluent-hc-4.3.3.jar",
+            "name": "fluent-hc-4.3.3.jar",
+            "sha256": "f02dadd2c76d6e84b6e5420c4ea54711b6b797e565acbb92e2e1eb53628154aa",
+            "bytes": 28696,
+            "classes": 13,
+            "manifest": "Manifest-Version: 1.0\r\nImplementation-Title: HttpComponents Fluent API for Apache HttpClient\r\nImplementation-Version: 4.3.3\r\nBuilt-By: ggregory\r\nSpecification-Vendor: The Apache Software Foundation\r\nCreated-By: Apache Maven 3.0.5\r\nurl: http://hc.apache.org/httpcomponents-client\r\nX-Compile-Source-JDK: 1.5\r\nImplementation-Vendor: The Apache Software Foundation\r\nImplementation-Vendor-Id: org.apache\r\nBuild-Jdk: 1.7.0_51\r\nSpecification-Title: HttpComponents Fluent API for Apache HttpClient\r\nSpecification-Version: 4.3.3\r\nImplementation-Build: tags/4.3.3-RC1/fluent-hc@r1570731; 2014-02-22 09\r\n :04:11-0500\r\nX-Compile-Target-JDK: 1.5\r\nArchiver-Version: Plexus Archiver\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/game-lib.jar",
+            "name": "game-lib.jar",
+            "sha256": "8a550a37e2d8a5430866090d4e7d5892f9010b47f52a5a09350fc66c620deec9",
+            "bytes": 2639503,
+            "classes": 1698,
+            "manifest": "Manifest-Version: 1.0\r\nMain-Class: com.corrodinggames.rts.java.Main\r\nClass-Path: .\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/httpclient-4.3.3.jar",
+            "name": "httpclient-4.3.3.jar",
+            "sha256": "9844cc9b5440d65a88d28bcba9d771374d2dfdab898848cda164611091633013",
+            "bytes": 589512,
+            "classes": 421,
+            "manifest": "Manifest-Version: 1.0\r\nImplementation-Title: HttpComponents Apache HttpClient\r\nImplementation-Version: 4.3.3\r\nBuilt-By: ggregory\r\nSpecification-Vendor: The Apache Software Foundation\r\nCreated-By: Apache Maven 3.0.5\r\nurl: http://hc.apache.org/httpcomponents-client\r\nX-Compile-Source-JDK: 1.5\r\nImplementation-Vendor: The Apache Software Foundation\r\nImplementation-Vendor-Id: org.apache\r\nBuild-Jdk: 1.7.0_51\r\nSpecification-Title: HttpComponents Apache HttpClient\r\nSpecification-Version: 4.3.3\r\nImplementation-Build: tags/4.3.3-RC1/httpclient@r1570731; 2014-02-22 0\r\n 9:04:11-0500\r\nX-Compile-Target-JDK: 1.5\r\nArchiver-Version: Plexus Archiver\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/httpclient-cache-4.3.3.jar",
+            "name": "httpclient-cache-4.3.3.jar",
+            "sha256": "ad5f44c6b196c04526c69be32582f4359c05d4541e41fbbdd83e2b3132feecbf",
+            "bytes": 149800,
+            "classes": 79,
+            "manifest": "Manifest-Version: 1.0\r\nImplementation-Title: HttpComponents Apache HttpClient Cache\r\nImplementation-Version: 4.3.3\r\nBuilt-By: ggregory\r\nSpecification-Vendor: The Apache Software Foundation\r\nCreated-By: Apache Maven 3.0.5\r\nurl: http://hc.apache.org/httpcomponents-client\r\nX-Compile-Source-JDK: 1.5\r\nImplementation-Vendor: The Apache Software Foundation\r\nImplementation-Vendor-Id: org.apache\r\nBuild-Jdk: 1.7.0_51\r\nSpecification-Title: HttpComponents Apache HttpClient Cache\r\nSpecification-Version: 4.3.3\r\nImplementation-Build: tags/4.3.3-RC1/httpclient-cache@r1570731; 2014-0\r\n 2-22 09:04:11-0500\r\nX-Compile-Target-JDK: 1.5\r\nArchiver-Version: Plexus Archiver\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/httpcore-4.3.2.jar",
+            "name": "httpcore-4.3.2.jar",
+            "sha256": "abd02320e2356f89d054dae4cf02306bef20a9cf7865b3ac94ec7552b4f1528b",
+            "bytes": 282269,
+            "classes": 232,
+            "manifest": "Manifest-Version: 1.0\r\nImplementation-Title: HttpComponents Apache HttpCore\r\nImplementation-Version: 4.3.2\r\nBuilt-By: oleg\r\nSpecification-Vendor: The Apache Software Foundation\r\nCreated-By: Apache Maven 3.0.5\r\nurl: http://hc.apache.org/httpcomponents-core-ga\r\nX-Compile-Source-JDK: 1.5\r\nImplementation-Vendor: The Apache Software Foundation\r\nImplementation-Vendor-Id: org.apache\r\nBuild-Jdk: 1.7.0_21\r\nSpecification-Title: HttpComponents Apache HttpCore\r\nSpecification-Version: 4.3.2\r\nImplementation-Build: UNKNOWN_BRANCH@r??????; 2014-02-12 21:43:05+0100\r\nX-Compile-Target-JDK: 1.5\r\nArchiver-Version: Plexus Archiver\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/httpmime-4.3.3.jar",
+            "name": "httpmime-4.3.3.jar",
+            "sha256": "61434dbb2314cbb8d28025feb6ae53bbc45d1042daa34371d8911e1e7f570b36",
+            "bytes": 37274,
+            "classes": 22,
+            "manifest": "Manifest-Version: 1.0\r\nImplementation-Title: HttpComponents Apache HttpClient Mime\r\nImplementation-Version: 4.3.3\r\nBuilt-By: ggregory\r\nSpecification-Vendor: The Apache Software Foundation\r\nCreated-By: Apache Maven 3.0.5\r\nurl: http://hc.apache.org/httpcomponents-client\r\nX-Compile-Source-JDK: 1.5\r\nImplementation-Vendor: The Apache Software Foundation\r\nImplementation-Vendor-Id: org.apache\r\nBuild-Jdk: 1.7.0_51\r\nSpecification-Title: HttpComponents Apache HttpClient Mime\r\nSpecification-Version: 4.3.3\r\nImplementation-Build: tags/4.3.3-RC1/httpmime@r1570731; 2014-02-22 09:\r\n 04:11-0500\r\nX-Compile-Target-JDK: 1.5\r\nArchiver-Version: Plexus Archiver\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/ibxm.jar",
+            "name": "ibxm.jar",
+            "sha256": "c7bc9730c4af980d587f55e847eb5c3b176c229dfb148745a18858d7112251e0",
+            "bytes": 37714,
+            "classes": 12,
+            "manifest": "Manifest-Version: 1.0\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/jinput.jar",
+            "name": "jinput.jar",
+            "sha256": "36b6fbede7a2d2f00949a87b9de83007a1c6b4ce5a96978279c0cc612a9adef5",
+            "bytes": 214859,
+            "classes": 157,
+            "manifest": "Manifest-Version: 1.0\r\nAnt-Version: Apache Ant 1.7.1\r\nCreated-By: 1.6.0_0-b12 (Sun Microsystems Inc.)\r\nSealed: true\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/jnlp.jar",
+            "name": "jnlp.jar",
+            "sha256": "78568fcd356adddf4918c1a8c34b4808567707fdf617393facbfd9b8a37a4576",
+            "bytes": 7042,
+            "classes": 14,
+            "manifest": "Manifest-Version: 1.0\r\nCreated-By: 1.2.2 (Sun Microsystems Inc.)\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/jogg-0.0.7.jar",
+            "name": "jogg-0.0.7.jar",
+            "sha256": "70d92eef7cd61aad1ae4148fb5d91d58fc68b51d0382905d9451d411c57f5608",
+            "bytes": 6763,
+            "classes": 5,
+            "manifest": null,
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/jorbis-0.0.15.jar",
+            "name": "jorbis-0.0.15.jar",
+            "sha256": "d049b2a1c6ddefde3a5cbff320c96fdd5aefa09b0d3bbea3fe44839f7e6713f9",
+            "bytes": 58917,
+            "classes": 45,
+            "manifest": "Manifest-Version: 1.0\r\nCreated-By: 1.4.0 (Sun Microsystems Inc.)\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/lwjgl.jar",
+            "name": "lwjgl.jar",
+            "sha256": "527d509f60132e5b2653c7fc0f8cf299d6f698f4a8013342bef47705dc57ed3f",
+            "bytes": 1053471,
+            "classes": 629,
+            "manifest": "Manifest-Version: 1.0\r\nAnt-Version: Apache Ant 1.9.4\r\nCreated-By: 1.7.0_65-b19 (Oracle Corporation)\r\nSealed: true\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/lwjgl_util.jar",
+            "name": "lwjgl_util.jar",
+            "sha256": "6f4a261384e1688a3359420efce5275c8693b822a8c6eaa1e20d5cc126a51571",
+            "bytes": 173911,
+            "classes": 116,
+            "manifest": "Manifest-Version: 1.0\r\nAnt-Version: Apache Ant 1.9.4\r\nCreated-By: 1.7.0_65-b19 (Oracle Corporation)\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/lwjgl_util_applet.jar",
+            "name": "lwjgl_util_applet.jar",
+            "sha256": "ea1e08c8251d31439e0d487dd208dea845ebf180657a2a56e31b9ee733aa0aab",
+            "bytes": 36009,
+            "classes": 7,
+            "manifest": "Manifest-Version: 1.0\r\nAnt-Version: Apache Ant 1.9.4\r\nCreated-By: 1.7.0_65-b19 (Oracle Corporation)\r\nSealed: true\r\nTrusted-Library: true\r\nPermissions: all-permissions\r\nCodebase: *\r\nCaller-Allowable-Codebase: *\r\nApplication-Library-Allowable-Codebase: *\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/slick.jar",
+            "name": "slick.jar",
+            "sha256": "890486a463d94ebc4bb55ba9e4d2bedcfb0e969641a4affb62cc455f722804a6",
+            "bytes": 676834,
+            "classes": 408,
+            "manifest": "Manifest-Version: 1.0\r\nAnt-Version: Apache Ant 1.10.5\r\nCreated-By: 1.8.0_342-8u342-b07-0ubuntu1~18.04-b07 (Private Build)\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/TXJS/lib/tinylinepp.jar",
+            "name": "tinylinepp.jar",
+            "sha256": "4a74d9e265af8bc8ed88229e57dbd78082872263e8a0eeeb7acb45e089bd661f",
+            "bytes": 92921,
+            "classes": 59,
+            "manifest": null,
+            "nativeEntries": []
+          }
+        ],
+        "whitelistedDuplicateClasses": {},
+        "coreClassWrappersPresent": {
+          "com/LibRocket.class": true,
+          "com/codedisaster/steamworks/SteamAPI.class": true
+        },
+        "sourceFiles": {
+          "README.md": {
+            "path": "/Users/wty/code/TuanHun/TXJS/README.md",
+            "sha256": "91d2d8e993722f53163dc07d543326ddd7bef00962927afd19fcee3cc602bf2e"
+          },
+          "rwpp-desktop/build.gradle.kts": {
+            "path": "/Users/wty/code/TuanHun/TXJS/rwpp-desktop/build.gradle.kts",
+            "sha256": "58928efe9a33468e3aed4941e24a51edad2d63a2a8a3e129065ad0710028726e"
+          }
+        },
+        "nativeFilesInRepository": [],
+        "mapsInRepository": [],
+        "assetsDirectories": [],
+        "git": {
+          "head": "9a2a30db82134e8ae0c0bded3d3936838a0cc581",
+          "remoteOrigin": "git@github.com:maker416/TXJS.git",
+          "coreLastChange": "992281b8cffdcaf877890e97a0f05f14b5e70278\n2025-07-29 21:25:16 +0800\npre 1.6.0",
+          "trackedCoreBlob": "100644 blob 4d4034ac49311bfcb8870f49a56d4d01d622b3ec\tlib/game-lib.jar",
+          "coreWorktreeStatus": ""
+        }
+      },
+      {
+        "repository": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向",
+        "coreMatchesPinnedBaseline": true,
+        "coreRwppReferenceClasses": [],
+        "whitelistedPcLibraries": [
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/commons-codec-1.6.jar",
+            "name": "commons-codec-1.6.jar",
+            "sha256": "54b34e941b8e1414bd3e40d736efd3481772dc26db3296f6aa45cec9f6203d86",
+            "bytes": 232771,
+            "classes": 76,
+            "manifest": "Manifest-Version: 1.0\r\nArchiver-Version: Plexus Archiver\r\nCreated-By: Apache Maven Bundle Plugin\r\nBuilt-By: ggregory\r\nBuild-Jdk: 1.6.0_29\r\nImplementation-Build: UNKNOWN_BRANCH@r??????; 2011-12-02 21:37:07-0500\r\nImplementation-Title: Commons Codec\r\nImplementation-Vendor: The Apache Software Foundation\r\nImplementation-Vendor-Id: org.apache\r\nImplementation-Version: 1.6\r\nSpecification-Title: Commons Codec\r\nSpecification-Vendor: The Apache Software Foundation\r\nSpecification-Version: 1.6\r\nX-Compile-Source-JDK: 1.5\r\nX-Compile-Target-JDK: 1.5\r\nExport-Package: org.apache.commons.codec;version=\"1.6\",org.apache.comm\r\n ons.codec.net;version=\"1.6\",org.apache.commons.codec.language.bm;vers\r\n ion=\"1.6\",org.apache.commons.codec.language;version=\"1.6\",org.apache.\r\n commons.codec.digest;version=\"1.6\",org.apache.commons.codec.binary;ve\r\n rsion=\"1.6\"\r\nTool: Bnd-1.43.0\r\nBundle-Name: Commons Codec\r\nBundle-Vendor: The Apache Software Foundation\r\nBundle-Version: 1.6.0\r\nBnd-LastModified: 1322879833852\r\nBundle-ManifestVersion: 2\r\nBundle-License: http://www.apache.org/licenses/LICENSE-2.0.txt\r\nBundle-Description: The codec package contains simple encoder and deco\r\n ders for     various formats such as Base64 and Hexadecimal.  In addi\r\n tion to these     widely used encoders and decoders, the codec packag\r\n e also maintains a     collection of phonetic encoding utilities.\r\nBundle-DocURL: http://commons.apache.org/codec/\r\nInclude-Resource: org/apache/commons/codec/language/bm/ash_approx_any.\r\n txt=src/main/resources/org/apache/commons/codec/language/bm/ash_appro\r\n x_any.txt,org/apache/commons/codec/language/bm/ash_approx_common.txt=\r\n src/main/resources/org/apache/commons/codec/language/bm/ash_approx_co\r\n mmon.txt,org/apache/commons/codec/language/bm/ash_approx_cyrillic.txt\r\n =src/main/resources/org/apache/commons/codec/language/bm/ash_approx_c\r\n yrillic.txt,org/apache/commons/codec/language/bm/ash_approx_english.t\r\n xt=src/main/resources/org/apache/commons/codec/language/bm/ash_approx\r\n _english.txt,org/apache/commons/codec/language/bm/ash_approx_french.t\r\n xt=src/main/resources/org/apache/commons/codec/language/bm/ash_approx\r\n _french.txt,org/apache/commons/codec/language/bm/ash_approx_german.tx\r\n t=src/main/resources/org/apache/commons/codec/language/bm/ash_approx_\r\n german.txt,org/apache/commons/codec/language/bm/ash_approx_hebrew.txt\r\n =src/main/resources/org/apache/commons/codec/language/bm/ash_approx_h\r\n ebrew.txt,org/apache/commons/codec/language/bm/ash_approx_hungarian.t\r\n xt=src/main/resources/org/apache/commons/codec/language/bm/ash_approx\r\n _hungarian.txt,org/apache/commons/codec/language/bm/ash_approx_polish\r\n .txt=src/main/resources/org/apache/commons/codec/language/bm/ash_appr\r\n ox_polish.txt,org/apache/commons/codec/language/bm/ash_approx_romania\r\n n.txt=src/main/resources/org/apache/commons/codec/language/bm/ash_app\r\n rox_romanian.txt,org/apache/commons/codec/language/bm/ash_approx_russ\r\n ian.txt=src/main/resources/org/apache/commons/codec/language/bm/ash_a\r\n pprox_russian.txt,org/apache/commons/codec/language/bm/ash_approx_spa\r\n nish.txt=src/main/resources/org/apache/commons/codec/language/bm/ash_\r\n approx_spanish.txt,org/apache/commons/codec/language/bm/ash_exact_any\r\n .txt=src/main/resources/org/apache/commons/codec/language/bm/ash_exac\r\n t_any.txt,org/apache/commons/codec/language/bm/ash_exact_approx_commo\r\n n.txt=src/main/resources/org/apache/commons/codec/language/bm/ash_exa\r\n ct_approx_common.txt,org/apache/commons/codec/language/bm/ash_exact_c\r\n ommon.txt=src/main/resources/org/apache/commons/codec/language/bm/ash\r\n _exact_common.txt,org/apache/commons/codec/language/bm/ash_exact_cyri\r\n llic.txt=src/main/resources/org/apache/commons/codec/language/bm/ash_\r\n exact_cyrillic.txt,org/apache/commons/codec/language/bm/ash_exact_eng\r\n lish.txt=src/main/resources/org/apache/commons/codec/language/bm/ash_\r\n exact_english.txt,org/apache/commons/codec/language/bm/ash_exact_fren\r\n ch.txt=src/main/resources/org/apache/commons/codec/language/bm/ash_ex\r\n act_french.txt,org/apache/commons/codec/language/bm/ash_exact_german.\r\n txt=src/main/resources/org/apache/commons/codec/language/bm/ash_exact\r\n _german.txt,org/apache/commons/codec/language/bm/ash_exact_hebrew.txt\r\n =src/main/resources/org/apache/commons/codec/language/bm/ash_exact_he\r\n brew.txt,org/apache/commons/codec/language/bm/ash_exact_hungarian.txt\r\n =src/main/resources/org/apache/commons/codec/language/bm/ash_exact_hu\r\n ngarian.txt,org/apache/commons/codec/language/bm/ash_exact_polish.txt\r\n =src/main/resources/org/apache/commons/codec/language/bm/ash_exact_po\r\n lish.txt,org/apache/commons/codec/language/bm/ash_exact_romanian.txt=\r\n src/main/resources/org/apache/commons/codec/language/bm/ash_exact_rom\r\n anian.txt,org/apache/commons/codec/language/bm/ash_exact_russian.txt=\r\n src/main/resources/org/apache/commons/codec/language/bm/ash_exact_rus\r\n sian.txt,org/apache/commons/codec/language/bm/ash_exact_spanish.txt=s\r\n rc/main/resources/org/apache/commons/codec/language/bm/ash_exact_span\r\n ish.txt,org/apache/commons/codec/language/bm/ash_hebrew_common.txt=sr\r\n c/main/resources/org/apache/commons/codec/language/bm/ash_hebrew_comm\r\n on.txt,org/apache/commons/codec/language/bm/ash_languages.txt=src/mai\r\n n/resources/org/apache/commons/codec/language/bm/ash_languages.txt,or\r\n g/apache/commons/codec/language/bm/ash_rules_any.txt=src/main/resourc\r\n es/org/apache/commons/codec/language/bm/ash_rules_any.txt,org/apache/\r\n commons/codec/language/bm/ash_rules_cyrillic.txt=src/main/resources/o\r\n rg/apache/commons/codec/language/bm/ash_rules_cyrillic.txt,org/apache\r\n /commons/codec/language/bm/ash_rules_english.txt=src/main/resources/o\r\n rg/apache/commons/codec/language/bm/ash_rules_english.txt,org/apache/\r\n commons/codec/language/bm/ash_rules_french.txt=src/main/resources/org\r\n /apache/commons/codec/language/bm/ash_rules_french.txt,org/apache/com\r\n mons/codec/language/bm/ash_rules_german.txt=src/main/resources/org/ap\r\n ache/commons/codec/language/bm/ash_rules_german.txt,org/apache/common\r\n s/codec/language/bm/ash_rules_hebrew.txt=src/main/resources/org/apach\r\n e/commons/codec/language/bm/ash_rules_hebrew.txt,org/apache/commons/c\r\n odec/language/bm/ash_rules_hungarian.txt=src/main/resources/org/apach\r\n e/commons/codec/language/bm/ash_rules_hungarian.txt,org/apache/common\r\n s/codec/language/bm/ash_rules_polish.txt=src/main/resources/org/apach\r\n e/commons/codec/language/bm/ash_rules_polish.txt,org/apache/commons/c\r\n odec/language/bm/ash_rules_romanian.txt=src/main/resources/org/apache\r\n /commons/codec/language/bm/ash_rules_romanian.txt,org/apache/commons/\r\n codec/language/bm/ash_rules_russian.txt=src/main/resources/org/apache\r\n /commons/codec/language/bm/ash_rules_russian.txt,org/apache/commons/c\r\n odec/language/bm/ash_rules_spanish.txt=src/main/resources/org/apache/\r\n commons/codec/language/bm/ash_rules_spanish.txt,org/apache/commons/co\r\n dec/language/bm/gen_approx_any.txt=src/main/resources/org/apache/comm\r\n ons/codec/language/bm/gen_approx_any.txt,org/apache/commons/codec/lan\r\n guage/bm/gen_approx_arabic.txt=src/main/resources/org/apache/commons/\r\n codec/language/bm/gen_approx_arabic.txt,org/apache/commons/codec/lang\r\n uage/bm/gen_approx_common.txt=src/main/resources/org/apache/commons/c\r\n odec/language/bm/gen_approx_common.txt,org/apache/commons/codec/langu\r\n age/bm/gen_approx_cyrillic.txt=src/main/resources/org/apache/commons/\r\n codec/language/bm/gen_approx_cyrillic.txt,org/apache/commons/codec/la\r\n nguage/bm/gen_approx_czech.txt=src/main/resources/org/apache/commons/\r\n codec/language/bm/gen_approx_czech.txt,org/apache/commons/codec/langu\r\n age/bm/gen_approx_dutch.txt=src/main/resources/org/apache/commons/cod\r\n ec/language/bm/gen_approx_dutch.txt,org/apache/commons/codec/language\r\n /bm/gen_approx_english.txt=src/main/resources/org/apache/commons/code\r\n c/language/bm/gen_approx_english.txt,org/apache/commons/codec/languag\r\n e/bm/gen_approx_french.txt=src/main/resources/org/apache/commons/code\r\n c/language/bm/gen_approx_french.txt,org/apache/commons/codec/language\r\n /bm/gen_approx_german.txt=src/main/resources/org/apache/commons/codec\r\n /language/bm/gen_approx_german.txt,org/apache/commons/codec/language/\r\n bm/gen_approx_greek.txt=src/main/resources/org/apache/commons/codec/l\r\n anguage/bm/gen_approx_greek.txt,org/apache/commons/codec/language/bm/\r\n gen_approx_greeklatin.txt=src/main/resources/org/apache/commons/codec\r\n /language/bm/gen_approx_greeklatin.txt,org/apache/commons/codec/langu\r\n age/bm/gen_approx_hebrew.txt=src/main/resources/org/apache/commons/co\r\n dec/language/bm/gen_approx_hebrew.txt,org/apache/commons/codec/langua\r\n ge/bm/gen_approx_hungarian.txt=src/main/resources/org/apache/commons/\r\n codec/language/bm/gen_approx_hungarian.txt,org/apache/commons/codec/l\r\n anguage/bm/gen_approx_italian.txt=src/main/resources/org/apache/commo\r\n ns/codec/language/bm/gen_approx_italian.txt,org/apache/commons/codec/\r\n language/bm/gen_approx_polish.txt=src/main/resources/org/apache/commo\r\n ns/codec/language/bm/gen_approx_polish.txt,org/apache/commons/codec/l\r\n anguage/bm/gen_approx_portuguese.txt=src/main/resources/org/apache/co\r\n mmons/codec/language/bm/gen_approx_portuguese.txt,org/apache/commons/\r\n codec/language/bm/gen_approx_romanian.txt=src/main/resources/org/apac\r\n he/commons/codec/language/bm/gen_approx_romanian.txt,org/apache/commo\r\n ns/codec/language/bm/gen_approx_russian.txt=src/main/resources/org/ap\r\n ache/commons/codec/language/bm/gen_approx_russian.txt,org/apache/comm\r\n ons/codec/language/bm/gen_approx_spanish.txt=src/main/resources/org/a\r\n pache/commons/codec/language/bm/gen_approx_spanish.txt,org/apache/com\r\n mons/codec/language/bm/gen_approx_turkish.txt=src/main/resources/org/\r\n apache/commons/codec/language/bm/gen_approx_turkish.txt,org/apache/co\r\n mmons/codec/language/bm/gen_exact_any.txt=src/main/resources/org/apac\r\n he/commons/codec/language/bm/gen_exact_any.txt,org/apache/commons/cod\r\n ec/language/bm/gen_exact_approx_common.txt=src/main/resources/org/apa\r\n che/commons/codec/language/bm/gen_exact_approx_common.txt,org/apache/\r\n commons/codec/language/bm/gen_exact_arabic.txt=src/main/resources/org\r\n /apache/commons/codec/language/bm/gen_exact_arabic.txt,org/apache/com\r\n mons/codec/language/bm/gen_exact_common.txt=src/main/resources/org/ap\r\n ache/commons/codec/language/bm/gen_exact_common.txt,org/apache/common\r\n s/codec/language/bm/gen_exact_cyrillic.txt=src/main/resources/org/apa\r\n che/commons/codec/language/bm/gen_exact_cyrillic.txt,org/apache/commo\r\n ns/codec/language/bm/gen_exact_czech.txt=src/main/resources/org/apach\r\n e/commons/codec/language/bm/gen_exact_czech.txt,org/apache/commons/co\r\n dec/language/bm/gen_exact_dutch.txt=src/main/resources/org/apache/com\r\n mons/codec/language/bm/gen_exact_dutch.txt,org/apache/commons/codec/l\r\n anguage/bm/gen_exact_english.txt=src/main/resources/org/apache/common\r\n s/codec/language/bm/gen_exact_english.txt,org/apache/commons/codec/la\r\n nguage/bm/gen_exact_french.txt=src/main/resources/org/apache/commons/\r\n codec/language/bm/gen_exact_french.txt,org/apache/commons/codec/langu\r\n age/bm/gen_exact_german.txt=src/main/resources/org/apache/commons/cod\r\n ec/language/bm/gen_exact_german.txt,org/apache/commons/codec/language\r\n /bm/gen_exact_greek.txt=src/main/resources/org/apache/commons/codec/l\r\n anguage/bm/gen_exact_greek.txt,org/apache/commons/codec/language/bm/g\r\n en_exact_greeklatin.txt=src/main/resources/org/apache/commons/codec/l\r\n anguage/bm/gen_exact_greeklatin.txt,org/apache/commons/codec/language\r\n /bm/gen_exact_hebrew.txt=src/main/resources/org/apache/commons/codec/\r\n language/bm/gen_exact_hebrew.txt,org/apache/commons/codec/language/bm\r\n /gen_exact_hungarian.txt=src/main/resources/org/apache/commons/codec/\r\n language/bm/gen_exact_hungarian.txt,org/apache/commons/codec/language\r\n /bm/gen_exact_italian.txt=src/main/resources/org/apache/commons/codec\r\n /language/bm/gen_exact_italian.txt,org/apache/commons/codec/language/\r\n bm/gen_exact_polish.txt=src/main/resources/org/apache/commons/codec/l\r\n anguage/bm/gen_exact_polish.txt,org/apache/commons/codec/language/bm/\r\n gen_exact_portuguese.txt=src/main/resources/org/apache/commons/codec/\r\n language/bm/gen_exact_portuguese.txt,org/apache/commons/codec/languag\r\n e/bm/gen_exact_romanian.txt=src/main/resources/org/apache/commons/cod\r\n ec/language/bm/gen_exact_romanian.txt,org/apache/commons/codec/langua\r\n ge/bm/gen_exact_russian.txt=src/main/resources/org/apache/commons/cod\r\n ec/language/bm/gen_exact_russian.txt,org/apache/commons/codec/languag\r\n e/bm/gen_exact_spanish.txt=src/main/resources/org/apache/commons/code\r\n c/language/bm/gen_exact_spanish.txt,org/apache/commons/codec/language\r\n /bm/gen_exact_turkish.txt=src/main/resources/org/apache/commons/codec\r\n /language/bm/gen_exact_turkish.txt,org/apache/commons/codec/language/\r\n bm/gen_hebrew_common.txt=src/main/resources/org/apache/commons/codec/\r\n language/bm/gen_hebrew_common.txt,org/apache/commons/codec/language/b\r\n m/gen_languages.txt=src/main/resources/org/apache/commons/codec/langu\r\n age/bm/gen_languages.txt,org/apache/commons/codec/language/bm/gen_rul\r\n es_any.txt=src/main/resources/org/apache/commons/codec/language/bm/ge\r\n n_rules_any.txt,org/apache/commons/codec/language/bm/gen_rules_arabic\r\n .txt=src/main/resources/org/apache/commons/codec/language/bm/gen_rule\r\n s_arabic.txt,org/apache/commons/codec/language/bm/gen_rules_cyrillic.\r\n txt=src/main/resources/org/apache/commons/codec/language/bm/gen_rules\r\n _cyrillic.txt,org/apache/commons/codec/language/bm/gen_rules_czech.tx\r\n t=src/main/resources/org/apache/commons/codec/language/bm/gen_rules_c\r\n zech.txt,org/apache/commons/codec/language/bm/gen_rules_dutch.txt=src\r\n /main/resources/org/apache/commons/codec/language/bm/gen_rules_dutch.\r\n txt,org/apache/commons/codec/language/bm/gen_rules_english.txt=src/ma\r\n in/resources/org/apache/commons/codec/language/bm/gen_rules_english.t\r\n xt,org/apache/commons/codec/language/bm/gen_rules_french.txt=src/main\r\n /resources/org/apache/commons/codec/language/bm/gen_rules_french.txt,\r\n org/apache/commons/codec/language/bm/gen_rules_german.txt=src/main/re\r\n sources/org/apache/commons/codec/language/bm/gen_rules_german.txt,org\r\n /apache/commons/codec/language/bm/gen_rules_greek.txt=src/main/resour\r\n ces/org/apache/commons/codec/language/bm/gen_rules_greek.txt,org/apac\r\n he/commons/codec/language/bm/gen_rules_greeklatin.txt=src/main/resour\r\n ces/org/apache/commons/codec/language/bm/gen_rules_greeklatin.txt,org\r\n /apache/commons/codec/language/bm/gen_rules_hebrew.txt=src/main/resou\r\n rces/org/apache/commons/codec/language/bm/gen_rules_hebrew.txt,org/ap\r\n ache/commons/codec/language/bm/gen_rules_hungarian.txt=src/main/resou\r\n rces/org/apache/commons/codec/language/bm/gen_rules_hungarian.txt,org\r\n /apache/commons/codec/language/bm/gen_rules_italian.txt=src/main/reso\r\n urces/org/apache/commons/codec/language/bm/gen_rules_italian.txt,org/\r\n apache/commons/codec/language/bm/gen_rules_polish.txt=src/main/resour\r\n ces/org/apache/commons/codec/language/bm/gen_rules_polish.txt,org/apa\r\n che/commons/codec/language/bm/gen_rules_portuguese.txt=src/main/resou\r\n rces/org/apache/commons/codec/language/bm/gen_rules_portuguese.txt,or\r\n g/apache/commons/codec/language/bm/gen_rules_romanian.txt=src/main/re\r\n sources/org/apache/commons/codec/language/bm/gen_rules_romanian.txt,o\r\n rg/apache/commons/codec/language/bm/gen_rules_russian.txt=src/main/re\r\n sources/org/apache/commons/codec/language/bm/gen_rules_russian.txt,or\r\n g/apache/commons/codec/language/bm/gen_rules_spanish.txt=src/main/res\r\n ources/org/apache/commons/codec/language/bm/gen_rules_spanish.txt,org\r\n /apache/commons/codec/language/bm/gen_rules_turkish.txt=src/main/reso\r\n urces/org/apache/commons/codec/language/bm/gen_rules_turkish.txt,org/\r\n apache/commons/codec/language/bm/lang.txt=src/main/resources/org/apac\r\n he/commons/codec/language/bm/lang.txt,org/apache/commons/codec/langua\r\n ge/bm/sep_approx_any.txt=src/main/resources/org/apache/commons/codec/\r\n language/bm/sep_approx_any.txt,org/apache/commons/codec/language/bm/s\r\n ep_approx_common.txt=src/main/resources/org/apache/commons/codec/lang\r\n uage/bm/sep_approx_common.txt,org/apache/commons/codec/language/bm/se\r\n p_approx_french.txt=src/main/resources/org/apache/commons/codec/langu\r\n age/bm/sep_approx_french.txt,org/apache/commons/codec/language/bm/sep\r\n _approx_hebrew.txt=src/main/resources/org/apache/commons/codec/langua\r\n ge/bm/sep_approx_hebrew.txt,org/apache/commons/codec/language/bm/sep_\r\n approx_italian.txt=src/main/resources/org/apache/commons/codec/langua\r\n ge/bm/sep_approx_italian.txt,org/apache/commons/codec/language/bm/sep\r\n _approx_portuguese.txt=src/main/resources/org/apache/commons/codec/la\r\n nguage/bm/sep_approx_portuguese.txt,org/apache/commons/codec/language\r\n /bm/sep_approx_spanish.txt=src/main/resources/org/apache/commons/code\r\n c/language/bm/sep_approx_spanish.txt,org/apache/commons/codec/languag\r\n e/bm/sep_exact_any.txt=src/main/resources/org/apache/commons/codec/la\r\n nguage/bm/sep_exact_any.txt,org/apache/commons/codec/language/bm/sep_\r\n exact_approx_common.txt=src/main/resources/org/apache/commons/codec/l\r\n anguage/bm/sep_exact_approx_common.txt,org/apache/commons/codec/langu\r\n age/bm/sep_exact_common.txt=src/main/resources/org/apache/commons/cod\r\n ec/language/bm/sep_exact_common.txt,org/apache/commons/codec/language\r\n /bm/sep_exact_french.txt=src/main/resources/org/apache/commons/codec/\r\n language/bm/sep_exact_french.txt,org/apache/commons/codec/language/bm\r\n /sep_exact_hebrew.txt=src/main/resources/org/apache/commons/codec/lan\r\n guage/bm/sep_exact_hebrew.txt,org/apache/commons/codec/language/bm/se\r\n p_exact_italian.txt=src/main/resources/org/apache/commons/codec/langu\r\n age/bm/sep_exact_italian.txt,org/apache/commons/codec/language/bm/sep\r\n _exact_portuguese.txt=src/main/resources/org/apache/commons/codec/lan\r\n guage/bm/sep_exact_portuguese.txt,org/apache/commons/codec/language/b\r\n m/sep_exact_spanish.txt=src/main/resources/org/apache/commons/codec/l\r\n anguage/bm/sep_exact_spanish.txt,org/apache/commons/codec/language/bm\r\n /sep_hebrew_common.txt=src/main/resources/org/apache/commons/codec/la\r\n nguage/bm/sep_hebrew_common.txt,org/apache/commons/codec/language/bm/\r\n sep_languages.txt=src/main/resources/org/apache/commons/codec/languag\r\n e/bm/sep_languages.txt,org/apache/commons/codec/language/bm/sep_rules\r\n _any.txt=src/main/resources/org/apache/commons/codec/language/bm/sep_\r\n rules_any.txt,org/apache/commons/codec/language/bm/sep_rules_french.t\r\n xt=src/main/resources/org/apache/commons/codec/language/bm/sep_rules_\r\n french.txt,org/apache/commons/codec/language/bm/sep_rules_hebrew.txt=\r\n src/main/resources/org/apache/commons/codec/language/bm/sep_rules_heb\r\n rew.txt,org/apache/commons/codec/language/bm/sep_rules_italian.txt=sr\r\n c/main/resources/org/apache/commons/codec/language/bm/sep_rules_itali\r\n an.txt,org/apache/commons/codec/language/bm/sep_rules_portuguese.txt=\r\n src/main/resources/org/apache/commons/codec/language/bm/sep_rules_por\r\n tuguese.txt,org/apache/commons/codec/language/bm/sep_rules_spanish.tx\r\n t=src/main/resources/org/apache/commons/codec/language/bm/sep_rules_s\r\n panish.txt,META-INF/LICENSE.txt=LICENSE.txt,META-INF/NOTICE.txt=NOTIC\r\n E.txt\r\nBundle-SymbolicName: org.apache.commons.codec\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/commons-logging-1.1.3.jar",
+            "name": "commons-logging-1.1.3.jar",
+            "sha256": "70903f6fc82e9908c8da9f20443f61d90f0870a312642991fe8462a0b9391784",
+            "bytes": 62050,
+            "classes": 28,
+            "manifest": "Manifest-Version: 1.0\r\nExport-Package: org.apache.commons.logging;version=\"1.1.3\",org.apache.\r\n commons.logging.impl;version=\"1.1.3\"\r\nImplementation-Title: Commons Logging\r\nBuilt-By: tn\r\nTool: Bnd-1.50.0\r\nImplementation-Vendor: The Apache Software Foundation\r\nImplementation-Vendor-Id: org.apache\r\nSpecification-Title: Commons Logging\r\nBundle-License: http://www.apache.org/licenses/LICENSE-2.0.txt\r\nBundle-SymbolicName: org.apache.commons.logging\r\nX-Compile-Target-JDK: 1.1\r\nImplementation-Version: 1.1.3\r\nSpecification-Vendor: The Apache Software Foundation\r\nBundle-Name: Commons Logging\r\nCreated-By: Apache Maven Bundle Plugin\r\nX-Compile-Source-JDK: 1.2\r\nBundle-Vendor: The Apache Software Foundation\r\nBuild-Jdk: 1.7.0_21\r\nBundle-Version: 1.1.3\r\nBnd-LastModified: 1368734689105\r\nBundle-ManifestVersion: 2\r\nBundle-Description: Commons Logging is a thin adapter allowing configu\r\n rable bridging to other,    well known logging systems.\r\nBundle-DocURL: http://commons.apache.org/proper/commons-logging/\r\nImport-Package: javax.servlet;resolution:=optional;version=\"[2.1.0,3.0\r\n .0)\",org.apache.avalon.framework.logger;resolution:=optional;version=\r\n \"[4.1.3,4.1.5]\",org.apache.log;resolution:=optional;version=\"[1.0.1,1\r\n .0.1]\",org.apache.log4j;resolution:=optional;version=\"[1.2.15,2.0.0)\"\r\nInclude-Resource: META-INF/NOTICE.txt=NOTICE.txt,META-INF/LICENSE.txt=\r\n LICENSE.txt\r\nSpecification-Version: 1.1.3\r\nImplementation-Build: tags/LOGGING_1_1_3_RC2@r1483540; 2013-05-16 22:0\r\n 4:41+0200\r\nArchiver-Version: Plexus Archiver\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/fluent-hc-4.3.3.jar",
+            "name": "fluent-hc-4.3.3.jar",
+            "sha256": "f02dadd2c76d6e84b6e5420c4ea54711b6b797e565acbb92e2e1eb53628154aa",
+            "bytes": 28696,
+            "classes": 13,
+            "manifest": "Manifest-Version: 1.0\r\nImplementation-Title: HttpComponents Fluent API for Apache HttpClient\r\nImplementation-Version: 4.3.3\r\nBuilt-By: ggregory\r\nSpecification-Vendor: The Apache Software Foundation\r\nCreated-By: Apache Maven 3.0.5\r\nurl: http://hc.apache.org/httpcomponents-client\r\nX-Compile-Source-JDK: 1.5\r\nImplementation-Vendor: The Apache Software Foundation\r\nImplementation-Vendor-Id: org.apache\r\nBuild-Jdk: 1.7.0_51\r\nSpecification-Title: HttpComponents Fluent API for Apache HttpClient\r\nSpecification-Version: 4.3.3\r\nImplementation-Build: tags/4.3.3-RC1/fluent-hc@r1570731; 2014-02-22 09\r\n :04:11-0500\r\nX-Compile-Target-JDK: 1.5\r\nArchiver-Version: Plexus Archiver\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/game-lib.jar",
+            "name": "game-lib.jar",
+            "sha256": "8a550a37e2d8a5430866090d4e7d5892f9010b47f52a5a09350fc66c620deec9",
+            "bytes": 2639503,
+            "classes": 1698,
+            "manifest": "Manifest-Version: 1.0\r\nMain-Class: com.corrodinggames.rts.java.Main\r\nClass-Path: .\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/httpclient-4.3.3.jar",
+            "name": "httpclient-4.3.3.jar",
+            "sha256": "9844cc9b5440d65a88d28bcba9d771374d2dfdab898848cda164611091633013",
+            "bytes": 589512,
+            "classes": 421,
+            "manifest": "Manifest-Version: 1.0\r\nImplementation-Title: HttpComponents Apache HttpClient\r\nImplementation-Version: 4.3.3\r\nBuilt-By: ggregory\r\nSpecification-Vendor: The Apache Software Foundation\r\nCreated-By: Apache Maven 3.0.5\r\nurl: http://hc.apache.org/httpcomponents-client\r\nX-Compile-Source-JDK: 1.5\r\nImplementation-Vendor: The Apache Software Foundation\r\nImplementation-Vendor-Id: org.apache\r\nBuild-Jdk: 1.7.0_51\r\nSpecification-Title: HttpComponents Apache HttpClient\r\nSpecification-Version: 4.3.3\r\nImplementation-Build: tags/4.3.3-RC1/httpclient@r1570731; 2014-02-22 0\r\n 9:04:11-0500\r\nX-Compile-Target-JDK: 1.5\r\nArchiver-Version: Plexus Archiver\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/httpclient-cache-4.3.3.jar",
+            "name": "httpclient-cache-4.3.3.jar",
+            "sha256": "ad5f44c6b196c04526c69be32582f4359c05d4541e41fbbdd83e2b3132feecbf",
+            "bytes": 149800,
+            "classes": 79,
+            "manifest": "Manifest-Version: 1.0\r\nImplementation-Title: HttpComponents Apache HttpClient Cache\r\nImplementation-Version: 4.3.3\r\nBuilt-By: ggregory\r\nSpecification-Vendor: The Apache Software Foundation\r\nCreated-By: Apache Maven 3.0.5\r\nurl: http://hc.apache.org/httpcomponents-client\r\nX-Compile-Source-JDK: 1.5\r\nImplementation-Vendor: The Apache Software Foundation\r\nImplementation-Vendor-Id: org.apache\r\nBuild-Jdk: 1.7.0_51\r\nSpecification-Title: HttpComponents Apache HttpClient Cache\r\nSpecification-Version: 4.3.3\r\nImplementation-Build: tags/4.3.3-RC1/httpclient-cache@r1570731; 2014-0\r\n 2-22 09:04:11-0500\r\nX-Compile-Target-JDK: 1.5\r\nArchiver-Version: Plexus Archiver\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/httpcore-4.3.2.jar",
+            "name": "httpcore-4.3.2.jar",
+            "sha256": "abd02320e2356f89d054dae4cf02306bef20a9cf7865b3ac94ec7552b4f1528b",
+            "bytes": 282269,
+            "classes": 232,
+            "manifest": "Manifest-Version: 1.0\r\nImplementation-Title: HttpComponents Apache HttpCore\r\nImplementation-Version: 4.3.2\r\nBuilt-By: oleg\r\nSpecification-Vendor: The Apache Software Foundation\r\nCreated-By: Apache Maven 3.0.5\r\nurl: http://hc.apache.org/httpcomponents-core-ga\r\nX-Compile-Source-JDK: 1.5\r\nImplementation-Vendor: The Apache Software Foundation\r\nImplementation-Vendor-Id: org.apache\r\nBuild-Jdk: 1.7.0_21\r\nSpecification-Title: HttpComponents Apache HttpCore\r\nSpecification-Version: 4.3.2\r\nImplementation-Build: UNKNOWN_BRANCH@r??????; 2014-02-12 21:43:05+0100\r\nX-Compile-Target-JDK: 1.5\r\nArchiver-Version: Plexus Archiver\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/httpmime-4.3.3.jar",
+            "name": "httpmime-4.3.3.jar",
+            "sha256": "61434dbb2314cbb8d28025feb6ae53bbc45d1042daa34371d8911e1e7f570b36",
+            "bytes": 37274,
+            "classes": 22,
+            "manifest": "Manifest-Version: 1.0\r\nImplementation-Title: HttpComponents Apache HttpClient Mime\r\nImplementation-Version: 4.3.3\r\nBuilt-By: ggregory\r\nSpecification-Vendor: The Apache Software Foundation\r\nCreated-By: Apache Maven 3.0.5\r\nurl: http://hc.apache.org/httpcomponents-client\r\nX-Compile-Source-JDK: 1.5\r\nImplementation-Vendor: The Apache Software Foundation\r\nImplementation-Vendor-Id: org.apache\r\nBuild-Jdk: 1.7.0_51\r\nSpecification-Title: HttpComponents Apache HttpClient Mime\r\nSpecification-Version: 4.3.3\r\nImplementation-Build: tags/4.3.3-RC1/httpmime@r1570731; 2014-02-22 09:\r\n 04:11-0500\r\nX-Compile-Target-JDK: 1.5\r\nArchiver-Version: Plexus Archiver\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/ibxm.jar",
+            "name": "ibxm.jar",
+            "sha256": "c7bc9730c4af980d587f55e847eb5c3b176c229dfb148745a18858d7112251e0",
+            "bytes": 37714,
+            "classes": 12,
+            "manifest": "Manifest-Version: 1.0\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/jinput.jar",
+            "name": "jinput.jar",
+            "sha256": "36b6fbede7a2d2f00949a87b9de83007a1c6b4ce5a96978279c0cc612a9adef5",
+            "bytes": 214859,
+            "classes": 157,
+            "manifest": "Manifest-Version: 1.0\r\nAnt-Version: Apache Ant 1.7.1\r\nCreated-By: 1.6.0_0-b12 (Sun Microsystems Inc.)\r\nSealed: true\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/jnlp.jar",
+            "name": "jnlp.jar",
+            "sha256": "78568fcd356adddf4918c1a8c34b4808567707fdf617393facbfd9b8a37a4576",
+            "bytes": 7042,
+            "classes": 14,
+            "manifest": "Manifest-Version: 1.0\r\nCreated-By: 1.2.2 (Sun Microsystems Inc.)\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/jogg-0.0.7.jar",
+            "name": "jogg-0.0.7.jar",
+            "sha256": "70d92eef7cd61aad1ae4148fb5d91d58fc68b51d0382905d9451d411c57f5608",
+            "bytes": 6763,
+            "classes": 5,
+            "manifest": null,
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/jorbis-0.0.15.jar",
+            "name": "jorbis-0.0.15.jar",
+            "sha256": "d049b2a1c6ddefde3a5cbff320c96fdd5aefa09b0d3bbea3fe44839f7e6713f9",
+            "bytes": 58917,
+            "classes": 45,
+            "manifest": "Manifest-Version: 1.0\r\nCreated-By: 1.4.0 (Sun Microsystems Inc.)\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/lwjgl.jar",
+            "name": "lwjgl.jar",
+            "sha256": "527d509f60132e5b2653c7fc0f8cf299d6f698f4a8013342bef47705dc57ed3f",
+            "bytes": 1053471,
+            "classes": 629,
+            "manifest": "Manifest-Version: 1.0\r\nAnt-Version: Apache Ant 1.9.4\r\nCreated-By: 1.7.0_65-b19 (Oracle Corporation)\r\nSealed: true\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/lwjgl_util.jar",
+            "name": "lwjgl_util.jar",
+            "sha256": "6f4a261384e1688a3359420efce5275c8693b822a8c6eaa1e20d5cc126a51571",
+            "bytes": 173911,
+            "classes": 116,
+            "manifest": "Manifest-Version: 1.0\r\nAnt-Version: Apache Ant 1.9.4\r\nCreated-By: 1.7.0_65-b19 (Oracle Corporation)\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/lwjgl_util_applet.jar",
+            "name": "lwjgl_util_applet.jar",
+            "sha256": "ea1e08c8251d31439e0d487dd208dea845ebf180657a2a56e31b9ee733aa0aab",
+            "bytes": 36009,
+            "classes": 7,
+            "manifest": "Manifest-Version: 1.0\r\nAnt-Version: Apache Ant 1.9.4\r\nCreated-By: 1.7.0_65-b19 (Oracle Corporation)\r\nSealed: true\r\nTrusted-Library: true\r\nPermissions: all-permissions\r\nCodebase: *\r\nCaller-Allowable-Codebase: *\r\nApplication-Library-Allowable-Codebase: *\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/slick.jar",
+            "name": "slick.jar",
+            "sha256": "890486a463d94ebc4bb55ba9e4d2bedcfb0e969641a4affb62cc455f722804a6",
+            "bytes": 676834,
+            "classes": 408,
+            "manifest": "Manifest-Version: 1.0\r\nAnt-Version: Apache Ant 1.10.5\r\nCreated-By: 1.8.0_342-8u342-b07-0ubuntu1~18.04-b07 (Private Build)\r\n\r\n",
+            "nativeEntries": []
+          },
+          {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/lib/tinylinepp.jar",
+            "name": "tinylinepp.jar",
+            "sha256": "4a74d9e265af8bc8ed88229e57dbd78082872263e8a0eeeb7acb45e089bd661f",
+            "bytes": 92921,
+            "classes": 59,
+            "manifest": null,
+            "nativeEntries": []
+          }
+        ],
+        "whitelistedDuplicateClasses": {},
+        "coreClassWrappersPresent": {
+          "com/LibRocket.class": true,
+          "com/codedisaster/steamworks/SteamAPI.class": true
+        },
+        "sourceFiles": {
+          "README.md": {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/README.md",
+            "sha256": "b98c7d9dd87990fafc48a3ce031d1902d04ba2241ef71eee33444ebd1fbf7830"
+          },
+          "rwpp-desktop/build.gradle.kts": {
+            "path": "/Users/wty/code/TuanHun/origin-rankcn/RWPP客户端，辅助逆向/rwpp-desktop/build.gradle.kts",
+            "sha256": "c5fff57132456ee3cabef2580e2cc0764e392ef5d8a56d3f9ddabba88803fd64"
+          }
+        },
+        "nativeFilesInRepository": [],
+        "mapsInRepository": [],
+        "assetsDirectories": [],
+        "git": {
+          "localDotGitPresent": false,
+          "limitations": "No Git metadata available in this extracted repository directory."
+        }
+      }
+    ],
+    "provenanceAndVersion": {
+      "readmeScope": "Both projects describe a third-party launcher installed into an existing Rusted Warfare game directory, not a self-contained official game distribution.",
+      "sourceClaims": [
+        {
+          "path": "/Users/wty/code/TuanHun/TXJS/AGENTS.md",
+          "line": 285,
+          "claim": "game-lib.jar is an extracted/decompiled original game library; users supply game files."
+        },
+        {
+          "path": "/Users/wty/code/TuanHun/TXJS/rwpp-core-api/src/main/kotlin/io/github/rwpp/global.kt",
+          "line": 28,
+          "claim": "coreVersion = v1.15; gameVersion = 176 at line39."
+        },
+        {
+          "path": "/Users/wty/code/TuanHun/TXJS/rwpp-desktop/build.gradle.kts",
+          "line": 34,
+          "claim": "The lib JAR set is compileOnly, excluding Android game/classes."
+        },
+        {
+          "path": "/Users/wty/code/TuanHun/TXJS/rwpp-desktop/src/main/kotlin/io/github/rwpp/desktop/Main.kt",
+          "line": 224,
+          "claim": "RWPP Builder consumes a separate original game-lib.jar to generate injected output."
+        }
+      ],
+      "binaryVersionEvidence": {
+        "path": "build/parity-optimization-20261102/candidate-engine-l-javap.txt",
+        "line": 3126,
+        "observed": "Engine l bytecode references String 1.15; LWJGL Sys.VERSION=2.9.3."
+      }
+    },
+    "classpathBlueprint": {
+      "entryPoint": "com.corrodinggames.rts.java.Main",
+      "firstEntry": "/Users/wty/code/TuanHun/TXJS/lib/game-lib.jar",
+      "additionalEntries": [
+        "/Users/wty/code/TuanHun/TXJS/lib/commons-codec-1.6.jar",
+        "/Users/wty/code/TuanHun/TXJS/lib/commons-logging-1.1.3.jar",
+        "/Users/wty/code/TuanHun/TXJS/lib/fluent-hc-4.3.3.jar",
+        "/Users/wty/code/TuanHun/TXJS/lib/httpclient-4.3.3.jar",
+        "/Users/wty/code/TuanHun/TXJS/lib/httpclient-cache-4.3.3.jar",
+        "/Users/wty/code/TuanHun/TXJS/lib/httpcore-4.3.2.jar",
+        "/Users/wty/code/TuanHun/TXJS/lib/httpmime-4.3.3.jar",
+        "/Users/wty/code/TuanHun/TXJS/lib/ibxm.jar",
+        "/Users/wty/code/TuanHun/TXJS/lib/jinput.jar",
+        "/Users/wty/code/TuanHun/TXJS/lib/jnlp.jar",
+        "/Users/wty/code/TuanHun/TXJS/lib/jogg-0.0.7.jar",
+        "/Users/wty/code/TuanHun/TXJS/lib/jorbis-0.0.15.jar",
+        "/Users/wty/code/TuanHun/TXJS/lib/lwjgl.jar",
+        "/Users/wty/code/TuanHun/TXJS/lib/lwjgl_util.jar",
+        "/Users/wty/code/TuanHun/TXJS/lib/lwjgl_util_applet.jar",
+        "/Users/wty/code/TuanHun/TXJS/lib/slick.jar",
+        "/Users/wty/code/TuanHun/TXJS/lib/tinylinepp.jar"
+      ],
+      "doNotUseBlindLibWildcard": "lib/* also contains android-game-lib.jar and android.jar, whose classes overlap the PC engine. Exclude all android*.jar. natives-linux.jar is not a macOS native solution.",
+      "noThirdPartyLauncherOrInjectedJar": true,
+      "launched": false,
+      "readyToRunMac": false
+    },
+    "missingForMacEnvironment": {
+      "missingWithinBothCandidateRepositories": [
+        "game assets/maps/gui",
+        "macOS LWJGL/JInput/OpenAL native libraries",
+        "librocketConnector.dylib",
+        "libRocketCore.1.dylib",
+        "libRocketControls.1.dylib",
+        "libRocketDebugger.1.dylib",
+        "libfreetype.6.dylib",
+        "libpng16.16.dylib"
+      ],
+      "steamIfEnabled": [
+        "libsteamworks4j.dylib",
+        "libsteam_api.dylib"
+      ],
+      "linuxOnlyNativeArchive": "lib/natives-linux.jar: six Linux .so files.",
+      "notes": "Some x86_64 Rocket/native backups exist in the user-selected Steam folder, recorded separately in steam-inventory.json. No runtime compatibility or dependency loading was tested."
+    },
+    "limitations": [
+      "No game was launched, class initialized, native library loaded or app activated.",
+      "No repository, game installation or Steam configuration was changed.",
+      "No network or tool installation was used.",
+      "Git and README provenance are supporting evidence; only the game core byte identity has matched the fixed historical baseline.",
+      "Assets and complete macOS native provenance are unresolved by this repository inspection."
+    ]
+  },
+  "staging": {
+    "date": "2026-11-02",
+    "sourceSteamDirectory": "/Users/wty/Library/Application Support/Steam/steamapps/common/Rusted Warfare",
+    "steamDirectoryModified": false,
+    "stageDirectory": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102",
+    "originalCoreSha256": "8a550a37e2d8a5430866090d4e7d5892f9010b47f52a5a09350fc66c620deec9",
+    "identityEvidence": "Matches the pinned official PC 1.15 core hash in desktop/tools/original_interaction_benchmark.py; not RWPP generated_lib.",
+    "status": "core-and-runtime-libraries-staged-no-game-launched",
+    "java": "/Users/wty/Library/Application Support/Steam/steamapps/common/Rusted Warfare/jvm-rwpp-x64/bin/java",
+    "javaArchitecture": "x86_64 / Rosetta on Apple Silicon",
+    "files": [
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/game-lib.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/game-lib.jar",
+        "sha256": "8a550a37e2d8a5430866090d4e7d5892f9010b47f52a5a09350fc66c620deec9",
+        "bytes": 2639503
+      },
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/commons-codec-1.6.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libs/commons-codec-1.6.jar",
+        "sha256": "54b34e941b8e1414bd3e40d736efd3481772dc26db3296f6aa45cec9f6203d86",
+        "bytes": 232771
+      },
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/commons-logging-1.1.3.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libs/commons-logging-1.1.3.jar",
+        "sha256": "70903f6fc82e9908c8da9f20443f61d90f0870a312642991fe8462a0b9391784",
+        "bytes": 62050
+      },
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/fluent-hc-4.3.3.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libs/fluent-hc-4.3.3.jar",
+        "sha256": "f02dadd2c76d6e84b6e5420c4ea54711b6b797e565acbb92e2e1eb53628154aa",
+        "bytes": 28696
+      },
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/httpclient-4.3.3.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libs/httpclient-4.3.3.jar",
+        "sha256": "9844cc9b5440d65a88d28bcba9d771374d2dfdab898848cda164611091633013",
+        "bytes": 589512
+      },
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/httpclient-cache-4.3.3.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libs/httpclient-cache-4.3.3.jar",
+        "sha256": "ad5f44c6b196c04526c69be32582f4359c05d4541e41fbbdd83e2b3132feecbf",
+        "bytes": 149800
+      },
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/httpcore-4.3.2.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libs/httpcore-4.3.2.jar",
+        "sha256": "abd02320e2356f89d054dae4cf02306bef20a9cf7865b3ac94ec7552b4f1528b",
+        "bytes": 282269
+      },
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/httpmime-4.3.3.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libs/httpmime-4.3.3.jar",
+        "sha256": "61434dbb2314cbb8d28025feb6ae53bbc45d1042daa34371d8911e1e7f570b36",
+        "bytes": 37274
+      },
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/ibxm.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libs/ibxm.jar",
+        "sha256": "c7bc9730c4af980d587f55e847eb5c3b176c229dfb148745a18858d7112251e0",
+        "bytes": 37714
+      },
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/jinput.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libs/jinput.jar",
+        "sha256": "36b6fbede7a2d2f00949a87b9de83007a1c6b4ce5a96978279c0cc612a9adef5",
+        "bytes": 214859
+      },
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/jnlp.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libs/jnlp.jar",
+        "sha256": "78568fcd356adddf4918c1a8c34b4808567707fdf617393facbfd9b8a37a4576",
+        "bytes": 7042
+      },
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/jogg-0.0.7.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libs/jogg-0.0.7.jar",
+        "sha256": "70d92eef7cd61aad1ae4148fb5d91d58fc68b51d0382905d9451d411c57f5608",
+        "bytes": 6763
+      },
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/jorbis-0.0.15.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libs/jorbis-0.0.15.jar",
+        "sha256": "d049b2a1c6ddefde3a5cbff320c96fdd5aefa09b0d3bbea3fe44839f7e6713f9",
+        "bytes": 58917
+      },
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/lwjgl.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libs/lwjgl.jar",
+        "sha256": "527d509f60132e5b2653c7fc0f8cf299d6f698f4a8013342bef47705dc57ed3f",
+        "bytes": 1053471
+      },
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/lwjgl_util.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libs/lwjgl_util.jar",
+        "sha256": "6f4a261384e1688a3359420efce5275c8693b822a8c6eaa1e20d5cc126a51571",
+        "bytes": 173911
+      },
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/lwjgl_util_applet.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libs/lwjgl_util_applet.jar",
+        "sha256": "ea1e08c8251d31439e0d487dd208dea845ebf180657a2a56e31b9ee733aa0aab",
+        "bytes": 36009
+      },
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/slick.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libs/slick.jar",
+        "sha256": "890486a463d94ebc4bb55ba9e4d2bedcfb0e969641a4affb62cc455f722804a6",
+        "bytes": 676834
+      },
+      {
+        "source": "/Users/wty/code/TuanHun/TXJS/lib/tinylinepp.jar",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libs/tinylinepp.jar",
+        "sha256": "4a74d9e265af8bc8ed88229e57dbd78082872263e8a0eeeb7acb45e089bd661f",
+        "bytes": 92921
+      },
+      {
+        "source": "/Users/wty/Library/Application Support/Steam/steamapps/common/Rusted Warfare/native-backup/librocketConnector.dylib",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/librocketConnector.dylib",
+        "sha256": "31e4117873fb27aa5ba62232cad5bc4fbbf3dd59be936159299f202c5ef53334",
+        "bytes": 160160
+      },
+      {
+        "source": "/Users/wty/Library/Application Support/Steam/steamapps/common/Rusted Warfare/native-backup/libRocketCore.1.dylib",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libRocketCore.1.dylib",
+        "sha256": "bd67bfa5eb5b1df2ce0ce0c13b247c60575b6bea61b4d4c178db830252bff525",
+        "bytes": 1030816
+      },
+      {
+        "source": "/Users/wty/Library/Application Support/Steam/steamapps/common/Rusted Warfare/native-backup/libRocketControls.1.dylib",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libRocketControls.1.dylib",
+        "sha256": "ade6e5d0c670b94346890ce416f0d7cf42a69102976cb3f3517a5701cf85b75a",
+        "bytes": 371488
+      },
+      {
+        "source": "/Users/wty/Library/Application Support/Steam/steamapps/common/Rusted Warfare/native-backup/libRocketDebugger.1.dylib",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libRocketDebugger.1.dylib",
+        "sha256": "de5f50d0d083b2c6539a6b60ebbf1104308efdbcb02e596662ace57ee0034720",
+        "bytes": 257400
+      },
+      {
+        "source": "/Users/wty/Library/Application Support/Steam/steamapps/common/Rusted Warfare/native-backup/libfreetype.6.dylib",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libfreetype.6.dylib",
+        "sha256": "6df3e8093e5eb2b519cbf71f85ddde6d1bc1b266e7ced3d3de9a47b45f6f9971",
+        "bytes": 590908
+      },
+      {
+        "source": "/Users/wty/Library/Application Support/Steam/steamapps/common/Rusted Warfare/native-backup/libpng16.16.dylib",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libpng16.16.dylib",
+        "sha256": "16eb38362b524318828c5365c975234bc248e40b28f5ee4090f74b20992a12a3",
+        "bytes": 172964
+      },
+      {
+        "source": "/Users/wty/Library/Application Support/Steam/steamapps/common/Rusted Warfare/natives-x86_64-backup/liblwjgl.dylib",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/liblwjgl.dylib",
+        "sha256": "4e9512afc0aa0831cc72591852c47c804c57ed13bd4ab9ba3ac798650616db0e",
+        "bytes": 531120
+      },
+      {
+        "source": "/Users/wty/Library/Application Support/Steam/steamapps/common/Rusted Warfare/natives-x86_64-backup/libjinput-osx.dylib",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libjinput-osx.dylib",
+        "sha256": "d155c29cfa7d7b49cab0821d5ba00a8fdc8b386c8bf5669f0313a62e44ba70d6",
+        "bytes": 64608
+      },
+      {
+        "source": "/Users/wty/Library/Application Support/Steam/steamapps/common/Rusted Warfare/natives-x86_64-backup/libopenal.dylib",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/libopenal.dylib",
+        "sha256": "d845fab22fd58425deafbcb1a552633b4a62bd5dfa27b9263c050d91a3fad8c0",
+        "bytes": 731648
+      },
+      {
+        "source": "/Users/wty/Library/Application Support/Steam/steamapps/common/Rusted Warfare/natives-x86_64-backup/openal.dylib",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/openal.dylib",
+        "sha256": "d845fab22fd58425deafbcb1a552633b4a62bd5dfa27b9263c050d91a3fad8c0",
+        "bytes": 731648
+      },
+      {
+        "source": "/Users/wty/code/RWXX/replays/双桥(8p) [v1.15] (18 10月 2026 01.18.18).replay",
+        "staged": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102/replays/bridges-fixed.replay",
+        "sha256": "d19b132ec8866f87496b3c1c91627e7ef35a99b1627e2a9550f74c0e0e57f6d1",
+        "bytes": 1148453
+      }
+    ],
+    "assets": {
+      "ready": false,
+      "serverAssetTreeRejected": "/Users/wty/code/TuanHun/RWHR-workspace/data/gameData/assets",
+      "reason": "Contains tiny placeholder PNGs. tank.png 85 bytes vs 1158-byte real texture, dimensions equal; not valid for visual performance comparison.",
+      "policy": "Require real original textures/resources; do not report placeholder rendering or RWPP as official baseline."
+    },
+    "targetExecuted": false,
+    "foregroundChanged": false,
+    "remaining": [
+      "complete authentic visual asset pack",
+      "prepare macOS launch/probe",
+      "controlled actual-game comparison under no-focus-stealing policy"
+    ]
+  },
+  "preparedProbe": {
+    "originalRoot": "/Users/wty/code/RWXX/build/original-macos-1.15-baseline-20261102",
+    "runtimeSha256": "8a550a37e2d8a5430866090d4e7d5892f9010b47f52a5a09350fc66c620deec9",
+    "replaySha256": "d19b132ec8866f87496b3c1c91627e7ef35a99b1627e2a9550f74c0e0e57f6d1",
+    "toolingSha256": "9f0a983582c718e702f462213781295dce880e5005a2949ebb7cb424c6393b55",
+    "platform": "darwin",
+    "javaExecutable": "/Users/wty/Library/Application Support/Steam/steamapps/common/Rusted Warfare/jvm-rwpp-x64/bin/java",
+    "javacExecutable": "/opt/homebrew/opt/openjdk@25/bin/javac",
+    "prepareOnly": true,
+    "measurementPerformed": false,
+    "measurementStatus": "not-measured",
+    "diagnosticOnly": false,
+    "normalInputProbe": false,
+    "replayName": "bridges-fixed.replay",
+    "probeSha256": "9a63a6092b54682c124350796b268fb7ff35fb7edcb2efce892f343ee7d6a28d",
+    "sourceSha256": {
+      "OrigNormalInputProbe.java": "986c381529ddcdb8007b24c4f5b87c46f4cb2f0b881072fac804996a705a107d",
+      "OrigPresentAgent.java": "59263ccde01d99dc7ef47f5816fb8ff3322fceefd2608fa002efb65fffae86fc",
+      "OrigPresentProbe.java": "4fa4ab8e1c91121ad028e8e01ec8f888e478701ed7a11e8ff94f8909644d85b6"
+    },
+    "cameraMode": "pan-zoom",
+    "panPeriodSeconds": 20,
+    "zoomPeriodSeconds": 4,
+    "zoomMinimum": 0.35,
+    "zoomMaximum": 1.5,
+    "width": 1280,
+    "height": 720,
+    "warmupSeconds": 20,
+    "sampleSeconds": 40,
+    "argv": [
+      "/Users/wty/Library/Application Support/Steam/steamapps/common/Rusted Warfare/jvm-rwpp-x64/bin/java",
+      "-XstartOnFirstThread",
+      "-Xmx1000M",
+      "-Dfile.encoding=UTF-8",
+      "-Djava.library.path=.",
+      "-javaagent:/Users/wty/code/RWXX/build/parity-optimization-20261102/original-macos-prepared/original-probe.jar",
+      "-Drwx.orig.trace=/Users/wty/code/RWXX/build/parity-optimization-20261102/original-macos-prepared/original-present.csv",
+      "-Drwx.orig.replay=trigger",
+      "-Drwx.orig.replayname=bridges-fixed.replay",
+      "-Drwx.orig.autostart.seconds=30",
+      "-Drwx.orig.camera.mode=pan-zoom",
+      "-Drwx.orig.warmup.seconds=20",
+      "-Drwx.orig.measure.seconds=60",
+      "-cp",
+      "game-lib.jar:libs/*",
+      "com.corrodinggames.rts.java.Main",
+      "-width",
+      "1280",
+      "-height",
+      "720"
+    ],
+    "configuration": {
+      "cameraMode": "pan-zoom",
+      "panPeriodSeconds": 20,
+      "zoomPeriodSeconds": 4,
+      "zoomMinimum": 0.35,
+      "zoomMaximum": 1.5,
+      "width": 1280,
+      "height": 720,
+      "warmupSeconds": 20,
+      "sampleSeconds": 40,
+      "presentTraceBoundary": "after-native-swap-return",
+      "normalInputProbe": false,
+      "installationPreferencesSha256": {}
+    },
+    "configurationSha256": "6377dae42e9df22202cb80d9dddffd84b085e30c408ff108179b86b640831697"
+  },
+  "backup": {
+    "source": "/Users/wty/Library/Application Support/Steam/steamapps/common/Rusted Warfare",
+    "backup": "/Users/wty/code/RWXX/build/steam-rwpp-backup-20261102",
+    "verified": true,
+    "entries": 515,
+    "sourceModified": false
+  },
+  "backupManifest": "build/parity-optimization-20261102/steam-backup.json",
+  "rejectedAssetEvidence": [
+    {
+      "file": "/Users/wty/code/TuanHun/RWHR-workspace/data/gameData/assets/units/tanks/tank.png",
+      "bytes": 85,
+      "dimensions": [
+        48,
+        30
+      ],
+      "uniqueColors": 1,
+      "alphaRange": [
+        0,
+        0
+      ],
+      "singleColor": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "file": "/Users/wty/code/RWXX/assets/units/tanks/tank.png",
+      "bytes": 1158,
+      "dimensions": [
+        48,
+        30
+      ],
+      "uniqueColors": 63,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "singleColor": null
+    }
+  ],
+  "tests": {
+    "originalHarnessMockTests": 5,
+    "failures": 0,
+    "log": "build/parity-optimization-20261102/python-original-tests.log",
+    "coreAndDesktop": "See canvas-parity-candidates-2026-11-02.json; no additional production change in baseline preparation."
+  },
+  "evidenceType": "Local shell/Python ZIP/JDK javap/jdeps/file inspection; these records are not REA Evidence. REA MCP tools absent; doctor diagnostic saved, no client configuration was changed.",
+  "runtimeExecuted": false,
+  "originalPerformanceMeasured": false,
+  "foregroundChanged": false,
+  "steamRestoration": {
+    "status": "user-approval-pending",
+    "reason": "The current game directory contains RWPP and lacks complete authentic visual assets. Recovering official files via Steam would write to the current installation.",
+    "requestedAction": "Use Steam verification/installation for app 647960 after the verified full RWPP backup.",
+    "executed": false
+  },
+  "remaining": [
+    "complete authentic original asset pack",
+    "verify restored baseline hashes/resources",
+    "real normal-game comparison with matching viewport, fog, map, units, frame limit and actual-input scope",
+    "retain no-focus-stealing testing constraint until user explicitly changes it"
+  ]
+}

@@ -1,0 +1,975 @@
+{
+  "date": "2026-11-02",
+  "applicationVersion": "1.4.3",
+  "status": "default-enabled after real-scene pixel and memory validation; original-level smoothness still unproven",
+  "goalComplete": false,
+  "officialComparisonValid": false,
+  "screenFpsImprovementMeasured": false,
+  "implementation": {
+    "flag": "RWX_SHARE_MAP_ATLAS_PIXELS",
+    "default": "ON",
+    "rollback": "RWX_SHARE_MAP_ATLAS_PIXELS=0",
+    "scope": "GpuTargetPasses-scoped immutable CPU and direct upload payloads only. Each renderer keeps original atlas packing, UV, sampling, meshes, textures, GPU images and retirement. Root-canvas atlas unaffected.",
+    "cpu": "Hash bucket plus full ByteArray.contentEquals, weak values with ReferenceQueue. All interned arrays copy-on-write before growth; no texture-ID/content assumption.",
+    "upload": "Weak identity-keyed canonical-byte-array cache of native ByteBuffer roots. Per-texture Uint8BufferImpl read-only duplicate views have independent cursor/limit. Each view keeps root storage alive; shared views never enter mutable freeUploads.",
+    "notChanged": [
+      "Game simulation or replay/network protocol",
+      "GPU texture ownership, image count or upload traffic",
+      "Atlas dimensions/slot positions/UV/shader/filter/blend/fence rules"
+    ],
+    "directTargetTextures": "Still default OFF; earlier nearest-boundary differences were not accepted or hidden."
+  },
+  "unitRegression": {
+    "targeted": {
+      "tests": 20,
+      "failures": 0,
+      "classes": [
+        "KoolCanvasAtlasPixelPoolTest(5)",
+        "KoolCanvasBatchingTest(11)",
+        "KoolCanvasAtlasAppendTest(4)"
+      ]
+    },
+    "newCases": [
+      "Hash collision exact-byte discrimination",
+      "Independent atlas layout/guard/UV equality and clear isolation",
+      "Different stores with identical IDs but distinct bytes",
+      "Late and regular growth, old upload owners, fallback and successful incremental append sink",
+      "Independent readonly upload cursors and write rejection"
+    ],
+    "fullDefaultOn": {
+      "core": {
+        "tests": 479,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1,
+        "xmlFiles": 122
+      },
+      "desktop": {
+        "tests": 145,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "xmlFiles": 36
+      }
+    },
+    "fullLog": {
+      "path": "build/windowless-gpu-20261102/shared-atlas-default-on-full-tests.log",
+      "sha256": "858d8d571dcb46cde6341b3129412757736388dee9bfcd3a05ff4600ca3faa11",
+      "bytes": 3328
+    },
+    "pythonTools": {
+      "mapPanCameraTests": 28,
+      "passed": true,
+      "scope": "Child env pins0/1 and inherited-env isolation; require both actual CPU/upload reuse markers."
+    },
+    "retainedInitialCompileFailure": {
+      "path": "build/windowless-gpu-20261102/atlas-pixel-pool-tests.log",
+      "reason": "Test BufferedImageData2d.data needed explicit Uint8Buffer cast; fixed before execution."
+    }
+  },
+  "realScene": {
+    "ordinaryReplay": true,
+    "replaySha256": "d19b132ec8866f87496b3c1c91627e7ef35a99b1627e2a9550f74c0e0e57f6d1",
+    "sampling": "Windowless production Vulkan host; 120warmup+240frames,1x normal preadvance tick6000, fogON,60Hz limiter, heap512MiB and same implicit direct-buffer cap. No fixture units.",
+    "historicalDefault": {
+      "process": {
+        "exitCode": 1,
+        "elapsedSeconds": 10.308264666004106
+      },
+      "processEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-default/process-result.json",
+        "sha256": "b932bcb14afb025be086e6dea73bfe1c2cd352733de2b42c8ce357f94145032f",
+        "bytes": 21529
+      },
+      "command": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-default/command.json",
+        "sha256": "31f1ccb5079b1d6952ee079f2ce409454a0b09de64b7fd21fe2fe802a2bd18d4",
+        "bytes": 21441
+      },
+      "stdout": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-default/stdout.log",
+        "sha256": "0347b7e9865accf2b8b09c285ca5c4ba1b94ffb6629e53f9cd2d6b4b2d9086e1",
+        "bytes": 189754
+      },
+      "failure": "java.lang.OutOfMemoryError: Java heap space",
+      "failureEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-default/capture/failure.txt",
+        "sha256": "2a69db8a37b35687a4d18c5886d81e90804973f857c3906fef7ff3dc2af93dc4",
+        "bytes": 2709
+      }
+    },
+    "cpuOnlyCandidate": {
+      "process": {
+        "exitCode": 1,
+        "elapsedSeconds": 12.123165749988402,
+        "timedOut": false
+      },
+      "processEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-shared-atlas-512/process-result.json",
+        "sha256": "e4a2df78b4ddfc8b845e4c2a584617fd433f1ff2dc57b9f85aabfe8b6096a899",
+        "bytes": 22464
+      },
+      "command": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-shared-atlas-512/command.json",
+        "sha256": "723e171d2b420ee4a3196bef731c432e367a60dc83ddb61ccff6dfae0fd11ce9",
+        "bytes": 22386
+      },
+      "stdout": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-shared-atlas-512/stdout.log",
+        "sha256": "2548fdfd1d959787191b276549afcba7bc0c23d172034ab209d12537d21426a6",
+        "bytes": 193108
+      },
+      "failure": "java.lang.OutOfMemoryError: Cannot reserve 16777216 bytes of direct buffer memory (allocated: 505115960, limit: 518979584)",
+      "failureEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-shared-atlas-512/capture/failure.txt",
+        "sha256": "80ed3e2a73da7d6c9418f6b5641b7bf66e8b4c7471d8c14bb34054a6e7a1ae54",
+        "bytes": 4142
+      }
+    },
+    "cpuAndUploadCandidate": {
+      "process": {
+        "exitCode": 0,
+        "elapsedSeconds": 13.211306666999008,
+        "timedOut": false
+      },
+      "processEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-shared-atlas-upload-512/process-result.json",
+        "sha256": "710781a2f121277a0b9cfd1c934b7433bc69f6dd440ce3f4454191cde8f7c963",
+        "bytes": 22499
+      },
+      "command": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-shared-atlas-upload-512/command.json",
+        "sha256": "e471455afb72541ddf45b97e842445f3cb545189e2d368636a5588078ab74ad2",
+        "bytes": 22421
+      },
+      "stdout": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-shared-atlas-upload-512/stdout.log",
+        "sha256": "8e584ce711b4b2d8668cf69f2f398b3a14e9b381fe37aa7b00f8225b78210450",
+        "bytes": 190937
+      },
+      "capture": {
+        "completed": true,
+        "pixelCorrectnessVerified": false,
+        "mode": "pan-zoom",
+        "warmupFrames": 120,
+        "frames": 240,
+        "captureStartTick": 6000,
+        "lastTick": 6180,
+        "generatedSequence": 360,
+        "adoptedSequence": 360,
+        "fenceCompletedSequence": 360,
+        "gpuTargetInstalls": 168,
+        "gpuTargetRenderCallbacks": 431,
+        "sharedAtlasPixels": true,
+        "atlasPixelPool_internRequests": 24,
+        "atlasPixelPool_reuseHits": 23,
+        "nativeSubmissionsAfterSceneInstalled": 364,
+        "pendingRetirementsAfterDeviceIdle": 0
+      },
+      "captureEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-shared-atlas-upload-512/capture/result.json",
+        "sha256": "961f1fdf258be732263a9c01170cd08c0a423f4969cdae832b720ed96601afc5",
+        "bytes": 2305
+      }
+    },
+    "actualNoCandidateEnvDefault": {
+      "process": {
+        "exitCode": 0,
+        "elapsedSeconds": 17.823312124994118,
+        "timedOut": false
+      },
+      "processEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-shared-atlas-default-512/process-result.json",
+        "sha256": "2015445e770883242b6b8cd738801243e0f23c99e4b44f9fcd55fb350e425fb2",
+        "bytes": 22503
+      },
+      "command": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-shared-atlas-default-512/command.json",
+        "sha256": "751a30001fa54d51c557d29331d7d4c2513858addc49f56545c261976b7caa00",
+        "bytes": 22425
+      },
+      "stdout": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-shared-atlas-default-512/stdout.log",
+        "sha256": "89e193a3893565a9e8867233ec6b21a98b00f8803725c593b4ff1e6718e5aa4b",
+        "bytes": 193659
+      },
+      "capture": {
+        "completed": true,
+        "pixelCorrectnessVerified": false,
+        "mode": "pan-zoom",
+        "warmupFrames": 120,
+        "frames": 240,
+        "captureStartTick": 6000,
+        "lastTick": 6180,
+        "generatedSequence": 360,
+        "adoptedSequence": 360,
+        "fenceCompletedSequence": 360,
+        "gpuTargetInstalls": 168,
+        "gpuTargetRenderCallbacks": 430,
+        "sharedAtlasPixels": true,
+        "atlasPixelPool_internRequests": 24,
+        "atlasPixelPool_reuseHits": 23,
+        "atlasPixelPool_uploadRequests": 24,
+        "atlasPixelPool_uploadReuseHits": 23,
+        "nativeSubmissionsAfterSceneInstalled": 364,
+        "pendingRetirementsAfterDeviceIdle": 0
+      },
+      "captureEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-pan-zoom-shared-atlas-default-512/capture/result.json",
+        "sha256": "94317a96a20699a82cbac0bdb19c858abaab46fd709f4b2ada6ffe1753f6143e",
+        "bytes": 2389
+      }
+    },
+    "interpretation": "Original per-slot atlas failed Java heap page allocation. CPU-only sharing then reached the next duplicate-storage problem: direct buffer memory OOM. Sharing both CPU and readonly upload payloads completed all360generated/adopted/fence-completed frames at512MiB; actual default reproduced success.",
+    "defaultPayloadCounts": {
+      "cpuInternRequests": 24,
+      "cpuReuseHits": 23,
+      "cpuUniqueInsertions": 1,
+      "uploadViewRequests": 24,
+      "uploadReuseHits": 23,
+      "uploadRootAllocations": 1,
+      "pageBytes": 16777216
+    },
+    "memoryClaimBoundary": "Counters show exact payload reuse/allocation counts, not whole-process peak RSS or GPU-memory reduction. GPU images and upload traffic remain independent. Failed/successful run elapsed times are not a performance comparison."
+  },
+  "pixelCorrectness": {
+    "candidateSnapshots": [
+      {
+        "process": {
+          "exitCode": 0,
+          "elapsedSeconds": 10.76843183299934,
+          "timedOut": false
+        },
+        "processEvidence": {
+          "path": "build/windowless-gpu-20261102/real-replay-shared-atlas-reference-300-v1/process-result.json",
+          "sha256": "7047bd4dc386c631e23a11e333ed65d246144f2e57e614205e389ff1ba557bdd",
+          "bytes": 21551
+        },
+        "command": {
+          "path": "build/windowless-gpu-20261102/real-replay-shared-atlas-reference-300-v1/command.json",
+          "sha256": "973c07956fd4c436a27d21e0c6136c23b429a0dc8f79343901bfe09428401a9c",
+          "bytes": 21833
+        },
+        "stdout": {
+          "path": "build/windowless-gpu-20261102/real-replay-shared-atlas-reference-300-v1/stdout.log",
+          "sha256": "78bc8a6c4f0349bdabe9ec53efd7c51929d73367d7e52748548933b71a014e53",
+          "bytes": 192278
+        },
+        "capture": {
+          "completed": true,
+          "pixelCorrectnessVerified": true,
+          "mode": "pan-zoom",
+          "warmupFrames": 120,
+          "frames": 180,
+          "captureStartTick": 6000,
+          "lastTick": 6150,
+          "generatedSequence": 300,
+          "adoptedSequence": 300,
+          "fenceCompletedSequence": 300,
+          "gpuTargetInstalls": 142,
+          "gpuTargetRenderCallbacks": 345,
+          "sharedAtlasPixels": true,
+          "atlasPixelPool_internRequests": 19,
+          "atlasPixelPool_reuseHits": 18,
+          "nativeSubmissionsAfterSceneInstalled": 378,
+          "pendingRetirementsAfterDeviceIdle": 0
+        },
+        "captureEvidence": {
+          "path": "build/windowless-gpu-20261102/real-replay-shared-atlas-reference-300-v1/capture/result.json",
+          "sha256": "361a2c6a8a5ad69f8745c821541d9d275549f5b66afe24bd0f0dec23f1e6a334",
+          "bytes": 8795
+        },
+        "pixels": {
+          "correctnessOnly": true,
+          "performanceInvalid": true,
+          "completed": true,
+          "passed": true,
+          "sequence": 300,
+          "simulationTick": 6150,
+          "tolerance": 3,
+          "contextMsaaSamples": 4,
+          "directTargetTexturesVerified": false,
+          "sharedAtlasPixelsVerified": true,
+          "atlasPixelInternRequests": 19,
+          "atlasPixelReuseHits": 18,
+          "expectedCells": 6,
+          "comparedCells": 6,
+          "checkedPixels": 1572864,
+          "mismatches": 0,
+          "maxChannelDelta": 0,
+          "referenceAtlasPages": 4,
+          "referenceAtlasMeshes": 4,
+          "referenceUploadedAtlasTextures": 4,
+          "referenceRenderedGpuAtlasMeshes": 4,
+          "cells": [
+            {
+              "id": "legacy-texture-47/cpu-1-v1029/gpu-132",
+              "width": 512,
+              "height": 512,
+              "commands": 2696,
+              "slotVersion": "legacy-texture-47/cpu-1-v1029/gpu-132",
+              "logicalId": "legacy-texture-47",
+              "installedSlotAliases": [
+                "legacy-texture-47/cpu-1-v1029/gpu-132"
+              ],
+              "recordedFrameMatchesFrozen": true,
+              "hostAttachmentIdentityVerified": true,
+              "checkedPixels": 262144,
+              "mismatches": 0,
+              "maxChannelDelta": 0,
+              "actualSamples": 1,
+              "referenceSamples": 1,
+              "referenceAtlasPages": 1,
+              "referenceAtlasMeshes": 1,
+              "referenceUploadedAtlasTextures": 1,
+              "referenceRenderedGpuAtlasMeshes": 1
+            },
+            {
+              "id": "legacy-texture-49/cpu-1-v1030/gpu-133",
+              "width": 512,
+              "height": 512,
+              "commands": 2966,
+              "slotVersion": "legacy-texture-49/cpu-1-v1030/gpu-133",
+              "logicalId": "legacy-texture-49",
+              "installedSlotAliases": [
+                "legacy-texture-49/cpu-1-v1030/gpu-133"
+              ],
+              "recordedFrameMatchesFrozen": true,
+              "hostAttachmentIdentityVerified": true,
+              "checkedPixels": 262144,
+              "mismatches": 0,
+              "maxChannelDelta": 0,
+              "actualSamples": 1,
+              "referenceSamples": 1,
+              "referenceAtlasPages": 1,
+              "referenceAtlasMeshes": 1,
+              "referenceUploadedAtlasTextures": 1,
+              "referenceRenderedGpuAtlasMeshes": 1
+            },
+            {
+              "id": "legacy-texture-57/cpu-1-v1031/gpu-134",
+              "width": 512,
+              "height": 512,
+              "commands": 2746,
+              "slotVersion": "legacy-texture-57/cpu-1-v1031/gpu-134",
+              "logicalId": "legacy-texture-57",
+              "installedSlotAliases": [
+                "legacy-texture-57/cpu-1-v1031/gpu-134"
+              ],
+              "recordedFrameMatchesFrozen": true,
+              "hostAttachmentIdentityVerified": true,
+              "checkedPixels": 262144,
+              "mismatches": 0,
+              "maxChannelDelta": 0,
+              "actualSamples": 1,
+              "referenceSamples": 1,
+              "referenceAtlasPages": 1,
+              "referenceAtlasMeshes": 1,
+              "referenceUploadedAtlasTextures": 1,
+              "referenceRenderedGpuAtlasMeshes": 1
+            },
+            {
+              "id": "legacy-texture-59/cpu-1-v1032/gpu-135",
+              "width": 512,
+              "height": 512,
+              "commands": 3039,
+              "slotVersion": "legacy-texture-59/cpu-1-v1032/gpu-135",
+              "logicalId": "legacy-texture-59",
+              "installedSlotAliases": [
+                "legacy-texture-59/cpu-1-v1032/gpu-135"
+              ],
+              "recordedFrameMatchesFrozen": true,
+              "hostAttachmentIdentityVerified": true,
+              "checkedPixels": 262144,
+              "mismatches": 0,
+              "maxChannelDelta": 0,
+              "actualSamples": 1,
+              "referenceSamples": 1,
+              "referenceAtlasPages": 1,
+              "referenceAtlasMeshes": 1,
+              "referenceUploadedAtlasTextures": 1,
+              "referenceRenderedGpuAtlasMeshes": 1
+            },
+            {
+              "id": "legacy-texture-67/cpu-1-v1033/gpu-136",
+              "width": 512,
+              "height": 512,
+              "commands": 1067,
+              "slotVersion": "legacy-texture-67/cpu-1-v1033/gpu-136",
+              "logicalId": "legacy-texture-67",
+              "installedSlotAliases": [
+                "legacy-texture-67/cpu-1-v1033/gpu-136"
+              ],
+              "recordedFrameMatchesFrozen": true,
+              "hostAttachmentIdentityVerified": true,
+              "checkedPixels": 262144,
+              "mismatches": 0,
+              "maxChannelDelta": 0,
+              "actualSamples": 1,
+              "referenceSamples": 1,
+              "referenceAtlasPages": 0,
+              "referenceAtlasMeshes": 0,
+              "referenceUploadedAtlasTextures": 0,
+              "referenceRenderedGpuAtlasMeshes": 0
+            },
+            {
+              "id": "legacy-texture-69/cpu-1-v1034/gpu-137",
+              "width": 512,
+              "height": 512,
+              "commands": 1154,
+              "slotVersion": "legacy-texture-69/cpu-1-v1034/gpu-137",
+              "logicalId": "legacy-texture-69",
+              "installedSlotAliases": [
+                "legacy-texture-69/cpu-1-v1034/gpu-137"
+              ],
+              "recordedFrameMatchesFrozen": true,
+              "hostAttachmentIdentityVerified": true,
+              "checkedPixels": 262144,
+              "mismatches": 0,
+              "maxChannelDelta": 0,
+              "actualSamples": 1,
+              "referenceSamples": 1,
+              "referenceAtlasPages": 0,
+              "referenceAtlasMeshes": 0,
+              "referenceUploadedAtlasTextures": 0,
+              "referenceRenderedGpuAtlasMeshes": 0
+            }
+          ],
+          "scope": "Frozen real map-cell attachments only; no final-screen correctness or FPS claim"
+        },
+        "pixelEvidence": {
+          "path": "build/windowless-gpu-20261102/real-replay-shared-atlas-reference-300-v1/capture/cell-reference.json",
+          "sha256": "0c70ea9dfb46093b09390570827db4b9d49049971cc24fa516af878c12c8a459",
+          "bytes": 3763
+        }
+      },
+      {
+        "process": {
+          "exitCode": 0,
+          "elapsedSeconds": 11.835447958990699,
+          "timedOut": false
+        },
+        "processEvidence": {
+          "path": "build/windowless-gpu-20261102/real-replay-shared-atlas-reference-360-v1/process-result.json",
+          "sha256": "bdc92eaad6a505a8359f0b20715b06bd3552313926f8ed47e08c19c6f9ebe5c4",
+          "bytes": 21552
+        },
+        "command": {
+          "path": "build/windowless-gpu-20261102/real-replay-shared-atlas-reference-360-v1/command.json",
+          "sha256": "1f111aca2a520d8d76e15e318e5881db6236c7d75f539f16f3263bbc56375f4f",
+          "bytes": 21833
+        },
+        "stdout": {
+          "path": "build/windowless-gpu-20261102/real-replay-shared-atlas-reference-360-v1/stdout.log",
+          "sha256": "2fd035f46870f46ea9177bfca3b80d29af193630b02d1e4f7e3691ac6109f54e",
+          "bytes": 194760
+        },
+        "capture": {
+          "completed": true,
+          "pixelCorrectnessVerified": true,
+          "mode": "pan-zoom",
+          "warmupFrames": 120,
+          "frames": 240,
+          "captureStartTick": 6000,
+          "lastTick": 6180,
+          "generatedSequence": 360,
+          "adoptedSequence": 360,
+          "fenceCompletedSequence": 360,
+          "gpuTargetInstalls": 168,
+          "gpuTargetRenderCallbacks": 430,
+          "sharedAtlasPixels": true,
+          "atlasPixelPool_internRequests": 24,
+          "atlasPixelPool_reuseHits": 23,
+          "nativeSubmissionsAfterSceneInstalled": 437,
+          "pendingRetirementsAfterDeviceIdle": 0
+        },
+        "captureEvidence": {
+          "path": "build/windowless-gpu-20261102/real-replay-shared-atlas-reference-360-v1/capture/result.json",
+          "sha256": "fc105651a78c62b8440fbf633860194d7acb8e8fd670d3a76fd7c804994685bb",
+          "bytes": 8793
+        },
+        "pixels": {
+          "correctnessOnly": true,
+          "performanceInvalid": true,
+          "completed": true,
+          "passed": true,
+          "sequence": 360,
+          "simulationTick": 6180,
+          "tolerance": 3,
+          "contextMsaaSamples": 4,
+          "directTargetTexturesVerified": false,
+          "sharedAtlasPixelsVerified": true,
+          "atlasPixelInternRequests": 24,
+          "atlasPixelReuseHits": 23,
+          "expectedCells": 6,
+          "comparedCells": 6,
+          "checkedPixels": 1572864,
+          "mismatches": 0,
+          "maxChannelDelta": 0,
+          "referenceAtlasPages": 4,
+          "referenceAtlasMeshes": 4,
+          "referenceUploadedAtlasTextures": 4,
+          "referenceRenderedGpuAtlasMeshes": 4,
+          "cells": [
+            {
+              "id": "legacy-texture-35/cpu-1-v1140/gpu-157",
+              "width": 512,
+              "height": 512,
+              "commands": 1937,
+              "slotVersion": "legacy-texture-35/cpu-1-v1140/gpu-157",
+              "logicalId": "legacy-texture-35",
+              "installedSlotAliases": [
+                "legacy-texture-35/cpu-1-v1140/gpu-157"
+              ],
+              "recordedFrameMatchesFrozen": true,
+              "hostAttachmentIdentityVerified": true,
+              "checkedPixels": 262144,
+              "mismatches": 0,
+              "maxChannelDelta": 0,
+              "actualSamples": 1,
+              "referenceSamples": 1,
+              "referenceAtlasPages": 1,
+              "referenceAtlasMeshes": 1,
+              "referenceUploadedAtlasTextures": 1,
+              "referenceRenderedGpuAtlasMeshes": 1
+            },
+            {
+              "id": "legacy-texture-37/cpu-1-v1141/gpu-158",
+              "width": 512,
+              "height": 512,
+              "commands": 1532,
+              "slotVersion": "legacy-texture-37/cpu-1-v1141/gpu-158",
+              "logicalId": "legacy-texture-37",
+              "installedSlotAliases": [
+                "legacy-texture-37/cpu-1-v1141/gpu-158"
+              ],
+              "recordedFrameMatchesFrozen": true,
+              "hostAttachmentIdentityVerified": true,
+              "checkedPixels": 262144,
+              "mismatches": 0,
+              "maxChannelDelta": 0,
+              "actualSamples": 1,
+              "referenceSamples": 1,
+              "referenceAtlasPages": 1,
+              "referenceAtlasMeshes": 1,
+              "referenceUploadedAtlasTextures": 1,
+              "referenceRenderedGpuAtlasMeshes": 1
+            },
+            {
+              "id": "legacy-texture-45/cpu-1-v1146/gpu-163",
+              "width": 512,
+              "height": 512,
+              "commands": 1731,
+              "slotVersion": "legacy-texture-45/cpu-1-v1146/gpu-163",
+              "logicalId": "legacy-texture-45",
+              "installedSlotAliases": [
+                "legacy-texture-45/cpu-1-v1146/gpu-163"
+              ],
+              "recordedFrameMatchesFrozen": true,
+              "hostAttachmentIdentityVerified": true,
+              "checkedPixels": 262144,
+              "mismatches": 0,
+              "maxChannelDelta": 0,
+              "actualSamples": 1,
+              "referenceSamples": 1,
+              "referenceAtlasPages": 1,
+              "referenceAtlasMeshes": 1,
+              "referenceUploadedAtlasTextures": 1,
+              "referenceRenderedGpuAtlasMeshes": 1
+            },
+            {
+              "id": "legacy-texture-47/cpu-1-v1143/gpu-160",
+              "width": 512,
+              "height": 512,
+              "commands": 1496,
+              "slotVersion": "legacy-texture-47/cpu-1-v1143/gpu-160",
+              "logicalId": "legacy-texture-47",
+              "installedSlotAliases": [
+                "legacy-texture-47/cpu-1-v1143/gpu-160"
+              ],
+              "recordedFrameMatchesFrozen": true,
+              "hostAttachmentIdentityVerified": true,
+              "checkedPixels": 262144,
+              "mismatches": 0,
+              "maxChannelDelta": 0,
+              "actualSamples": 1,
+              "referenceSamples": 1,
+              "referenceAtlasPages": 1,
+              "referenceAtlasMeshes": 1,
+              "referenceUploadedAtlasTextures": 1,
+              "referenceRenderedGpuAtlasMeshes": 1
+            },
+            {
+              "id": "legacy-texture-55/cpu-1-v1144/gpu-161",
+              "width": 512,
+              "height": 512,
+              "commands": 962,
+              "slotVersion": "legacy-texture-55/cpu-1-v1144/gpu-161",
+              "logicalId": "legacy-texture-55",
+              "installedSlotAliases": [
+                "legacy-texture-55/cpu-1-v1144/gpu-161"
+              ],
+              "recordedFrameMatchesFrozen": true,
+              "hostAttachmentIdentityVerified": true,
+              "checkedPixels": 262144,
+              "mismatches": 0,
+              "maxChannelDelta": 0,
+              "actualSamples": 1,
+              "referenceSamples": 1,
+              "referenceAtlasPages": 0,
+              "referenceAtlasMeshes": 0,
+              "referenceUploadedAtlasTextures": 0,
+              "referenceRenderedGpuAtlasMeshes": 0
+            },
+            {
+              "id": "legacy-texture-57/cpu-1-v1145/gpu-162",
+              "width": 512,
+              "height": 512,
+              "commands": 925,
+              "slotVersion": "legacy-texture-57/cpu-1-v1145/gpu-162",
+              "logicalId": "legacy-texture-57",
+              "installedSlotAliases": [
+                "legacy-texture-57/cpu-1-v1145/gpu-162"
+              ],
+              "recordedFrameMatchesFrozen": true,
+              "hostAttachmentIdentityVerified": true,
+              "checkedPixels": 262144,
+              "mismatches": 0,
+              "maxChannelDelta": 0,
+              "actualSamples": 1,
+              "referenceSamples": 1,
+              "referenceAtlasPages": 0,
+              "referenceAtlasMeshes": 0,
+              "referenceUploadedAtlasTextures": 0,
+              "referenceRenderedGpuAtlasMeshes": 0
+            }
+          ],
+          "scope": "Frozen real map-cell attachments only; no final-screen correctness or FPS claim"
+        },
+        "pixelEvidence": {
+          "path": "build/windowless-gpu-20261102/real-replay-shared-atlas-reference-360-v1/capture/cell-reference.json",
+          "sha256": "f1d6f6eccd7dbf6b3c330df635a9843ce11c9b4c24bd75f6518c6489c9152e92",
+          "bytes": 3761
+        }
+      }
+    ],
+    "finalDefaultSnapshot": {
+      "process": {
+        "exitCode": 0,
+        "elapsedSeconds": 11.955498540992266,
+        "timedOut": false
+      },
+      "processEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-shared-atlas-reference-300-default-v2/process-result.json",
+        "sha256": "ff07387ef0d32d33fd944251b0e910296431ec7a9411f6c3cc970879c75aa5f9",
+        "bytes": 21553
+      },
+      "command": {
+        "path": "build/windowless-gpu-20261102/real-replay-shared-atlas-reference-300-default-v2/command.json",
+        "sha256": "ebeb3035610a426ce1a5ee93737538bd6904b0d001652fb156c5c82df5ffb20b",
+        "bytes": 21834
+      },
+      "stdout": {
+        "path": "build/windowless-gpu-20261102/real-replay-shared-atlas-reference-300-default-v2/stdout.log",
+        "sha256": "2e454a215bdea88b901212f289b4a01b81c71300728414ec1c5444b453eb54bc",
+        "bytes": 192217
+      },
+      "capture": {
+        "completed": true,
+        "pixelCorrectnessVerified": true,
+        "mode": "pan-zoom",
+        "warmupFrames": 120,
+        "frames": 180,
+        "captureStartTick": 6000,
+        "lastTick": 6150,
+        "generatedSequence": 300,
+        "adoptedSequence": 300,
+        "fenceCompletedSequence": 300,
+        "gpuTargetInstalls": 142,
+        "gpuTargetRenderCallbacks": 344,
+        "sharedAtlasPixels": true,
+        "atlasPixelPool_internRequests": 19,
+        "atlasPixelPool_reuseHits": 18,
+        "atlasPixelPool_uploadRequests": 19,
+        "atlasPixelPool_uploadReuseHits": 18,
+        "nativeSubmissionsAfterSceneInstalled": 377,
+        "pendingRetirementsAfterDeviceIdle": 0
+      },
+      "captureEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-shared-atlas-reference-300-default-v2/capture/result.json",
+        "sha256": "4174ad2f153123f134949aef915cf62ce85bd60a419941cde18de9c66aec1a17",
+        "bytes": 8967
+      },
+      "pixels": {
+        "correctnessOnly": true,
+        "performanceInvalid": true,
+        "completed": true,
+        "passed": true,
+        "sequence": 300,
+        "simulationTick": 6150,
+        "tolerance": 3,
+        "contextMsaaSamples": 4,
+        "directTargetTexturesVerified": false,
+        "sharedAtlasPixelsVerified": true,
+        "atlasPixelInternRequests": 19,
+        "atlasPixelReuseHits": 18,
+        "atlasPixelUploadRequests": 19,
+        "atlasPixelUploadReuseHits": 18,
+        "expectedCells": 6,
+        "comparedCells": 6,
+        "checkedPixels": 1572864,
+        "mismatches": 0,
+        "maxChannelDelta": 0,
+        "referenceAtlasPages": 4,
+        "referenceAtlasMeshes": 4,
+        "referenceUploadedAtlasTextures": 4,
+        "referenceRenderedGpuAtlasMeshes": 4,
+        "cells": [
+          {
+            "id": "legacy-texture-47/cpu-1-v1029/gpu-132",
+            "width": 512,
+            "height": 512,
+            "commands": 2696,
+            "slotVersion": "legacy-texture-47/cpu-1-v1029/gpu-132",
+            "logicalId": "legacy-texture-47",
+            "installedSlotAliases": [
+              "legacy-texture-47/cpu-1-v1029/gpu-132"
+            ],
+            "recordedFrameMatchesFrozen": true,
+            "hostAttachmentIdentityVerified": true,
+            "checkedPixels": 262144,
+            "mismatches": 0,
+            "maxChannelDelta": 0,
+            "actualSamples": 1,
+            "referenceSamples": 1,
+            "referenceAtlasPages": 1,
+            "referenceAtlasMeshes": 1,
+            "referenceUploadedAtlasTextures": 1,
+            "referenceRenderedGpuAtlasMeshes": 1
+          },
+          {
+            "id": "legacy-texture-49/cpu-1-v1030/gpu-133",
+            "width": 512,
+            "height": 512,
+            "commands": 2966,
+            "slotVersion": "legacy-texture-49/cpu-1-v1030/gpu-133",
+            "logicalId": "legacy-texture-49",
+            "installedSlotAliases": [
+              "legacy-texture-49/cpu-1-v1030/gpu-133"
+            ],
+            "recordedFrameMatchesFrozen": true,
+            "hostAttachmentIdentityVerified": true,
+            "checkedPixels": 262144,
+            "mismatches": 0,
+            "maxChannelDelta": 0,
+            "actualSamples": 1,
+            "referenceSamples": 1,
+            "referenceAtlasPages": 1,
+            "referenceAtlasMeshes": 1,
+            "referenceUploadedAtlasTextures": 1,
+            "referenceRenderedGpuAtlasMeshes": 1
+          },
+          {
+            "id": "legacy-texture-57/cpu-1-v1031/gpu-134",
+            "width": 512,
+            "height": 512,
+            "commands": 2746,
+            "slotVersion": "legacy-texture-57/cpu-1-v1031/gpu-134",
+            "logicalId": "legacy-texture-57",
+            "installedSlotAliases": [
+              "legacy-texture-57/cpu-1-v1031/gpu-134"
+            ],
+            "recordedFrameMatchesFrozen": true,
+            "hostAttachmentIdentityVerified": true,
+            "checkedPixels": 262144,
+            "mismatches": 0,
+            "maxChannelDelta": 0,
+            "actualSamples": 1,
+            "referenceSamples": 1,
+            "referenceAtlasPages": 1,
+            "referenceAtlasMeshes": 1,
+            "referenceUploadedAtlasTextures": 1,
+            "referenceRenderedGpuAtlasMeshes": 1
+          },
+          {
+            "id": "legacy-texture-59/cpu-1-v1032/gpu-135",
+            "width": 512,
+            "height": 512,
+            "commands": 3039,
+            "slotVersion": "legacy-texture-59/cpu-1-v1032/gpu-135",
+            "logicalId": "legacy-texture-59",
+            "installedSlotAliases": [
+              "legacy-texture-59/cpu-1-v1032/gpu-135"
+            ],
+            "recordedFrameMatchesFrozen": true,
+            "hostAttachmentIdentityVerified": true,
+            "checkedPixels": 262144,
+            "mismatches": 0,
+            "maxChannelDelta": 0,
+            "actualSamples": 1,
+            "referenceSamples": 1,
+            "referenceAtlasPages": 1,
+            "referenceAtlasMeshes": 1,
+            "referenceUploadedAtlasTextures": 1,
+            "referenceRenderedGpuAtlasMeshes": 1
+          },
+          {
+            "id": "legacy-texture-67/cpu-1-v1033/gpu-136",
+            "width": 512,
+            "height": 512,
+            "commands": 1067,
+            "slotVersion": "legacy-texture-67/cpu-1-v1033/gpu-136",
+            "logicalId": "legacy-texture-67",
+            "installedSlotAliases": [
+              "legacy-texture-67/cpu-1-v1033/gpu-136"
+            ],
+            "recordedFrameMatchesFrozen": true,
+            "hostAttachmentIdentityVerified": true,
+            "checkedPixels": 262144,
+            "mismatches": 0,
+            "maxChannelDelta": 0,
+            "actualSamples": 1,
+            "referenceSamples": 1,
+            "referenceAtlasPages": 0,
+            "referenceAtlasMeshes": 0,
+            "referenceUploadedAtlasTextures": 0,
+            "referenceRenderedGpuAtlasMeshes": 0
+          },
+          {
+            "id": "legacy-texture-69/cpu-1-v1034/gpu-137",
+            "width": 512,
+            "height": 512,
+            "commands": 1154,
+            "slotVersion": "legacy-texture-69/cpu-1-v1034/gpu-137",
+            "logicalId": "legacy-texture-69",
+            "installedSlotAliases": [
+              "legacy-texture-69/cpu-1-v1034/gpu-137"
+            ],
+            "recordedFrameMatchesFrozen": true,
+            "hostAttachmentIdentityVerified": true,
+            "checkedPixels": 262144,
+            "mismatches": 0,
+            "maxChannelDelta": 0,
+            "actualSamples": 1,
+            "referenceSamples": 1,
+            "referenceAtlasPages": 0,
+            "referenceAtlasMeshes": 0,
+            "referenceUploadedAtlasTextures": 0,
+            "referenceRenderedGpuAtlasMeshes": 0
+          }
+        ],
+        "scope": "Frozen real map-cell attachments only; no final-screen correctness or FPS claim"
+      },
+      "pixelEvidence": {
+        "path": "build/windowless-gpu-20261102/real-replay-shared-atlas-reference-300-default-v2/capture/cell-reference.json",
+        "sha256": "5c1e1071e9db5b8d117ba8fcd77bf93550b2baf45441c4d9bc44a53263d9106e",
+        "bytes": 3824
+      }
+    },
+    "interpretation": "Each snapshot compares6real512x512map-cell attachments against independent unshared atlas renderers. Strict version/frame/registry/attachment guards and real GPU-atlas coverage required. All pixels equal, maximum channel delta0, not merely within tolerance3.",
+    "scope": "Final frozen map-cell attachments, not final UI/screen, scanout, input or all possible mods. Readback runs are performance-invalid.",
+    "contextMsaaSamples": 4,
+    "actualCellPassSamples": 1,
+    "defaultMapCellFixture": {
+      "process": {
+        "exitCode": 0,
+        "elapsedSeconds": 2.0720417499978794,
+        "timedOut": false
+      },
+      "processEvidence": {
+        "path": "build/windowless-gpu-20261102/map-cell-shared-atlas-default/result.json",
+        "sha256": "3288e5d8f5343fdcdee28110ae17bddd991895cfa8b4ecaef2f472c12bcf947c",
+        "bytes": 21700
+      },
+      "command": {
+        "path": "build/windowless-gpu-20261102/map-cell-shared-atlas-default/command.json",
+        "sha256": "38fa13b59490b57200fb1fadc0a75fa6d26395245ad6366ec3c9aa716ff4c5e6",
+        "bytes": 21573
+      },
+      "stdout": {
+        "path": "build/windowless-gpu-20261102/map-cell-shared-atlas-default/stdout.log",
+        "sha256": "637fe2a03fe24614f01b47b91af257c15ad19e561b31ff19e5242b708f0bc5ad",
+        "bytes": 12050
+      }
+    }
+  },
+  "provenance": {
+    "candidateCoreAndTestClassesSnapshot": {
+      "path": "build/windowless-gpu-20261102/shared-atlas-candidate-runtime/candidate-classes.zip",
+      "sha256": "59fefea7657088735ad096c6bf8de7dd3212dd8f388537efbdcc1d3a7ae70d09",
+      "bytes": 6149151
+    },
+    "candidateSnapshotManifest": {
+      "path": "build/windowless-gpu-20261102/shared-atlas-candidate-runtime/manifest.json",
+      "sha256": "03b8d5a4f8dacf9c3740596267e81c3de893d4b1e2af1c3a365ad79eb151f7e1",
+      "bytes": 8264
+    },
+    "coreJar": {
+      "path": "core/build/libs/core-1.4.3.jar",
+      "sha256": "b94ab82e9348d4d1bbc194e65cb0c8bb901baa568158e95e66984e966ddac430",
+      "bytes": 6368714
+    },
+    "sources": [
+      {
+        "path": "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasAtlasPixelPool.kt",
+        "sha256": "856d5f9b835f85561ee4a2601a49262f3769722b23daeee847f1328b1d224bce",
+        "bytes": 2805
+      },
+      {
+        "path": "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasSpriteAtlas.kt",
+        "sha256": "3d56fd7b668e7e5429be2c2499e72fbcceceebc9f46520531d271cc2b390a264",
+        "bytes": 11723
+      },
+      {
+        "path": "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasFrameRenderer.kt",
+        "sha256": "d0c0fe8af3857de08d30926db79da6b30e4f3e11fa29dd4a18c45e06cb6007d4",
+        "bytes": 226420
+      },
+      {
+        "path": "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasGpuTargetPasses.kt",
+        "sha256": "638e7dd41e4339636f9cbf6a91d6007e4ae68573b6afbd7ed63c422cc56dcc1e",
+        "bytes": 29738
+      },
+      {
+        "path": "core/src/test/kotlin/io/github/rwx/render/canvas/KoolCanvasAtlasPixelPoolTest.kt",
+        "sha256": "3aa68d7991dcf6f9a423ae4df9c53428a1b9da0f44417467b731349ba7eeac23",
+        "bytes": 7979
+      }
+    ]
+  },
+  "distribution": {
+    "zip": {
+      "path": "desktop/build/distributions/RWXX-1.4.3-macos-arm64-desktop.zip",
+      "sha256": "449968e7dc5a897e7a3ae3a1c6c19729e8472b7ac7b98c6de3e330ef0ab966fb",
+      "bytes": 162215020
+    },
+    "jar": {
+      "path": "desktop/build/libs/RWXX-1.4.3-macos-arm64.jar",
+      "sha256": "6acefd500384f00ff10cbdf9b6c0f64d5addbc4ae98bfbf21de6ceab226445a1",
+      "bytes": 125276874
+    },
+    "packageBuildLog": {
+      "path": "build/windowless-gpu-20261102/shared-atlas-package.log",
+      "sha256": "b169233a0801f68985932720d0e520d7d95a7c37478dd968a2e2826bc2335929",
+      "bytes": 29852
+    },
+    "olderReleasePreserved": {
+      "path": "build/real-release-20261102/pre-shared-atlas/manifest.json",
+      "sha256": "b01a8612da5a6554bd53e60d027456fdbf15ecc6209cefa4f9217da3311f67ec",
+      "bytes": 699
+    },
+    "acceptance": {
+      "path": "build/real-release-20261102/shared-atlas-mac-jni/acceptance.json",
+      "sha256": "30689dd567e23b1b5a957d382d1f89744cb534e9322a2ffb1b5866840bfe6212",
+      "valid": true,
+      "scope": "CRC,version,codesign,95core+13entryclass-family equivalence,real bundled-JVM25.0.4.1 JNI headless120ticks/checksum120lines and default bundled-asset discovery. Not native app launcher/GPU/FPS/focus telemetry."
+    }
+  },
+  "remaining": [
+    "Official instrumented startup crash unresolved; no original-vs-RWXX ratio.",
+    "The recorded185.6235ms visible stall remains unattributed; this memory fix is not proof that it is eliminated.",
+    "No new visible rerun or10minute/physical input acceptance after the fix.",
+    "Hash/equality scans occur only when atlas content grows; no dense-combat/mod-wide or cross-platform FPS proof.",
+    "Trace atlas-copy/atlas-allocate byte fields retain logical payload size; do not interpret them as physical bytes copied/allocated for shared views."
+  ]
+}

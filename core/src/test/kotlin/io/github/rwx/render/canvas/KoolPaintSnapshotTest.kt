@@ -16,7 +16,7 @@ class KoolPaintSnapshotTest {
             commands.clear()
             assertEquals(original, frame.frame.commands)
             assertFailsWith<UnsupportedOperationException> { (frame.frame.commands as MutableList).clear() }
-            if (System.getenv("RWX_SHARE_IMMUTABLE_COMMANDS") == "1") for (index in original.indices)
+            if (System.getenv("RWX_SHARE_IMMUTABLE_COMMANDS") != "0") for (index in original.indices)
                 assertSame(original[index], frame.frame.commands[index])
         }
         store.close()

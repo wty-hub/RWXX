@@ -4,6 +4,7 @@ import com.corrodinggames.rts.game.GameTeam
 import com.corrodinggames.rts.game.PlayerTeam
 import com.corrodinggames.rts.game.PlayerTeam.resetTeamRegistry
 import com.corrodinggames.rts.gameFramework.GameEngine
+import com.corrodinggames.rts.gameFramework.network.GameModeType
 import com.corrodinggames.rts.gameFramework.network.NetworkEngine
 import com.corrodinggames.rts.gameFramework.network.TeamLayoutType
 
@@ -128,19 +129,17 @@ fun GameEngine.configureLocalBattleRoom(
         "Unable to start $logLabel battle room: local player team was not registered"
     }
 
-    if (config.sandbox)
-        networkEngine.roomSettings.apply {
+    // Starting the server resets several room options. Install the requested options afterwards;
+    // a(settings) refreshes the live room but does not replace roomSettings on the server.
+    val settings = config.room.options.clone().apply {
+        gameModeType = if (config.room.isSavedGame) GameModeType.savedGame else getGameModeType()
+        mapPath = if (config.room.isSavedGame) config.room.mapPath else currentMapFilename
+        if (config.sandbox) {
             fogMode = 0
             revealedMap = true
         }
-
-    val settings = networkEngine.getEditableRoomSettings() ?: networkEngine.roomSettings
-    if (!config.room.isSavedGame) {
-        config.room.options.apply {
-            gameModeType = getGameModeType()
-        }
     }
-
+    networkEngine.roomSettings = settings
     networkEngine.a(settings)
 
     repeat(config.aiPlayerCount.coerceAtLeast(0)) {

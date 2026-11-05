@@ -31,15 +31,22 @@ class BattleRoomLaunchControllerTest {
     }
 
     @Test
-    fun `leaving room before adoption acknowledgement does not navigate back to game`() {
+    fun `being kicked before adoption acknowledgement stays in the lobby`() {
         val session = RecordingSession(resumable = false, deferred = true)
         val fixture = Fixture(session)
         fixture.controller.startBattleRoomGame()
         session.completeNextTask()
         session.drainSessionCompletions()
-        fixture.controller.cancelPendingStart()
+        BattleRoomCloseController(
+            cancelPendingStart = fixture.controller::cancelPendingStart,
+            cancelPendingJoin = {},
+            closeRoom = {},
+            exitToLobby = { fixture.screen = AppScreen.Multiplayer },
+            showMessage = {},
+        ).handle("Kicked", "Kicked by host")
         session.completeNextTask()
         session.drainSessionCompletions()
+        assertEquals(AppScreen.Multiplayer, fixture.screen)
         assertEquals(listOf("start room", "load started room"), session.events)
     }
 
@@ -137,6 +144,7 @@ class BattleRoomLaunchControllerTest {
     }
 
     private class Fixture(val session: RecordingSession) {
+        var screen = AppScreen.BattleRoom
         var confirmStart: (() -> Unit)? = null
         var fallbackStarts = 0
         var fallbackConfig: BattleRoomLaunchConfig? = null
@@ -144,7 +152,7 @@ class BattleRoomLaunchControllerTest {
             gameSession = session,
             storage = { null },
             viewport = { KoolCanvasViewport(1280, 720) },
-            currentScreen = { AppScreen.BattleRoom },
+            currentScreen = { screen },
             showStartNewGameDialog = { confirmStart = it },
             enterRwGame = { startNew, config ->
                 check(startNew)
@@ -154,7 +162,10 @@ class BattleRoomLaunchControllerTest {
             clearPendingRwStartState = {},
             clearPendingStartState = {},
             setPendingStartState = { _, _ -> error("Started map should be ready") },
-            navigateToInGame = { session.events += "show game" },
+            navigateToInGame = {
+                screen = AppScreen.InGame
+                session.events += "show game"
+            },
             showUnavailableDialog = { error(it) },
         )
     }

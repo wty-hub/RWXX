@@ -1,0 +1,148 @@
+{
+  "schema": "rwxx-driver-queue-motion-2026-11-05-v1",
+  "applicationVersion": "1.4.3",
+  "status": "correctness-passed-performance-not-adopted",
+  "goalAchieved": false,
+  "productionDriverDefaultChanged": false,
+  "candidate": "MVK_CONFIG_SYNCHRONOUS_QUEUE_SUBMITS=0",
+  "baseline": "same driver explicit synchronous1",
+  "platformSha256": "f6e1ae596d241a12f75c74394d9665f9685ee8545c433d4f5bde91266bb76bba",
+  "independentReview": {
+    "path": "build/stress-scenes-20261105/driver-queue-motion-v1/independent-v1/delivery.json",
+    "sha256": "65091f8a001ac985006660697071634e537567126a88fb027862591147ed34d6"
+  },
+  "protocol": {
+    "order": [
+      "sync",
+      "async",
+      "async-repeat",
+      "sync-repeat"
+    ],
+    "actualAi": "Medium0",
+    "ordinarySpeed": 1,
+    "initialUnits": 10000,
+    "sampleSeconds": 20,
+    "warmupSeconds": 2,
+    "camera": "pan20s and ordinary zoom4s .35..1.5",
+    "framebuffer": [
+      1792,
+      1008
+    ],
+    "msaa": 4,
+    "vsync": false,
+    "softwareCap": 300,
+    "allFrameExperiments": 0,
+    "silentFromStartup": true,
+    "actualBackground": true
+  },
+  "arms": [
+    {
+      "name": "sync",
+      "summaryPath": "build/stress-scenes-20261105/driver-queue-motion-v1/sync/completed-summary.json",
+      "summarySha256": "837bfadb6ce21681b6ce2fabfe05cdd48b5ac121fe200ebfe61e19645939d502",
+      "driverReadbackPath": "build/stress-scenes-20261105/driver-queue-motion-v1/sync/driver-configuration-gate.json",
+      "driverReadbackSha256": "d269933697ecc67778994de91ec3a3330dd7214a738e60d07b82c2f085f787a0",
+      "actualModes": [
+        1,
+        1
+      ],
+      "metrics": {
+        "freshSnapshotHz": 241.93514114201702,
+        "freshSnapshotIntervalP99Ms": 11.024625,
+        "freshSnapshotIntervalMaxMs": 48.368792,
+        "freshSnapshotIntervalsOver16_667Ms": 13,
+        "freshSnapshotIntervalsOver33_333Ms": 1,
+        "freshSnapshotIntervalsOver50Ms": 0
+      }
+    },
+    {
+      "name": "async",
+      "summaryPath": "build/stress-scenes-20261105/driver-queue-motion-v1/async/completed-summary.json",
+      "summarySha256": "007ef4dfa3fd1da55234ab19b2ead6cf45347ff5546a400409799d21918af22f",
+      "driverReadbackPath": "build/stress-scenes-20261105/driver-queue-motion-v1/async/driver-configuration-gate.json",
+      "driverReadbackSha256": "abeb87845db9680c5c551cd22ec9ad3ef9114644255ee7f23652e2fe5d23003a",
+      "actualModes": [
+        0,
+        0
+      ],
+      "metrics": {
+        "freshSnapshotHz": 240.19188701461312,
+        "freshSnapshotIntervalP99Ms": 10.898542,
+        "freshSnapshotIntervalMaxMs": 54.288625,
+        "freshSnapshotIntervalsOver16_667Ms": 14,
+        "freshSnapshotIntervalsOver33_333Ms": 3,
+        "freshSnapshotIntervalsOver50Ms": 1
+      }
+    },
+    {
+      "name": "async-repeat",
+      "summaryPath": "build/stress-scenes-20261105/driver-queue-motion-v1/async-repeat/completed-summary.json",
+      "summarySha256": "1ec8d70ccd4dd244366e29a8eeb214c085e8a5e0b01230baf617e78f8d85046d",
+      "driverReadbackPath": "build/stress-scenes-20261105/driver-queue-motion-v1/async-repeat/driver-configuration-gate.json",
+      "driverReadbackSha256": "a27ad405a85637313f5d8666cd89fc700b90c8f2ac28a3441c015b89236dcf0d",
+      "actualModes": [
+        0,
+        0
+      ],
+      "metrics": {
+        "freshSnapshotHz": 241.72002622122253,
+        "freshSnapshotIntervalP99Ms": 10.653292,
+        "freshSnapshotIntervalMaxMs": 44.564166,
+        "freshSnapshotIntervalsOver16_667Ms": 11,
+        "freshSnapshotIntervalsOver33_333Ms": 1,
+        "freshSnapshotIntervalsOver50Ms": 0
+      }
+    },
+    {
+      "name": "sync-repeat",
+      "summaryPath": "build/stress-scenes-20261105/driver-queue-motion-v1/sync-repeat/completed-summary.json",
+      "summarySha256": "c4fc523354dd41b63493b85d5acc160a28cf51ee1e2276aa942d6846f3265517",
+      "driverReadbackPath": "build/stress-scenes-20261105/driver-queue-motion-v1/sync-repeat/driver-configuration-gate.json",
+      "driverReadbackSha256": "d5430e98f23b2c1066347d2f45c8f8aed4b23cbc92ae8e2e8e051e1b24cce324",
+      "actualModes": [
+        1,
+        1
+      ],
+      "metrics": {
+        "freshSnapshotHz": 240.8781122008421,
+        "freshSnapshotIntervalP99Ms": 10.066042,
+        "freshSnapshotIntervalMaxMs": 53.123,
+        "freshSnapshotIntervalsOver16_667Ms": 11,
+        "freshSnapshotIntervalsOver33_333Ms": 2,
+        "freshSnapshotIntervalsOver50Ms": 1
+      }
+    }
+  ],
+  "decision": "No adoption. Pooled fresh241.406619 to240.955991 (-0.1867 percent); P99 10.751625 to10.82425ms, max53.123 to54.288625ms. Paired gains reverse; no stable tail or throughput improvement. Keep original synchronous default.",
+  "native": {
+    "sha256": "e2ed95ad33fb38251ba990e0dcc54b1fb8b660c6257878cba6b30c7833983b87",
+    "actualMoltenVkVersion": "1.2.11",
+    "actualVulkanVersion": "1.2.296",
+    "actualConfigurationBytes": 184,
+    "observation": "Global initial/shutdown config readback; initial same vkGetInstanceProcAddr pointer as LWJGL and FFM plus file identity. Shutdown repeats initial binding metadata, not a fresh provider query or completed backend teardown proof.",
+    "wrapperSourceSha256": "eb52a812a3dbe9b2f1259d0cef5c45ba0178d895729e918dd3f4df2a26eb9431",
+    "wrapperClassSha256": "078e08c1df9665334face23513bef909007bf68adbdb2dbef221335484f1ede4",
+    "commonObserver": "Pre-main native function binding only; no instance/device/window/simulation creation by observer. Same wrapper/loader/classpath/stack512 for all arms."
+  },
+  "correctnessEvidence": {
+    "sprite": "build/queue-submit-review-20261104/driver-sync0-v1/process-result.json",
+    "mapCell": "build/queue-submit-review-20261104/map-cell-v1/driver-sync0-v1/process-result.json",
+    "scope": "64x64 Sprite148compositechecks/608retirements and128x128 map5x768pixels+fences. Correctness only, not whole game FPS equivalence."
+  },
+  "virtualDisplayCleanup": {
+    "path": "build/background-display-20261104/create-17.ndjson",
+    "display": 35,
+    "exitCode": 0,
+    "removed": true,
+    "originalDisplaysUnchanged": true
+  },
+  "installed": false,
+  "steamModified": false,
+  "limitations": [
+    "Independent ordinary AI battle seeds.",
+    "Initially10000; visible/living units change during battle and zoom.",
+    "Scripted camera, not physical input/scanout latency.",
+    "All prior official146.05/152.6/142.2 references retained, no cherry-picked denominator.",
+    "Correctness checks do not establish all-game/platform compatibility or no drops."
+  ]
+}

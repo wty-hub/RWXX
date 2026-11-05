@@ -9,6 +9,7 @@ import android.net.http.AndroidHttpClient
 import android.os.Build
 import com.corrodinggames.rts.gameFramework.audio.SoundEngine
 import dalvik.system.DexClassLoader
+import io.github.rwx.settings.InstallationIdentity
 import org.apache.http.client.HttpClient
 import timber.log.Timber
 import java.io.File
@@ -112,7 +113,9 @@ class AndroidPlatformBridge(context: Context) : PlatformBridge {
             true
         }.getOrDefault(false)
 
-    override val preferenceStorage: PreferenceStorage = AndroidPreferenceStorage(appContext)
+    override val preferenceStorage: PreferenceStorage = AndroidPreferenceStorage(appContext).also {
+        InstallationIdentity.loadOrCreate(it)
+    }
     override val logger: AppLogger = AndroidLogger()
     override val crashReporter: CrashReporter = FileCrashReporter.get(
         crashFile = storage.rootDir.resolve(CRASH_FILE_NAME),

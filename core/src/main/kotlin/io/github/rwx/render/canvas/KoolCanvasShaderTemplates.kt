@@ -14,7 +14,9 @@ import java.util.WeakHashMap
 
 /** Immutable CPU descriptions only. Every shader still creates its own pipeline and binding data. */
 internal object KoolCanvasShaderTemplates {
-    private val requested = (System.getenv("RWX_CACHE_CANVAS_SHADER_TEMPLATES") == "1").also {
+    // Reuse immutable CPU descriptions while preserving independent pipelines and bindings.
+    // RWX_CACHE_CANVAS_SHADER_TEMPLATES=0 restores the complete shader factory per material.
+    private val requested = (System.getenv("RWX_CACHE_CANVAS_SHADER_TEMPLATES") != "0").also {
         if (System.getenv("RWX_FRAME_METRICS") != null) println("RWXCanvasShaderTemplates enabled=$it")
     }
     private val templateOverride = ThreadLocal<Boolean?>()

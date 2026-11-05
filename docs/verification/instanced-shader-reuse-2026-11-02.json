@@ -1,0 +1,399 @@
+{
+  "scope": "Sequential independent JVM A/B/B/A; ordinary 1x opening replay, fixed60Hz true-windowless synchronous Vulkan test loop. Each arm has two JVM samples. Not physical display FPS, original comparison, or production producer-thread equivalence.",
+  "runs": [
+    {
+      "name": "opening-control-a1",
+      "shaderReuse": "0",
+      "coreSha256": "8773d742b14a7de65772dd6515281eb2f093151ae2d977fad2b0a92a7df3c181",
+      "sample": {
+        "requestedWarmupFrames": 1200,
+        "producedSampleFrames": 1200,
+        "selection": "generatedAfter>warm && <=warm+frames && >generatedBefore",
+        "startGenerated": 1201,
+        "endGenerated": 2400,
+        "startTick": 605,
+        "endTick": 1205,
+        "actualWindowSeconds": 20.269409542,
+        "fullFrameWall": {
+          "count": 1200,
+          "p50Ms": 16.747958,
+          "p95Ms": 20.2255,
+          "p99Ms": 30.32225,
+          "p999Ms": 44.369667,
+          "maxMs": 47.016625,
+          "over33_333Ms": 8,
+          "over50Ms": 0,
+          "over100Ms": 0
+        },
+        "completionIntervals": {
+          "count": 1200,
+          "p50Ms": 16.765042,
+          "p95Ms": 20.263375,
+          "p99Ms": 30.327208,
+          "p999Ms": 44.37375,
+          "maxMs": 47.023834,
+          "over33_333Ms": 8,
+          "over50Ms": 0,
+          "over100Ms": 0
+        },
+        "interFrameObserverAdapterGaps": {
+          "count": 1200,
+          "p50Ms": 0.013791,
+          "p95Ms": 0.035667,
+          "p99Ms": 0.047375,
+          "p999Ms": 0.164667,
+          "maxMs": 0.343209,
+          "over33_333Ms": 0,
+          "over50Ms": 0,
+          "over100Ms": 0
+        },
+        "threadCpu": {
+          "count": 1200,
+          "p50Ms": 2.119,
+          "p95Ms": 6.13,
+          "p99Ms": 15.101,
+          "p999Ms": 21.942,
+          "maxMs": 28.376,
+          "over33_333Ms": 0,
+          "over50Ms": 0,
+          "over100Ms": 0
+        },
+        "nativeSubmissionsObserved": 1200,
+        "gcPauseCount": 5,
+        "gcPauseDurationSumMs": 49.791625,
+        "gcPauseMaxMs": 16.4155
+      },
+      "validThreadCpuSumMs": 3175.252,
+      "allocationSampleWeightMiB": 582.5195770263672,
+      "shaderCreationAllocationSampleWeightMiB": 59.87782287597656,
+      "atlasPageAllocationSampleWeightMiB": 64.34785461425781,
+      "evidence": {
+        "process-result.json": "07d53f68d9e75b186a6729791e9c0e902eb5f8e3aace82e80626f1f65e434f4b",
+        "analysis.json": "2dc17c0c548468bd8037a62933c619d8cbdb1ac87c9bb7cf608c501f2ca3407d",
+        "capture/result.json": "62d426b0240920cc3edaaced4e0e625e7de9d586bdd186099362f3363f4a6d3f"
+      }
+    },
+    {
+      "name": "opening-candidate-b1",
+      "shaderReuse": "1",
+      "coreSha256": "8773d742b14a7de65772dd6515281eb2f093151ae2d977fad2b0a92a7df3c181",
+      "sample": {
+        "requestedWarmupFrames": 1200,
+        "producedSampleFrames": 1200,
+        "selection": "generatedAfter>warm && <=warm+frames && >generatedBefore",
+        "startGenerated": 1201,
+        "endGenerated": 2400,
+        "startTick": 605,
+        "endTick": 1205,
+        "actualWindowSeconds": 20.263112834,
+        "fullFrameWall": {
+          "count": 1200,
+          "p50Ms": 16.734125,
+          "p95Ms": 21.108375,
+          "p99Ms": 30.747,
+          "p999Ms": 40.924125,
+          "maxMs": 54.195792,
+          "over33_333Ms": 6,
+          "over50Ms": 1,
+          "over100Ms": 0
+        },
+        "completionIntervals": {
+          "count": 1200,
+          "p50Ms": 16.74775,
+          "p95Ms": 21.125542,
+          "p99Ms": 30.766459,
+          "p999Ms": 40.929125,
+          "maxMs": 54.201584,
+          "over33_333Ms": 6,
+          "over50Ms": 1,
+          "over100Ms": 0
+        },
+        "interFrameObserverAdapterGaps": {
+          "count": 1200,
+          "p50Ms": 0.017209,
+          "p95Ms": 0.041375,
+          "p99Ms": 0.063792,
+          "p999Ms": 0.139334,
+          "maxMs": 0.220125,
+          "over33_333Ms": 0,
+          "over50Ms": 0,
+          "over100Ms": 0
+        },
+        "threadCpu": {
+          "count": 1200,
+          "p50Ms": 2.302,
+          "p95Ms": 6.088,
+          "p99Ms": 15.089,
+          "p999Ms": 23.013,
+          "maxMs": 26.773,
+          "over33_333Ms": 0,
+          "over50Ms": 0,
+          "over100Ms": 0
+        },
+        "nativeSubmissionsObserved": 1200,
+        "gcPauseCount": 4,
+        "gcPauseDurationSumMs": 39.51675,
+        "gcPauseMaxMs": 16.59175
+      },
+      "validThreadCpuSumMs": 3255.576,
+      "allocationSampleWeightMiB": 490.8296203613281,
+      "shaderCreationAllocationSampleWeightMiB": 19.460662841796875,
+      "atlasPageAllocationSampleWeightMiB": 64.1155776977539,
+      "evidence": {
+        "process-result.json": "0053bc4842a0bbff5196f8664ee1dcf1b2849730843cb41312dac76bcbd5171d",
+        "analysis.json": "a1426334595bc770dd680f99d3dd612fb8b1a8b84cf052fef3dbd364f8097a71",
+        "capture/result.json": "38ae5312f11c8d09e753a8d1ccc9f83623f62b3f31e9f1f9b61ab54a0098379b"
+      }
+    },
+    {
+      "name": "opening-candidate-b2",
+      "shaderReuse": "1",
+      "coreSha256": "8773d742b14a7de65772dd6515281eb2f093151ae2d977fad2b0a92a7df3c181",
+      "sample": {
+        "requestedWarmupFrames": 1200,
+        "producedSampleFrames": 1200,
+        "selection": "generatedAfter>warm && <=warm+frames && >generatedBefore",
+        "startGenerated": 1201,
+        "endGenerated": 2400,
+        "startTick": 605,
+        "endTick": 1205,
+        "actualWindowSeconds": 20.228370917,
+        "fullFrameWall": {
+          "count": 1200,
+          "p50Ms": 16.7515,
+          "p95Ms": 20.153167,
+          "p99Ms": 30.024625,
+          "p999Ms": 41.844125,
+          "maxMs": 51.457917,
+          "over33_333Ms": 5,
+          "over50Ms": 1,
+          "over100Ms": 0
+        },
+        "completionIntervals": {
+          "count": 1200,
+          "p50Ms": 16.763334,
+          "p95Ms": 20.180292,
+          "p99Ms": 30.030417,
+          "p999Ms": 41.851041,
+          "maxMs": 51.48425,
+          "over33_333Ms": 5,
+          "over50Ms": 1,
+          "over100Ms": 0
+        },
+        "interFrameObserverAdapterGaps": {
+          "count": 1200,
+          "p50Ms": 0.015209,
+          "p95Ms": 0.039583,
+          "p99Ms": 0.056792,
+          "p999Ms": 0.1945,
+          "maxMs": 0.196708,
+          "over33_333Ms": 0,
+          "over50Ms": 0,
+          "over100Ms": 0
+        },
+        "threadCpu": {
+          "count": 1200,
+          "p50Ms": 2.309,
+          "p95Ms": 6.258,
+          "p99Ms": 15.745,
+          "p999Ms": 25.684,
+          "maxMs": 26.21,
+          "over33_333Ms": 0,
+          "over50Ms": 0,
+          "over100Ms": 0
+        },
+        "nativeSubmissionsObserved": 1200,
+        "gcPauseCount": 5,
+        "gcPauseDurationSumMs": 56.143957,
+        "gcPauseMaxMs": 24.817166
+      },
+      "validThreadCpuSumMs": 3329.799,
+      "allocationSampleWeightMiB": 548.9535903930664,
+      "shaderCreationAllocationSampleWeightMiB": 21.955528259277344,
+      "atlasPageAllocationSampleWeightMiB": 64.97285461425781,
+      "evidence": {
+        "process-result.json": "0fd247eb9c828acc3b29302cc99e213b3440ca115a6a55d900f99451fae67bd7",
+        "analysis.json": "9777fb2787eea176f72b12d9e181e5ab524991f46d0fe3f91f4c5edca6b7c65f",
+        "capture/result.json": "d16fcc38cf557b49e600f5bf54aab87bdf1260092f534468fceeb2189cfbea3d"
+      }
+    },
+    {
+      "name": "opening-control-a2",
+      "shaderReuse": "0",
+      "coreSha256": "8773d742b14a7de65772dd6515281eb2f093151ae2d977fad2b0a92a7df3c181",
+      "sample": {
+        "requestedWarmupFrames": 1200,
+        "producedSampleFrames": 1200,
+        "selection": "generatedAfter>warm && <=warm+frames && >generatedBefore",
+        "startGenerated": 1201,
+        "endGenerated": 2400,
+        "startTick": 605,
+        "endTick": 1205,
+        "actualWindowSeconds": 20.279953875,
+        "fullFrameWall": {
+          "count": 1200,
+          "p50Ms": 16.767167,
+          "p95Ms": 20.861709,
+          "p99Ms": 31.718958,
+          "p999Ms": 47.274083,
+          "maxMs": 53.345958,
+          "over33_333Ms": 6,
+          "over50Ms": 1,
+          "over100Ms": 0
+        },
+        "completionIntervals": {
+          "count": 1200,
+          "p50Ms": 16.78425,
+          "p95Ms": 20.888292,
+          "p99Ms": 31.726291,
+          "p999Ms": 47.311792,
+          "maxMs": 53.360291,
+          "over33_333Ms": 6,
+          "over50Ms": 1,
+          "over100Ms": 0
+        },
+        "interFrameObserverAdapterGaps": {
+          "count": 1200,
+          "p50Ms": 0.017958,
+          "p95Ms": 0.037375,
+          "p99Ms": 0.048542,
+          "p999Ms": 0.106167,
+          "maxMs": 0.120833,
+          "over33_333Ms": 0,
+          "over50Ms": 0,
+          "over100Ms": 0
+        },
+        "threadCpu": {
+          "count": 1200,
+          "p50Ms": 2.477,
+          "p95Ms": 5.988,
+          "p99Ms": 15.319,
+          "p999Ms": 32.403,
+          "maxMs": 35.212,
+          "over33_333Ms": 1,
+          "over50Ms": 0,
+          "over100Ms": 0
+        },
+        "nativeSubmissionsObserved": 1200,
+        "gcPauseCount": 5,
+        "gcPauseDurationSumMs": 58.612833,
+        "gcPauseMaxMs": 27.642583
+      },
+      "validThreadCpuSumMs": 3481.872,
+      "allocationSampleWeightMiB": 582.0107116699219,
+      "shaderCreationAllocationSampleWeightMiB": 64.30107879638672,
+      "atlasPageAllocationSampleWeightMiB": 64.00006103515625,
+      "evidence": {
+        "process-result.json": "f9e5b02ad50467b309b5287cc7a6babec7d5ce9e729c15d7a11c8a27f6a0c8e4",
+        "analysis.json": "635d560838c4567322da4aebf4be8438dd80d4b3d9b94cbde1fdb281b92c248c",
+        "capture/result.json": "6a79bf838468100b26319aa78015f2facdb795036dbc6a193747e4c5ea357ae8"
+      }
+    }
+  ],
+  "comparison": {
+    "validThreadCpuSumMs": {
+      "control": [
+        3175.252,
+        3481.872
+      ],
+      "candidate": [
+        3255.576,
+        3329.799
+      ],
+      "controlMedian": 3328.562,
+      "candidateMedian": 3292.6875,
+      "medianChangePercent": -1.077777731044216
+    },
+    "allocationSampleWeightMiB": {
+      "control": [
+        582.5195770263672,
+        582.0107116699219
+      ],
+      "candidate": [
+        490.8296203613281,
+        548.9535903930664
+      ],
+      "controlMedian": 582.2651443481445,
+      "candidateMedian": 519.8916053771973,
+      "medianChangePercent": -10.712222700669383
+    },
+    "shaderCreationAllocationSampleWeightMiB": {
+      "control": [
+        59.87782287597656,
+        64.30107879638672
+      ],
+      "candidate": [
+        19.460662841796875,
+        21.955528259277344
+      ],
+      "controlMedian": 62.08945083618164,
+      "candidateMedian": 20.70809555053711,
+      "medianChangePercent": -66.6479647159807
+    },
+    "gcPauseDurationSumMs": {
+      "control": [
+        49.791625,
+        58.612833
+      ],
+      "candidate": [
+        39.51675,
+        56.143957
+      ],
+      "controlMedian": 54.202229,
+      "candidateMedian": 47.8303535,
+      "medianChangePercent": -11.755744399367785
+    },
+    "fullFrameP99Ms": {
+      "control": [
+        30.32225,
+        31.718958
+      ],
+      "candidate": [
+        30.747,
+        30.024625
+      ],
+      "controlMedian": 31.020604,
+      "candidateMedian": 30.3858125,
+      "medianChangePercent": -2.046354416567775
+    },
+    "fullFrameMaxMs": {
+      "control": [
+        47.016625,
+        53.345958
+      ],
+      "candidate": [
+        54.195792,
+        51.457917
+      ],
+      "controlMedian": 50.1812915,
+      "candidateMedian": 52.826854499999996,
+      "medianChangePercent": 5.272010585857467
+    }
+  },
+  "decision": "Keep RWX_REUSE_INSTANCED_TEXTURE_SHADERS default OFF. Allocation sampling shows a reduction, but GC/tail/CPU improvement is inconsistent and full-canvas/native-bind compatibility acceptance is not complete.",
+  "limits": [
+    "JFR allocation weights are statistical samples, not exact allocated bytes.",
+    "Do not pool frames into independent experimental replicates; the replicate is a JVM run.",
+    "Concurrent user applications and OS/GPU contention are uncontrolled.",
+    "Per-run maxima and two-run medians do not establish a stable tail-latency effect."
+  ],
+  "date": "2026-11-02",
+  "applicationVersion": "1.4.3",
+  "productionDefaultsChanged": false,
+  "compatibilityAcceptance": {
+    "fullCanvasPixelsCompleted": false,
+    "nativeSharedShaderBindingsCompleted": false,
+    "existingRealCellOracleSufficientForRootFlag": false
+  },
+  "source": {
+    "path": "/Users/wty/code/RWXX/build/shader-reuse-20261102/comparison.json",
+    "sha256": "e64693324b0a057ab1b3ca5bd4b26a88dee872c42562c7f45b089a5b7cdb8745"
+  },
+  "method": "Same core artifact 8773d742b14a7de65772dd6515281eb2f093151ae2d977fad2b0a92a7df3c181; same source checksums and JVM flags; clear inherited renderer/native settings; only shader reuse 0/1/1/0 differs after normalizing output paths.",
+  "nextCandidate": "Read-only lifecycle audit of repeated unpublished 16MiB atlas Page arrays. No scratch reuse implementation or performance acceptance yet.",
+  "independentReview": {
+    "path": "/Users/wty/code/RWXX/build/shader-reuse-20261102/independent-review.json",
+    "sha256": "949b886f715d48202fbe182619f109a2bff86dfca9a0ccbf08e901eb1d49a9e8",
+    "result": "Accepted as allocation screening only; keep default OFF. Inclusive stack weights cannot be called exact allocation counts."
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema": "rwxx-gpu-readback-sample-scope-errata-2026-11-05-v1",
+  "sourceReview": {
+    "path": "build/opaque-point-union-20261105/readback-sample-scope-errata-v1.json",
+    "sha256": "f2ce0800a3da77de12ea7da7e8984ae587d26928fa5eac3a831a96b158f7b3c2"
+  },
+  "historicalRecordsUnchanged": true,
+  "correction": "Existing Sprite and examined MapCell compositors inherit OffscreenPass2d default samples1. Native/main context samples4 is a separate true fact; do not describe downloaded image pixels as a sample4 equivalence proof.",
+  "newOpaqueUnionOracle": {
+    "source": "desktop/src/test/kotlin/io/github/rwx/kool/vulkan/WindowlessOpaquePointUnionOracle.kt",
+    "readbackPassSamples": 4,
+    "actualRun": "build/opaque-point-union-20261105/gpu-exact-v1/process-result.json",
+    "pairs": 22,
+    "rgbaPixels": 77627,
+    "maxChannelDelta": 0,
+    "actualUnionCalls": 16,
+    "inputPoints": 9216,
+    "outputRects": 94,
+    "fenceCheckpoints": 44,
+    "retirementsCompleted": 44,
+    "scope": "Real GraphicsEngine FloatArray points -> snapshot -> production freeze -> SceneHost -> explicit sample4 offscreen resolve/readback. Correctness only."
+  }
+}

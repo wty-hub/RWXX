@@ -10,7 +10,7 @@ import shutil
 
 from map_pan_comparison import (PROJECT, REPLAY_ALIAS, analyze_run, copy_replay_alias,
                                 isolated_seed, run_environment, write_json)
-from map_pan_builtin_comparison import launch, confirm_experimental_modes
+from map_pan_builtin_comparison import launch, confirm_camera_zoom, confirm_experimental_modes
 from map_pan_diagnostic import export_jfr
 from vulkan_native_matrix import java_command
 from frozen_benchmark_tooling import fingerprint
@@ -28,9 +28,10 @@ def main():
     parser.add_argument('--camera-period-seconds', type=int, default=1)
     parser.add_argument('--camera-mode', choices=('pan', 'jump', 'pan-zoom', 'zoom', 'static'), default='pan',
                         help='pan-zoom pans and zooms; zoom cycles zoom at a fixed camera center')
-    parser.add_argument('--zoom-mode', choices=('none', 'cycle'), default=None)
+    parser.add_argument('--zoom-mode', choices=('none', 'fixed', 'cycle'), default=None,
+                        help='fixed uses --zoom-min as a constant target; ordinary UI bounds and density still apply')
     parser.add_argument('--zoom-period-seconds', type=int, default=4)
-    parser.add_argument('--zoom-min', type=float, default=.35, help='Requested target zoom; ordinary UI bounds still apply')
+    parser.add_argument('--zoom-min', type=float, default=.35, help='Minimum cycle zoom, or the constant target for fixed; ordinary UI bounds still apply')
     parser.add_argument('--zoom-max', type=float, default=1.5)
     parser.add_argument('--camera-trace', action='store_true',
                         help='Buffer per-owner camera observations to camera.csv; also enabled by --diagnostic for zoom cycles')
@@ -71,7 +72,8 @@ def main():
                              'because enabling it made pan+zoom runs fail to complete and races game state')
     parser.add_argument('--frozen-reuse', action='store_true',
                         help='RWX_FROZEN_CONTENT_REUSE=1: reuse unchanged frozen cell content instead of '
-                             're-freezing it every frame; each hit restores its validated transitive resources')
+                             're-freezing it every frame; each hit restores its validated transitive resources. '
+                             'Omitted explicitly disables this product-default feature for a controlled OFF arm')
     parser.add_argument('--tile-run', action='store_true',
                         help='RWX_MAP_TILE_RUN_TILE=1: re-enable the terrain row merge. It is OFF by default '
                              'because it leaves black holes across the map; --tile-run is for fixing it.')
@@ -79,6 +81,12 @@ def main():
                         help='Compact ordered GPU map-cell texture batches; experimental candidate')
     parser.add_argument('--prepared-map-tiles', action='store_true',
                         help='Controlled prepared map recording: omitted explicitly disables this product-default feature')
+    parser.add_argument('--share-texture-registrations', action='store_true',
+                        help='Share source texture registration metadata between related drawing targets; '
+                             'omitted explicitly disables this product-default feature for a controlled OFF arm')
+    parser.add_argument('--share-map-atlas-pixels', action='store_true',
+                        help='Share identical immutable atlas CPU pixels and upload storage between map targets; '
+                             'omitted explicitly disables this product-default feature for a controlled OFF arm')
     parser.add_argument('--map-fog-batches', action='store_true',
                         help='Literal-order mixed fog mask batches; experimental candidate')
     parser.add_argument('--map-zoom-generation', action='store_true',
@@ -117,6 +125,7 @@ def main():
     parser.add_argument('--guard-short-owner-park', action='store_true')
     parser.add_argument('--guard-short-render-park', action='store_true', help='Candidate: avoid coarse Windows waits near render deadlines')
     parser.add_argument('--stable-frame-deadlines', action='store_true', help='Candidate: compensate small wake-up drift without changing simulation delta or catching up missed intervals')
+    parser.add_argument('--stable-owner-deadlines', action='store_true', help='Candidate: compensate engine-owner wake drift while leaving render pacing unchanged')
     parser.add_argument('--wait-for-fresh-frame', action='store_true', help='Candidate: wait up to 1.5 ms for a new publication before collecting a repeated picture; input-response gate remains mandatory')
     parser.add_argument('--post-input-frame-wait', action='store_true', help='Candidate: move bounded publication wait after normal input forwarding; require that publication includes adopted input')
     parser.add_argument('--share-map-texture-materials', action='store_true', help='Candidate: share immutable instanced materials between map target slots, retaining independent mesh/view data and existing GPU fences')
@@ -178,10 +187,11 @@ def main():
         parser.error('--adaptive-cell-raster requires --parallel-cell-raster')
     if args.camera_period_seconds < 1 or args.zoom_period_seconds < 1:
         parser.error('camera and zoom periods must be >= 1 second')
-    if not (math.isfinite(args.zoom_min) and math.isfinite(args.zoom_max) and 0 < args.zoom_min < args.zoom_max):
-        parser.error('zoom limits must be finite and 0 < zoom-min < zoom-max')
     camera_mode = {'pan-zoom': 'pan', 'zoom': 'static'}.get(args.camera_mode, args.camera_mode)
     zoom_mode = args.zoom_mode or ('cycle' if args.camera_mode in ('pan-zoom', 'zoom') else 'none')
+    if not (math.isfinite(args.zoom_min) and math.isfinite(args.zoom_max) and args.zoom_min > 0 and args.zoom_max > 0
+            and (zoom_mode == 'fixed' or args.zoom_min < args.zoom_max)):
+        parser.error('zoom limits must be finite and positive; none/cycle require zoom-min < zoom-max; fixed uses zoom-min')
     if args.normal_input_probe and (camera_mode != 'static' or zoom_mode != 'none' or not args.input_response_trace):
         parser.error('--normal-input-probe requires --camera-mode static and --input-response-trace')
     if args.camera_mode in ('pan-zoom', 'zoom') and zoom_mode != 'cycle':
@@ -250,6 +260,9 @@ def main():
                 'RWX_DEBUG_AUTO_EXIT_SECONDS': str(max(140, args.warmup_seconds + args.sample_seconds * args.repetitions + 85))})
     # Keep frozen ABBA controls explicit even when the current product default is ON.
     env['RWX_PREPARED_MAP_TILES'] = '1' if args.prepared_map_tiles else '0'
+    env['RWX_SHARE_TEXTURE_REGISTRATIONS'] = '1' if args.share_texture_registrations else '0'
+    env['RWX_SHARE_MAP_ATLAS_PIXELS'] = '1' if args.share_map_atlas_pixels else '0'
+    env['RWX_FROZEN_CONTENT_REUSE'] = '1' if args.frozen_reuse else '0'
     if args.disable_map_rect_batches:
         env['RWX_MAP_RECT_BATCHES'] = '0'
     if args.msaa is not None:
@@ -266,6 +279,8 @@ def main():
         env['RWX_GUARD_SHORT_RENDER_PARK'] = '1'
     if args.stable_frame_deadlines:
         env['RWX_STABLE_FRAME_DEADLINES'] = '1'
+    if args.stable_owner_deadlines:
+        env['RWX_STABLE_OWNER_DEADLINES'] = '1'
     if args.wait_for_fresh_frame:
         env['RWX_WAIT_FOR_FRESH_FRAME'] = '1'
     if args.post_input_frame_wait:
@@ -335,8 +350,6 @@ def main():
         env['RWX_REUSE_TRACE'] = '1'
     if args.offscreen_atlas_off:
         env['RWX_OFFSCREEN_TEXTURE_ATLAS'] = '0'
-    if args.frozen_reuse:
-        env['RWX_FROZEN_CONTENT_REUSE'] = '1'
     if args.sync_scene_update:
         env['RWX_ASYNC_SCENE_UPDATE'] = '0'
     if args.cpu_cell_raster:
@@ -412,12 +425,12 @@ def main():
                            'perfWindowLogRequested': not args.no_perf_window_log,
                            'canvasStageTraceRequested': args.canvas_stage_trace,
                            'nativeBgraUploadsRequested': not args.disable_native_bgra_upload,
-                           'hybridOwnerPacingRequested': not args.legacy_owner_pacing,
+                           'hybridOwnerPacingRequested': env.get('RWX_HYBRID_OWNER_PACING') == '1' and env.get('RWX_LEGACY_OWNER_PACING') != '1',
                            'legacyShortOwnerParkRequested': args.legacy_short_owner_park or not args.guard_short_owner_park,
                            'shortParkGuardRequested': not args.legacy_owner_pacing and args.guard_short_owner_park and not args.legacy_short_owner_park,
                            'textMeshReuseRequested': not args.disable_text_mesh_reuse,
                            'textureMetadataReuseRequested': not args.disable_texture_metadata_reuse,
-                           'timeBasedMapZoomCacheRequested': args.time_based_map_zoom_cache,
+                           'timeBasedMapZoomCacheRequested': env.get('RWX_TIME_BASED_MAP_ZOOM_CACHE') != '0',
                            'parallelCellRasterRequested': args.parallel_cell_raster,
                            'adaptiveCellRasterRequested': args.adaptive_cell_raster,
                            'gpuMapCellCacheRequested': not args.cpu_cell_raster,
@@ -425,6 +438,8 @@ def main():
                            'primitiveTextMetricsRequested': args.primitive_text_metrics,
                            'preparedCanvasTextRequested': args.prepare_canvas_text,
                            'preparedMapTilesRequested': args.prepared_map_tiles,
+                           'shareTextureRegistrationsRequested': args.share_texture_registrations,
+                           'shareMapAtlasPixelsRequested': args.share_map_atlas_pixels,
                            'cpuTargetProfileRequested': args.cpu_target_profile,
                            'rasterThreadsRequested': args.raster_threads,
                            'vulkanStageTraceRequested': args.vk_trace,
@@ -461,6 +476,9 @@ def main():
     if args.stable_frame_deadlines and 'stableFrameDeadlines=true' not in actual_log:
         report['run']['invalidReasons'].append('stable frame deadlines candidate is not confirmed by the runtime')
         report['run']['validMeasurement'] = False
+    if args.stable_owner_deadlines and not re.search(r'^RWXOwnerPacing .*stableFrameDeadlines=true(?:\s|$)', actual_log, re.MULTILINE):
+        report['run']['invalidReasons'].append('stable owner deadlines candidate is not confirmed by the owner runtime')
+        report['run']['validMeasurement'] = False
     if args.wait_for_fresh_frame and not args.post_input_frame_wait and 'RWXFreshFrameWait active=true' not in actual_log:
         report['run']['invalidReasons'].append('fresh-frame wait candidate did not become active in this run')
         report['run']['validMeasurement'] = False
@@ -479,6 +497,16 @@ def main():
     if args.prepared_map_tiles and 'RWXPreparedMapTiles recordingConfirmed=true' not in actual_log:
         report['run']['invalidReasons'].append('prepared map tile recording was not exercised')
         report['run']['validMeasurement'] = False
+    if args.share_texture_registrations and 'RWXSharedTextureRegistrations sharingConfirmed=true' not in actual_log:
+        report['run']['invalidReasons'].append('shared texture registrations were not exercised')
+        report['run']['validMeasurement'] = False
+    if args.share_map_atlas_pixels:
+        for marker, reason in (
+                ('RWXAtlasPixelSharing reuseConfirmed=true', 'shared atlas CPU pixel reuse was not confirmed'),
+                ('RWXAtlasPixelUploads reuseConfirmed=true', 'shared atlas upload reuse was not confirmed')):
+            if marker not in actual_log:
+                report['run']['invalidReasons'].append(reason)
+                report['run']['validMeasurement'] = False
     if args.cull_offscreen_text and 'RWXOffscreenText cullConfirmed=true' not in actual_log:
         report['run']['invalidReasons'].append('offscreen text rejection was not exercised')
         report['run']['validMeasurement'] = False
@@ -522,21 +550,25 @@ def main():
                                args.primitive_text_metrics, args.adaptive_cell_raster, not args.cpu_cell_raster)
     # The shared pan analyzer deliberately retains its existing pan/jump contract.
     # Add zoom confirmation here so a runtime that silently ignores new flags fails.
-    zoom_confirmed = report['run']['setup'] is not None and report['run']['setup'].get('zoomMode') == zoom_mode
-    if zoom_mode == 'cycle':
-        setup = report['run']['setup'] or {}
-        zoom_confirmed = zoom_confirmed and setup.get('zoomPeriodSeconds') == args.zoom_period_seconds and all(
-            isinstance(setup.get(key), (int, float)) and math.isclose(setup[key], requested, abs_tol=1e-6)
-            for key, requested in (('zoomRequestedMinimum', args.zoom_min), ('zoomRequestedMaximum', args.zoom_max))) and all(
-            window.get('zoomMode') == 'cycle'
-            and isinstance(window.get('actualZoomMinimum'), (int, float))
-            and isinstance(window.get('actualZoomMaximum'), (int, float))
-            and window['actualZoomMaximum'] - window['actualZoomMinimum'] > .01
-            for window in report['run']['windows'])
-    report['run']['zoomModeConfirmed'] = zoom_confirmed
-    if zoom_mode == 'cycle' and not zoom_confirmed:
-        report['run']['invalidReasons'].append('continuous zoom request was not confirmed by actual engine zoom changes')
-        report['run']['validMeasurement'] = False
+    if zoom_mode == 'fixed':
+        confirm_camera_zoom(report['run'], {'zoomMode': zoom_mode, 'zoomPeriodSeconds': args.zoom_period_seconds,
+                                           'zoomMinimumRequested': args.zoom_min, 'zoomMaximumRequested': args.zoom_max})
+    else:
+        zoom_confirmed = report['run']['setup'] is not None and report['run']['setup'].get('zoomMode') == zoom_mode
+        if zoom_mode == 'cycle':
+            setup = report['run']['setup'] or {}
+            zoom_confirmed = zoom_confirmed and setup.get('zoomPeriodSeconds') == args.zoom_period_seconds and all(
+                isinstance(setup.get(key), (int, float)) and math.isclose(setup[key], requested, abs_tol=1e-6)
+                for key, requested in (('zoomRequestedMinimum', args.zoom_min), ('zoomRequestedMaximum', args.zoom_max))) and all(
+                window.get('zoomMode') == 'cycle'
+                and isinstance(window.get('actualZoomMinimum'), (int, float))
+                and isinstance(window.get('actualZoomMaximum'), (int, float))
+                and window['actualZoomMaximum'] - window['actualZoomMinimum'] > .01
+                for window in report['run']['windows'])
+        report['run']['zoomModeConfirmed'] = zoom_confirmed
+        if zoom_mode == 'cycle' and not zoom_confirmed:
+            report['run']['invalidReasons'].append('continuous zoom request was not confirmed by actual engine zoom changes')
+            report['run']['validMeasurement'] = False
     if args.real_scene_oracle or args.real_scene_cell_oracle:
         oracle_path = output / 'real-scene-oracle' / 'summary.json'
         evidence = json.loads(oracle_path.read_text(encoding='utf-8')) if oracle_path.exists() else None

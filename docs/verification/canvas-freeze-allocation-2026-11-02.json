@@ -1,0 +1,433 @@
+{
+  "date": "2026-11-02",
+  "platform": "macOS arm64 / JDK 25",
+  "applicationVersion": "1.4.3",
+  "status": "display-only-allocation-optimization-correctness-passed-local-benefit-measured-end-to-end-unverified",
+  "changes": [
+    "Reuse the per-call frame IdentityHashMap in the existing scratch pool; clear both keys and values on release and discard if memo exceeds 8192 entries.",
+    "Create ten diagnostic-only maps only when RWX_CANVAS_TRACE is enabled. Preserve the resource/dependency containers required for correctness.",
+    "Probe frozenReferences before looking up the source map; content-reuse mode still records dependencies on every memo hit."
+  ],
+  "compatibilityBoundary": {
+    "unchangedInThisBatch": [
+      "deterministic simulation",
+      "network protocol",
+      "save/replay serialization",
+      "map cache invalidation",
+      "command order and coordinates",
+      "published frame independence",
+      "resource lease and GPU fence ownership",
+      "existing experimental defaults"
+    ],
+    "baseline": "Core JAR built and frozen from the existing working tree before this performance batch; pre-existing session/network changes are common to both arms. Not a clean-HEAD or original-client comparison.",
+    "crossPlatform": "Core JVM code compiles and tests on macOS. No new Windows/Linux/Android runtime acceptance or release packaging."
+  },
+  "tests": {
+    "core": {
+      "tests": 466,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "desktop": {
+      "tests": 145,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "headlessEnforced": true,
+    "nativeFullscreenExercised": false,
+    "logs": [
+      "build/freeze-optimization-20261102/headless-validation.log",
+      "build/freeze-optimization-20261102/final-core-validation.log"
+    ]
+  },
+  "retainedInitialFailure": {
+    "results": {
+      "core": {
+        "tests": 465,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1,
+        "failedCases": []
+      },
+      "desktop": {
+        "tests": 145,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0,
+        "failedCases": [
+          "io.github.rwx.MacNativeFullscreenTest.macOS JDK delivers native enter and exit callbacks with a decorated frame()"
+        ]
+      }
+    },
+    "log": "build/freeze-optimization-20261102/validation.log",
+    "reason": "Unqualified desktop:test exercised MacNativeFullscreenTest and did not receive its native enter callback. Preserved as a failure. All subsequent Test JVMs forced java.awt.headless=true, so native fullscreen behavior is not accepted."
+  },
+  "regressions": [
+    "Same recorded root/nested frame resolves a changed leaf on the next freeze while old lease keeps old pixels.",
+    "Failed traversal releases scratch and the next freeze resolves the new leaf version.",
+    "Reborrow clears frame keys and values; distinct equal-valued frames count toward capacity.",
+    "Oversized frame memo discarded; nested borrows and close preserve active traversals.",
+    "Existing resource closure, cycle/missing, displacement, mailbox and fence ownership tests."
+  ],
+  "diagnosticAndSimulationChecks": {
+    "date": "2026-11-02",
+    "headless": true,
+    "diagnostics": [
+      {
+        "scratch": 0,
+        "contentReuse": 0,
+        "equalCounterRows": true,
+        "rowsPerArm": 60
+      },
+      {
+        "scratch": 0,
+        "contentReuse": 1,
+        "equalCounterRows": true,
+        "rowsPerArm": 55
+      },
+      {
+        "scratch": 1,
+        "contentReuse": 0,
+        "equalCounterRows": true,
+        "rowsPerArm": 60
+      },
+      {
+        "scratch": 1,
+        "contentReuse": 1,
+        "equalCounterRows": true,
+        "rowsPerArm": 55
+      }
+    ],
+    "simulation": [
+      {
+        "arm": "baseline",
+        "exitCode": 0,
+        "ticks": 600,
+        "sha256": "68d123ff70cd625cc88d0f7f15dff8e427b6c5204406bf4b9c6c7d91f8729af5"
+      },
+      {
+        "arm": "candidate",
+        "exitCode": 0,
+        "ticks": 600,
+        "sha256": "68d123ff70cd625cc88d0f7f15dff8e427b6c5204406bf4b9c6c7d91f8729af5"
+      }
+    ],
+    "simulationChecksumsEqual": true,
+    "limitations": [
+      "Not an original-client multiplayer/replay parity run.",
+      "Headless simulation does not exercise rendering or validate physical input/scanout."
+    ]
+  },
+  "microbenchmark": {
+    "protocol": {
+      "date": "2026-11-02",
+      "artifacts": {
+        "build/freeze-optimization-20261102/baseline-core.jar": "fd2369de0d762220b3286389ee05127c0b28081f9a159fd485e7cbe8b714cfe4",
+        "build/freeze-optimization-20261102/candidate-core.jar": "4e4e59713b499ec48938c0b0330b296d4cd53b6f914295df2cca6c266c7e6c52",
+        "desktop/build/libs/RWXX-1.4.2-macos-arm64.jar": "23b33f372bffc1e752d5a185fba5c1365366f801418d3d39debfc063719c6e6c",
+        "build/freeze-optimization-20261102/classes/CanvasFreezeBenchmark.class": "843dda7f1493c676b85a8f6745ed551d3745e70b58662a125c60e96e48b8baf6"
+      },
+      "environment": {
+        "RWX_GPU_MAP_CELL_TARGETS": "1",
+        "RWX_CANVAS_FREEZE_SCRATCH_POOL": "1",
+        "RWX_FROZEN_CONTENT_REUSE": "0",
+        "RWX_REUSE_FROZEN_TEXTURE_REFERENCES": "0",
+        "RWX_SHARE_IMMUTABLE_COMMANDS": "0",
+        "RWX_MAP_TEXTURE_BATCHES": "0"
+      },
+      "processOrder": [
+        "baseline",
+        "candidate",
+        "candidate",
+        "baseline"
+      ],
+      "warmup": 3000,
+      "frames": 6000,
+      "heapMiB": 192,
+      "scope": "Windowless recorded root/GpuTarget graph freezing and lease close; no GPU, simulation or input.",
+      "limitations": [
+        "Concurrent user work allowed; allocation is primary metric, CPU/wall are local screening.",
+        "Synthetic fixtures; no new-frame cadence, original-client comparison or physical display measurement.",
+        "Existing defaults/candidates are explicitly pinned; not a new GPU or frozen-content-reuse comparison."
+      ]
+    },
+    "records": [
+      {
+        "cells": 0,
+        "drawsPerFrame": 128,
+        "warmup": 3000,
+        "frames": 6000,
+        "allocatedBytes": 72321376,
+        "bytesPerFrame": 12053.563,
+        "cpuNanosPerFrame": 3350.333,
+        "wallNanosPerFrame": 3806.778,
+        "sink": 1161000,
+        "freezeAndLeaseOnly": true,
+        "fixture": "main",
+        "arm": "baseline",
+        "index": 1,
+        "sourceLog": "build/freeze-optimization-20261102/micro-main-1-baseline.log"
+      },
+      {
+        "cells": 0,
+        "drawsPerFrame": 128,
+        "warmup": 3000,
+        "frames": 6000,
+        "allocatedBytes": 55133776,
+        "bytesPerFrame": 9188.963,
+        "cpuNanosPerFrame": 2593.833,
+        "wallNanosPerFrame": 2782.5,
+        "sink": 1161000,
+        "freezeAndLeaseOnly": true,
+        "fixture": "main",
+        "arm": "candidate",
+        "index": 2,
+        "sourceLog": "build/freeze-optimization-20261102/micro-main-2-candidate.log"
+      },
+      {
+        "cells": 0,
+        "drawsPerFrame": 128,
+        "warmup": 3000,
+        "frames": 6000,
+        "allocatedBytes": 55135312,
+        "bytesPerFrame": 9189.219,
+        "cpuNanosPerFrame": 2582.167,
+        "wallNanosPerFrame": 2764.389,
+        "sink": 1161000,
+        "freezeAndLeaseOnly": true,
+        "fixture": "main",
+        "arm": "candidate",
+        "index": 3,
+        "sourceLog": "build/freeze-optimization-20261102/micro-main-3-candidate.log"
+      },
+      {
+        "cells": 0,
+        "drawsPerFrame": 128,
+        "warmup": 3000,
+        "frames": 6000,
+        "allocatedBytes": 72324488,
+        "bytesPerFrame": 12054.081,
+        "cpuNanosPerFrame": 3060.333,
+        "wallNanosPerFrame": 3408.118,
+        "sink": 1161000,
+        "freezeAndLeaseOnly": true,
+        "fixture": "main",
+        "arm": "baseline",
+        "index": 4,
+        "sourceLog": "build/freeze-optimization-20261102/micro-main-4-baseline.log"
+      },
+      {
+        "cells": 32,
+        "drawsPerFrame": 4256,
+        "warmup": 3000,
+        "frames": 6000,
+        "allocatedBytes": 2060962984,
+        "bytesPerFrame": 343493.831,
+        "cpuNanosPerFrame": 90945.667,
+        "wallNanosPerFrame": 91663.417,
+        "sink": 1737000,
+        "freezeAndLeaseOnly": true,
+        "fixture": "map32",
+        "arm": "baseline",
+        "index": 1,
+        "sourceLog": "build/freeze-optimization-20261102/micro-map32-1-baseline.log"
+      },
+      {
+        "cells": 32,
+        "drawsPerFrame": 4256,
+        "warmup": 3000,
+        "frames": 6000,
+        "allocatedBytes": 1647395104,
+        "bytesPerFrame": 274565.851,
+        "cpuNanosPerFrame": 78302.333,
+        "wallNanosPerFrame": 78887.229,
+        "sink": 1737000,
+        "freezeAndLeaseOnly": true,
+        "fixture": "map32",
+        "arm": "candidate",
+        "index": 2,
+        "sourceLog": "build/freeze-optimization-20261102/micro-map32-2-candidate.log"
+      },
+      {
+        "cells": 32,
+        "drawsPerFrame": 4256,
+        "warmup": 3000,
+        "frames": 6000,
+        "allocatedBytes": 1647395104,
+        "bytesPerFrame": 274565.851,
+        "cpuNanosPerFrame": 75030.667,
+        "wallNanosPerFrame": 75619.514,
+        "sink": 1737000,
+        "freezeAndLeaseOnly": true,
+        "fixture": "map32",
+        "arm": "candidate",
+        "index": 3,
+        "sourceLog": "build/freeze-optimization-20261102/micro-map32-3-candidate.log"
+      },
+      {
+        "cells": 32,
+        "drawsPerFrame": 4256,
+        "warmup": 3000,
+        "frames": 6000,
+        "allocatedBytes": 2060962992,
+        "bytesPerFrame": 343493.832,
+        "cpuNanosPerFrame": 90659.5,
+        "wallNanosPerFrame": 91355.042,
+        "sink": 1737000,
+        "freezeAndLeaseOnly": true,
+        "fixture": "map32",
+        "arm": "baseline",
+        "index": 4,
+        "sourceLog": "build/freeze-optimization-20261102/micro-map32-4-baseline.log"
+      },
+      {
+        "cells": 128,
+        "drawsPerFrame": 4256,
+        "warmup": 3000,
+        "frames": 6000,
+        "allocatedBytes": 1957570960,
+        "bytesPerFrame": 326261.827,
+        "cpuNanosPerFrame": 95429.167,
+        "wallNanosPerFrame": 96234.847,
+        "sink": 2601000,
+        "freezeAndLeaseOnly": true,
+        "fixture": "map128",
+        "arm": "baseline",
+        "index": 1,
+        "sourceLog": "build/freeze-optimization-20261102/micro-map128-1-baseline.log"
+      },
+      {
+        "cells": 128,
+        "drawsPerFrame": 4256,
+        "warmup": 3000,
+        "frames": 6000,
+        "allocatedBytes": 1930787016,
+        "bytesPerFrame": 321797.836,
+        "cpuNanosPerFrame": 88038.5,
+        "wallNanosPerFrame": 88779.07,
+        "sink": 2601000,
+        "freezeAndLeaseOnly": true,
+        "fixture": "map128",
+        "arm": "candidate",
+        "index": 2,
+        "sourceLog": "build/freeze-optimization-20261102/micro-map128-2-candidate.log"
+      },
+      {
+        "cells": 128,
+        "drawsPerFrame": 4256,
+        "warmup": 3000,
+        "frames": 6000,
+        "allocatedBytes": 1930787048,
+        "bytesPerFrame": 321797.841,
+        "cpuNanosPerFrame": 87360.333,
+        "wallNanosPerFrame": 88162.229,
+        "sink": 2601000,
+        "freezeAndLeaseOnly": true,
+        "fixture": "map128",
+        "arm": "candidate",
+        "index": 3,
+        "sourceLog": "build/freeze-optimization-20261102/micro-map128-3-candidate.log"
+      },
+      {
+        "cells": 128,
+        "drawsPerFrame": 4256,
+        "warmup": 3000,
+        "frames": 6000,
+        "allocatedBytes": 1957570992,
+        "bytesPerFrame": 326261.832,
+        "cpuNanosPerFrame": 95059.5,
+        "wallNanosPerFrame": 95866.5,
+        "sink": 2601000,
+        "freezeAndLeaseOnly": true,
+        "fixture": "map128",
+        "arm": "baseline",
+        "index": 4,
+        "sourceLog": "build/freeze-optimization-20261102/micro-map128-4-baseline.log"
+      }
+    ],
+    "summary": {
+      "main": {
+        "arms": {
+          "baseline": {
+            "bytesPerFrame": 12053.822,
+            "cpuNanosPerFrame": 3205.333,
+            "wallNanosPerFrame": 3607.448
+          },
+          "candidate": {
+            "bytesPerFrame": 9189.091,
+            "cpuNanosPerFrame": 2588.0,
+            "wallNanosPerFrame": 2773.4445
+          }
+        },
+        "changePercent": {
+          "bytesPerFrame": -23.766163130665106,
+          "cpuNanosPerFrame": -19.259558991218697,
+          "wallNanosPerFrame": -23.118933384486763
+        }
+      },
+      "map32": {
+        "arms": {
+          "baseline": {
+            "bytesPerFrame": 343493.8315,
+            "cpuNanosPerFrame": 90802.58350000001,
+            "wallNanosPerFrame": 91509.2295
+          },
+          "candidate": {
+            "bytesPerFrame": 274565.851,
+            "cpuNanosPerFrame": 76666.5,
+            "wallNanosPerFrame": 77253.37150000001
+          }
+        },
+        "changePercent": {
+          "bytesPerFrame": -20.066730223072415,
+          "cpuNanosPerFrame": -15.567930949894182,
+          "wallNanosPerFrame": -15.57860128196139
+        }
+      },
+      "map128": {
+        "arms": {
+          "baseline": {
+            "bytesPerFrame": 326261.8295,
+            "cpuNanosPerFrame": 95244.33350000001,
+            "wallNanosPerFrame": 96050.6735
+          },
+          "candidate": {
+            "bytesPerFrame": 321797.8385,
+            "cpuNanosPerFrame": 87699.41649999999,
+            "wallNanosPerFrame": 88470.6495
+          }
+        },
+        "changePercent": {
+          "bytesPerFrame": -1.3682234930273984,
+          "cpuNanosPerFrame": -7.921643968457204,
+          "wallNanosPerFrame": -7.891692711556053
+        }
+      }
+    }
+  },
+  "fixtureValidation": {
+    "noWindowOrGpuContext": true,
+    "gpuAvailabilityGuard": "An installer that throws if called is supplied only to route recording to GPU_TARGET. No resource install or GPU rendering occurs.",
+    "assertions": "Before timing, assert exactly requested GpuTarget resources and cells*draws nested command count. Timed envelopes must have cells+1 resources.",
+    "initialSmoke": "An initial smoke without the installer guard took CPU raster fallback. It was corrected before the twelve frozen comparison records and is not used as a performance result."
+  },
+  "endToEnd": {
+    "accepted": false,
+    "newFrameCadenceMeasured": false,
+    "physicalInputMeasured": false,
+    "originalClientComparison": false,
+    "longSessionMeasured": false,
+    "newInstallPackageBuilt": false,
+    "nextInvestigation": "Per-frame command copying and render-thread mesh/instance construction remain larger structural costs. Preserve source versions and pixel/lease correctness before expanding reuse."
+  },
+  "sourceSha256": {
+    "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasFrameEnvelope.kt": "fbcca3d803145131ecb4e894e08e3be6485a1e722af955b8f3b0c08c46049bcd",
+    "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasFreezeScratchPool.kt": "41f57f6c9791f5c480f57e5c0f04749bdf3717d20a3291f8b88e75d27595dcbb",
+    "core/src/test/kotlin/io/github/rwx/render/canvas/KoolCanvasFreezeScratchPoolTest.kt": "6471d61d5491eba1b8974c3ee4a40d3ebf94c5a862119be952544820c037309c",
+    "desktop/tools/CanvasFreezeBenchmark.java": "7eca9214f3c251540c1c393f84691b56aced95a870cf46e6b338f2768d9b9fb1",
+    "core/src/main/kotlin/io/github/rwx/PlatformBridge.kt": "98d3d97e8bff043cae19f299196148d28ff0546b4037e9f638af95c287884d6c",
+    "gradle.properties": "20f80a96f674b8ed8754b7c8129c209d5080a3e6938c301bc2b8fe057b09bf9d"
+  }
+}

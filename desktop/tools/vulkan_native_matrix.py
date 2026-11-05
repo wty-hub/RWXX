@@ -15,6 +15,7 @@ import platform
 import re
 import shutil
 import subprocess
+import sys
 import time
 
 
@@ -32,6 +33,8 @@ def java_command(java: str, jar: Path, natives: Path) -> list[str]:
                         f"-Drwx.slick.nativesDir={natives}"])
     for package in ("java.desktop/sun.awt", "java.desktop/sun.awt.im", "java.base/java.lang"):
         command.extend(["--add-opens", f"{package}=ALL-UNNAMED"])
+    if sys.platform == "darwin":
+        command.append("--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED")
     return command + ["-cp", str(jar), "io.github.rwx.KoolDesktopMain",
                       "--screen=battleroom", "--auto-start-battleroom"]
 

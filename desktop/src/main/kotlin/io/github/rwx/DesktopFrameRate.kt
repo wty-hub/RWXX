@@ -75,4 +75,8 @@ internal fun desktopScheduledFrameStartNanos(scheduledNanos: Long, actualNanos: 
     if (periodNanos > 0 && actualNanos >= scheduledNanos && actualNanos - scheduledNanos < periodNanos / 2)
         scheduledNanos else actualNanos
 
+/** Keep the owner phase by default; explicit overrides also preserve the legacy combined switch. */
+internal fun resolveStableOwnerFrameDeadlines(ownerOverride: String?, combinedOverride: String?): Boolean =
+    (ownerOverride ?: combinedOverride).let { it == null || it == "1" }
+
 private const val DEFAULT_TARGET_FPS = 300

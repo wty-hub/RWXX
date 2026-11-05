@@ -373,9 +373,13 @@ class KoolCanvasSceneHost(
     }
 }
 
-internal fun KoolCanvasFrame.withSurfaceClear(): KoolCanvasFrame =
-    if (commands.any { it is KoolCanvasCommand.Clear && it.renderTarget == null }) this
-    else copy(commands = SurfaceClearCommands(commands))
+internal fun KoolCanvasFrame.withSurfaceClear(): KoolCanvasFrame {
+    val packed = commands as? KoolCanvasPackedTextureCommands
+    if (packed != null) return if (packed.hasRootClear()) this
+        else copy(commands = packed.withSurfaceClear(SurfaceClearCommands.surfaceClear))
+    return if (commands.any { it is KoolCanvasCommand.Clear && it.renderTarget == null }) this
+        else copy(commands = SurfaceClearCommands(commands))
+}
 
 /** The resource lease already owns a frozen, read-only command list; keep that list intact. */
 private class SurfaceClearCommands(private val commands: List<KoolCanvasCommand>) :
@@ -388,7 +392,7 @@ private class SurfaceClearCommands(private val commands: List<KoolCanvasCommand>
     }
 
     companion object {
-        private val surfaceClear = KoolCanvasCommand.Clear(
+        val surfaceClear = KoolCanvasCommand.Clear(
             KoolCanvasColor(0xff000000.toInt()), KoolCanvasBlendMode.Source,
         )
     }

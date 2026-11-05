@@ -23,7 +23,7 @@ class KoolTypeface private constructor(
     }
 
     companion object {
-        private val reuseTypefaceKeys = (System.getenv("RWX_REUSE_TYPEFACE_KEYS") == "1").also {
+        private val reuseTypefaceKeys = (System.getenv("RWX_REUSE_TYPEFACE_KEYS") != "0").also {
             println("[RWX canvas] reuseTypefaceKeys=$it")
         }
         private val cache = mutableMapOf<Int, MutableMap<Int, KoolTypeface>>()

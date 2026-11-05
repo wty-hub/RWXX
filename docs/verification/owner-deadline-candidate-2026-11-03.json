@@ -1,0 +1,668 @@
+{
+  "analysisDate": "2026-11-03",
+  "captureLocalDate": "2026-11-03",
+  "createdUtc": "2026-11-02T17:17:03.611371+00:00",
+  "status": "owner-only-candidate-packaged-default-off-cpu-evidence-valid-visible-validation-pending",
+  "applicationVersion": "1.4.3",
+  "goalComplete": false,
+  "finding": "真实自动owner的CPU raster-fallback回放诊断中，完成freeze的产出中位83.5→111.225Hz（+33.2036%）；这不是窗口FPS，长停顿仍存在。候选默认继续OFF，新同包可见A/B尚未执行或取得新授权。",
+  "candidate": {
+    "ownerOverride": "RWX_STABLE_OWNER_DEADLINES=1 opts in; 0 opts out; when absent, legacy RWX_STABLE_FRAME_DEADLINES fallback is preserved",
+    "defaultWhenBothFlagsAbsent": false,
+    "globalRendererPacingDefault": false,
+    "rendererPacerUnchanged": {
+      "member": "io/github/rwx/KoolFramePacerKt.class",
+      "sha256": "0164f4d16b0e38311102dd323440953d70f336f8e484dc9bbcf51dd80af5345c",
+      "bytes": 6144,
+      "globalDefault": "opt-in only; absent environment remains OFF"
+    },
+    "policy": "Only preserve the scheduled owner phase for small wake lateness with unchanged period; large lateness reanchors. Preserve actual elapsed delta and existing no-catch-up/reset/input/close behavior.",
+    "sourceHashes": {
+      "desktop/src/main/kotlin/io/github/rwx/kool/EngineOwnerLoop.kt": "850eaa8bcabb31c401a7fdb0debffec6b1409af59ac505d506f29893becaf4a0",
+      "desktop/src/main/kotlin/io/github/rwx/DesktopFrameRate.kt": "95f40ba49aa590f4b2990babbbf135ddf69cd2abb0a1a67a16433d7fd94563b1",
+      "desktop/src/main/kotlin/io/github/rwx/benchmark/OwnerSessionAcceptanceHarness.kt": "4b0b9e4788c6f427f33adaa55bfe7fab1d6a7021251f4ac59d88f22a01a781a7",
+      "desktop/src/test/kotlin/io/github/rwx/benchmark/OwnerReplayCadenceCapture.kt": "c548d304cfa55003a958db1ab5173c5d916615afa15feec9148ea333e9d334af"
+    },
+    "notAdoptedAsDefault": true,
+    "installed": false,
+    "newCandidateVisibleWindowLaunched": false
+  },
+  "cpuReplayDiagnostic": {
+    "scope": "Completed automatic-owner real-replay CPU raster-fallback freeze-production cadence; not visible game/screen FPS.",
+    "protocol": {
+      "order": [
+        "replay-control-a1",
+        "replay-candidate-b1",
+        "replay-candidate-b2",
+        "replay-control-a2"
+      ],
+      "warmupSeconds": 20,
+      "sampleSeconds": 20,
+      "targetFps": 120,
+      "onlyArmFlag": "RWX_STABLE_OWNER_DEADLINES=0/1/1/0",
+      "globalStableFlag": "unset",
+      "percentile": "lower order statistic floor((n-1)*p), matching frozen capture implementation",
+      "intervalWindow": "ending-in-fixed-window inclusive both ends, left crossing included, unfinished right age excluded",
+      "cpuWindow": "actual first-to-last world-draw-hook CPU/time span, not nominal20s",
+      "replicate": "one completed JVM per arm, n=2 JVM arms/treatment, ABBA; frames are not independent treatment replicates"
+    },
+    "environment": {
+      "nice": 19,
+      "targetFps": 120,
+      "xmsMiB": 512,
+      "xmxMiB": 1000,
+      "activeProcessorCount": 2,
+      "java": "/opt/homebrew/Cellar/openjdk@25/25.0.4.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "replaySha256": "d19b132ec8866f87496b3c1c91627e7ef35a99b1627e2a9550f74c0e0e57f6d1",
+      "replayStartTick": 0,
+      "replaySpeed": 1,
+      "replayRate": 1,
+      "fogDisplay": false,
+      "camera": "ordinary wall-clock pan20s/zoom4s .35..1.5",
+      "gpuInstaller": null,
+      "dummyInstallerUsed": false,
+      "naturalCpuRasterFallback": true,
+      "windowOrGpuOrPresentation": false
+    },
+    "treatmentOrder": [
+      "replay-control-a1",
+      "replay-candidate-b1",
+      "replay-candidate-b2",
+      "replay-control-a2"
+    ],
+    "arms": [
+      {
+        "arm": "replay-control-a1",
+        "stable": false,
+        "exitCode": 0,
+        "elapsedSeconds": 41.24137837497983,
+        "freezeCount": 1684,
+        "freezeHz": 84.2,
+        "freezeIntervals": {
+          "count": 1684,
+          "meanMs": 11.87344007304038,
+          "p50Ms": 11.70025,
+          "p99Ms": 61.860417,
+          "maxMs": 79.69375
+        },
+        "ownerCpuMs": 2443.156,
+        "ownerCpuSpanSeconds": 19.9791455,
+        "ownerCpuPercentOfHookSpan": 12.228530994981742,
+        "sampleWorldHooks": 1684,
+        "sampleTickFirst": 599,
+        "sampleTickLast": 1193,
+        "sampleProducedButNotObserved": 6,
+        "tailCounts": {
+          "over16.6667ms": 30,
+          "over33.3333ms": 29,
+          "over50ms": 27,
+          "over66.6667ms": 9,
+          "over100ms": 0
+        },
+        "boundaryContext": {
+          "rightUnfinishedAgeMs": 8.822292,
+          "rightCrossingFullIntervalMs": 13.649875,
+          "rightCrossingEndsAfterWindowByMs": 4.827583
+        }
+      },
+      {
+        "arm": "replay-candidate-b1",
+        "stable": true,
+        "exitCode": 0,
+        "elapsedSeconds": 41.26822087500477,
+        "freezeCount": 2228,
+        "freezeHz": 111.4,
+        "freezeIntervals": {
+          "count": 2228,
+          "meanMs": 8.975000336624776,
+          "p50Ms": 8.322708,
+          "p99Ms": 51.908292,
+          "maxMs": 76.494667
+        },
+        "ownerCpuMs": 2492.091,
+        "ownerCpuSpanSeconds": 19.9863715,
+        "ownerCpuPercentOfHookSpan": 12.468951655381769,
+        "sampleWorldHooks": 2228,
+        "sampleTickFirst": 600,
+        "sampleTickLast": 1193,
+        "sampleProducedButNotObserved": 7,
+        "tailCounts": {
+          "over16.6667ms": 29,
+          "over33.3333ms": 29,
+          "over50ms": 26,
+          "over66.6667ms": 9,
+          "over100ms": 0
+        },
+        "boundaryContext": {
+          "rightUnfinishedAgeMs": 7.694333,
+          "rightCrossingFullIntervalMs": 17.508125,
+          "rightCrossingEndsAfterWindowByMs": 9.813792
+        }
+      },
+      {
+        "arm": "replay-candidate-b2",
+        "stable": true,
+        "exitCode": 0,
+        "elapsedSeconds": 41.309328917006496,
+        "freezeCount": 2221,
+        "freezeHz": 111.05,
+        "freezeIntervals": {
+          "count": 2221,
+          "meanMs": 9.002087329131022,
+          "p50Ms": 8.317042,
+          "p99Ms": 55.400458,
+          "maxMs": 81.429333
+        },
+        "ownerCpuMs": 2562.857,
+        "ownerCpuSpanSeconds": 19.98354525,
+        "ownerCpuPercentOfHookSpan": 12.824836473898444,
+        "sampleWorldHooks": 2221,
+        "sampleTickFirst": 598,
+        "sampleTickLast": 1191,
+        "sampleProducedButNotObserved": 7,
+        "tailCounts": {
+          "over16.6667ms": 30,
+          "over33.3333ms": 30,
+          "over50ms": 27,
+          "over66.6667ms": 9,
+          "over100ms": 0
+        },
+        "boundaryContext": {
+          "rightUnfinishedAgeMs": 9.015542,
+          "rightCrossingFullIntervalMs": 15.662292,
+          "rightCrossingEndsAfterWindowByMs": 6.64675
+        }
+      },
+      {
+        "arm": "replay-control-a2",
+        "stable": false,
+        "exitCode": 0,
+        "elapsedSeconds": 41.31774079200113,
+        "freezeCount": 1656,
+        "freezeHz": 82.8,
+        "freezeIntervals": {
+          "count": 1656,
+          "meanMs": 12.075949400966184,
+          "p50Ms": 11.919292,
+          "p99Ms": 62.4475,
+          "maxMs": 79.577042
+        },
+        "ownerCpuMs": 2460.765,
+        "ownerCpuSpanSeconds": 19.983780292,
+        "ownerCpuPercentOfHookSpan": 12.313811321199848,
+        "sampleWorldHooks": 1656,
+        "sampleTickFirst": 598,
+        "sampleTickLast": 1192,
+        "sampleProducedButNotObserved": 5,
+        "tailCounts": {
+          "over16.6667ms": 30,
+          "over33.3333ms": 30,
+          "over50ms": 27,
+          "over66.6667ms": 9,
+          "over100ms": 0
+        },
+        "boundaryContext": {
+          "rightUnfinishedAgeMs": 6.5965,
+          "rightCrossingFullIntervalMs": 16.4195,
+          "rightCrossingEndsAfterWindowByMs": 9.823
+        }
+      }
+    ],
+    "twoJvmMedians": {
+      "control": {
+        "freezeCount": 1670.0,
+        "freezeHz": 83.5,
+        "p99Ms": 62.1539585,
+        "maxMs": 79.635396,
+        "meanMs": 11.974694737003283,
+        "ownerCpuMs": 2451.9605,
+        "ownerCpuPercent": 12.271171158090795,
+        "arms": [
+          "replay-control-a1",
+          "replay-control-a2"
+        ]
+      },
+      "candidate": {
+        "freezeCount": 2224.5,
+        "freezeHz": 111.225,
+        "p99Ms": 53.654375,
+        "maxMs": 78.962,
+        "meanMs": 8.988543832877898,
+        "ownerCpuMs": 2527.474,
+        "ownerCpuPercent": 12.646894064640106,
+        "arms": [
+          "replay-candidate-b1",
+          "replay-candidate-b2"
+        ]
+      },
+      "candidateVsControlPercent": {
+        "freezeCount": 33.20359281437126,
+        "freezeHz": 33.20359281437124,
+        "p99Ms": -13.675047744545509,
+        "maxMs": -0.8455988590801988,
+        "meanMs": -24.937177687693445,
+        "ownerCpuMs": 3.079719269539627,
+        "ownerCpuPercent": 3.0618341290234996
+      },
+      "longTailCountsPerFixed20Seconds": {
+        "control": {
+          "over16.6667ms": 30.0,
+          "over33.3333ms": 29.5,
+          "over50ms": 27.0,
+          "over66.6667ms": 9.0,
+          "over100ms": 0.0
+        },
+        "candidate": {
+          "over16.6667ms": 29.5,
+          "over33.3333ms": 29.5,
+          "over50ms": 26.5,
+          "over66.6667ms": 9.0,
+          "over100ms": 0.0
+        }
+      },
+      "pairsCandidateVsControlPercent": [
+        {
+          "control": "replay-control-a1",
+          "candidate": "replay-candidate-b1",
+          "metrics": {
+            "freezeCount": 32.30403800475059,
+            "freezeHz": 32.30403800475059,
+            "p99Ms": -16.088034130128793,
+            "maxMs": -4.014220688573433,
+            "meanMs": -24.411120269994445,
+            "ownerCpuMs": 2.0029420962067057,
+            "ownerCpuPercent": 1.9660633030957664
+          }
+        },
+        {
+          "control": "replay-control-a2",
+          "candidate": "replay-candidate-b2",
+          "metrics": {
+            "freezeCount": 34.118357487922715,
+            "freezeHz": 34.118357487922715,
+            "p99Ms": -11.28474638696505,
+            "maxMs": 2.3276700835399122,
+            "meanMs": -25.454413311712166,
+            "ownerCpuMs": 4.148791127962248,
+            "ownerCpuPercent": 4.150016102803189
+          }
+        }
+      ]
+    },
+    "longTailJudgment": {
+      "over50msCountsInAbbaOrder": [
+        27,
+        26,
+        27,
+        27
+      ],
+      "over66_6667msCountsInAbbaOrder": [
+        9,
+        9,
+        9,
+        9
+      ],
+      "over100msCountsInAbbaOrder": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "longStallsEliminated": false,
+      "secondPairMaximumPercentChange": 2.3276700835399122,
+      "interpretation": "P99降低不能称长停顿消失：固定20s内加入更多短间隔也会降低百分位；>50ms次数基本不变，第二对max反而增大。没有删除慢帧或给这些停顿归因。"
+    },
+    "cpuJudgment": "Owner CPU按world-draw首末hook的实际约19.98s跨度计算；中位2451.9605→2527.474ms（+3.0797%），按实际span归一化CPU占比12.271171→12.646894%。不是整进程CPU或名义20s精确CPU。",
+    "measurementBoundaries": [
+      "Existing bounded lifecycle produced events follow successful freeze and precede mailbox.publish; later offscreen redraw/UI-publication work remains in the owner iteration.",
+      "World-draw listener precedes HUD/effects/freeze. GameLogic.lastDelta is the most recent simulation-update delta, not the exact outer engineFrame delta argument.",
+      "Full lifecycle counts supply producer throughput. Poll count/unique observed envelopes are consumer observations;5–7 sample publications per arm were not observed and remain counted.",
+      "Intervals end inside inclusive fixed sample bounds, include left crossing and exclude only unfinished right age, which is retained separately. P99 uses floor((n-1)*p).",
+      "Two JVMs per treatment are the replicate count. Individual frame intervals are not independent treatment replicates."
+    ],
+    "runtimeIdentity": {
+      "projectClasspathFilesVerifiedOncePerUniqueSnapshot": {
+        "b55d7a220f120aa6a23e83ce1846140a4a860fc897f87e89fbc4b0f2010cfb13": {
+          "projectFilesVerified": 449,
+          "projectBytesVerified": 10969327,
+          "externalJarHashesRecorded": 126
+        }
+      },
+      "externalJarHashes": "recorded in same exact frozen manifest; external bytes not rehashed by this lightweight analysis",
+      "missingClasspathEntries": "remain original spelling per runner; normalized full commands checked identical",
+      "jvm": "same explicit Java executable path and reported javaVersion; binary JDK/native/assets directories not inside project fingerprint",
+      "source": "same recorded source SHAs and source-request/helper outer-class SHA checked; source-to-class compilation provenance relies on retained build/run records"
+    },
+    "frozenProjectRuntime": {
+      "manifest": "/Users/wty/code/RWXX/build/owner-policy-20261103/runtimes/59afb6885274cf80a4457dfe49f3d7c1974808bffd3371e906bd788a88a85316/manifest.json",
+      "sha256": "b55d7a220f120aa6a23e83ce1846140a4a860fc897f87e89fbc4b0f2010cfb13",
+      "fingerprint": "59afb6885274cf80a4457dfe49f3d7c1974808bffd3371e906bd788a88a85316",
+      "projectFilesVerified": 449,
+      "projectBytesVerified": 10969327,
+      "externalJarHashesRecorded": 126
+    },
+    "runtimeLimit": "The CPU study uses a frozen development project classpath, not the released fat JAR or an immutable JDK/assets/native image. Package acceptance separately binds the seven measured owner/helper main classes to the new candidate. External126 JAR hashes are recorded but not all rehashed by the lightweight independent analysis."
+  },
+  "compatibility": {
+    "correctedArms": [
+      {
+        "arm": "compatibility-fixed-off",
+        "ownerStable": false,
+        "passedChecks": 14,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedSeconds": 3.4677417500060983,
+        "acceptance": {
+          "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/compatibility-fixed-off/acceptance.json",
+          "sha256": "ff9dd9b8a82aaf3cc1279c8520b4392c66140d203eeb167d521128e9f9bedab1",
+          "bytes": 1399
+        },
+        "process": {
+          "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/compatibility-fixed-off/process-result.json",
+          "sha256": "a088ae2adbd7ef9928a9368ba535126134e6d1cdd6e85da79e146b8f18f323c1",
+          "bytes": 23428
+        },
+        "checkNames": [
+          "simulation advances with no frontend calls",
+          "newest completed frame replaces undelivered frames",
+          "rapid presses and clicks reach actual original updates",
+          "wheel events retain accumulated original delta",
+          "viewport and camera publish together",
+          "explicit original local pause stops progression",
+          "resume excludes paused wall time",
+          "hidden viewport without pause continues progression",
+          "actual mod reload resets outer clock",
+          "serialized snapshot load publishes a new generation",
+          "retained packets survive load and reload",
+          "session exit completes accepted operations",
+          "session exit rejects later operations",
+          "session exit releases all retained CPU packet leases"
+        ]
+      },
+      {
+        "arm": "compatibility-fixed-on",
+        "ownerStable": true,
+        "passedChecks": 14,
+        "exitCode": 0,
+        "timedOut": false,
+        "elapsedSeconds": 3.0118346250092145,
+        "acceptance": {
+          "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/compatibility-fixed-on/acceptance.json",
+          "sha256": "788455068989f21ef639b9149897e0b4078d041ca2f58c524e84dbf844baa31c",
+          "bytes": 1398
+        },
+        "process": {
+          "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/compatibility-fixed-on/process-result.json",
+          "sha256": "f6f10dcfe8e792ffb02de3f37a0dea241146b816c711ae1cbb154d14966fc1e9",
+          "bytes": 23421
+        },
+        "checkNames": [
+          "simulation advances with no frontend calls",
+          "newest completed frame replaces undelivered frames",
+          "rapid presses and clicks reach actual original updates",
+          "wheel events retain accumulated original delta",
+          "viewport and camera publish together",
+          "explicit original local pause stops progression",
+          "resume excludes paused wall time",
+          "hidden viewport without pause continues progression",
+          "actual mod reload resets outer clock",
+          "serialized snapshot load publishes a new generation",
+          "retained packets survive load and reload",
+          "session exit completes accepted operations",
+          "session exit rejects later operations",
+          "session exit releases all retained CPU packet leases"
+        ]
+      }
+    ],
+    "passedChecksEach": 14,
+    "totalPassedChecks": 28,
+    "covered": "Automatic advancement without frontend calls, newest-mailbox replacement,60 key/down/up/wheel inputs, viewport/camera publication, pause/resume, hidden progression, reload clock reset, snapshot generation, retained leases and close/reject lifetime behavior.",
+    "limitations": "CPU/session behavior only; no real GPU fence, active network peer, full replay determinism, visible input latency or physical presentation proof.",
+    "initialFailureRetained": {
+      "record": {
+        "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/baseline-harness-failure.json",
+        "sha256": "cd5c2930c4f97069aa8656f38dc80b664ae04367b2ae0d2a664664c0eefd43e3",
+        "bytes": 862
+      },
+      "rawAcceptance": {
+        "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/compatibility-off/acceptance.json",
+        "sha256": "1b769bbc86a884c96e10533b176dd47b2eb979a6aafb3e1ba658cdfac71f9ca3",
+        "bytes": 762
+      },
+      "passed": false,
+      "checksPassedBeforeFailure": 4,
+      "failure": "Original stableOFF harness timed out after60s waiting for resized camera; candidateON was not run for that failed attempt.",
+      "cause": "The old CPU-only predicate read session.cameraSnapshot(), whose contract is the actually presented camera from canvasPresentationTracker. With no renderer/present it stays null.",
+      "correction": "Only the opt-in benchmark predicate now checks currentFrameEnvelope()?.camera?.viewport after currentFrame(). Existing viewport/revision and all other checks remain; no presentation acknowledgment was fabricated.",
+      "productGateRelaxed": false,
+      "classifiedAsCandidateRegression": false
+    }
+  },
+  "regression": {
+    "core": {
+      "tests": 490,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "xmlFiles": 122,
+      "directory": "/Users/wty/code/RWXX/core/build/test-results/test",
+      "xmlManifestSha256": "bd6b9a09836b63b20afdd1dc612ad11d9d27a8c7b53fc6676e08a2194c446ef8",
+      "verification": "Read existing XML results only; no test/JVM execution by this documentation task"
+    },
+    "desktop": {
+      "tests": 148,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "xmlFiles": 36,
+      "directory": "/Users/wty/code/RWXX/desktop/build/test-results/test",
+      "xmlManifestSha256": "3f79f79d37c7978957c96d986e9ff73ff834b08b6b861ec757c744301150ca2b",
+      "verification": "Read existing XML results only; no test/JVM execution by this documentation task"
+    },
+    "pythonToolMocks": {
+      "passed": 33,
+      "reportedBy": "root completed this goal turn",
+      "rerunByDocumentationTask": false
+    },
+    "result": "Core490 (1skip), desktop148, tool Python33 passed; all existing compatibility arms exit0."
+  },
+  "package": {
+    "zip": {
+      "path": "/Users/wty/code/RWXX/desktop/build/distributions/RWXX-1.4.3-macos-arm64-desktop.zip",
+      "sha256": "5703274c5409c608f70234adcf1088cb066285fda4006bd05d44d190e7e900b4",
+      "bytes": 162217787
+    },
+    "platformJar": {
+      "path": "/Users/wty/code/RWXX/desktop/build/libs/RWXX-1.4.3-macos-arm64.jar",
+      "sha256": "64a96fa4fbe66a0f814a46930eae4d6eb69117ea9a31b48ad143ecc3fe00d206",
+      "bytes": 125280895
+    },
+    "coreJar": {
+      "path": "/Users/wty/code/RWXX/core/build/libs/core-1.4.3.jar",
+      "sha256": "5d77d01450aa956655abd8c37eede7f6f0b88391bfa426db31cd5d3fa1e703d9",
+      "bytes": 6372539
+    },
+    "acceptance": {
+      "path": "/Users/wty/code/RWXX/build/real-release-20261103/owner-only-candidate-mac-jni/acceptance.json",
+      "sha256": "762cc5af20e0ccf644fead84517f0170d0d5725ec8b08dae50f0b604643b1874",
+      "bytes": 109056
+    },
+    "postExecutionIntegrity": {
+      "path": "/Users/wty/code/RWXX/build/real-release-20261103/owner-only-candidate-mac-jni/post-execution-integrity.json",
+      "sha256": "afe56f6841a4cfe2658d97f3fbb3e33c46fa8b566d9ca820ed1fe3225a0cd702",
+      "bytes": 2092
+    },
+    "scope": "macOS arm64 archive integrity, packaged class bytes, bundle/runtime metadata, existing signature verification, bundled-JVM JNI 120-tick headless smoke with default asset extraction",
+    "validForDeclaredScope": true,
+    "allAcceptanceChecksPassed": true,
+    "allPostIntegrityChecksPassed": true,
+    "criticalCoreClasses": 96,
+    "headlessEntrypointClasses": 13,
+    "assetEntries": 1178,
+    "measuredOwnerClassesMatched": 7,
+    "bundledJavaVersion": "25.0.4.1",
+    "bundledJavaArch": "aarch64",
+    "codesignExitCode": 0,
+    "existingSignatureOnly": true,
+    "resigned": false,
+    "jniHeadlessTicks": 120,
+    "checksumLines": 120,
+    "jniSmokeExitCode": 0,
+    "nativeAppLauncherExecuted": false,
+    "applicationInstalled": false,
+    "visibleWindowRequested": false,
+    "graphicsContextRequested": false,
+    "normalHeadlessAwtLoadsAllowed": [
+      "[0.524s][info][library] Loaded library /private/var/folders/x5/07jjjpzd6ds_npmqykp8ygfc0000gn/T/rwxx-owner-only-candidate-jni-acceptance-s7c73uag/image/RWXX.app/Contents/runtime/Contents/Home/lib/libawt_lwawt.dylib, handle 0x000000007d35c440"
+    ],
+    "headlessEvidenceLimit": "Source routing, explicit VM/property/arguments, completed CPU smoke, and JVM-library logging; this is not OS-level focus or NSApplication telemetry.",
+    "performanceLimit": "The bundled-JVM120tick JNI smoke exercises ordinary headless dispatch; it does not rerun automatic-owner cadence, visible FPS, GPU pixels or the new A/B.",
+    "previousPackagePreserved": {
+      "directory": "/Users/wty/code/RWXX/build/real-release-20261103/pre-owner-policy",
+      "manifest": {
+        "path": "/Users/wty/code/RWXX/build/real-release-20261103/pre-owner-policy/manifest.json",
+        "sha256": "7d050540b052a4d8e2f877d8582e8769926cc139570dba51357e03ff2e3976a8",
+        "bytes": 524
+      },
+      "zipSha256": "516d9580fd6603c3af9d3d563caaf11071ee8e03b8146b88b318c5c6719d12ea",
+      "platformJarSha256": "f0e3515879c564f29331b977eae82c6057a0b508a1ff14ad1ff32cdb2c4d7f66",
+      "historyFingerprintsRewritten": false
+    }
+  },
+  "visibleValidation": {
+    "status": "ready-and-controller-reviewed-awaiting-new-user-visible-slot-answer",
+    "ready": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/visible-rwxx-ab-v1/comparison-ready.json",
+      "sha256": "2a7c638f241c234c23de23c3814fd112afc0ce4ed459608a5b07eaac40a265ed",
+      "bytes": 5083
+    },
+    "independentMaterializationReview": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/visible-rwxx-ab-v1/materialization-review.json",
+      "sha256": "7457fdc1d1df74be53b830d371970b6fce9d05ad9e910b3f062aa720a87266db",
+      "bytes": 5309
+    },
+    "materialInputOrCommandBlockers": [],
+    "toolingCount": 59,
+    "toolingFingerprintSha256": "72d0f0368d37c5dea09f666b827672fb22c6650fb3cd5d9f41ea720aea5df1ff",
+    "commands": {
+      "control-off": {
+        "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/visible-rwxx-ab-v1/control-off/future-command.json",
+        "bytes": 3491,
+        "sha256": "9c53fdf2fb4b0593301a3a77be9a49ac65943636c7554cf476362622ae8ada38"
+      },
+      "candidate-on": {
+        "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/visible-rwxx-ab-v1/candidate-on/future-command.json",
+        "bytes": 3553,
+        "sha256": "4e07b0ff7add55409f0747dca9eea3af37a25f8cee22b4ee708f611deaad2375"
+      }
+    },
+    "sameCandidateJarBothArms": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/visible-rwxx-ab-v1/inputs/RWXX-1.4.3-macos-arm64.jar",
+      "bytes": 125280895,
+      "sha256": "64a96fa4fbe66a0f814a46930eae4d6eb69117ea9a31b48ad143ecc3fe00d206"
+    },
+    "onlyTreatment": "Control default ownerOFF versus --stable-owner-deadlines ownerON; global stable renderer flag unset, same candidate artifact/configuration.",
+    "rendererPacerAnd1178AssetsExactlyMatchV2": true,
+    "fourAcceptedSharingFlagsOn": [
+      "prepared-map-tiles",
+      "frozen-reuse",
+      "share-texture-registrations",
+      "share-map-atlas-pixels"
+    ],
+    "normalInputProbe": false,
+    "awtGateExactlyV2": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/visible-rwxx-ab-v1/evaluation/analyze_awt_foreground.py",
+      "bytes": 7175,
+      "sha256": "4fce0106a435c0e8a58e9764e63e441f815f65dad5ed6d37665495b8a5f2bca4"
+    },
+    "authorizationGranted": false,
+    "oldConsumedAuthorizationReusable": false,
+    "plannedAttemptsEach": 1,
+    "automaticRetry": false,
+    "forceActivationOrInputOrFocusRepair": false,
+    "originalRunPlanned": false,
+    "timing": {
+      "normalSecondsPerArmEstimate": 45,
+      "innerSecondsEach": 155,
+      "outerSecondsEach": 160,
+      "sumOuterWaitSeconds": 320,
+      "cleanupAllowanceEstimateSeconds": 10,
+      "suggestedReservedSeconds": 360,
+      "hardRealtimeGuarantee": false
+    },
+    "controllerReview": {
+      "status": "passed-static-and-mocked-no-real-target-launch",
+      "controller": {
+        "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/visible-rwxx-ab-v1/evaluation/run_authorized_arm.py",
+        "sha256": "fa465eb294637ebc88708c51a2bb2918ea22438af1fc62c88efe318e485c23bb",
+        "bytes": 8308
+      },
+      "mockPaths": {
+        "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/visible-rwxx-ab-v1/evaluation/controller-mock-path-review.json",
+        "sha256": "7a0f4c815472b9f8620b6eaa344983b3bcbdf94a37e2076639a65005d4cafb55",
+        "bytes": 13957
+      },
+      "finalOfflineRefusalReview": {
+        "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/visible-rwxx-ab-v1/evaluation/controller-offline-review-final.json",
+        "sha256": "a072850a0b43bb39ec6634a5f635f1382fd625960e46dab5dd39bef449abada7",
+        "bytes": 637
+      },
+      "mockCasesPassed": 7,
+      "realPopenCalls": 0,
+      "realKillpgCalls": 0,
+      "actualAuthorizationCreatedByTests": false,
+      "actualAttemptConsumedByTests": false,
+      "ordinaryUnauthorizedInvocation": "refused exit1, nothing launched",
+      "optimizedPythonInvocation": "-O refused exit1 before authorization/process work",
+      "stringAndPathHashFunctions": "passed",
+      "limit": "Static and synthetic control-flow evidence only; not a real OS process-cleanup, focus or game test. The older observed controller SHA in materialization-review is retained within that earlier review scope."
+    },
+    "oldOfficialBaseline": "docs/verification/official-visible-comparison-2026-11-03.json remains valid historical product cadence evidence; original will not be rerun. Old RWXX OFF is context, not a substitute for the new same-artifact OFF arm.",
+    "remaining": "The NEW approximately6min RWXX-only visible time-slot question has been sent and has no answer. Await explicit authorization, bind it to this context/final controller and both command hashes, then preserve all existing runtime/AWT/trace checks. Do not launch, focus-repair or retry while waiting.",
+    "limits": "No candidate visible result exists yet. Native HiDPI/fog/quality pixel equality, physical scanout and normal input-response performance remain outside the present CPU/package evidence.",
+    "visibleTimeQuestion": {
+      "issued": true,
+      "requestedReservedSeconds": 360,
+      "userAnswerReceived": false,
+      "authorizationGranted": false,
+      "reportedBy": "root latest task message; no question-card id or reply is invented",
+      "oneAttemptPerArm": true,
+      "oldConsumedAuthorizationReusable": false
+    }
+  },
+  "evidence": {
+    "independent-offline-comparison.json": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/independent-offline-comparison.json",
+      "sha256": "a20cef20d7548e540be5b6dbe2464a1743807ea34fd8f2724d325347031d1d0c",
+      "bytes": 24077
+    },
+    "independent-offline-review.txt": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/independent-offline-review.txt",
+      "sha256": "2e835d828dd7f122aa5ab096c6388b3e38050a35afe1e51f9c84e885d17f57fd",
+      "bytes": 3774
+    },
+    "independent-lifecycle-review.json": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/independent-lifecycle-review.json",
+      "sha256": "69b8b29d41e90feb63c8d2d175f2f6a420d90dc701ad4d0d4bbc021eefc9e1b4",
+      "bytes": 6000
+    },
+    "offline-contract-review.json": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/offline-contract-review.json",
+      "sha256": "581d65caa4244cd7d2bd06ae6f0aff6e0c19fb37b6eff1c99d983904494acb9f",
+      "bytes": 14973
+    },
+    "package-build.log": {
+      "path": "/Users/wty/code/RWXX/build/owner-policy-20261103/package-build.log",
+      "sha256": "794e14180a6e3ab2cb23849de31bdfae7ac4c15b677216b8252b570e9e9e89ac",
+      "bytes": 29329
+    }
+  },
+  "nextAction": "Await the explicit user answer to the newly issued approximately6min RWXX OFF→ON visible-slot question. All candidate defaults remainOFF; do not reuse prior authorization or launch automatically.",
+  "documentationTask": {
+    "targetOrJvmOrCompilerExecuted": false,
+    "productionSourceEdited": false,
+    "steamOrInstalledAppModified": false,
+    "existingNextSessionSha256BeforePrepend": "7e701c5737c8f51d11eb7b6668cef8426c5c84f127104c022d2652b1c2d9097a",
+    "historicalNextSessionBodyPreservedByteForByte": true
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "date": "2026-11-03",
+  "version": "1.4.3",
+  "status": "valid-owner-only-background-pair-average-improved-tail-worse-not-default-adopted",
+  "goalComplete": false,
+  "protocol": "same frozen64a96 platform, d19 real replay, virtualDisplay9, 1280x720 actual framebuffer/MSAA4/target120/vsyncOFF,20s warm+20s sample, ordinary1x pan20/zoom4, common full-rate background adapter, actual inactive/visible",
+  "onlyTreatment": "RWX_STABLE_OWNER_DEADLINES unset(defaultOFF) versus1; renderer stable flag unset in both",
+  "metrics": {
+    "control-off": {
+      "engineFps": 100.4740729989606,
+      "acceptedPresentFps": 117.51605034752991,
+      "freshSnapshotHz": 99.87114784958094,
+      "repeatRatio": 0.15014887282007655,
+      "freshSnapshotIntervalP99Ms": 20.618,
+      "freshSnapshotIntervalMaxMs": 38.378667,
+      "freshSnapshotIntervalsOver33_333Ms": 1,
+      "freshSnapshotIntervalsOver50Ms": 0,
+      "sampleStartTick": 605,
+      "sampleEndTick": 1205
+    },
+    "candidate-on": {
+      "engineFps": 119.76796542911639,
+      "acceptedPresentFps": 115.55669537107876,
+      "freshSnapshotHz": 112.00802522776276,
+      "repeatRatio": 0.030709342560553632,
+      "freshSnapshotIntervalP99Ms": 21.94975,
+      "freshSnapshotIntervalMaxMs": 78.464542,
+      "freshSnapshotIntervalsOver33_333Ms": 4,
+      "freshSnapshotIntervalsOver50Ms": 1,
+      "sampleStartTick": 605,
+      "sampleEndTick": 1205
+    }
+  },
+  "changesOnVsOffPercent": {
+    "engineFps": 19.202856870702732,
+    "acceptedPresentFps": -1.6673083980075498,
+    "freshSnapshotHz": 12.152536182383278,
+    "repeatRatio": -79.54740386406188,
+    "freshSnapshotIntervalP99Ms": 6.459161897371235,
+    "freshSnapshotIntervalMaxMs": 104.44832541995268
+  },
+  "defaultAdopted": false,
+  "assessment": "Owner wake-drift compensation materially raises average new-frame supply and reduces repeats. This single pair worsened fresh P99 and max; not accepted as overall stutter fix or original parity. No slow frame discarded.",
+  "longestGap": {
+    "ms": 78.464542,
+    "beforeSequence": 3399,
+    "afterSequence": 3401,
+    "followingSequence": 3408,
+    "followingIntervalMs": 8.58775,
+    "scope": "No accepted present during longest gap. Adjacent sequence progression does not prove uniform production during that gap; raw production timestamps absent. Cause unassigned."
+  },
+  "limits": [
+    "One JVM per treatment in fixed order; variance/order/background load uncontrolled.",
+    "Fresh/accepted cadence is software present evidence, not physical scanout or input latency. User explicitly waived physical-display validation.",
+    "EngineHz values are source aggregates1e9/mean(owner intervals), not independently reconstructed from raw production timestamps.",
+    "Common adapter changes background cap/window focus policy; historical foreground original120 is context, not a same-environment original remeasurement."
+  ],
+  "evidence": {
+    "independent": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/owner-pair-independent-review/delivery.json",
+      "sha256": "6f2fa13c0f2b9559d4a5c4b1fac97ff43c95862f1794280440cf5e99c5014ca2"
+    },
+    "standingAuthorization": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/standing-background-authorization.json",
+      "sha256": "54005c993f53af17c90843aef8a60417f449f211b9a0719978e45eb008c70025"
+    },
+    "displayLifecycle": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/create-6.ndjson",
+      "sha256": "07a65d922deda2a1be58a7a31620d0a877e6e65ab482c2318f4a6df13edfbf35"
+    },
+    "control-off": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/rwxx-pair-v2/control-off/run/diagnostic-summary.json",
+      "sha256": "4293b281f2605d3977d47c0d72410c7748a815c0c9cb4f89253eb0f7d7d4a994"
+    },
+    "candidate-on": {
+      "path": "/Users/wty/code/RWXX/build/background-display-20261103/rwxx-pair-v2/candidate-on/run/diagnostic-summary.json",
+      "sha256": "82b1551e0a06930ca785fbf3210a549e8197843e2bdbf069c798b4d030822635"
+    }
+  },
+  "nextAction": "Keep owner explicitlyON in both new arms and isolate existing renderer stable-deadline flag; same-package same-virtual-display pair with loaded runtime flags observed. Current renderer-pair-v1 is separately tracked."
+}

@@ -28,6 +28,17 @@ import kotlin.math.abs
 
 /** Standalone native lifetime / readback check, never used in performance measurement. */
 object VulkanSpriteAtlasOracle {
+    private val atlasTextureName = Regex("rwx-sprite-atlas-([0-9]+)-([0-9]+)-([0-9]+)-(Nearest|Linear)")
+
+    internal fun atlasPageIdentity(name: String): Pair<Long, Long> {
+        val parts = requireNotNull(atlasTextureName.matchEntire(name)) { "Unexpected atlas texture name: $name" }
+        val owner = requireNotNull(parts.groupValues[1].toLongOrNull())
+        val page = requireNotNull(parts.groupValues[2].toLongOrNull())
+        val frame = requireNotNull(parts.groupValues[3].toLongOrNull())
+        require(owner > 0 && page > 0 && frame >= 0)
+        return owner to page
+    }
+
     @JvmStatic fun main(args: Array<String>) {
         require(System.getenv("RWX_RUN_VULKAN_SPRITE_ATLAS_ORACLE") == "1") {
             "Set RWX_RUN_VULKAN_SPRITE_ATLAS_ORACLE=1 to run this standalone check"
@@ -365,7 +376,7 @@ object VulkanSpriteAtlasOracle {
                 sprite(largeA, dest = KoolCanvasRect(0f, 16f, 16f, 32f), size = 1536),
                 sprite(largeB, dest = KoolCanvasRect(16f, 16f, 32f, 32f), size = 1536)))
             val owners = sprites().map { it.shader!!.texture2d("spriteMap").get()!! }.distinct()
-            val pages = owners.map { it.name.removePrefix("rwx-sprite-atlas-").substringBefore('-') }.distinct()
+            val pages = owners.map { atlasPageIdentity(it.name) }.distinct()
             check(pages.size >= 2) { "The two large sources did not force an additional actual Atlas page" }
             val large = image()
             assertPixel(large, 3, 20, intArrayOf(0, 255, 255, 255), "large sprite in first page")

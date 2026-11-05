@@ -1,6 +1,33 @@
 import unittest
+from pathlib import Path
+from unittest.mock import patch
 
 from analyze_vulkan_matrix import presentation_window
+import vulkan_native_matrix
+
+
+class JavaCommandTest(unittest.TestCase):
+    def test_macos_export_preserves_other_arguments_and_optional_native_paths(self):
+        export = "--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"
+        natives = Path("fixture-natives")
+        for native_paths in (False, True):
+            expected = ["unused-java", "-Dorg.lwjgl.opengl.contextAPI=native", "-Dorg.lwjgl.system.stackSize=512",
+                        "-Drwx.desktop.renderer=kool", "--enable-native-access=ALL-UNNAMED",
+                        "--sun-misc-unsafe-memory-access=allow"]
+            if native_paths:
+                expected.extend([f"-Djava.library.path={natives}", f"-Dorg.lwjgl.librarypath={natives}",
+                                 f"-Drwx.slick.nativesDir={natives}"])
+            for package in ("java.desktop/sun.awt", "java.desktop/sun.awt.im", "java.base/java.lang"):
+                expected.extend(["--add-opens", f"{package}=ALL-UNNAMED"])
+            expected.extend(["-cp", "fixture.jar", "io.github.rwx.KoolDesktopMain",
+                             "--screen=battleroom", "--auto-start-battleroom"])
+            for platform in ("darwin", "linux", "win32"):
+                with self.subTest(platform=platform, native_paths=native_paths), \
+                        patch.object(vulkan_native_matrix.sys, "platform", platform), \
+                        patch.object(Path, "is_dir", return_value=native_paths):
+                    command = vulkan_native_matrix.java_command("unused-java", Path("fixture.jar"), natives)
+                self.assertEqual(command.count(export), 1 if platform == "darwin" else 0)
+                self.assertEqual([argument for argument in command if argument != export], expected)
 
 
 class PresentationWindowTest(unittest.TestCase):

@@ -22,6 +22,9 @@ public final class OrigPresentAgent {
     private static final String ENGINE_CLASS = "com/corrodinggames/rts/gameFramework/l";
     private static final String ENGINE_RUNNABLE_CLASS = "com/corrodinggames/rts/gameFramework/l$2";
     private static final String SLICK_CLASS = "com/corrodinggames/rts/java/i";
+    private static final String GAME_CLASS = "com/corrodinggames/rts/java/u";
+    private static final String GAME_RENDER_DESCRIPTOR =
+        "(Lorg/newdawn/slick/GameContainer;Lorg/newdawn/slick/Graphics;)V";
     private static final String TARGET_METHOD = "update";
     private static final String PROBE_CLASS = "io/github/rwx/probe/OrigPresentProbe";
 
@@ -35,21 +38,31 @@ public final class OrigPresentAgent {
             public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
                                     ProtectionDomain protectionDomain, byte[] classfileBuffer) {
                 if (!TARGET_CLASS.equals(className)) {
-                    if ("com/corrodinggames/rts/java/u".equals(className) && OrigNormalInputProbe.ENABLED) {
+                    if (GAME_CLASS.equals(className)) {
                         ClassReader inputReader = new ClassReader(classfileBuffer);
                         ClassWriter inputWriter = new ClassWriter(inputReader, ClassWriter.COMPUTE_MAXS);
                         inputReader.accept(new ClassVisitor(Opcodes.ASM9, inputWriter) {
                             @Override public MethodVisitor visitMethod(int access, String name, String descriptor,
                                     String signature, String[] exceptions) {
                                 MethodVisitor next = super.visitMethod(access, name, descriptor, signature, exceptions);
-                                if (!"init".equals(name) && !"update".equals(name) && !"render".equals(name)) return next;
+                                final boolean gameRender = "render".equals(name)
+                                    && GAME_RENDER_DESCRIPTOR.equals(descriptor);
+                                final boolean normalInput = OrigNormalInputProbe.ENABLED
+                                    && ("init".equals(name) || "update".equals(name) || "render".equals(name));
+                                if ((!gameRender && !normalInput)
+                                        || (access & (Opcodes.ACC_STATIC | Opcodes.ACC_NATIVE | Opcodes.ACC_ABSTRACT)) != 0)
+                                    return next;
                                 return new AdviceAdapter(Opcodes.ASM9, next, access, name, descriptor) {
                                     @Override protected void onMethodEnter() {
-                                        loadThis(); visitMethodInsn(INVOKESTATIC, "io/github/rwx/probe/OrigNormalInputProbe",
-                                            "capture", "(Ljava/lang/Object;)V", false);
+                                        if (normalInput) {
+                                            loadThis(); visitMethodInsn(INVOKESTATIC, "io/github/rwx/probe/OrigNormalInputProbe",
+                                                "capture", "(Ljava/lang/Object;)V", false);
+                                        }
                                     }
                                     @Override protected void onMethodExit(int opcode) {
-                                        if (opcode == RETURN && "render".equals(name))
+                                        if (opcode != RETURN || !gameRender) return;
+                                        visitMethodInsn(INVOKESTATIC, PROBE_CLASS, "onGameRender", "()V", false);
+                                        if (normalInput)
                                             visitMethodInsn(INVOKESTATIC, "io/github/rwx/probe/OrigNormalInputProbe",
                                                 "rendered", "()V", false);
                                     }
@@ -187,7 +200,9 @@ public final class OrigPresentAgent {
                     return null;
                 }
                 ClassReader reader = new ClassReader(classfileBuffer);
-                ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_FRAMES);
+                // AdviceAdapter needs expanded frames. The inserted calls add no branches or locals,
+                // so preserve the original frame types instead of loading classes to recompute them.
+                ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_MAXS);
                 reader.accept(new ClassVisitor(Opcodes.ASM9, writer) {
                     @Override
                     public MethodVisitor visitMethod(int access, String name, String descriptor,
@@ -196,7 +211,8 @@ public final class OrigPresentAgent {
                         // Both overloads matter: the original uses update() while setting up and
                         // update(boolean) in its steady-state loop, so hooking only update() captured the
                         // first seconds of a run and then stopped.
-                        if (!TARGET_METHOD.equals(name)) {
+                        if (!TARGET_METHOD.equals(name)
+                                || (!"()V".equals(descriptor) && !"(Z)V".equals(descriptor))) {
                             return next;
                         }
                         return new AdviceAdapter(Opcodes.ASM9, next, access, name, descriptor) {
@@ -210,14 +226,17 @@ public final class OrigPresentAgent {
                             }
                             @Override
                             protected void onMethodExit(int opcode) {
-                                if (opcode != RETURN) return;
+                                // update() delegates to update(boolean); emit one swap-return record.
+                                if (opcode != RETURN || !"(Z)V".equals(descriptor)) return;
                                 visitLdcInsn(descriptor);
+                                visitMethodInsn(INVOKESTATIC, TARGET_CLASS, "isActive", "()Z", false);
+                                visitMethodInsn(INVOKESTATIC, TARGET_CLASS, "isVisible", "()Z", false);
                                 visitMethodInsn(INVOKESTATIC, PROBE_CLASS, "onPresent",
-                                    "(Ljava/lang/String;)V", false);
+                                    "(Ljava/lang/String;ZZ)V", false);
                             }
                         };
                     }
-                }, 0);
+                }, ClassReader.EXPAND_FRAMES);
                 return writer.toByteArray();
             }
         }, true);
