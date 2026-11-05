@@ -2469,7 +2469,7 @@ class KoolGraphicsEngine private constructor(
         val resolvedTexture = texture.resolveForKool()
         registerTexturePixels(resolvedTexture)
         val textureRef = freezeTextureForOffscreenDraw(resolvedTexture, resolvedTexture.toCanvasTextureRef())
-        val canvasPaint = paint.toCanvasPaint()
+        val canvasPaint = paint.toCanvasPaint(canonicalTexture = true)
         val texturePaint = canvasPaint
             .withDirectBlitTextureBlend(resolvedTexture)
             .asCanonicalTexturePaint()
@@ -2537,7 +2537,7 @@ class KoolGraphicsEngine private constructor(
         }
         registerTexturePixels(resolvedTexture)
         val textureRef = freezeTextureForOffscreenDraw(resolvedTexture, resolvedTexture.toCanvasTextureRef())
-        val canvasPaint = paint.toCanvasPaint()
+        val canvasPaint = paint.toCanvasPaint(canonicalTexture = teamColorEffect == null)
         val texturePaint = KoolCanvasPaintOperations.textureEffect(canvasPaint, teamColorEffect, AVOID_TEXTURE_PAINT_COPIES)
             .withDirectBlitTextureBlend(resolvedTexture)
             .asCanonicalTexturePaint()
@@ -2633,7 +2633,7 @@ class KoolGraphicsEngine private constructor(
         }
         registerTexturePixels(resolvedTexture)
         val textureRef = freezeTextureForOffscreenDraw(resolvedTexture, resolvedTexture.toCanvasTextureRef())
-        val basePaint = paint.toCanvasPaint()
+        val basePaint = paint.toCanvasPaint(canonicalTexture = teamColorEffect == null)
         val canvasPaint = KoolCanvasPaintOperations.textureEffect(basePaint, teamColorEffect, AVOID_TEXTURE_PAINT_COPIES)
             .withDirectBlitTextureBlend(resolvedTexture)
             .asCanonicalTexturePaint()
@@ -2961,7 +2961,7 @@ class KoolGraphicsEngine private constructor(
     private fun RectF.toCanvasRect(): KoolCanvasRect =
         KoolCanvasRect(a, b, c, d)
 
-    private fun KoolPaint?.toCanvasPaint(): KoolCanvasPaint {
+    private fun KoolPaint?.toCanvasPaint(canonicalTexture: Boolean = false): KoolCanvasPaint {
         if (this == null) {
             return KoolCanvasPaint.DefaultNearest
         }
@@ -2987,6 +2987,19 @@ class KoolGraphicsEngine private constructor(
             else -> KoolCanvasTextAlign.Left
         }
         val typeface = typefaceKey()
+        // Ordinary white texture draws already discard the remaining paint fields in
+        // asCanonicalTexturePaint(). Recognize that result before allocating the temporary
+        // paint and color. Keep all legacy getter/effect work above: overrides and public
+        // fields can change without a revision. Read the direct-blit state after getters,
+        // and retain the constructor's NaN rejection even for fields canonicalization drops.
+        // The independent opt-in last-snapshot cache keeps its original behavior.
+        if (canonicalTexture && !REUSE_PAINT_SNAPSHOTS && !directBlitActive && color == -1 &&
+            blend == KoolCanvasBlendMode.SourceOver && textureEffect == null && width >= 0f && size >= 0f) {
+            return when (textureFilter) {
+                KoolCanvasTextureFilter.Nearest -> KoolCanvasPaint.DefaultNearest
+                KoolCanvasTextureFilter.Linear -> KoolCanvasPaint.Default
+            }
+        }
         if (REUSE_PAINT_SNAPSHOTS) canvasSnapshot?.let { previous ->
             // Public legacy fields and overridden getters bypass stateRevision. Compare every
             // normalized recorded value, including effects, instead of trusting that revision.

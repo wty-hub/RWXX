@@ -61,7 +61,7 @@ internal class KoolCanvasSpriteAtlas(
     }
 
     private val pages = mutableListOf<Page>()
-    private val slots = mutableMapOf<KoolCanvasTextureId, Slot>()
+    private val slots = mutableMapOf<String, Slot>()
     private var serial = 0
     private var frameNumber = 0L
     private val owner = nextOwner.incrementAndGet()
@@ -167,7 +167,8 @@ internal class KoolCanvasSpriteAtlas(
 
     /** Root packing already checked command support; pixel/image validation remains identical. */
     internal fun slotForValidatedTexture(texture: KoolCanvasTextureRef): Slot? {
-        slots[texture.id]?.let { return it }
+        val slotKey = texture.id.value
+        slots[slotKey]?.let { return it }
         val image = textureStore.staticArgbImage(texture.id) ?: return null
         if (image.premultipliedAlpha || image.width != texture.width || image.height != texture.height ||
             image.width <= 0 || image.height <= 0 || image.width + 4 > pageSize || image.height + 4 > pageSize) return null
@@ -222,7 +223,7 @@ internal class KoolCanvasSpriteAtlas(
         }
         page.lastUsed = frameNumber
         CanvasRenderStageTrace.record("atlas-slot", slotStart, image.width.toLong() * image.height * 4, page.serial.toLong())
-        return Slot(page, x, y, image.width, image.height).also { slots[texture.id] = it }
+        return Slot(page, x, y, image.width, image.height).also { slots[slotKey] = it }
     }
 
     fun texture(page: Page, filter: KoolCanvasTextureFilter): Texture2d {

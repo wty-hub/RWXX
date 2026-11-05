@@ -1,0 +1,2079 @@
+{
+  "date": "2026-11-05",
+  "applicationVersion": "1.4.4",
+  "status": "validated final source scope for requested commit/push; no new binary release",
+  "published": false,
+  "goalComplete": false,
+  "released1_4_3Unchanged": true,
+  "changes": [
+    {
+      "name": "Skip inactive freeze diagnostics",
+      "file": "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasFrameEnvelope.kt",
+      "sourceSha256": "a4db5add8ddcf1485c5d96a1a6ddb8c9f7ee15e7d95d43e2dfc55be41e4c9e76",
+      "behavior": "Detailed comparisons, counters and identifier accounting run only when Canvas/reuse tracing consumes them. Retain actual reuse ATTEMPTS/HITS, scratch metrics and all closure/version/missing/cycle/lease semantics.",
+      "newUserSwitches": false
+    },
+    {
+      "name": "Use underlying immutable strings in the private atlas slot index",
+      "file": "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasSpriteAtlas.kt",
+      "sourceSha256": "67463656621ace01a272cb49f2ca6ef2fa353b65f40fb4cd7d6e006d10612ceb",
+      "behavior": "Private map field/get/put key only; full texture/version strings, equality/hash and lifecycle remain unchanged.",
+      "compiledBoxCallSites": {
+        "before": 2,
+        "after": 0,
+        "scope": "One old get-site on a cache hit; an additional old put-site on slot creation. Not two allocations on every lookup."
+      },
+      "compiledScopeReport": "/Users/wty/code/RWXX/build/texture-id-boxing-20261105/compiled-scope-v1.json",
+      "constructorAndMethodAbiPreserved": true,
+      "otherRuntimeMethodsNormalizedIdentical": true
+    }
+  ],
+  "correctness": {
+    "combinedCore": {
+      "tests": 541,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "combinedDesktop": {
+      "tests": 159,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "interactiveFullscreenExplicitlyExcluded": true
+    },
+    "freezeOnlyFiveModes": {
+      "core-test": {
+        "tests": 538,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "desktop-test": {
+        "tests": 159,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "interactiveFullscreenExplicitlyExcluded": true
+      },
+      "core-freezeDiagnosticsMetrics": {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core-freezeDiagnosticsCanvas": {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core-freezeDiagnosticsReuse": {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "core-freezeDiagnosticsBoth": {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "coreModule": {
+        "path": "/Users/wty/code/RWXX/build/freeze-diagnostics-20261105/validated-v1/core.jar",
+        "sha256": "10f4dbc022e16bec3ab67815a0f7cf41cede21ca583f94e28019c577e8ac9550"
+      },
+      "desktopModule": {
+        "path": "/Users/wty/code/RWXX/build/freeze-diagnostics-20261105/validated-v1/desktop.jar",
+        "sha256": "ac208249a6f27bab4685ec83f9ae768981ca12a498288b1dead74b906769cb44"
+      },
+      "productionScope": "Diagnostic accounting only; resource closure/version/lifetime semantics retained; all five policy modes checked."
+    },
+    "newCoverage": [
+      "Actual immutable target reuse with ATTEMPTS/HITS preserved",
+      "Changed/missing/re-registered sources and old lease pixels",
+      "No fabricated cache hits in full-traversal control",
+      "Equal string values from distinct string instances share a slot",
+      "Equal-hash different texture IDs retain independent pixels and slots",
+      "Complete version keys, idle expiry and clear/rebuild retain old page bytes"
+    ],
+    "gpuSprite": {
+      "valid": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "signals": [],
+      "controllerError": null,
+      "elapsedSeconds": 13.885419167025248,
+      "performanceInvalid": true,
+      "mode": "sprite",
+      "stdoutSha256": "77d4b3013579cf7b70d43937b11ac6f2a9a9ded52bf7a19edb775869b2be4219"
+    },
+    "gpuMap": {
+      "valid": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "signals": [],
+      "controllerError": null,
+      "elapsedSeconds": 6.224608582997462,
+      "performanceInvalid": true,
+      "mode": "map",
+      "stdoutSha256": "b6ee2d3080f2eda55ab7d62c8bf16e06e19c3244815701746c62deb2394c42d3"
+    },
+    "gpuChecks": {
+      "sprite": 148,
+      "spriteRetirementsRequestedAndCompleted": 608,
+      "map": 3844,
+      "fog": 4608,
+      "text": 3072
+    },
+    "gpuScope": "Memory-only adapter, no visible app/window/audio/input. Main context4; inherited readback passes default1, tolerance3. No FPS inference."
+  },
+  "freezeCpuScreening": {
+    "source": "/Users/wty/code/RWXX/build/freeze-diagnostics-20261105/real-replay-cpu-v1/completed.json",
+    "independentAudit": "/Users/wty/code/RWXX/build/freeze-diagnostics-20261105/real-replay-cpu-v1/independent-cpu-abba-review-v1.json",
+    "replayUnitsApproximate": [
+      90,
+      93
+    ],
+    "independentJvmOrder": "ABBA",
+    "warmFrames": 120,
+    "sampleFramesPerJvm": 300,
+    "baselineCoreSha256": "fe425254fdb1b7afb414c1dbdd717c3019e5dda319e03d7f53656d13cec0f387",
+    "freezeCandidateCoreSha256": "10f4dbc022e16bec3ab67815a0f7cf41cede21ca583f94e28019c577e8ac9550",
+    "onlyFreezeChangeMeasured": true,
+    "atlasRenderWorkMeasured": false,
+    "comparison": {
+      "updateRecord": {
+        "cpuNanos": {
+          "baselineMedianOfJvmMeans": 1351543.3333333335,
+          "candidateMedianOfJvmMeans": 1114466.6666666667,
+          "changePercent": -17.54118131617435
+        },
+        "wallNanos": {
+          "baselineMedianOfJvmMeans": 1389701.1216666666,
+          "candidateMedianOfJvmMeans": 1206591.575,
+          "changePercent": -13.176181828727573
+        },
+        "allocatedBytes": {
+          "baselineMedianOfJvmMeans": 169239.97333333333,
+          "candidateMedianOfJvmMeans": 180855.6666666667,
+          "changePercent": 6.863445499636911
+        }
+      },
+      "visibleRedraw": {
+        "cpuNanos": {
+          "baselineMedianOfJvmMeans": 61910.0,
+          "candidateMedianOfJvmMeans": 52781.66666666667,
+          "changePercent": -14.744521617401595
+        },
+        "wallNanos": {
+          "baselineMedianOfJvmMeans": 60157.44666666667,
+          "candidateMedianOfJvmMeans": 51623.74166666667,
+          "changePercent": -14.185617031396614
+        },
+        "allocatedBytes": {
+          "baselineMedianOfJvmMeans": 18286.346666666668,
+          "candidateMedianOfJvmMeans": 27775.28,
+          "changePercent": 51.89080960950099
+        }
+      },
+      "snapshotFreeze": {
+        "cpuNanos": {
+          "baselineMedianOfJvmMeans": 206400.0,
+          "candidateMedianOfJvmMeans": 150600.0,
+          "changePercent": -27.034883720930235
+        },
+        "wallNanos": {
+          "baselineMedianOfJvmMeans": 207349.37166666664,
+          "candidateMedianOfJvmMeans": 166929.78,
+          "changePercent": -19.493471980057354
+        },
+        "allocatedBytes": {
+          "baselineMedianOfJvmMeans": 60454.933333333334,
+          "candidateMedianOfJvmMeans": 62580.72,
+          "changePercent": 3.5163162862914987
+        }
+      },
+      "offscreenBackground": {
+        "cpuNanos": {
+          "baselineMedianOfJvmMeans": 15043.333333333334,
+          "candidateMedianOfJvmMeans": 12015.0,
+          "changePercent": -20.130733436738314
+        },
+        "wallNanos": {
+          "baselineMedianOfJvmMeans": 13672.596666666668,
+          "candidateMedianOfJvmMeans": 10782.018333333333,
+          "changePercent": -21.141399865765564
+        },
+        "allocatedBytes": {
+          "baselineMedianOfJvmMeans": 2605.68,
+          "candidateMedianOfJvmMeans": 3634.746666666667,
+          "changePercent": 39.49320970597567
+        }
+      },
+      "productionStagesTotal": {
+        "cpuNanos": {
+          "baselineMedianOfJvmMeans": 1634896.6666666667,
+          "candidateMedianOfJvmMeans": 1329863.3333333333,
+          "changePercent": -18.657652165580295
+        },
+        "wallNanos": {
+          "baselineMedianOfJvmMeans": 1670880.5366666666,
+          "candidateMedianOfJvmMeans": 1435927.115,
+          "changePercent": -14.061652913582224
+        },
+        "allocatedBytes": {
+          "baselineMedianOfJvmMeans": 250586.93333333335,
+          "candidateMedianOfJvmMeans": 274846.41333333333,
+          "changePercent": 9.681063444648874
+        }
+      }
+    },
+    "sceneScalarsMatch": true,
+    "completeCommandAndResourceWorkloadMatch": false,
+    "baselineRepeatsAlsoDiffer": true,
+    "allocationReductionEstablished": false,
+    "steadyStateEstablished": false,
+    "interpretation": "Both paired freeze CPU means decrease, but graph workloads/JVM warmup vary and allocation rises overall. Preliminary CPU evidence only; do not attribute the full percentage causally or infer FPS/10000-unit gains."
+  },
+  "priorActualBoxingEvidence": {
+    "source": "/Users/wty/code/RWXX/build/post-release-diagnostics-20261105/render-cadence-v2/profile-analysis-v1.json",
+    "directParent": "KoolCanvasSpriteAtlas.slotForValidatedTexture",
+    "sampledAllocationEvents": 459,
+    "sampleWeightBytes": 1432300736,
+    "interpretation": "Sample weights are estimates, not an exact allocation census; compiled deletion removes these box call sites, not every TextureId allocation in the program."
+  },
+  "renderCadenceDiagnostic": {
+    "path": "/Users/wty/code/RWXX/build/post-release-diagnostics-20261105/render-cadence-v2",
+    "productTested": "Frozen1.4.3 b357, not new1.4.4",
+    "scope": "Runtime300 observed in4 metric windows and5204 successful fence/acquire/submit/present operations;260diagnostic acceptedHz disproves a permanent120cap but is not a performance gain.",
+    "sampleFreshIntervals": 4625,
+    "slowIntervalsOver16_667Ms": 13,
+    "source": "/Users/wty/code/RWXX/build/post-release-diagnostics-20261105/render-cadence-v2/cadence-stage-analysis-v1.json",
+    "noClockSync": true,
+    "remainingUncoveredGapMs": 9.409,
+    "causeNotEstablishedForOld119Hz": true
+  },
+  "preservedFailures": [
+    "/Users/wty/code/RWXX/build/freeze-diagnostics-20261105/regression-v1.log",
+    "/Users/wty/code/RWXX/build/post-release-diagnostics-20261105/render-cadence-v1/prelaunch-stop-v1.json"
+  ],
+  "nextRequiredWork": [],
+  "installedApplicationChanged": false,
+  "steamInstallationChanged": false,
+  "systemVolumeChanged": false,
+  "fullGameFollowup": {
+    "stage": "/Users/wty/code/RWXX/build/post-release-performance-20261105/combined-motion-v1",
+    "plannedOrder": [
+      "baseline",
+      "candidate",
+      "candidate-repeat",
+      "baseline-repeat"
+    ],
+    "executed": [
+      "baseline"
+    ],
+    "remainingRunsLaunched": false,
+    "officialV4GameLaunched": false,
+    "baseline": {
+      "version": "1.4.3",
+      "valid": true,
+      "exitCode": 0,
+      "freshSnapshotHz": 203.48031497858645,
+      "freshP99Ms": 18.662417,
+      "freshMaxMs": 88.226417,
+      "freshGapsOver16_667Ms": 68,
+      "acceptedPresentFps": 219.57875758868593,
+      "initialUnits": 10000,
+      "livingUnitsRange": [
+        9235,
+        10000
+      ]
+    },
+    "seriesStatus": "Stopped after conversation interruption and missing display-manager handle; no automatic restart or cross-display completion. Single completed baseline preserved.",
+    "independentAudit": {
+      "path": "/Users/wty/code/RWXX/build/post-release-performance-20261105/combined-motion-v1/baseline-independent-audit-v1/report.json",
+      "sha256": "cc32cb0defbc6a4031f9e9b5ad208999c3a7038e601e687509fec10f2a794b26",
+      "checksPassed": 46
+    },
+    "displayRestoration": {
+      "path": "/Users/wty/code/RWXX/build/post-release-performance-20261105/combined-motion-v1/baseline-independent-audit-v1/display-restoration-appendix.json",
+      "sha256": "7aa485e2c458911d602b2625c8bc1f2c477ea0aa8966abefd7db0297a3a88ace",
+      "currentOriginalDisplayFullyUnchanged": true,
+      "managerCleanupExitUnproven": true
+    },
+    "limitations": [
+      "No candidate or contemporary original result, so no optimization/original speed ratio.",
+      "A user-owned RWXX.app process coexisted. Historical load during this run was not measured; no causal contention attribution.",
+      "Longest fresh gap coincides with a94.777458ms owner camera observation gap, but no JFR/stage timestamps establish its cause."
+    ]
+  },
+  "additionalRejectedCandidate": {
+    "name": "Private CPU source index keyed by complete immutable Strings",
+    "sourceCandidate": "/Users/wty/code/RWXX/build/cpu-source-index-20261105/candidate-KoolCanvasFrameEnvelope.kt",
+    "candidateCoreSha256": "ca0ba575b18653fbcc109093040203341ea1325130351ab982d7704cc885ba84",
+    "baselineCoreSha256": "3e2b1400762370437922748b5c729cd8d919da1be30eb325c40ff1ad15dcd401",
+    "correctness": {
+      "tests": 544,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "screeningSource": "/Users/wty/code/RWXX/build/cpu-source-index-20261105/real-replay-cpu-v1/completed.json",
+    "screeningSha256": "2f70eb4f4402a7590da61e7b41ce123d4e335171dcabb6007b85d15795cd2632",
+    "comparison": {
+      "updateRecord": {
+        "cpuNanos": {
+          "baselineMedianOfJvmMeans": 1405360.0,
+          "candidateMedianOfJvmMeans": 1495203.3333333333,
+          "changePercent": 6.392905257964743
+        },
+        "wallNanos": {
+          "baselineMedianOfJvmMeans": 1425942.2383333333,
+          "candidateMedianOfJvmMeans": 1509435.7000000002,
+          "changePercent": 5.855318639291829
+        },
+        "allocatedBytes": {
+          "baselineMedianOfJvmMeans": 192686.05333333334,
+          "candidateMedianOfJvmMeans": 176522.68,
+          "changePercent": -8.388450048002094
+        }
+      },
+      "visibleRedraw": {
+        "cpuNanos": {
+          "baselineMedianOfJvmMeans": 61381.66666666667,
+          "candidateMedianOfJvmMeans": 67273.33333333334,
+          "changePercent": 9.598414293084257
+        },
+        "wallNanos": {
+          "baselineMedianOfJvmMeans": 59871.59333333334,
+          "candidateMedianOfJvmMeans": 65486.73166666667,
+          "changePercent": 9.378635210309527
+        },
+        "allocatedBytes": {
+          "baselineMedianOfJvmMeans": 37264.21333333333,
+          "candidateMedianOfJvmMeans": 23974.693333333333,
+          "changePercent": -35.662955987084665
+        }
+      },
+      "snapshotFreeze": {
+        "cpuNanos": {
+          "baselineMedianOfJvmMeans": 193385.0,
+          "candidateMedianOfJvmMeans": 204838.33333333334,
+          "changePercent": 5.922555179219358
+        },
+        "wallNanos": {
+          "baselineMedianOfJvmMeans": 191843.32166666666,
+          "candidateMedianOfJvmMeans": 215020.49333333335,
+          "changePercent": 12.081302317595233
+        },
+        "allocatedBytes": {
+          "baselineMedianOfJvmMeans": 65690.98666666666,
+          "candidateMedianOfJvmMeans": 60890.479999999996,
+          "changePercent": -7.307709794382755
+        }
+      },
+      "offscreenBackground": {
+        "cpuNanos": {
+          "baselineMedianOfJvmMeans": 15206.666666666668,
+          "candidateMedianOfJvmMeans": 17300.0,
+          "changePercent": 13.765892152564652
+        },
+        "wallNanos": {
+          "baselineMedianOfJvmMeans": 13699.683333333334,
+          "candidateMedianOfJvmMeans": 15541.451666666666,
+          "changePercent": 13.443875223393231
+        },
+        "allocatedBytes": {
+          "baselineMedianOfJvmMeans": 4663.8133333333335,
+          "candidateMedianOfJvmMeans": 3220.7733333333335,
+          "changePercent": -30.94120405047658
+        }
+      },
+      "productionStagesTotal": {
+        "cpuNanos": {
+          "baselineMedianOfJvmMeans": 1675333.3333333333,
+          "candidateMedianOfJvmMeans": 1784615.0,
+          "changePercent": 6.522980501392772
+        },
+        "wallNanos": {
+          "baselineMedianOfJvmMeans": 1691356.8366666667,
+          "candidateMedianOfJvmMeans": 1805484.3766666667,
+          "changePercent": 6.747691411170398
+        },
+        "allocatedBytes": {
+          "baselineMedianOfJvmMeans": 300305.06666666665,
+          "candidateMedianOfJvmMeans": 264608.62666666665,
+          "changePercent": -11.886725853887247
+        }
+      }
+    },
+    "independentAudit": {
+      "path": "/Users/wty/code/RWXX/build/cpu-source-index-20261105/real-replay-cpu-v1/independent-review-v1/report.json",
+      "sha256": "1d830447a66d651ea5f44e397146171f5afe4c2fc646ad407c34250d1923be58",
+      "checksPassed": 43
+    },
+    "currentProductionSourceRestoredToTypedMap": true,
+    "decision": "Not adopted: both pairs showed higher CPU time despite lower measured allocation. Recorded graph workload differs across JVMs, so neither measured difference is a clean isolated key-index effect.",
+    "retainedTests": "Three collision/version/equal-ID/lifetime regression tests remain valid against the restored implementation.",
+    "scope": "90..93-unit CPU-only replay capture, no GPU/renderInto/presentation or10000-unit FPS claim."
+  },
+  "canonicalTexturePaint": {
+    "name": "Return existing canonical texture paint before creating the discarded temporary",
+    "sourceSha256": "474a3c52ddcc70ffc319c5dc9040eeb10e32eb7183d06a8abea0217ff4591c30",
+    "coreSha256": "5f16d836965e7543793bed97962b44097e5dbad4f647a3da2f999e64c7e4f453",
+    "coreTests": 550,
+    "coreSkipped": 1,
+    "desktopTests": 159,
+    "failures": 0,
+    "correctnessScope": "All existing getters/effects and NaN validation retained; direct-blit/team/effect/tint/alpha/snapshot-cache fallback retains prior conversion.",
+    "performance": "Matched component allocation/CPU benefit supports retaining the compatible white-paint shortcut among comprehensive optimizations. No whole-game FPS or maximum-frame improvement claim.",
+    "status": "component-optimization-retained; full-game benefit unproven",
+    "realReplayScreening": {
+      "source": "/Users/wty/code/RWXX/build/canonical-texture-paint-20261105/real-replay-cpu-v1/completed.json",
+      "comparison": {
+        "updateRecord": {
+          "cpuNanos": {
+            "baselineMedianOfJvmMeans": 897115.0,
+            "candidateMedianOfJvmMeans": 1002100.0,
+            "changePercent": 11.702513055739793
+          },
+          "wallNanos": {
+            "baselineMedianOfJvmMeans": 977349.7849999999,
+            "candidateMedianOfJvmMeans": 1127219.0883333334,
+            "changePercent": 15.334254494498456
+          },
+          "allocatedBytes": {
+            "baselineMedianOfJvmMeans": 169494.86666666667,
+            "candidateMedianOfJvmMeans": 172514.2,
+            "changePercent": 1.7813715498955274
+          }
+        },
+        "visibleRedraw": {
+          "cpuNanos": {
+            "baselineMedianOfJvmMeans": 44998.333333333336,
+            "candidateMedianOfJvmMeans": 58061.66666666667,
+            "changePercent": 29.03070484092003
+          },
+          "wallNanos": {
+            "baselineMedianOfJvmMeans": 60148.94333333333,
+            "candidateMedianOfJvmMeans": 58400.96333333333,
+            "changePercent": -2.906085964491578
+          },
+          "allocatedBytes": {
+            "baselineMedianOfJvmMeans": 18286.26666666667,
+            "candidateMedianOfJvmMeans": 27775.28,
+            "changePercent": 51.8914741117195
+          }
+        },
+        "snapshotFreeze": {
+          "cpuNanos": {
+            "baselineMedianOfJvmMeans": 119358.33333333334,
+            "candidateMedianOfJvmMeans": 138798.33333333334,
+            "changePercent": 16.28709069329051
+          },
+          "wallNanos": {
+            "baselineMedianOfJvmMeans": 130226.06,
+            "candidateMedianOfJvmMeans": 184983.19666666666,
+            "changePercent": 42.047756544785784
+          },
+          "allocatedBytes": {
+            "baselineMedianOfJvmMeans": 60071.82666666667,
+            "candidateMedianOfJvmMeans": 63243.90666666666,
+            "changePercent": 5.280478680299816
+          }
+        },
+        "offscreenBackground": {
+          "cpuNanos": {
+            "baselineMedianOfJvmMeans": 10131.666666666666,
+            "candidateMedianOfJvmMeans": 11126.666666666668,
+            "changePercent": 9.820694193123881
+          },
+          "wallNanos": {
+            "baselineMedianOfJvmMeans": 9391.166666666668,
+            "candidateMedianOfJvmMeans": 10030.441666666666,
+            "changePercent": 6.807194704243336
+          },
+          "allocatedBytes": {
+            "baselineMedianOfJvmMeans": 2605.68,
+            "candidateMedianOfJvmMeans": 3634.746666666667,
+            "changePercent": 39.49320970597567
+          }
+        },
+        "productionStagesTotal": {
+          "cpuNanos": {
+            "baselineMedianOfJvmMeans": 1071603.3333333333,
+            "candidateMedianOfJvmMeans": 1210086.6666666667,
+            "changePercent": 12.923003225696084
+          },
+          "wallNanos": {
+            "baselineMedianOfJvmMeans": 1177115.955,
+            "candidateMedianOfJvmMeans": 1380633.69,
+            "changePercent": 17.28952310394942
+          },
+          "allocatedBytes": {
+            "baselineMedianOfJvmMeans": 250458.64,
+            "candidateMedianOfJvmMeans": 267168.1333333333,
+            "changePercent": 6.671557959962282
+          }
+        }
+      },
+      "decision": "No isolated causal conclusion: actual graph payload differs across independent replay JVMs; negative measurements retained."
+    },
+    "deterministicMatchedCpu": {
+      "source": "/Users/wty/code/RWXX/build/canonical-texture-paint-20261105/matched-cpu-v1/completed.json",
+      "sha256": "54d7fcb61b75336c1d5bb366461cb06b7f51c9a72ddcaf48d6e7246da1451132",
+      "independentAudit": {
+        "path": "/Users/wty/code/RWXX/build/canonical-texture-paint-20261105/independent-matched-cpu-v1/report.json",
+        "sha256": "37673b1e07cdcfd64fb43c99212f6946aa19db9febe844b4a376907302b32de8",
+        "checksPassed": 607
+      },
+      "sameCompleteCommandFieldsAndResourcesAcrossAllArms": true,
+      "independentJvms": 12,
+      "warmupFramesPerJvm": 1200,
+      "sampleFramesPerJvm": 600,
+      "modes": {
+        "white": {
+          "drawAndSnapshot": {
+            "cpuNanos": {
+              "baselinePerFrame": 16717.5,
+              "candidatePerFrame": 15598.333333333332,
+              "changePercent": -6.694581526344656,
+              "pairedChangePercent": [
+                -4.606108530196707,
+                -8.819388576025744
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 20893.756666666668,
+              "candidatePerFrame": 18023.2575,
+              "changePercent": -13.738549809217337,
+              "pairedChangePercent": [
+                -10.943102810932182,
+                -16.54228151246574
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 109412.13333333333,
+              "candidatePerFrame": 72548.13333333333,
+              "changePercent": -33.692789708880554,
+              "pairedChangePercent": [
+                -33.692789708880554,
+                -33.692789708880554
+              ]
+            }
+          },
+          "freeze": {
+            "cpuNanos": {
+              "baselinePerFrame": 8605.0,
+              "candidatePerFrame": 8705.0,
+              "changePercent": 1.1621150493899002,
+              "pairedChangePercent": [
+                5.367118914604929,
+                -2.803914188934875
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 8067.0525,
+              "candidatePerFrame": 8160.1466666666665,
+              "changePercent": 1.1540047206419768,
+              "pairedChangePercent": [
+                5.842572841705529,
+                -3.2572182303333808
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 40473.253333333334,
+              "candidatePerFrame": 40472.0,
+              "changePercent": -0.0030966952990207908,
+              "pairedChangePercent": [
+                -0.002503725939528856,
+                -0.003689657626126941
+              ]
+            }
+          },
+          "leaseClose": {
+            "cpuNanos": {
+              "baselinePerFrame": 950.0,
+              "candidatePerFrame": 1080.0,
+              "changePercent": 13.684210526315788,
+              "pairedChangePercent": [
+                10.163934426229515,
+                17.73584905660377
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 70.66916666666665,
+              "candidatePerFrame": 78.11333333333334,
+              "changePercent": 10.533825454288204,
+              "pairedChangePercent": [
+                14.395013389140177,
+                6.282826280844334
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 32.0,
+              "candidatePerFrame": 32.0,
+              "changePercent": 0.0,
+              "pairedChangePercent": [
+                0.0,
+                0.0
+              ]
+            }
+          },
+          "stageSum": {
+            "cpuNanos": {
+              "baselinePerFrame": 26272.5,
+              "candidatePerFrame": 25383.333333333332,
+              "changePercent": -3.3844006724395026,
+              "pairedChangePercent": [
+                -0.8577419149882637,
+                -5.9032176336458075
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 29031.478333333333,
+              "candidatePerFrame": 26261.5175,
+              "changePercent": -9.541232456470949,
+              "pairedChangePercent": [
+                -6.3226696442368,
+                -12.713225974821796
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 149917.38666666666,
+              "candidatePerFrame": 113052.13333333333,
+              "changePercent": -24.590378843316728,
+              "pairedChangePercent": [
+                -24.59025812124137,
+                -24.59049956500555
+              ]
+            }
+          }
+        },
+        "shadow": {
+          "drawAndSnapshot": {
+            "cpuNanos": {
+              "baselinePerFrame": 21435.833333333336,
+              "candidatePerFrame": 22167.5,
+              "changePercent": 3.4132877191618283,
+              "pairedChangePercent": [
+                6.973411877089641,
+                0.015196413646378915
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 25504.968333333334,
+              "candidatePerFrame": 26230.584166666667,
+              "changePercent": 2.844997977844965,
+              "pairedChangePercent": [
+                6.550316378803123,
+                -0.6883245571212893
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 162660.13333333333,
+              "candidatePerFrame": 162660.13333333333,
+              "changePercent": 0.0,
+              "pairedChangePercent": [
+                0.0,
+                0.0
+              ]
+            }
+          },
+          "freeze": {
+            "cpuNanos": {
+              "baselinePerFrame": 8702.5,
+              "candidatePerFrame": 8689.166666666668,
+              "changePercent": -0.1532126783491239,
+              "pairedChangePercent": [
+                3.4858387799564294,
+                -3.5595105672969973
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 8179.545833333334,
+              "candidatePerFrame": 8192.558333333334,
+              "changePercent": 0.1590858498154324,
+              "pairedChangePercent": [
+                4.227649007846446,
+                -3.632052708191136
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 40472.426666666666,
+              "candidatePerFrame": 40472.0,
+              "changePercent": -0.0010542156767101574,
+              "pairedChangePercent": [
+                0.0,
+                -0.002108409126244659
+              ]
+            }
+          },
+          "leaseClose": {
+            "cpuNanos": {
+              "baselinePerFrame": 1070.0,
+              "candidatePerFrame": 1042.5,
+              "changePercent": -2.5700934579439227,
+              "pairedChangePercent": [
+                5.854430379746844,
+                -10.73619631901841
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 68.71666666666667,
+              "candidatePerFrame": 70.4625,
+              "changePercent": 2.540625757943249,
+              "pairedChangePercent": [
+                12.104315647347086,
+                -6.466349550228423
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 32.0,
+              "candidatePerFrame": 32.0,
+              "changePercent": 0.0,
+              "pairedChangePercent": [
+                0.0,
+                0.0
+              ]
+            }
+          },
+          "stageSum": {
+            "cpuNanos": {
+              "baselinePerFrame": 31208.333333333336,
+              "candidatePerFrame": 31899.166666666664,
+              "changePercent": 2.2136181575433733,
+              "pairedChangePercent": [
+                5.969412925505679,
+                -1.3536731400010438
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 33753.230833333335,
+              "candidatePerFrame": 34493.604999999996,
+              "changePercent": 2.1934912551704544,
+              "pairedChangePercent": [
+                6.003770037358991,
+                -1.4195565236271745
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 203164.56,
+              "candidatePerFrame": 203164.13333333333,
+              "changePercent": -0.00021001038107426595,
+              "pairedChangePercent": [
+                0.0,
+                -0.0004200198800652366
+              ]
+            }
+          }
+        },
+        "mixed": {
+          "drawAndSnapshot": {
+            "cpuNanos": {
+              "baselinePerFrame": 20610.0,
+              "candidatePerFrame": 20205.833333333336,
+              "changePercent": -1.9610221575286912,
+              "pairedChangePercent": [
+                0.18198362147407998,
+                -4.010124179387809
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 20613.73416666667,
+              "candidatePerFrame": 20184.270833333336,
+              "changePercent": -2.08338445553351,
+              "pairedChangePercent": [
+                5.218661165494276,
+                -8.72842384667225
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 134204.02666666667,
+              "candidatePerFrame": 122611.92,
+              "changePercent": -8.637674259550288,
+              "pairedChangePercent": [
+                -8.637746875158337,
+                -8.637601643826809
+              ]
+            }
+          },
+          "freeze": {
+            "cpuNanos": {
+              "baselinePerFrame": 8659.166666666666,
+              "candidatePerFrame": 8545.0,
+              "changePercent": -1.318448657492055,
+              "pairedChangePercent": [
+                -8.539580578122042,
+                6.178893683797559
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 8650.666666666666,
+              "candidatePerFrame": 8535.877499999999,
+              "changePercent": -1.3269401202219533,
+              "pairedChangePercent": [
+                -19.247280744444637,
+                19.725300636395303
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 32897.04,
+              "candidatePerFrame": 32896.4,
+              "changePercent": -0.001945463786401369,
+              "pairedChangePercent": [
+                -0.0025939664340723922,
+                -0.0012969684982544472
+              ]
+            }
+          },
+          "leaseClose": {
+            "cpuNanos": {
+              "baselinePerFrame": 1149.1666666666665,
+              "candidatePerFrame": 984.1666666666666,
+              "changePercent": -14.358230601885413,
+              "pairedChangePercent": [
+                -3.607503607503615,
+                -25.218658892128275
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 77.4525,
+              "candidatePerFrame": 86.5175,
+              "changePercent": 11.70394758077531,
+              "pairedChangePercent": [
+                24.351062108499157,
+                0.6904186795491318
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 32.0,
+              "candidatePerFrame": 32.0,
+              "changePercent": 0.0,
+              "pairedChangePercent": [
+                0.0,
+                0.0
+              ]
+            }
+          },
+          "stageSum": {
+            "cpuNanos": {
+              "baselinePerFrame": 30418.333333333336,
+              "candidatePerFrame": 29735.0,
+              "changePercent": -2.2464522491918326,
+              "pairedChangePercent": [
+                -2.517289073305662,
+                -1.9807890595322064
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 29341.853333333333,
+              "candidatePerFrame": 28806.665833333333,
+              "changePercent": -1.8239730596431358,
+              "pairedChangePercent": [
+                -2.602070922859523,
+                -1.060648504659345
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 167133.06666666665,
+              "candidatePerFrame": 155540.32,
+              "changePercent": -6.936237632608899,
+              "pairedChangePercent": [
+                -6.936432417011806,
+                -6.936042848392487
+              ]
+            }
+          }
+        }
+      },
+      "scope": "Synthetic representative actual graphics/store calls, not a running game, GPU submission or10000-unit/FPS measurement. White161of512 in mixed is a fixture, not observed actual game paint hit rate.",
+      "limitations": [
+        "Only two JVMs per variant/mode; each complete process interval under0.559s.",
+        "All48warm blocks and60sample blocks retained.",
+        "Stage CPU boundaries include timer-query accounting; no independently calibrated CPU clock resolution.",
+        "Mixed stderr contains caught Koin-not-started logger fallback in both versions, retained and not represented as clean stderr.",
+        "Shadow-only control stageCPU pooled+2.2136percent with crossed pairs; no allocation improvement there."
+      ]
+    },
+    "longerMatchedCpu": {
+      "source": "/Users/wty/code/RWXX/build/canonical-texture-paint-20261105/long-paint-v2/completed.json",
+      "sha256": "2544a9120daa757cf1ac06caffd1a0ec77b0bbcc3711d4cd8bc20a40417d557c",
+      "independentAudit": {
+        "path": "/Users/wty/code/RWXX/build/canonical-texture-paint-20261105/long-paint-v2/independent-review-v1/audit.json",
+        "sha256": "9a8458afae6aafa5e5d14a858a28830f490b0a6a34b0b011a4a77b989bc4c15f",
+        "checksPassed": 1887
+      },
+      "valid": true,
+      "warmupFramesPerJvm": 12000,
+      "sampleFramesPerJvm": 6000,
+      "allTwelveArmsPassed": true,
+      "comparisons": {
+        "white": {
+          "drawAndSnapshot": {
+            "cpuNanos": {
+              "baselinePerFrame": 14021.333333333332,
+              "candidatePerFrame": 12582.416666666668,
+              "changePercent": -10.26233834157473,
+              "pairedChangePercent": [
+                -8.864724732654016,
+                -11.633328231512763
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 13768.217916666666,
+              "candidatePerFrame": 12305.955416666668,
+              "changePercent": -10.620564759001272,
+              "pairedChangePercent": [
+                -9.087175859721919,
+                -12.118571187688588
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 100715.19733333333,
+              "candidatePerFrame": 67946.984,
+              "changePercent": -32.53552016075747,
+              "pairedChangePercent": [
+                -36.602299415546746,
+                -28.468758134306306
+              ]
+            }
+          },
+          "freeze": {
+            "cpuNanos": {
+              "baselinePerFrame": 6673.416666666667,
+              "candidatePerFrame": 7289.666666666666,
+              "changePercent": 9.234400169828039,
+              "pairedChangePercent": [
+                2.677981604756341,
+                15.571053213171915
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 6291.738166666666,
+              "candidatePerFrame": 6990.6455000000005,
+              "changePercent": 11.108334689388588,
+              "pairedChangePercent": [
+                3.0349427456283884,
+                19.117199812832574
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 32232.0,
+              "candidatePerFrame": 36322.41333333333,
+              "changePercent": 12.690535285844295,
+              "pairedChangePercent": [
+                0.0,
+                25.38107057168859
+              ]
+            }
+          },
+          "leaseClose": {
+            "cpuNanos": {
+              "baselinePerFrame": 942.9166666666666,
+              "candidatePerFrame": 936.5,
+              "changePercent": -0.6805125939018941,
+              "pairedChangePercent": [
+                -4.407374890254601,
+                3.09608540925268
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 35.259,
+              "candidatePerFrame": 35.895916666666665,
+              "changePercent": 1.8063945848341145,
+              "pairedChangePercent": [
+                7.89617070572699,
+                -3.848415371782543
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 0.12466666666666666,
+              "candidatePerFrame": 0.12466666666666666,
+              "changePercent": 0.0,
+              "pairedChangePercent": [
+                10.112359550561777,
+                -9.183673469387744
+              ]
+            }
+          },
+          "stageSum": {
+            "cpuNanos": {
+              "baselinePerFrame": 21637.666666666664,
+              "candidatePerFrame": 20808.583333333336,
+              "changePercent": -3.8316670004467257,
+              "pairedChangePercent": [
+                -5.128065310192243,
+                -2.5639853747714825
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 20095.215083333333,
+              "candidatePerFrame": 19332.49683333333,
+              "changePercent": -3.795521704231908,
+              "pairedChangePercent": [
+                -5.24249204713092,
+                -2.375268959707799
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 132947.322,
+              "candidatePerFrame": 104269.522,
+              "changePercent": -21.570799297484157,
+              "pairedChangePercent": [
+                -27.72831243447833,
+                -15.413306477494238
+              ]
+            }
+          }
+        },
+        "shadow": {
+          "drawAndSnapshot": {
+            "cpuNanos": {
+              "baselinePerFrame": 20814.25,
+              "candidatePerFrame": 21233.583333333336,
+              "changePercent": 2.0146454152003335,
+              "pairedChangePercent": [
+                -0.3639758081596445,
+                4.494235015127979
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 20729.55258333333,
+              "candidatePerFrame": 21031.35425,
+              "changePercent": 1.4559005335663677,
+              "pairedChangePercent": [
+                -0.7527845848937287,
+                3.761549511008533
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 162154.98866666667,
+              "candidatePerFrame": 162155.19733333332,
+              "changePercent": 0.00012868347027961136,
+              "pairedChangePercent": [
+                0.0,
+                0.00025736693316513737
+              ]
+            }
+          },
+          "freeze": {
+            "cpuNanos": {
+              "baselinePerFrame": 8178.166666666666,
+              "candidatePerFrame": 8117.083333333334,
+              "changePercent": -0.7469074160875389,
+              "pairedChangePercent": [
+                -2.3217520171249784,
+                0.7971102231908667
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 7781.828083333334,
+              "candidatePerFrame": 7740.185166666666,
+              "changePercent": -0.535130257578631,
+              "pairedChangePercent": [
+                -4.4983527939530195,
+                3.4274074251585462
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 40408.0,
+              "candidatePerFrame": 40408.0,
+              "changePercent": 0.0,
+              "pairedChangePercent": [
+                0.0,
+                0.0
+              ]
+            }
+          },
+          "leaseClose": {
+            "cpuNanos": {
+              "baselinePerFrame": 911.25,
+              "candidatePerFrame": 978.9166666666667,
+              "changePercent": 7.425697302240519,
+              "pairedChangePercent": [
+                5.828550932568155,
+                9.087516327673084
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 35.117999999999995,
+              "candidatePerFrame": 38.1625,
+              "changePercent": 8.669343356683212,
+              "pairedChangePercent": [
+                -3.961126883599031,
+                23.694055053879648
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 0.11866666666666667,
+              "candidatePerFrame": 3.6046666666666667,
+              "changePercent": 2937.6404494382023,
+              "pairedChangePercent": [
+                1704.494382022472,
+                4170.786516853932
+              ]
+            }
+          },
+          "stageSum": {
+            "cpuNanos": {
+              "baselinePerFrame": 29903.666666666668,
+              "candidatePerFrame": 30329.583333333336,
+              "changePercent": 1.424295794272723,
+              "pairedChangePercent": [
+                -0.6975297427343041,
+                3.5992618635124707
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 28546.498666666666,
+              "candidatePerFrame": 28809.701916666665,
+              "changePercent": 0.9220158768799891,
+              "pairedChangePercent": [
+                -1.762205649142179,
+                3.6917576621430026
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 202563.10733333335,
+              "candidatePerFrame": 202566.802,
+              "changePercent": 0.0018239583284840322,
+              "pairedChangePercent": [
+                0.0009985365745368568,
+                0.0026493800443949667
+              ]
+            }
+          }
+        },
+        "mixed": {
+          "drawAndSnapshot": {
+            "cpuNanos": {
+              "baselinePerFrame": 18127.416666666664,
+              "candidatePerFrame": 17984.25,
+              "changePercent": -0.7897797535041162,
+              "pairedChangePercent": [
+                -1.4680955765760895,
+                -0.09926248898370904
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 17938.33925,
+              "candidatePerFrame": 17772.609916666668,
+              "changePercent": -0.9238833708272831,
+              "pairedChangePercent": [
+                -1.5293756906000544,
+                -0.3077895127208463
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 133699.19733333332,
+              "candidatePerFrame": 122106.984,
+              "changePercent": -8.670368681744655,
+              "pairedChangePercent": [
+                -8.670222953975482,
+                -8.670514409048803
+              ]
+            }
+          },
+          "freeze": {
+            "cpuNanos": {
+              "baselinePerFrame": 7582.75,
+              "candidatePerFrame": 7286.416666666667,
+              "changePercent": -3.9079929225324994,
+              "pairedChangePercent": [
+                -2.9778111265944873,
+                -4.886353386849452
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 7246.021333333334,
+              "candidatePerFrame": 6942.122,
+              "changePercent": -4.194016541675472,
+              "pairedChangePercent": [
+                -2.921214792390714,
+                -5.529171400976695
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 32832.03,
+              "candidatePerFrame": 32832.05933333334,
+              "changePercent": 8.934364807977602e-05,
+              "pairedChangePercent": [
+                0.0,
+                0.0001786871328457451
+              ]
+            }
+          },
+          "leaseClose": {
+            "cpuNanos": {
+              "baselinePerFrame": 871.75,
+              "candidatePerFrame": 861.0833333333333,
+              "changePercent": -1.2235923907848334,
+              "pairedChangePercent": [
+                0.7478427612655825,
+                -3.1833778116660327
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 37.95283333333333,
+              "candidatePerFrame": 40.69166666666666,
+              "changePercent": 7.216413355173312,
+              "pairedChangePercent": [
+                8.497809600075378,
+                6.09762116276773
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 1.7906666666666666,
+              "candidatePerFrame": 2.4513333333333334,
+              "changePercent": 36.895011169024585,
+              "pairedChangePercent": [
+                0.0,
+                38.15941470927993
+              ]
+            }
+          },
+          "stageSum": {
+            "cpuNanos": {
+              "baselinePerFrame": 26581.916666666664,
+              "candidatePerFrame": 26131.75,
+              "changePercent": -1.6935071774984767,
+              "pairedChangePercent": [
+                -1.8323700137381382,
+                -1.550934309259222
+              ]
+            },
+            "wallNanos": {
+              "baselinePerFrame": 25222.313416666668,
+              "candidatePerFrame": 24755.423583333337,
+              "changePercent": -1.851098373176252,
+              "pairedChangePercent": [
+                -1.9196757341184645,
+                -1.780723110275595
+              ]
+            },
+            "allocatedBytes": {
+              "baselinePerFrame": 166533.01799999998,
+              "candidatePerFrame": 154941.49466666667,
+              "changePercent": -6.9604955657101675,
+              "pairedChangePercent": [
+                -6.960861853657974,
+                -6.960129286187799
+              ]
+            }
+          }
+        }
+      },
+      "limits": "Warmups still only284..423ms and sample compiler activity153..245ms; no steady-state claim. White cross-JVM allocation heterogeneity and increased freeze cost retained. Mixed stage CPU−1.6935percent/allocated−6.9605percent, both paired directions positive; not game FPS."
+    }
+  },
+  "desktopClockCompatibilityFollowup": {
+    "productDefaultChanged": true,
+    "offlineV1": {
+      "passed": false,
+      "reason": "Saved-map initial camera fixture drift; complete recorded-replay parity actually passed239ticks/41commands,240exactparameters."
+    },
+    "offlineV2": {
+      "passed": false,
+      "initialFixtureMatched": true,
+      "reason": "Subsequent live camera transition and nonserialized process-global random AI choices make the single-player AI tape nondeterministic. Full state parity unproven; no further patch-and-retry to force pass."
+    },
+    "diagnoses": [
+      "/Users/wty/code/RWXX/build/desktop-clock-acceptance-20261105/independent-v1-failure-analysis/diagnosis.json",
+      "/Users/wty/code/RWXX/build/desktop-clock-acceptance-20261105/independent-v2-failure-analysis/diagnosis.json"
+    ],
+    "independentNetworkProtocol": {
+      "stage": "/Users/wty/code/RWXX/build/desktop-clock-acceptance-20261105/actual-network-v1",
+      "status": "passed",
+      "actualDesktopOwnerAndAdapter": true,
+      "officialCoreSha256": "8a550a37e2d8a5430866090d4e7d5892f9010b47f52a5a09350fc66c620deec9",
+      "secondsEachDirection": 600,
+      "headlessSilent": true,
+      "gpuWindowOrInput": false,
+      "prerequisite": "Independent full replay states/commands/checksums and exact clock-parameter evidence; does not call or bypass the failed offline-v2 gate. Single-player AI parity remains unproven.",
+      "execution": {
+        "path": "/Users/wty/code/RWXX/build/desktop-clock-acceptance-20261105/actual-network-v1/execution.json",
+        "sha256": "7e2a76188b203e873d4d465a5a4310026c19078f5bdd90ded39f072d3892c3f7",
+        "exitCode": 0,
+        "elapsedSeconds": 1214.3700846669963,
+        "controllerError": null,
+        "signals": [],
+        "auditPassed": true,
+        "auditExitCode": 0,
+        "valid": true
+      },
+      "actualClockAudit": {
+        "path": "/Users/wty/code/RWXX/build/desktop-clock-acceptance-20261105/actual-network-v1/audit.json",
+        "sha256": "0518023269387e4166474cf8725816ff1f74c83cbfc3e297892162c0b3b5b28b",
+        "passed": true,
+        "checks": 31
+      },
+      "directions": {
+        "rwx-host": {
+          "passed": true,
+          "durationSeconds": 600.1608619579929,
+          "initialTick": 181,
+          "finalTick": 36192,
+          "initialClientChecksumPasses": 1,
+          "finalClientChecksumPasses": 120,
+          "submittedCommands": 60,
+          "rwxExecutedCommands": 60,
+          "finalClock": {
+            "originalOwnerCalls": 180686,
+            "missingOwnerFallbacks": 0,
+            "desyncErrors": 0,
+            "resyncs": 0,
+            "stepRate": 1.0,
+            "headless": true,
+            "koolContextPresent": false,
+            "audioBackend": "NoopPlatformAudio"
+          }
+        },
+        "original-host": {
+          "passed": true,
+          "durationSeconds": 600.956473541999,
+          "initialTick": 173,
+          "finalTick": 18201,
+          "initialClientChecksumPasses": 1,
+          "finalClientChecksumPasses": 60,
+          "submittedCommands": 60,
+          "rwxExecutedCommands": 60,
+          "finalClock": {
+            "originalOwnerCalls": 180933,
+            "missingOwnerFallbacks": 0,
+            "desyncErrors": 0,
+            "resyncs": 0,
+            "stepRate": 2.0,
+            "headless": true,
+            "koolContextPresent": false,
+            "audioBackend": "NoopPlatformAudio"
+          }
+        }
+      },
+      "limitations": "Official engine is unchanged but uses the existing headless bootstrap/control adapter; actual desktop session/owner/clock used with drawing skipped. Not native original UI, physical input, GPU, FPS, or all single-player AI state parity."
+    },
+    "defaultCorrection": {
+      "path": "/Users/wty/code/RWXX/build/default-original-clock-20261105/validated-v1/manifest.json",
+      "sha256": "cdf828a71d967f5a28cdf6d8b21eaa59454ce47762062fa3c488448b58f3944a",
+      "originalIntegerMillisDefault": true,
+      "rollbackEnvironmentValue": "0",
+      "reason": "Legacy fractional-millisecond inputs lose simulated time in the original integer accumulator at high refresh rates. Integer endpoint inputs restore approximately one game second per wall second.",
+      "protocolOrSimulationRulesChanged": false,
+      "defaultRuntimeVerified": true,
+      "desktopSha256": "d9502a3a6b96c1f9dd47fe046e75c459221eddcbb6470a87b8c6a4e3ae04676a",
+      "desktopTests": {
+        "tests": 166,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "gcAndJitFollowup": {
+    "source": "/Users/wty/code/RWXX/build/gc-tail-diagnosis-20261105/gc-jit-tail-analysis-v1.json",
+    "sha256": "0d903a4682dacb54ade0b464ecc05cbc634f1c371fcc2147332cf33f4d7e7a4f",
+    "diagnosticOnly": true,
+    "clockJoinCertified": false,
+    "heuristic20Seconds": {
+      "gcPauseEvents": 206,
+      "gcPauseUnionMs": 347.095,
+      "gcPauseP99Ms": 5.0305,
+      "gcPauseMaxMs": 7.7804
+    },
+    "fullRecordingCompilationEvents100MsOrLonger": 12,
+    "jitCompilationNotStw": true,
+    "steadyStateAfterTwoSecondsUnproven": true,
+    "zgcDefaultChanged": false,
+    "noAttributionToDifferentRun88MsGap": true
+  },
+  "rejectedPivotedTransform": {
+    "sourceSha256": "08dd8fb50de97987b7010f9497e947b2521f48f7e707e8a23f9b4cd5fedd4820",
+    "status": "not-adopted; production geometry restored to original",
+    "source": "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasGeometry.kt",
+    "behavior": "Same ordered scalar operations for the three pivoted affine products; one final Transform for finite outputs, original chain fallback for exceptional results. translate/multiply/map and public ABI unchanged.",
+    "hotspotEvidence": "/Users/wty/code/RWXX/build/transform-state-hotspots-20261105/owner-profile-v1/report.json",
+    "failedRegressionVersionsPreserved": [
+      "v1:2 rawNaN assertion failures",
+      "v2:1 rawNaN assertion failure"
+    ],
+    "oracleCalibration": {
+      "path": "/Users/wty/code/RWXX/build/pivoted-transform-20261105/old-vs-old-control-v1/report.json",
+      "sha256": "0704be838258f653cbded41c2d752b5e7648bb07ab8799caf245d243997a1c16",
+      "sameFrozenOldCoreComparedToItself": true,
+      "cases": 200576,
+      "rawNaNComponentsDifferent": 52,
+      "nonNaNRawComponentsDifferent": 0,
+      "nanClassificationDifferences": 0,
+      "identityDifferences": 0,
+      "strictRawNaNOraclePassed": false,
+      "officialSpecification": "https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.2.3",
+      "decision": "Require exact raw bits for every non-NaN result including signed zeros/infinities, and equal NaN classification. Preserve/count payload differences without treating unspecified NaN payload as a compatibility contract."
+    },
+    "coreTests": {
+      "tests": 553,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "desktopTests": {
+      "tests": 159,
+      "failures": 0,
+      "errors": 0,
+      "interactiveFullscreenExplicitlyExcluded": true
+    },
+    "coreSha256": "713283bef76d773fdf0292ce53458aea0698cc0efd3daca03694da0505883f6a",
+    "desktopSha256": "ac208249a6f27bab4685ec83f9ae768981ca12a498288b1dead74b906769cb44",
+    "isolatedFrozenBaselineParity": {
+      "path": "/Users/wty/code/RWXX/build/pivoted-transform-20261105/isolated-parity-v3/report.json",
+      "sha256": "6f5db04d01e72a3155d045524e5185f8ce3a2414aeeb14010510f35c18fd96c6",
+      "cases": 200576,
+      "scaleOutputs": 200576,
+      "rotateOutputs": 200576,
+      "allNonNaNComponentsRawExact": true,
+      "nonNaNRawBitMismatchComponents": 0,
+      "nanClassificationMismatchComponents": 0,
+      "identityMismatches": 0,
+      "bothNaNDifferentRawBitComponentsRecorded": 2582,
+      "scope": "Frozen original module and candidate in separate isolated loaders. Correctness only; no CPU throughput/GPU/gameplay claim."
+    },
+    "real10000UnitCpuContext": {
+      "source": "/Users/wty/code/RWXX/build/pivoted-transform-20261105/real-10000-map-cpu-v1/completed.json",
+      "sha256": "ea8376516733ac4cf1766c5b330d95b4e40b665f85480561207de23a0d42d2a1",
+      "valid": true,
+      "allFourArmsPassed": true,
+      "comparison": {
+        "updateRecord": {
+          "cpuNanos": {
+            "baselineMeanOfJvmMeans": 4486290.833333334,
+            "candidateMeanOfJvmMeans": 4623460.416666666,
+            "changePercent": 3.057527664371551,
+            "pairedChangePercent": [
+              -2.1536526186388794,
+              8.664226587988777
+            ]
+          },
+          "wallNanos": {
+            "baselineMeanOfJvmMeans": 4781002.7175,
+            "candidateMeanOfJvmMeans": 5013147.257916667,
+            "changePercent": 4.855561775084194,
+            "pairedChangePercent": [
+              2.388019020006382,
+              7.486831190296006
+            ]
+          },
+          "allocatedBytes": {
+            "baselineMeanOfJvmMeans": 4447513.95,
+            "candidateMeanOfJvmMeans": 4448436.4,
+            "changePercent": 0.02074080059939476,
+            "pairedChangePercent": [
+              0.022822890143658903,
+              0.018657471298633155
+            ]
+          }
+        },
+        "visibleRedraw": {
+          "cpuNanos": {
+            "baselineMeanOfJvmMeans": 2852.916666666667,
+            "candidateMeanOfJvmMeans": 3082.0833333333335,
+            "changePercent": 8.032715057689499,
+            "pairedChangePercent": [
+              -3.114186851211076,
+              21.58576051779937
+            ]
+          },
+          "wallNanos": {
+            "baselineMeanOfJvmMeans": 1720.24125,
+            "candidateMeanOfJvmMeans": 1650.79125,
+            "changePercent": -4.037224430003638,
+            "pairedChangePercent": [
+              -6.073379806365608,
+              -2.026958402346668
+            ]
+          },
+          "allocatedBytes": {
+            "baselineMeanOfJvmMeans": 0,
+            "candidateMeanOfJvmMeans": 0,
+            "changePercent": null,
+            "pairedChangePercent": [
+              null,
+              null
+            ]
+          }
+        },
+        "snapshotFreeze": {
+          "cpuNanos": {
+            "baselineMeanOfJvmMeans": 378253.3333333333,
+            "candidateMeanOfJvmMeans": 391892.0833333334,
+            "changePercent": 3.60571838979169,
+            "pairedChangePercent": [
+              0.9948757903569083,
+              6.374059834685242
+            ]
+          },
+          "wallNanos": {
+            "baselineMeanOfJvmMeans": 418821.60083333333,
+            "candidateMeanOfJvmMeans": 445941.24,
+            "changePercent": 6.475224561652615,
+            "pairedChangePercent": [
+              7.791022385744006,
+              5.190104348774138
+            ]
+          },
+          "allocatedBytes": {
+            "baselineMeanOfJvmMeans": 838651.23,
+            "candidateMeanOfJvmMeans": 838816.7766666666,
+            "changePercent": 0.019739632012072406,
+            "pairedChangePercent": [
+              0.023083045129057567,
+              0.016394361475136066
+            ]
+          }
+        },
+        "offscreenBackground": {
+          "cpuNanos": {
+            "baselineMeanOfJvmMeans": 24730.416666666664,
+            "candidateMeanOfJvmMeans": 26612.5,
+            "changePercent": 7.610398800397622,
+            "pairedChangePercent": [
+              6.154261421148521,
+              9.062762914353018
+            ]
+          },
+          "wallNanos": {
+            "baselineMeanOfJvmMeans": 23711.26125,
+            "candidateMeanOfJvmMeans": 25591.677083333336,
+            "changePercent": 7.930475791680358,
+            "pairedChangePercent": [
+              6.735742627813623,
+              9.115312963349531
+            ]
+          },
+          "allocatedBytes": {
+            "baselineMeanOfJvmMeans": 13943.24,
+            "candidateMeanOfJvmMeans": 13945.723333333333,
+            "changePercent": 0.017810303296328378,
+            "pairedChangePercent": [
+              0.01955635289798696,
+              0.016064410636928983
+            ]
+          }
+        },
+        "productionStagesTotal": {
+          "cpuNanos": {
+            "baselineMeanOfJvmMeans": 4892127.5,
+            "candidateMeanOfJvmMeans": 5045047.083333333,
+            "changePercent": 3.125829883487974,
+            "pairedChangePercent": [
+              -1.8718562781688375,
+              8.49509473003922
+            ]
+          },
+          "wallNanos": {
+            "baselineMeanOfJvmMeans": 5225255.820833334,
+            "candidateMeanOfJvmMeans": 5486330.9662500005,
+            "changePercent": 4.996408871997193,
+            "pairedChangePercent": [
+              2.820568401070167,
+              7.2995154841967835
+            ]
+          },
+          "allocatedBytes": {
+            "baselineMeanOfJvmMeans": 5300108.42,
+            "candidateMeanOfJvmMeans": 5301198.9,
+            "changePercent": 0.02057467345168984,
+            "pairedChangePercent": [
+              0.022855464031246164,
+              0.01829254331207064
+            ]
+          }
+        }
+      },
+      "scope": "Actual10000 initial stock units loaded from accepted map through real local game, simulation, draw recording and freeze. Current-thread CPU/allocation diagnostics only. No GPU execution/presentation/input/FPS/original comparison.",
+      "limitations": [
+        "Two independent JVMs per variant; frames are not independent replicas.",
+        "1CPU/SerialGC/manual60Hz differs from real desktop-owner concurrency/pacing.",
+        "Inspector/retained-lease work is outside stage timers but perturbs cache/GC and later real-time redraw budgets.",
+        "updateRecord includes update+draw; nested profiler wall values must not be added again.",
+        "Thread CPU timer boundaries include part of timer/accounting work; no overhead calibration/subtraction.",
+        "Natural combat/AI and monotonic map caches can change command work across arms; no isolated pure-renderer or exact-state causal claim."
+      ]
+    },
+    "notAdoptedDecision": "/Users/wty/code/RWXX/build/pivoted-transform-20261105/not-adopted-20261105/decision.json",
+    "reason": "Neither the fixed-workload test nor the real10000-unit production draw context established an allocation saving or net CPU improvement. All candidate modules, correctness passes and negative measurements remain preserved; no rendering/FPS gain claimed."
+  },
+  "newDeferredStateCandidate": {
+    "status": "not-adopted; production sources restored to accepted5f and dedicated State tests archived",
+    "design": "/Users/wty/code/RWXX/build/lazy-canvas-state-20261105/design-v1/review.json",
+    "baselineAcceptedCoreSha256": "5f16d836965e7543793bed97962b44097e5dbad4f647a3da2f999e64c7e4f453",
+    "geometryCandidateIncluded": false,
+    "scope": "Owner-confined mutable state components; materialize immutable state on observation, preserve saved/published/batch snapshots and public ABI. No performance claim yet.",
+    "coreSha256": "22be61ed223a43ec7967c7b9a8800799f6b40b32cfa9161cd5578dd705fb4d91",
+    "coreTests": {
+      "tests": 564,
+      "skipped": 1,
+      "failures": 0,
+      "errors": 0
+    },
+    "desktopTests": {
+      "tests": 166,
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0
+    },
+    "abiAudit": {
+      "path": "/Users/wty/code/RWXX/build/lazy-canvas-state-20261105/independent-abi-source-v1/audit-v2.json",
+      "sha256": "dd6c07afd6ae2c0d0e227a81c882b603a7a0d507440ace1bde2f0ec06ab41ab1"
+    },
+    "cpuAudit": {
+      "path": "/Users/wty/code/RWXX/build/lazy-canvas-state-20261105/independent-cpu-evidence-v1/report-v2.json",
+      "sha256": "1a0b0e35c8bf75854e536003ce424995b5b147e46ea2fc235c9ca938abeadd7d"
+    },
+    "fixedCpu": {
+      "path": "/Users/wty/code/RWXX/build/lazy-canvas-state-20261105/matched-cpu-v1/completed.json",
+      "sha256": "97d1d119972ebbf119ad9974888eab53dbec78517c531cf2f2a81670ca1ab501"
+    },
+    "real10000MapCpu": {
+      "path": "/Users/wty/code/RWXX/build/lazy-canvas-state-20261105/real-10000-map-cpu-v1/completed.json",
+      "sha256": "01d9a895de8f4891825d6b89d9c48eeca8f68abcf92f72fae286b1f4c242cfca"
+    },
+    "windowlessGpu": {
+      "path": "/Users/wty/code/RWXX/build/lazy-canvas-state-20261105/gpu-completed-v1.json",
+      "sha256": "ff8e867f0613f650bb03f2654c4b731a8889d09cb70786ed71d45bf6bb87e014",
+      "valid": true,
+      "spriteChecks": 148,
+      "spriteRetirementsCompleted": 608,
+      "mapChecks": 3844,
+      "fogChecks": 4608,
+      "textChecks": 3072,
+      "performanceInvalid": true
+    },
+    "realMapProductionStages": {
+      "cpuNanos": {
+        "baselineMeanOfJvmMeans": 5248725.833333334,
+        "candidateMeanOfJvmMeans": 5206437.083333334,
+        "changePercent": -0.8056955410289279,
+        "pairedChangePercent": [
+          -2.107397004055722,
+          0.510982531583104
+        ]
+      },
+      "wallNanos": {
+        "baselineMeanOfJvmMeans": 5573855.145833333,
+        "candidateMeanOfJvmMeans": 5536686.890416667,
+        "changePercent": -0.666832101735737,
+        "pairedChangePercent": [
+          -1.5699648863230165,
+          0.2423340926241524
+        ]
+      },
+      "allocatedBytes": {
+        "baselineMeanOfJvmMeans": 5432791.683333334,
+        "candidateMeanOfJvmMeans": 4929167.0,
+        "changePercent": -9.270090087907267,
+        "pairedChangePercent": [
+          -6.967464954167079,
+          -11.461933325556616
+        ]
+      }
+    },
+    "limitations": [
+      "Fixed CPU graph/fields/resources exact but sample JIT activity persists.",
+      "RealMap total allocations decrease9.27percent; CPU pairs cross, not stable FPS proof.",
+      "RealMap freeze advantage is confounded by A2 baseline allocation24.2percent above A1 and different graphs/cache work.",
+      "Sprite GPU oracle directly creates immutable packets; actual state-recording class loaded and checked by Map oracle.",
+      "Only immutable snapshots escape the owner-confined recorder; no arbitrary concurrent state reader guarantee."
+    ],
+    "fullGameComparison": {
+      "stage": "/Users/wty/code/RWXX/build/post-release-performance-20261105/lazy-state-motion-v1",
+      "seriesResult": {
+        "path": "/Users/wty/code/RWXX/build/post-release-performance-20261105/lazy-state-motion-v1/series-result.json",
+        "sha256": "3dde186005594bf8f1c77f244d50f2a2af9d3ba0affdbdb07cd0a5a82d60871f"
+      },
+      "valid": true,
+      "automaticRetry": false,
+      "cleanup": {
+        "managerExitCode": 0,
+        "removed": true,
+        "originalDisplaysUnchanged": true,
+        "postListExact": true,
+        "allOwnedTargetsEnded": true
+      },
+      "arms": {
+        "baseline": {
+          "path": "/Users/wty/code/RWXX/build/post-release-performance-20261105/lazy-state-motion-v1/baseline/completed-summary.json",
+          "sha256": "fad865086b64449c49e235d4f673fac81ebdc0aef085c6bfa4fb1283aac59d94",
+          "freshSnapshotHz": 168.28833866993227,
+          "freshCount": 3366,
+          "seconds": 20.001385875,
+          "p99Ms": 15.758167,
+          "maxMs": 26.275,
+          "over16_667Ms": 17,
+          "over33_333Ms": 0,
+          "gameTimeProgression": [
+            {
+              "realMillis": 20001.385875,
+              "gameMillis": 19999,
+              "ratio": 0.9998807145157386,
+              "minimum": 0.97,
+              "maximum": 1.03,
+              "valid": true
+            }
+          ]
+        },
+        "candidate": {
+          "path": "/Users/wty/code/RWXX/build/post-release-performance-20261105/lazy-state-motion-v1/candidate/completed-summary.json",
+          "sha256": "f02a5b59f00cdde22eae6ffc45d99b3f191483b34c6093383c97fca4df0d6f08",
+          "freshSnapshotHz": 179.0901362436116,
+          "freshCount": 3582,
+          "seconds": 20.001101541,
+          "p99Ms": 15.866666,
+          "maxMs": 36.234833,
+          "over16_667Ms": 21,
+          "over33_333Ms": 3,
+          "gameTimeProgression": [
+            {
+              "realMillis": 20001.101541,
+              "gameMillis": 20000,
+              "ratio": 0.9999449259833144,
+              "minimum": 0.97,
+              "maximum": 1.03,
+              "valid": true
+            }
+          ]
+        },
+        "candidate-repeat": {
+          "path": "/Users/wty/code/RWXX/build/post-release-performance-20261105/lazy-state-motion-v1/candidate-repeat/completed-summary.json",
+          "sha256": "e07593d55e0b14c2f675b7592cfdede0bf0ce4161c82f184548691bc4d282180",
+          "freshSnapshotHz": 235.51828500175844,
+          "freshCount": 4711,
+          "seconds": 20.002693209,
+          "p99Ms": 15.411083,
+          "maxMs": 42.8895,
+          "over16_667Ms": 11,
+          "over33_333Ms": 1,
+          "gameTimeProgression": [
+            {
+              "realMillis": 20002.693209,
+              "gameMillis": 20001,
+              "ratio": 0.9999153509488793,
+              "minimum": 0.97,
+              "maximum": 1.03,
+              "valid": true
+            }
+          ]
+        },
+        "baseline-repeat": {
+          "path": "/Users/wty/code/RWXX/build/post-release-performance-20261105/lazy-state-motion-v1/baseline-repeat/completed-summary.json",
+          "sha256": "fb69891fbcf8cc8ab6dbc6072c0a9ce77859cd7182f464031967cf9305415288",
+          "freshSnapshotHz": 265.4104256467209,
+          "freshCount": 5309,
+          "seconds": 20.002982125,
+          "p99Ms": 11.309833,
+          "maxMs": 30.93625,
+          "over16_667Ms": 18,
+          "over33_333Ms": 0,
+          "gameTimeProgression": [
+            {
+              "realMillis": 20002.982125,
+              "gameMillis": 20004,
+              "ratio": 1.0000508861625552,
+              "minimum": 0.97,
+              "maximum": 1.03,
+              "valid": true
+            }
+          ]
+        }
+      },
+      "baselinePooledHz": 216.85131983587394,
+      "candidatePooledHz": 207.3053332021708,
+      "candidateChangePercent": -4.402088325276554,
+      "pairedChangePercent": [
+        6.418625116304177,
+        -11.262609813508572
+      ],
+      "official": {
+        "path": "/Users/wty/code/RWXX/build/original-10000-background-20261104/run-moving-panzoom-v7/summary.json",
+        "sha256": "a871a3d16ef857e047e916c5bf277260518d7811bfa4c59413cf69c1055eef1b",
+        "freshRenderedPresentHz": 142.35,
+        "freshIntervalMs": {
+          "p95": 13.036792,
+          "p99": 17.949417,
+          "p999": 34.842792,
+          "max": 67.6365
+        },
+        "freshOverMs": {
+          "16.667": 43,
+          "33.333": 4,
+          "50": 2,
+          "100": 0
+        },
+        "gameTimeProgression": {
+          "realMillis": 20000.0,
+          "gameMillis": 19991,
+          "ratio": 0.99955,
+          "minimum": 0.97,
+          "maximum": 1.03,
+          "valid": true
+        },
+        "runtimeScope": "official8a55 with compatibilityTemurin17x64+official highRefreshRate300cap, not stockOracle8 performance"
+      },
+      "limitations": [
+        "Natural combat and run-to-run performance vary, not exact same simulation state.",
+        "Four short RWXX arms plus one official sample do not establish stable universal50percent or zero-hitch.",
+        "Earlier successful single-round ratios are retained; this round also retained. No unsupported attribution of variability."
+      ]
+    },
+    "notAdoptedDecision": {
+      "path": "/Users/wty/code/RWXX/build/lazy-canvas-state-20261105/not-adopted-v1/decision.json",
+      "sha256": "25a27bc23934a5a168ae5d8e764ec701783f77f1f33fed3fd78057d2764c33d1"
+    },
+    "reason": "Allocation saving did not establish net real-game throughput/tail improvement; pooled freshHz−4.402percent, pairwise signs cross, four intervals over33.333ms versus zero in accepted baseline.",
+    "independentFullGameAudit": {
+      "path": "/Users/wty/code/RWXX/build/post-release-performance-20261105/lazy-state-motion-v1/independent-raw-summary-v1/report.json",
+      "sha256": "edfa26834bb312768555b4ab8e34438197c03ca9b4460d8e899e8dc109b3c924",
+      "checks": 33,
+      "passed": true
+    }
+  },
+  "correctedClockFullGameComparison": {
+    "stage": "/Users/wty/code/RWXX/build/post-release-performance-20261105/corrected-clock-motion-v1",
+    "seriesResult": {
+      "path": "/Users/wty/code/RWXX/build/post-release-performance-20261105/corrected-clock-motion-v1/series-result.json",
+      "sha256": "6cd5a1a3660b3f2ecaef59e55f68a902b4b8da6637d94330f450bb9c360765fc"
+    },
+    "valid": true,
+    "automaticRetry": false,
+    "cleanup": {
+      "managerExitCode": 0,
+      "removed": true,
+      "originalDisplaysUnchanged": true,
+      "postListExact": true,
+      "allOwnedTargetsEnded": true
+    },
+    "baseline": "Published1.4.3 with explicit original integer clock=1; not unchanged factory clock default.",
+    "candidate": "Accepted paintonly core5f16 plus corrected-default desktopd950; no State22 or rejected Geometry.",
+    "candidateCoreSha256": "5f16d836965e7543793bed97962b44097e5dbad4f647a3da2f999e64c7e4f453",
+    "candidateDesktopSha256": "d9502a3a6b96c1f9dd47fe046e75c459221eddcbb6470a87b8c6a4e3ae04676a",
+    "arms": {
+      "baseline": {
+        "path": "/Users/wty/code/RWXX/build/post-release-performance-20261105/corrected-clock-motion-v1/baseline/completed-summary.json",
+        "sha256": "91195758f973bd929d2190c56047d0330426af79a74bbf574037d4406134a086",
+        "freshSnapshotHz": 242.02140063361387,
+        "p99Ms": 15.341,
+        "maxMs": 29.515334,
+        "over16_667Ms": 6,
+        "over33_333Ms": 0,
+        "gameTimeProgression": [
+          {
+            "realMillis": 20002.363375,
+            "gameMillis": 20000,
+            "ratio": 0.9998818452122036,
+            "minimum": 0.97,
+            "maximum": 1.03,
+            "valid": true
+          }
+        ],
+        "valid": true
+      },
+      "candidate": {
+        "path": "/Users/wty/code/RWXX/build/post-release-performance-20261105/corrected-clock-motion-v1/candidate/completed-summary.json",
+        "sha256": "26052d3bf380908975dc6d75dae56ed19e67036f3d960ca779fe04d93bc8e5cd",
+        "freshSnapshotHz": 239.68169230940774,
+        "p99Ms": 15.366667,
+        "maxMs": 29.491708,
+        "over16_667Ms": 9,
+        "over33_333Ms": 0,
+        "gameTimeProgression": [
+          {
+            "realMillis": 20001.527667,
+            "gameMillis": 20001,
+            "ratio": 0.9999736186650948,
+            "minimum": 0.97,
+            "maximum": 1.03,
+            "valid": true
+          }
+        ],
+        "valid": true
+      },
+      "candidate-repeat": {
+        "path": "/Users/wty/code/RWXX/build/post-release-performance-20261105/corrected-clock-motion-v1/candidate-repeat/completed-summary.json",
+        "sha256": "d6bf80af51a69a6473b06d76546d5e52bae051ede4475877d357be8a43831e82",
+        "freshSnapshotHz": 262.4765258449973,
+        "p99Ms": 11.587542,
+        "maxMs": 18.396375,
+        "over16_667Ms": 3,
+        "over33_333Ms": 0,
+        "gameTimeProgression": [
+          {
+            "realMillis": 20001.788667,
+            "gameMillis": 20000,
+            "ratio": 0.9999105746476088,
+            "minimum": 0.97,
+            "maximum": 1.03,
+            "valid": true
+          }
+        ],
+        "valid": true
+      },
+      "baseline-repeat": {
+        "path": "/Users/wty/code/RWXX/build/post-release-performance-20261105/corrected-clock-motion-v1/baseline-repeat/completed-summary.json",
+        "sha256": "36fff51692381f1c87c248c395a3c62a526dda363ae311bfe4873e6be42b2cd8",
+        "freshSnapshotHz": 257.2997678898794,
+        "p99Ms": 10.720041,
+        "maxMs": 30.863,
+        "over16_667Ms": 3,
+        "over33_333Ms": 0,
+        "gameTimeProgression": [
+          {
+            "realMillis": 20000.018042,
+            "gameMillis": 20000,
+            "ratio": 0.9999990979008138,
+            "minimum": 0.97,
+            "maximum": 1.03,
+            "valid": true
+          }
+        ],
+        "valid": true
+      }
+    },
+    "official": {
+      "path": "/Users/wty/code/RWXX/build/original-10000-background-20261104/run-moving-panzoom-v6/summary.json",
+      "sha256": "a94fa2dd8d603a6e8c8d267228ded3d78b7acceefb1fe38b286558c2a8f00664",
+      "freshRenderedPresentHz": 148.65,
+      "freshIntervalMs": {
+        "p95": 11.195333,
+        "p99": 15.915792,
+        "p999": 21.236083,
+        "max": 43.639875
+      },
+      "freshOverMs": {
+        "16.667": 21,
+        "33.333": 1,
+        "50": 0,
+        "100": 0
+      },
+      "gameTimeProgression": {
+        "realMillis": 20000.0,
+        "gameMillis": 20005,
+        "ratio": 1.00025,
+        "minimum": 0.97,
+        "maximum": 1.03,
+        "valid": true
+      },
+      "runtimeScope": "official8a55 with compatibilityTemurin17x64+official highRefreshRate300cap, not stockOracle8 performance"
+    },
+    "candidateVsOfficialPercent": {
+      "candidate": 61.238945381370826,
+      "candidate-repeat": 76.5735121728875
+    },
+    "limitations": [
+      "Only one 20s official sample and two candidate JVMs; no stable universal50percent claim.",
+      "Baseline/candidate pairwise throughput changes have mixed signs; do not attribute all product-level advantage to this batch.",
+      "Virtual display, scripted panzoom and accepted fresh snapshots; no physical input/scanout or zero-long-frame guarantee.",
+      "Independent natural combat varies across arms; not exact-state paired simulation.",
+      "Official engine8a55 runs compatibility Temurin17 x64/OpenGL versus RWXX Java25 arm64/Vulkan."
+    ],
+    "independentRawAudit": {
+      "path": "/Users/wty/code/RWXX/build/post-release-performance-20261105/corrected-clock-motion-v1/independent-raw-audit-v2/report.json",
+      "sha256": "f8065f1117a7e83be6b6f8b078a34dfb716fc0c24a25384a8cc7b5ced9b54dac"
+    }
+  },
+  "earlierDefaultClockComparison": {
+    "stage": "/Users/wty/code/RWXX/build/post-release-performance-20261105/accepted-default-motion-v1",
+    "resultPreserved": true,
+    "fairnessLimitation": "RWXX legacy default advanced approximately17931..18096 game milliseconds per20000 wall milliseconds, versus original19990; earlier approximately50percent ratio is not equal-simulation-work final evidence."
+  },
+  "stoppedShadowCandidate": {
+    "adopted": false,
+    "archive": "/Users/wty/code/RWXX/build/canonical-shadow-paint-20261105/not-adopted-v1",
+    "reason": "User requested stop adding optimizations and commit verified changes; candidate not built or measured, restored prior source exactly."
+  },
+  "handoffOnUserAcceptance": {
+    "userAcceptedCurrentOutcome": true,
+    "request": "可以了；提交推送",
+    "furtherOptimizationStopped": true,
+    "version": "1.4.4",
+    "targetBranch": "codex/freeze-diagnostics-1.4.4",
+    "newBinaryReleaseRequested": false,
+    "acceptedCoreSha256": "5f16d836965e7543793bed97962b44097e5dbad4f647a3da2f999e64c7e4f453",
+    "acceptedDesktopSha256": "d9502a3a6b96c1f9dd47fe046e75c459221eddcbb6470a87b8c6a4e3ae04676a",
+    "finalSourceFingerprints": {
+      "core/src/main/kotlin/io/github/rwx/render/canvas/KoolGraphicsEngine.kt": "474a3c52ddcc70ffc319c5dc9040eeb10e32eb7183d06a8abea0217ff4591c30",
+      "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasCommandBuffer.kt": "3dd9718a683315b136ad6e65601cf659d88801df1c8c2706952df8f76db37be6",
+      "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasGeometry.kt": "fc8ba8f830f404089e283cc1f96079f6b3ab857567d1d439342b39a34db08701",
+      "desktop/src/main/kotlin/io/github/rwx/kool/DesktopGameLoopDelta.kt": "41833a12aabdefe7665107897e8c2a4490263ed3fbc384e512f1f74a76c44d25"
+    },
+    "performancePromise": "No stable50percent or zero-hitch claim; current outcome accepted by user."
+  },
+  "finalValidation": {
+    "gradle": {
+      "exitCode": 0,
+      "seconds": 53,
+      "tests": {
+        "core": {
+          "tests": 550,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 1
+        },
+        "desktop": {
+          "tests": 166,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      },
+      "interactiveMacNativeFullscreenExcluded": true,
+      "javaAwtHeadless": true
+    },
+    "clockAuditPythonTests": {
+      "tests": 5,
+      "passed": true
+    },
+    "releaseContractStaticPassed": true,
+    "releaseScriptTests": {
+      "tests": 15,
+      "passed": true
+    },
+    "gitDiffCheckPassed": true,
+    "furtherBenchmarksStarted": false,
+    "artifacts": {
+      "core": {
+        "path": "core/build/libs/core-1.4.4.jar",
+        "sha256": "ff5ec0deaf99a6233b98ebb9dc4a8700a162764e584fd087aaeaf8b08a59ade6"
+      },
+      "desktop": {
+        "path": "desktop/build/libs/desktop-1.4.4.jar",
+        "sha256": "d9502a3a6b96c1f9dd47fe046e75c459221eddcbb6470a87b8c6a4e3ae04676a"
+      }
+    },
+    "scope": "Final accepted source after restoring State/shadow candidates; no binary release.",
+    "corePayloadComparison": {
+      "oldSha256": "5f16d836965e7543793bed97962b44097e5dbad4f647a3da2f999e64c7e4f453",
+      "newSha256": "ff5ec0deaf99a6233b98ebb9dc4a8700a162764e584fd087aaeaf8b08a59ade6",
+      "added": [],
+      "removed": [],
+      "changed": [
+        "io/github/rwx/app/AppKt.class",
+        "io/github/rwx/app/MultiplayerLobbyController.class",
+        "io/github/rwx/p2p/FeatureMessage$$serializer.class",
+        "io/github/rwx/p2p/FeatureMessage.class",
+        "io/github/rwx/session/GameSession.class"
+      ],
+      "allPayloadsExact": false
+    }
+  },
+  "stablePerformanceGoalAssessment": {
+    "stable50PercentEstablished": false,
+    "zeroLongFrameEstablished": false,
+    "macro2AcceptedCandidateVsOfficialPooledPercent": 68.90627877857327,
+    "macro3SameAcceptedArtifactVsOfficialIndividualPercent": [
+      18.221523477296998,
+      86.44919258638633
+    ],
+    "sameAcceptedFatSha256": "06aa6a85112093f39ae4f1840351b9caab7942623f9b25a5670d6e424ae06c2e",
+    "explanation": "One round exceeded50percent in both candidate arms, but same artifact in next round varied widely. User accepted current outcome and requested source commit/push, not further optimization."
+  }
+}

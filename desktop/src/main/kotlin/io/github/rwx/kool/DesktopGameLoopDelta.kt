@@ -4,7 +4,10 @@ import kotlin.math.roundToInt
 
 /** Desktop-only outer-clock adapter; the original simulation and its counters remain untouched. */
 internal class DesktopGameLoopDelta(
-    val originalIntegerMillis: Boolean = System.getenv("RWX_ORIGINAL_INTEGER_MS_GAME_DELTA") == "1",
+    // The original engine truncates its millisecond accumulator after each update. Feeding
+    // arbitrary fractional milliseconds loses time at high refresh rates; use the same
+    // integer-millisecond input as the original desktop loop, carrying fractions in endpoints.
+    val originalIntegerMillis: Boolean = System.getenv("RWX_ORIGINAL_INTEGER_MS_GAME_DELTA") != "0",
 ) {
     enum class Source { LegacyFloat, OriginalOwnerMillis, ExplicitDelta, MissingOwnerFallback }
 

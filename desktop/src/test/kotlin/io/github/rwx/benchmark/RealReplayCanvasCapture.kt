@@ -1,6 +1,8 @@
 package io.github.rwx.benchmark
 
 import com.corrodinggames.rts.game.map.TileMap
+import com.corrodinggames.rts.game.PlayerTeam
+import com.corrodinggames.rts.game.ai.AIController
 import com.corrodinggames.rts.game.units.BaseUnit
 import com.corrodinggames.rts.gameFramework.GameEngine
 import com.corrodinggames.rts.gameFramework.PerformanceProfiler
@@ -42,6 +44,10 @@ import kotlin.system.exitProcess
  * --replay=name.replay --output=new-directory --mode=static|pan|zoom|pan-zoom
  * --warmup-frames=30 --frames=60 --fps=60 --seek-tick=0 --replay-fog=off|on
  * --verify-full-freeze=off|on  correctness-only; requires RWX_FROZEN_CONTENT_REUSE=1
+ * Alternatively --map=maps/skirmish/name.tmx opens an ordinary local map from the supplied real
+ * assets, with natural map/player fog and saved Medium difficulty0. No mods, AI/unit injection,
+ * replay flags, speed change or unit-cap change is permitted. Optional --width/--height are paired;
+ * omitting them preserves the existing1280x720 headless boot behavior for replay capture.
  *
  * The tape is indexed by frame, while real pacing preserves the map cache's monotonic clock policy.
  * Late frames are recorded and never dropped. This is not an FPS or official-build equivalence test.
@@ -51,9 +57,10 @@ object RealReplayCanvasCapture {
     private const val RETAIN_FRAMES = 3
     private val json = Json { prettyPrint = true }
 
-    private data class Options(val replay: String, val output: File, val mode: String = "static",
+    private data class Options(val replay: String?, val output: File, val mode: String = "static",
         val warmup: Int = 30, val frames: Int = 60, val fps: Int = 60, val seekTick: Int = 0,
-        val replayFog: Boolean = false, val verifyFullFreeze: Boolean = false)
+        val replayFog: Boolean = false, val verifyFullFreeze: Boolean = false,
+        val map: String? = null, val width: Int? = null, val height: Int? = null)
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -72,17 +79,28 @@ object RealReplayCanvasCapture {
         args.forEach { arg ->
             require(arg.startsWith("--") && '=' in arg) { "Expected --name=value: $arg" }
             val name = arg.substring(2).substringBefore('=')
-            require(name in setOf("replay", "output", "mode", "warmup-frames", "frames", "fps", "seek-tick", "replay-fog", "verify-full-freeze")) { "Unknown option: $name" }
+            require(name in setOf("replay", "map", "width", "height", "output", "mode", "warmup-frames", "frames", "fps", "seek-tick", "replay-fog", "verify-full-freeze")) { "Unknown option: $name" }
             require(values.put(name, arg.substringAfter('=')) == null) { "Duplicate option: $name" }
         }
         fun number(name: String, fallback: Int, range: IntRange): Int =
             (values[name]?.toIntOrNull() ?: if (name !in values) fallback else -1).also {
                 require(it in range) { "$name must be in $range" }
             }
-        val replay = requireNotNull(values["replay"]) { "--replay is required" }
-        require(replay.isNotBlank() && File(replay).name == replay && '/' !in replay && '\\' !in replay && replay !in setOf(".", "..")) {
+        val replay = values["replay"]
+        val map = values["map"]
+        require((replay != null) xor (map != null)) { "Exactly one of --replay or --map is required" }
+        require(replay == null || replay.isNotBlank() && File(replay).name == replay && '/' !in replay && '\\' !in replay && replay !in setOf(".", "..")) {
             "--replay must be a file name inside the isolated replays directory"
         }
+        if (map != null) {
+            val name = map.removePrefix("maps/skirmish/")
+            require(map.startsWith("maps/skirmish/") && name.endsWith(".tmx") && name.length > 4 &&
+                File(name).name == name && '/' !in name && '\\' !in name && name !in setOf(".", "..")) {
+                "--map must name one .tmx file inside the isolated real assets/maps/skirmish directory"
+            }
+            require("seek-tick" !in values && "replay-fog" !in values) { "Replay-only seek/fog options are not valid for --map" }
+        }
+        require(("width" in values) == ("height" in values)) { "--width and --height must be supplied together" }
         val output = File(requireNotNull(values["output"]) { "--output is required" }).absoluteFile
         val mode = values["mode"] ?: "static"
         require(mode in setOf("static", "pan", "zoom", "pan-zoom")) { "Unsupported mode: $mode" }
@@ -91,7 +109,9 @@ object RealReplayCanvasCapture {
         val verify = values["verify-full-freeze"] ?: "off"
         require(verify in setOf("on", "off")) { "--verify-full-freeze must be on or off" }
         return Options(replay, output, mode, number("warmup-frames", 30, 0..3600),
-            number("frames", 60, 1..3600), number("fps", 60, 20..240), number("seek-tick", 0, 0..36000), fog == "on", verify == "on")
+            number("frames", 60, 1..3600), number("fps", 60, 20..240), number("seek-tick", 0, 0..36000), fog == "on", verify == "on", map,
+            if ("width" in values) number("width", 1280, 64..8192) else null,
+            if ("height" in values) number("height", 720, 64..8192) else null)
     }
 
     private fun run(options: Options) {
@@ -120,8 +140,12 @@ object RealReplayCanvasCapture {
         val bridge = DesktopPlatformBridge(audio = NoopPlatformAudio)
         val storage = bridge.storage
         require(storage.modsDir.file.walkTopDown().none { it.isFile }) { "The isolated launch directory must not contain mod files" }
-        val replayFile = storage.replaysDir.file.resolve(options.replay)
-        require(replayFile.isFile && replayFile.canonicalFile.parentFile == storage.replaysDir.file.canonicalFile) { "Replay not found in isolated replays directory" }
+        val replayFile = options.replay?.let { storage.replaysDir.file.resolve(it) }
+        if (replayFile != null) require(replayFile.isFile && replayFile.canonicalFile.parentFile == storage.replaysDir.file.canonicalFile) { "Replay not found in isolated replays directory" }
+        val mapFile = options.map?.let { File(System.getProperty("rwx.assetsDir"), it).canonicalFile }
+        if (mapFile != null) require(mapFile.isFile && mapFile.parentFile == File(System.getProperty("rwx.assetsDir"), "maps/skirmish").canonicalFile) {
+            "Map not found in isolated real assets/maps/skirmish directory"
+        }
         val tankBytes = requireNotNull(storage.readAssetBytes("units/tanks/tank.png")) { "Real unit assets are missing" }
         val tank = requireNotNull(javax.imageio.ImageIO.read(tankBytes.inputStream())) { "Invalid tank.png" }
         check((0 until tank.height).any { y -> (0 until tank.width).any { x -> tank.getRGB(x, y) ushr 24 != 0 } }) {
@@ -169,23 +193,33 @@ object RealReplayCanvasCapture {
             LocaleSettings.initialize()
             val session = HeadlessGameSession()
             engine = session.boot(graphics) // Must bind this backend before textures/map/minimap exist.
-            session.openReplay(options.replay)
+            if (options.width != null) engine.updateWindowResolution(options.width, checkNotNull(options.height))
+            if (options.replay != null) session.openReplay(options.replay) else session.openMap(checkNotNull(options.map))
             val game = engine
-            check(game.replayEngine.j() && game.hasLoadedLevel) { "Replay did not load" }
-            check(game.gameSpeed == 1f && game.replayEngine.v == 1) { "Capture requires ordinary 1x replay playback" }
-            game.replayEngine.setFogDisplayEnabled(options.replayFog) // Normal replay UI display switch, before vision accumulates.
+            if (options.replay != null) {
+                check(game.replayEngine.j() && game.hasLoadedLevel) { "Replay did not load" }
+                check(game.gameSpeed == 1f && game.replayEngine.v == 1) { "Capture requires ordinary 1x replay playback" }
+                game.replayEngine.setFogDisplayEnabled(options.replayFog) // Normal replay UI display switch, before vision accumulates.
+            } else {
+                checkLocalMap(game)
+                check(game.currentMapPath == options.map) { "Loaded a different local map" }
+            }
             val preAdvanceStart = System.nanoTime()
             var preAdvanceFrames = 0
-            while (game.currentTick < options.seekTick) {
+            while (options.replay != null && game.currentTick < options.seekTick) {
                 check(game.replayEngine.j() && !game.replayEngine.isPlaybackEnded) { "Replay ended before requested seek tick ${options.seekTick}" }
                 check(System.nanoTime() - preAdvanceStart < 60_000_000_000L) { "Headless pre-advance timed out at tick ${game.currentTick}" }
                 // Ordinary 1x simulation steps, with drawing still disabled; no replay seek/speed rewrite.
                 game.gameLoop(1f, 17)
                 preAdvanceFrames++
             }
-            val preAdvanceWallNanos = System.nanoTime() - preAdvanceStart
+            val preAdvanceWallNanos = if (options.replay != null) System.nanoTime() - preAdvanceStart else 0L
             val captureStartTick = game.currentTick
-            check(game.replayEngine.j() && !game.replayEngine.isPlaybackEnded) { "Replay ended during headless pre-advance" }
+            if (options.replay != null) check(game.replayEngine.j() && !game.replayEngine.isPlaybackEnded) { "Replay ended during headless pre-advance" }
+            if (options.width != null) check(game.screenWidth.toInt() == options.width && game.screenHeight.toInt() == options.height && game.renderSurfaceScale == 1f) {
+                "Requested ordinary viewport was not applied"
+            }
+            val initialState = FrameState(game)
             GameEngine.isHeadlessMode = false // Only bypasses draw()'s early return; java.awt stays headless.
             val counters = CpuCounters()
             val period = 1_000_000_000L / options.fps
@@ -200,24 +234,46 @@ object RealReplayCanvasCapture {
             var previousVersions = emptySet<Any?>()
             PerformanceProfiler.frameTimingEnabled = true
             options.output.resolve("manifest.json").writeText(json.encodeToString(JsonObject.serializer(), buildJsonObject {
-                put("kind", "real-replay-production-cpu-capture"); put("diagnosticOnly", true)
+                put("kind", captureKind(options)); put("diagnosticOnly", true)
                 put("correctnessOnly", options.verifyFullFreeze); put("performanceMeasurementsInvalid", options.verifyFullFreeze)
                 put("fullFreezeVerification", if (options.verifyFullFreeze) "Candidate freezes first; same recorded frame then fully freezes with reuse disabled before background redraw; exact Frame and resource Map equals, without normalization" else "off")
-                put("replay", replayFile.canonicalPath); put("replaySha256", sha256(replayFile.readBytes()))
+                if (replayFile != null) {
+                    put("replay", replayFile.canonicalPath); put("replaySha256", sha256(replayFile.readBytes()))
+                } else {
+                    put("sourceType", "local-map"); put("map", options.map)
+                    put("mapSha256", sha256(checkNotNull(mapFile).readBytes()))
+                    put("initialUnits", initialState.units); put("initialLivingUnits", initialState.livingUnits)
+                    put("aiDifficulty", game.settingsEngine.aiDifficulty)
+                    put("aiTeams", localAiTeams())
+                    put("replayActive", false); put("networkGameActive", false)
+                    put("coreCodeSource", KoolGraphicsEngine::class.java.protectionDomain.codeSource.location.toString())
+                    put("desktopCodeSource", HeadlessGameSession::class.java.protectionDomain.codeSource.location.toString())
+                    put("helperCodeSource", RealReplayCanvasCapture::class.java.protectionDomain.codeSource.location.toString())
+                    put("enableSounds", game.settingsEngine.enableSounds)
+                    put("masterVolume", game.settingsEngine.masterVolume); put("musicVolume", game.settingsEngine.musicVolume)
+                    put("gameVolume", game.settingsEngine.gameVolume); put("interfaceVolume", game.settingsEngine.interfaceVolume)
+                    put("simulationCadenceScope", "Ordinary1x gameLoop manually stepped at nominal60Hz in this protocol, distinct from the actual300Hz desktop owner; no renderer/presentation/FPS claim")
+                    put("fogPolicy", "Natural map and local player visibility; no replay fog-display switch or room fog override")
+                }
                 put("assetRoot", File(System.getProperty("rwx.assetsDir")).canonicalPath)
                 put("fontMetadataSha256", sha256(metaBytes)); put("fontAtlasSha256", sha256(atlasBytes))
                 put("fontGlyphs", font.data.glyphMap.size); put("tankSha256", sha256(tankBytes))
                 put("mode", options.mode); put("warmupFrames", options.warmup); put("frames", options.frames); put("nominalPacingHz", options.fps)
-                put("requestedSeekTick", options.seekTick); put("captureStartTick", captureStartTick)
+                if (options.replay != null) put("requestedSeekTick", options.seekTick)
+                put("captureStartTick", captureStartTick)
                 put("preAdvanceFrames", preAdvanceFrames); put("preAdvanceWallNanos", preAdvanceWallNanos)
-                put("requestedReplayFog", options.replayFog); put("fogDisplayEnabled", game.replayEngine.isFogDisplayEnabled)
-                put("fogDisplayTeamId", game.replayEngine.fogDisplayTeamId)
-                put("preAdvancePolicy", "Unpaced ordinary gameLoop(1f,17) with rendering disabled, 1x replay rules; all pre-advance work excluded from capture counters")
+                if (options.replay != null) {
+                    put("requestedReplayFog", options.replayFog)
+                    put("preAdvancePolicy", "Unpaced ordinary gameLoop(1f,17) with rendering disabled, 1x replay rules; all pre-advance work excluded from capture counters")
+                } else put("preAdvancePolicy", "none; ordinary local map begins at its natural loaded state")
+                put("fogDisplayEnabled", initialState.displayFog); put("fogDisplayTeamId", initialState.fogTeam)
                 put("viewportWidth", game.screenWidth.toInt()); put("viewportHeight", game.screenHeight.toInt())
-                put("delta", delta); put("frameMillis", frameMillis); put("replayVersion", game.replayEngine.replayVersion)
+                put("delta", delta); put("frameMillis", frameMillis)
+                if (options.replay != null) put("replayVersion", game.replayEngine.replayVersion)
                 put("cameraTape", "frame index / nominal pacing; 20-second diagonal pan and 4-second ordinary constrained zoom cycle")
                 put("measurement", "Current engine thread CPU/wall/allocation by production stage; graph inspection and retained-lease checks excluded")
-                put("limitations", "No GPU execution, upload, presentation, input latency, FPS, or official-build equivalence. Inspection and lease checks run outside production counters but consume wall time and allocations, perturbing later deadlines and real-time cache budgets despite a fixed tape. Rows buffer detached scalar data; JSON/IO happens after all frames. Detailed command kinds run on first/last frames only. No simulation rules, units, commands, or room/map fog rules are injected; replay fog uses its ordinary display switch.")
+                put("limitations", "No GPU execution, upload, presentation, input latency, FPS, or official-build equivalence. Inspection and lease checks run outside production counters but consume wall time and allocations, perturbing later deadlines and real-time cache budgets despite a fixed tape. Rows buffer detached scalar data; JSON/IO happens after all frames. Detailed command kinds run on first/last frames only. No simulation rules, units, commands, or room/map fog rules are injected; " +
+                    (if (options.replay != null) "replay fog uses its ordinary display switch." else "local-map fog uses the naturally loaded map and local player; independent ordinary AI battles need not have identical graphs or complete simulation states."))
             }))
             val rows = ArrayList<FrameRow>(options.warmup + options.frames)
             run {
@@ -228,7 +284,8 @@ object RealReplayCanvasCapture {
                     waitUntil(deadline)
                     val start = System.nanoTime()
                     val late = (start - deadline).coerceAtLeast(0)
-                    check(game.replayEngine.j() && !game.replayEngine.isPlaybackEnded) { "Replay ended before frame $index" }
+                    if (options.replay != null) check(game.replayEngine.j() && !game.replayEngine.isPlaybackEnded) { "Replay ended before frame $index" }
+                    else checkLocalMap(game)
                     applyCamera(game, options, index, initialZoom)
                     val beforeTick = game.currentTick
                     val revisionBefore = store.textureRevision
@@ -307,9 +364,18 @@ object RealReplayCanvasCapture {
             check(retainedVerified)
             check(KoolSystem.getContextOrNull() == null && fontTexture.gpuTexture == null && gpu.installCalls == 0)
             options.output.resolve("summary.json").writeText(json.encodeToString(JsonObject.serializer(), buildJsonObject {
-                put("kind", "real-replay-production-cpu-capture"); put("diagnosticOnly", true); put("completed", true)
+                put("kind", captureKind(options)); put("diagnosticOnly", true); put("completed", true)
+                if (options.map != null) {
+                    put("sourceType", "local-map"); put("map", options.map)
+                    put("mapSha256", sha256(checkNotNull(mapFile).readBytes()))
+                    put("initialUnits", initialState.units); put("initialLivingUnits", initialState.livingUnits)
+                    put("replayActive", game.replayEngine.j()); put("networkGameActive", game.networkEngine.networkGameActive)
+                    put("aiDifficulty", game.settingsEngine.aiDifficulty); put("aiTeams", localAiTeams())
+                    put("viewportWidth", game.screenWidth.toInt()); put("viewportHeight", game.screenHeight.toInt())
+                }
                 put("sampledFrames", sampledFrames); put("warmupFrames", options.warmup); put("lastTick", game.currentTick)
-                put("requestedSeekTick", options.seekTick); put("captureStartTick", captureStartTick)
+                if (options.replay != null) put("requestedSeekTick", options.seekTick)
+                put("captureStartTick", captureStartTick)
                 put("preAdvanceFrames", preAdvanceFrames); put("preAdvanceWallNanos", preAdvanceWallNanos)
                 put("gpuTargetResourcesAcrossFrames", totalGpuTargets); put("gpuInstallCalls", gpu.installCalls)
                 put("missedDeadlines", missedDeadlines); put("maxStartLatenessNanos", maxLateNanos)
@@ -334,6 +400,34 @@ object RealReplayCanvasCapture {
             KoolCanvasFontRegistry.clearInstalledFonts()
             fontTexture.release()
             if (startedKoin) GlobalContext.stopKoin()
+        }
+    }
+
+    private fun captureKind(options: Options): String =
+        if (options.map != null) "real-local-map-production-cpu-capture" else "real-replay-production-cpu-capture"
+
+    private fun checkLocalMap(game: GameEngine) {
+        check(game.hasLoadedLevel && !game.replayEngine.j() && !game.networkEngine.networkGameActive) {
+            "Local map must remain loaded without replay playback or an active network game"
+        }
+        check(game.gameSpeed == 1f) { "Local map capture requires naturally configured ordinary1x speed" }
+        check(game.settingsEngine.aiDifficulty == 0) { "Local map capture requires the saved Medium AI preference0" }
+        check(!game.settingsEngine.enableSounds && game.settingsEngine.masterVolume == 0f && game.settingsEngine.musicVolume == 0f &&
+            game.settingsEngine.gameVolume == 0f && game.settingsEngine.interfaceVolume == 0f) { "Local map capture requires startup-muted isolated preferences" }
+        for (slot in 0 until PlayerTeam.TEAM_NEUTRAL) {
+            val team = PlayerTeam.k(slot)
+            // Legacy name getTeamColorId resolves the effective ordinary AI difficulty, including
+            // any loaded override. Observe it; never rewrite AI fields or overrides for the test.
+            if (team is AIController) check(team.getTeamColorId() == 0) { "AI team$slot is not ordinary Medium0" }
+        }
+    }
+
+    private fun localAiTeams(): JsonArray = buildJsonArray {
+        for (slot in 0 until PlayerTeam.TEAM_NEUTRAL) {
+            val team = PlayerTeam.k(slot)
+            if (team is AIController) add(buildJsonObject {
+                put("teamId", team.teamId); put("effectiveDifficulty", team.getTeamColorId())
+            })
         }
     }
 
@@ -533,18 +627,27 @@ object RealReplayCanvasCapture {
         val worldWidth = game.visibleWorldWidth
         val worldHeight = game.visibleWorldHeight
         val units = BaseUnit.bE.b
+        var livingUnits = 0
+            private set
         var visibleUnits = 0
             private set
         var movingUnits = 0
             private set
         val roomFog = game.networkEngine.roomSettings.fogMode
-        val displayFog = game.replayEngine.isFogDisplayEnabled
-        val fogTeam = game.replayEngine.fogDisplayTeamId
+        val replayActive = game.replayEngine.j()
+        val networkGameActive = game.networkEngine.networkGameActive
+        val gameSpeed = game.gameSpeed
+        val aiDifficulty = game.settingsEngine.aiDifficulty
+        val currentUnitCap = game.currentUnitCap
+        val maxUnitCap = game.maxUnitCap
+        val displayFog = if (replayActive) game.replayEngine.isFogDisplayEnabled else game.tileMap.isFogDisplayEnabled
+        val fogTeam = if (replayActive) game.replayEngine.fogDisplayTeamId else game.tileMap.fogDisplayTeam?.teamId ?: -1
         val mapFog = game.tileMap.fogEnabled
         val mapPeriodicFog = game.tileMap.fogPeriodicMaintenanceEnabled
         init {
             val list = BaseUnit.bE.a()
             for (i in 0 until units) {
+                if (!list[i].isDead) livingUnits++
                 if (list[i].shouldDraw) visibleUnits++
                 if (list[i].velocityX != 0f || list[i].velocityY != 0f) movingUnits++
             }
@@ -564,6 +667,9 @@ object RealReplayCanvasCapture {
             put("cameraX", state.cameraX); put("cameraY", state.cameraY); put("targetZoom", state.targetZoom); put("actualZoom", state.actualZoom)
             put("densityZoomScale", state.densityScale); put("visibleWorldWidth", state.worldWidth); put("visibleWorldHeight", state.worldHeight)
             put("units", state.units); put("visibleUnits", state.visibleUnits); put("movingUnits", state.movingUnits)
+            put("livingUnits", state.livingUnits); put("replayActive", state.replayActive); put("networkGameActive", state.networkGameActive)
+            put("gameSpeed", state.gameSpeed); put("aiDifficulty", state.aiDifficulty)
+            put("currentUnitCap", state.currentUnitCap); put("maxUnitCap", state.maxUnitCap)
             put("roomFogMode", state.roomFog); put("fogDisplayEnabled", state.displayFog); put("fogDisplayTeamId", state.fogTeam)
             put("mapFogEnabled", state.mapFog); put("mapFogPeriodicMaintenanceEnabled", state.mapPeriodicFog)
             put("nominalOffsetNanos", nominalOffset); put("deadlineOffsetNanos", deadlineOffset)

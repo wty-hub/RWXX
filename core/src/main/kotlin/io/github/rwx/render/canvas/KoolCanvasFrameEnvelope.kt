@@ -490,8 +490,27 @@ class KoolCanvasCpuTextureStore internal constructor(
     override fun staticArgbImage(id: KoolCanvasTextureId): KoolCanvasArgbImage? =
         (sources[id]?.resource as? FrozenCanvasResource.Pixels)?.takeIf { it.isStatic }?.image
 
-    /** Allocated only when stage tracing is enabled; none of these tables affect frozen output. */
+    /** Optional accounting only. Resource/dependency state must never be stored in this holder. */
     private class FreezeDiagnostics {
+        var commands = 0
+        var resolved = 0
+        var repeats = 0
+        var recursions = 0
+        var texNanos = 0L
+        var copyNanos = 0L
+        var compareNanos = 0L
+        var contentChanged = 0
+        var contentSame = 0
+        var drawTexture = 0
+        var sameRef = 0
+        var newRef = 0
+        var versionReuse = 0
+        var rejectMissing = 0L
+        var versionMismatch = 0L
+        var mismatchSamples = 0
+        var noVersionId = 0L
+        var noFrame = 0L
+        var noDependencies = 0L
         val heavy = HashMap<Pair<Int, Int>, Long>()
         val offscreenSizes = HashMap<Int, Long>()
         val offscreenKinds = HashMap<String, Long>()
@@ -523,35 +542,16 @@ class KoolCanvasCpuTextureStore internal constructor(
         check(!closed) { "CPU texture store is closed" }
         val freezeStart = CanvasRenderStageTrace.start()
         val scratch = freezeScratchPool.borrow()
-        // Diagnostic only: how many command objects the freeze has to allocate and how many of those
-        // resolve to their own id (i.e. needed no rewrite). A frame re-records the same content every
-        // frame, so the gap between these two is the room a "reuse unchanged commands" change would win.
-        var freezeDetailCommands = 0
-        var freezeDetailResolved = 0
-        var freezeDetailRepeats = 0
-        var freezeDetailRecursions = 0
-        var freezeDetailTexNanos = 0L
-        var freezeDetailCopyNanos = 0L
-        var freezeDetailCompareNanos = 0L
-        var freezeDetailContentChanged = 0
-        var freezeDetailContentSame = 0
-        var freezeDetailDrawTexture = 0
-        var freezeDetailSameRef = 0
-        var freezeDetailNewRef = 0
-        var freezeDetailVersionReuse = 0
         val traceFreezeDetail = CanvasRenderStageTrace.enabled
         // This memo belongs to one traversal, never to a published frame or a cross-frame cache.
         val frozenFrames = scratch?.frozenFrames ?: IdentityHashMap<KoolCanvasFrame, KoolCanvasFrame>()
         val freezeDiagnosticFrame = if (traceFreezeDetail) ++freezeDiagnosticFrames else 0L
         val freezeDetailDependencies = ArrayList<Pair<KoolCanvasTextureId, KoolCanvasTextureId>>()
         val dependencyMemo = if (reuseFrozenContent) FreezeDependencyMemo() else null
-        val detail = if (traceFreezeDetail) FreezeDiagnostics() else null
-        var freezyRejectMissing = 0L
-        var freezyVersionMismatch = 0L
-        var freezyMismatchSamples = 0
-        var freezyNoVersionId = 0L
-        var freezyNoFrame = 0L
-        var freezyNoDependencies = 0L
+        // Canvas stages and the reuse sidecar are the consumers of detailed accounting. Ordinary
+        // FRAME_METRICS only consumes the independent scratch-pool stats in finally below.
+        // Attempts/hits remain unconditional: the existing full-freeze verifier reads them directly.
+        val detail = if (traceFreezeDetail || REUSE_TRACE_ENABLED) FreezeDiagnostics() else null
         fun snapshotDependencies(from: Int): List<Pair<KoolCanvasTextureId, KoolCanvasTextureId>> =
             freezeDetailDependencies.subList(from, freezeDetailDependencies.size).distinctBy { it.first }
 
@@ -567,11 +567,11 @@ class KoolCanvasCpuTextureStore internal constructor(
             // rather than inferred: a per-call counter cannot answer a cross-call question.
             REUSE_ATTEMPTS.incrementAndGet()
             if (source.frozenSourceVersionId != source.versionId) {
-                REUSE_VERSION_BASE.incrementAndGet()
-                if (detail != null) {
-                    freezyVersionMismatch++
-                    if (freezyMismatchSamples < 3) {
-                        freezyMismatchSamples++
+                if (detail != null) REUSE_VERSION_BASE.incrementAndGet()
+                if (traceFreezeDetail && detail != null) {
+                    detail.versionMismatch++
+                    if (detail.mismatchSamples < 3) {
+                        detail.mismatchSamples++
                         println("[RWX canvas] vMismatch stored=" + source.frozenSourceVersionId?.value +
                                 " live=" + source.versionId.value +
                                 " srcIdentity=" + System.identityHashCode(source) +
@@ -585,51 +585,53 @@ class KoolCanvasCpuTextureStore internal constructor(
                 return false
             }
             if (source.frozenVersionId == null) {
-                REUSE_NO_VERSION.incrementAndGet()
+                if (detail != null) REUSE_NO_VERSION.incrementAndGet()
                 reuseReport()
-                if (traceFreezeDetail) freezyNoVersionId++
+                if (traceFreezeDetail && detail != null) detail.noVersionId++
                 return false
             }
             if (source.frozenFrame == null) {
-                REUSE_NO_FRAME.incrementAndGet()
+                if (detail != null) REUSE_NO_FRAME.incrementAndGet()
                 reuseReport()
-                if (traceFreezeDetail) freezyNoFrame++
+                if (traceFreezeDetail && detail != null) detail.noFrame++
                 return false
             }
             val dependencies = source.frozenDependencies
             if (dependencies == null) {
-                REUSE_NO_DEPS.incrementAndGet()
+                if (detail != null) REUSE_NO_DEPS.incrementAndGet()
                 reuseReport()
-                if (traceFreezeDetail) freezyNoDependencies++
+                if (traceFreezeDetail && detail != null) detail.noDependencies++
                 return false
             }
-            REUSE_DEPS_CHECKS.incrementAndGet()
-            REUSE_DEPS_SUM.addAndGet(dependencies.size.toLong())
-            REUSE_DEPS_MAX.accumulateAndGet(dependencies.size.toLong(), ::maxOf)
+            if (detail != null) {
+                REUSE_DEPS_CHECKS.incrementAndGet()
+                REUSE_DEPS_SUM.addAndGet(dependencies.size.toLong())
+                REUSE_DEPS_MAX.accumulateAndGet(dependencies.size.toLong(), ::maxOf)
+            }
             for ((dependencyId, versionId) in dependencies) {
                 val live = sources[dependencyId]
                 if (live == null) {
-                    REUSE_DEP_MISSING.incrementAndGet()
+                    if (detail != null) REUSE_DEP_MISSING.incrementAndGet()
                     reuseReport()
                     // Name the ids that keep going missing. A dependency that is gone at every check is
                     // transient by construction, and a cache that validates it can never hit.
-                    REUSE_MISSING_IDS.merge(dependencyId.value.takeLast(30), 1L, Long::plus)
-                    if (detail != null) {
-                        freezyRejectMissing++
+                    if (detail != null) REUSE_MISSING_IDS.merge(dependencyId.value.takeLast(30), 1L, Long::plus)
+                    if (traceFreezeDetail && detail != null) {
+                        detail.rejectMissing++
                         detail.missingIds[dependencyId.value.takeLast(34)] =
                             (detail.missingIds[dependencyId.value.takeLast(34)] ?: 0L) + 1
                     }
                     return false
                 }
                 if (live.versionId != versionId) {
-                    REUSE_DEP_CHANGED.incrementAndGet()
+                    if (detail != null) REUSE_DEP_CHANGED.incrementAndGet()
                     reuseReport()
                     // Name the dependencies whose version moved between freeze and check. If these dominate
                     // during camera motion, the cache is being rebuilt every frame and the cost is churn
                     // rather than miss; if they are absent, the cache is holding and the cost lies in what
                     // the cached result hands to the GPU layer.
-                    REUSE_CHANGED_IDS.merge(dependencyId.value.takeLast(30), 1L, Long::plus)
-                    if (detail != null) detail.rejectChanged[dependencyId.value.takeLast(28)] =
+                    if (detail != null) REUSE_CHANGED_IDS.merge(dependencyId.value.takeLast(30), 1L, Long::plus)
+                    if (traceFreezeDetail && detail != null) detail.rejectChanged[dependencyId.value.takeLast(28)] =
                         (detail.rejectChanged[dependencyId.value.takeLast(28)] ?: 0L) + 1
                     return false
                 }
@@ -735,7 +737,7 @@ class KoolCanvasCpuTextureStore internal constructor(
                 // rejected 95% of the time by `depMissing` and never hit once (measured: `hits=0` over
                 // 70 000 attempts, with the "missing" ids all being versioned strings).
                 if (reuseFrozenContent && source != null) freezeDetailDependencies += ref.id to source.versionId
-                if (traceFreezeDetail && source != null &&
+                if (traceFreezeDetail && detail != null && source != null &&
                     (resource is FrozenCanvasResource.Frame || resource is FrozenCanvasResource.GpuTarget)
                 ) {
                     val identity = System.identityHashCode(source)
@@ -746,10 +748,11 @@ class KoolCanvasCpuTextureStore internal constructor(
                         println("[RWX canvas] sourceReuse resolved=" + RESOLVED_TOTAL.get() +
                                 " distinctSources=" + FROZEN_SOURCE_IDENTITIES.size +
                                 " withStoredVersion=" + RESOLVED_WITH_STORED_VERSION.get() +
-                                " versionReuse=" + freezeDetailVersionReuse)
+                                " versionReuse=" + detail.versionReuse)
                     }
                 }
-                if (detail != null && (resource is FrozenCanvasResource.Frame || resource is FrozenCanvasResource.GpuTarget)) {
+                if (traceFreezeDetail && detail != null &&
+                    (resource is FrozenCanvasResource.Frame || resource is FrozenCanvasResource.GpuTarget)) {
                     // Who owns the expensive nested frames: kind, shape and the source id's tail, so the
                     // registration path that keeps re-freezing a 512x512 layer-buffer cell is named
                     // instead of guessed.
@@ -764,7 +767,7 @@ class KoolCanvasCpuTextureStore internal constructor(
                 val resolvedId = when (resource) {
                     is FrozenCanvasResource.Frame -> {
                         if (source != null && isFrozenContentCurrent(source)) {
-                            freezeDetailVersionReuse++
+                            if (detail != null) detail.versionReuse++
                             resources.putAll(checkNotNull(source.frozenResources))
                             freezeDetailDependencies.addAll(checkNotNull(source.frozenDependencies))
                             checkNotNull(source.frozenVersionId).also { resources[it] = FrozenCanvasResource.Frame(checkNotNull(source.frozenFrame)) }
@@ -787,7 +790,7 @@ class KoolCanvasCpuTextureStore internal constructor(
                         // Same content-version stability as a frame texture, but the render thread
                         // turns the version into its own offscreen pass image instead of pixels.
                         if (source != null && isFrozenContentCurrent(source)) {
-                            freezeDetailVersionReuse++
+                            if (detail != null) detail.versionReuse++
                             resources.putAll(checkNotNull(source.frozenResources))
                             freezeDetailDependencies.addAll(checkNotNull(source.frozenDependencies))
                             checkNotNull(source.frozenVersionId).also {
@@ -797,7 +800,7 @@ class KoolCanvasCpuTextureStore internal constructor(
                         } else {
                         val gpuFreezeStart = if (traceFreezeDetail) System.nanoTime() else 0L
                         val frozen = freeze(resource.frame)
-                        if (gpuFreezeStart != 0L) freezeDetailCopyNanos += System.nanoTime() - gpuFreezeStart
+                        if (gpuFreezeStart != 0L && detail != null) detail.copyNanos += System.nanoTime() - gpuFreezeStart
                         // Only *draw content* decides the version. `visualStats` carries selected/visible
                         // unit counts for the adaptive-visual logic, and units crossing the view edge change
                         // it every tick; treating that as new content gave every live cell a fresh version
@@ -807,9 +810,9 @@ class KoolCanvasCpuTextureStore internal constructor(
                         val compareStart = if (traceFreezeDetail) System.nanoTime() else 0L
                         val contentChanged = previous == null || previous.commands != frozen.commands ||
                             previous.viewport != frozen.viewport
-                        if (compareStart != 0L) {
-                            freezeDetailCompareNanos += System.nanoTime() - compareStart
-                            if (contentChanged) freezeDetailContentChanged++ else freezeDetailContentSame++
+                        if (compareStart != 0L && detail != null) {
+                            detail.compareNanos += System.nanoTime() - compareStart
+                            if (contentChanged) detail.contentChanged++ else detail.contentSame++
                         }
                         if (contentChanged) {
                             source.frozenVersionId = KoolCanvasTextureId("${id.value}/gpu-${++frozenFrameSerial}")
@@ -844,16 +847,16 @@ class KoolCanvasCpuTextureStore internal constructor(
                 return paint.copy(textureEffect = displacement.copy(screenBase = texture(displacement.screenBase)))
             }
             freeze = { source ->
-                freezeDetailRecursions++
+                if (detail != null) detail.recursions++
                 val alreadyFrozen = frozenFrames[source]
                 if (alreadyFrozen != null) {
-                    freezeDetailRepeats++
+                    if (detail != null) detail.repeats++
                     alreadyFrozen
                 } else {
                 val previousDependencyScope = dependencyMemo?.scope
                 if (dependencyMemo != null) dependencyMemo.scope = Any()
                 try {
-                if (detail != null) {
+                if (traceFreezeDetail && detail != null) {
                     val viewport = source.viewport.width to source.viewport.height
                     detail.heavy[viewport] = (detail.heavy[viewport] ?: 0L) + source.commands.size
                     // Total command volume per viewport class: this is what says whether the cost lives in
@@ -887,28 +890,30 @@ class KoolCanvasCpuTextureStore internal constructor(
                         is KoolCanvasCommand.DrawTexture -> {
                             val texStart = if (traceFreezeDetail) System.nanoTime() else 0L
                             val resolved = texture(command.texture)
-                            if (texStart != 0L) freezeDetailTexNanos += System.nanoTime() - texStart
-                            val sameId = resolved.id == command.texture.id
-                            val samePaint = resolved === command.texture ||
-                                (resolved.id == command.texture.id && resolved.frozenPixelIdentity == command.texture.frozenPixelIdentity)
-                            if (sameId) freezeDetailResolved++
-                            if (samePaint) freezeDetailSameRef++ else freezeDetailNewRef++
-                            freezeDetailDrawTexture++
-                            command.copy(texture = resolved, paint = paint(command.paint)).also { freezeDetailCommands++ }
+                            if (texStart != 0L && detail != null) detail.texNanos += System.nanoTime() - texStart
+                            if (detail != null) {
+                                val sameId = resolved.id == command.texture.id
+                                val samePaint = resolved === command.texture ||
+                                    (resolved.id == command.texture.id && resolved.frozenPixelIdentity == command.texture.frozenPixelIdentity)
+                                if (sameId) detail.resolved++
+                                if (samePaint) detail.sameRef++ else detail.newRef++
+                            }
+                            if (detail != null) detail.drawTexture++
+                            command.copy(texture = resolved, paint = paint(command.paint)).also { if (detail != null) detail.commands++ }
                         }
                         is KoolCanvasCommand.DrawTextureRepeat -> {
                             val texStart = if (traceFreezeDetail) System.nanoTime() else 0L
                             val resolved = texture(command.texture)
-                            if (texStart != 0L) freezeDetailTexNanos += System.nanoTime() - texStart
-                            freezeDetailDrawTexture++
-                            command.copy(texture = resolved, paint = paint(command.paint)).also { freezeDetailCommands++ }
+                            if (texStart != 0L && detail != null) detail.texNanos += System.nanoTime() - texStart
+                            if (detail != null) detail.drawTexture++
+                            command.copy(texture = resolved, paint = paint(command.paint)).also { if (detail != null) detail.commands++ }
                         }
                         is KoolCanvasCommand.DrawTextureBatch ->
                             command.copy(texture = texture(command.texture), paint = paint(command.paint))
                         is KoolCanvasCommand.DrawRect -> {
                             val frozenPaint = paint(command.paint)
                             (if (SHARE_IMMUTABLE_COMMANDS && frozenPaint === command.paint) command
-                            else command.copy(paint = frozenPaint)).also { freezeDetailCommands++ }
+                            else command.copy(paint = frozenPaint)).also { if (detail != null) detail.commands++ }
                         }
                         is KoolCanvasCommand.DrawRectBatch -> command.copy(paint = paint(command.paint))
                         is KoolCanvasCommand.DrawFogBatch -> command.copy(texture = command.texture?.let { texture(it) },
@@ -916,19 +921,19 @@ class KoolCanvasCpuTextureStore internal constructor(
                         is KoolCanvasCommand.DrawLine -> {
                             val frozenPaint = paint(command.paint)
                             (if (SHARE_IMMUTABLE_COMMANDS && frozenPaint === command.paint) command
-                            else command.copy(paint = frozenPaint)).also { freezeDetailCommands++ }
+                            else command.copy(paint = frozenPaint)).also { if (detail != null) detail.commands++ }
                         }
                         is KoolCanvasCommand.DrawCircle -> {
                             val frozenPaint = paint(command.paint)
                             (if (SHARE_IMMUTABLE_COMMANDS && frozenPaint === command.paint) command
-                            else command.copy(paint = frozenPaint)).also { freezeDetailCommands++ }
+                            else command.copy(paint = frozenPaint)).also { if (detail != null) detail.commands++ }
                         }
                         is KoolCanvasCommand.DrawText -> {
                             val frozenPaint = paint(command.paint)
                             (if (SHARE_IMMUTABLE_COMMANDS && frozenPaint === command.paint) command
-                            else command.copy(paint = frozenPaint)).also { freezeDetailCommands++ }
+                            else command.copy(paint = frozenPaint)).also { if (detail != null) detail.commands++ }
                         }
-                        is KoolCanvasCommand.Clear -> command.also { freezeDetailCommands++ }
+                        is KoolCanvasCommand.Clear -> command.also { if (detail != null) detail.commands++ }
                     }
                 val copiedCommands = if (packedRootTextureCommands && source === frame) {
                     val builder = KoolCanvasPackedTextureCommands.Builder(source.commands.size)
@@ -945,25 +950,27 @@ class KoolCanvasCpuTextureStore internal constructor(
                                     live.image.height == draw.texture.height && !live.image.premultipliedAlpha) {
                                     val texStart = if (traceFreezeDetail) System.nanoTime() else 0L
                                     val frozen = texture(draw.texture)
-                                    if (texStart != 0L) freezeDetailTexNanos += System.nanoTime() - texStart
+                                    if (texStart != 0L && detail != null) detail.texNanos += System.nanoTime() - texStart
                                     (frozen to builder.textureIndex(frozen)).also { palette[draw.texture] = it }
                                 } else { rejected[draw.texture] = true; null }
                             } else null
                         } else null
                         if (draw != null && paletteEntry != null) {
                             val resolved = paletteEntry.first
-                            if (resolved.id == draw.texture.id) freezeDetailResolved++
-                            if (resolved === draw.texture || (resolved.id == draw.texture.id &&
-                                    resolved.frozenPixelIdentity == draw.texture.frozenPixelIdentity)) freezeDetailSameRef++
-                            else freezeDetailNewRef++
-                            freezeDetailDrawTexture++
+                            if (detail != null) {
+                                if (resolved.id == draw.texture.id) detail.resolved++
+                                if (resolved === draw.texture || (resolved.id == draw.texture.id &&
+                                        resolved.frozenPixelIdentity == draw.texture.frozenPixelIdentity)) detail.sameRef++
+                                else detail.newRef++
+                            }
+                            if (detail != null) detail.drawTexture++
                             builder.add(draw, paletteEntry.second)
                         } else builder.addLegacy(copyCommand(command))
                     }
                     builder.build()
                 } else Collections.unmodifiableList(source.commands.map(::copyCommand))
                 val copied = source.copy(commands = copiedCommands).also { frozen -> frozenFrames[source] = frozen }
-                if (copyStart != 0L) freezeDetailCopyNanos += System.nanoTime() - copyStart
+                if (copyStart != 0L && detail != null) detail.copyNanos += System.nanoTime() - copyStart
                 copied
                 } finally {
                     if (dependencyMemo != null) dependencyMemo.scope = checkNotNull(previousDependencyScope)
@@ -986,20 +993,20 @@ class KoolCanvasCpuTextureStore internal constructor(
             }
                 .also { CanvasRenderStageTrace.record("engine-freeze", freezeStart, frame.commands.size.toLong(), resources.size.toLong()) }
                 .also {
-                    if (detail != null) {
-                        CanvasRenderStageTrace.record("freeze-detail", freezeStart, freezeDetailCommands.toLong(),
-                            freezeDetailResolved.toLong(), frame.commands.size.toLong())
-                        CanvasRenderStageTrace.record("freeze-repeat", freezeStart, freezeDetailRecursions.toLong(),
-                            freezeDetailRepeats.toLong())
-                        CanvasRenderStageTrace.record("freeze-split", freezeStart, freezeDetailTexNanos / 1000,
-                            freezeDetailCopyNanos / 1000, freezeDetailCompareNanos / 1000)
+                    if (traceFreezeDetail && detail != null) {
+                        CanvasRenderStageTrace.record("freeze-detail", freezeStart, detail.commands.toLong(),
+                            detail.resolved.toLong(), frame.commands.size.toLong())
+                        CanvasRenderStageTrace.record("freeze-repeat", freezeStart, detail.recursions.toLong(),
+                            detail.repeats.toLong())
+                        CanvasRenderStageTrace.record("freeze-split", freezeStart, detail.texNanos / 1000,
+                            detail.copyNanos / 1000, detail.compareNanos / 1000)
                         CanvasRenderStageTrace.record("freeze-content", freezeStart,
-                            freezeDetailContentChanged.toLong(), freezeDetailContentSame.toLong())
+                            detail.contentChanged.toLong(), detail.contentSame.toLong())
                         CanvasRenderStageTrace.record("freeze-refs", freezeStart,
-                            freezeDetailDrawTexture.toLong(), freezeDetailSameRef.toLong(),
-                            freezeDetailNewRef.toLong())
+                            detail.drawTexture.toLong(), detail.sameRef.toLong(),
+                            detail.newRef.toLong())
                         CanvasRenderStageTrace.record("freeze-version-reuse", freezeStart,
-                            freezeDetailVersionReuse.toLong(), freezeDetailRecursions.toLong())
+                            detail.versionReuse.toLong(), detail.recursions.toLong())
                         // Where the 15x recursion actually comes from: which nested viewports dominate.
                         // Measured on a low-zoom pan: 512x512 (the layer-buffer cells) hold 159 M of the
                         // 170 M frozen command objects against 11 M for the 1280x720 main frame.
@@ -1007,7 +1014,7 @@ class KoolCanvasCpuTextureStore internal constructor(
                             CanvasRenderStageTrace.record("freeze-heavy", freezeStart,
                                 viewport.first.toLong(), viewport.second.toLong(), commands)
                         }
-                        CanvasRenderStageTrace.record("freeze-reject", freezeStart, freezyRejectMissing)
+                        CanvasRenderStageTrace.record("freeze-reject", freezeStart, detail.rejectMissing)
                         for ((nested, count) in detail.nestedViewports.entries.sortedByDescending { it.value }.take(6)) {
                             CanvasRenderStageTrace.record("freeze-nested-vp", freezeStart, count, 0L,
                                 nested.hashCode().toLong())
@@ -1021,7 +1028,7 @@ class KoolCanvasCpuTextureStore internal constructor(
                                 dependency.hashCode().toLong())
                         }
                         if (freezeDiagnosticFrame <= 3) {
-                            println("[RWX canvas] freezeReject missing=" + freezyRejectMissing + " top=" +
+                            println("[RWX canvas] freezeReject missing=" + detail.rejectMissing + " top=" +
                                 detail.rejectChanged.entries.sortedByDescending { it.value }.take(3)
                                     .joinToString { it.key + "x" + it.value })
                         }
@@ -1029,10 +1036,10 @@ class KoolCanvasCpuTextureStore internal constructor(
                             println("[RWX canvas] freezeNested #" + freezeDiagnosticFrame + " viewports=" +
                                 detail.nestedViewports.entries.sortedByDescending { it.value }.take(2)
                                     .joinToString { it.key + "x" + it.value } +
-                                " reuseTerms[vMismatch=" + freezyVersionMismatch + " noVer=" + freezyNoVersionId +
-                                " noFrame=" + freezyNoFrame + " noDeps=" + freezyNoDependencies +
-                                " depMissing=" + freezyRejectMissing + " depChanged=" + detail.rejectChanged.values.sum() +
-                                " versionReuse=" + freezeDetailVersionReuse + "]" +
+                                " reuseTerms[vMismatch=" + detail.versionMismatch + " noVer=" + detail.noVersionId +
+                                " noFrame=" + detail.noFrame + " noDeps=" + detail.noDependencies +
+                                " depMissing=" + detail.rejectMissing + " depChanged=" + detail.rejectChanged.values.sum() +
+                                " versionReuse=" + detail.versionReuse + "]" +
                                 " missingTop=" + detail.missingIds.entries.sortedByDescending { it.value }.take(2)
                                     .joinToString { it.key + "x" + it.value } +
                                 " offscreenSizes=" + detail.offscreenSizes.entries.sortedByDescending { it.value }.take(3)

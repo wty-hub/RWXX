@@ -1,4 +1,131 @@
-## 2026-11-05 发布交付内容：完整授权的1.4.3 macOS ARM64包，15项新默认及安装身份/踢出房间修复
+## 2026-11-05 本次收尾：用户接受当前结果，停止新增优化并要求提交推送1.4.4源码
+
+用户在获知单轮万单位超过原版50%、但稳定50%及零长帧仍未保证后，明确“可以了”“提交推送”。
+停止进一步探索；本批提交范围是诊断门控、Atlas私有String键、普通白色纹理画笔快捷路径、默认整数毫秒时钟修正，
+以及对应回归测试、只在显式调用时运行的CPU/联机诊断工具和完整验证记录。版本两处1.4.4；不再额外递增。
+最终生产源与accepted core5f16 + desktop d950范围相符。没有新的macOS安装包/Release或main合并请求；推送当前codex分支。
+
+最后lazy-state-motion-v1整组valid：owned display26实际44，ABBA和officialv7全过，manager退出0、原屏恢复、目标进程全退出。
+A1/B1/B2/A2 freshHz=168.2883/179.0901/235.5183/265.4104；基线pooled216.8513，State候选207.3053（−4.4021%），
+两pair+6.4186%/−11.2626%；max26.2750/36.2348/42.8895/30.9363ms，>33.333ms=0/3/1/0。
+官方v7=142.35Hz、P9917.9494/max67.6365ms，43个>16.667及4个>33.333ms；双方计时ratio均正常。
+这组波动显示不能用前一轮+61%..77%宣称稳定超过50%；全部正负样本保留，不挑分母或归因未测的外部负载。
+
+State虽然有分配收益及GPU正确性，但实际拖缩未证明净收益且tails更差，因此生产CommandBuffer及Engine rolepeek已撤回，
+14个专用State tests归档后从提交源码移除；core22及所有原始记录保留在build/lazy-canvas-state-20261105/not-adopted-v1/。
+未验收shadow共享候选也已归档并撤回，Engine恢复accepted paint源474a3c52…91c30。
+CommandBuffer3dd9718a…7be6和Geometryfc8ba8f8…8701均与HEAD相同，不包含被否决的状态或矩阵优化。
+没有自动重试、抢焦点、物理输入、声音或修改Steam/安装应用。
+
+最终独立review无阻断；提交前重新执行core/desktop无窗口测试，明确排除交互式MacNativeFullscreenTest，
+以及新增时钟审计5项和release contract/脚本15项。最终计数及提交记录见post-release-cpu-optimizations-2026-11-05.json。
+本节覆盖下方所有历史“State验证中/继续探索/网络运行中”等下一步安排；不再自动继续性能探索。
+
+---
+
+## 2026-11-05 历史：修正默认游戏计时，等速万单位拖缩对照完成；延迟物化状态候选验证中
+
+本批仍为 codex/freeze-diagnostics-1.4.4，版本1.4.4未提交/发布。正式1.4.3、Steam、安装应用均不改。
+下面所有旧“时钟默认OFF/网络运行中/矩阵待测”是历史状态，以本节为准。目标稳定超原版50%及拖缩不掉帧仍active。
+
+发现旧默认在20秒现实时间只推进约18秒游戏时间：GameLogic逐次将gameTimeMillis+float增量转int，
+高刷新下输入的分数毫秒被截掉。已将DesktopGameLoopDelta原版整数毫秒路径默认开启（环境0可回退），
+用绝对owner端点携带小数，不改引擎、联机/回放协议、owner调度或模拟规则。
+新desktop d9502a3a6b96c1f9dd47fe046e75c459221eddcbb6470a87b8c6a4e3ae04676a，166个desktop tests通过。
+相对ac208只有默认参数构造方法的语义Code变化，原路径其他方法Code/inventory/access exact。
+完整回放239ticks/41commands/240参数、480状态exact证据保留；单人AI独立状态parity仍因输入/随机不同未证实。
+实际Desktop owner+adapter对官方8a55双向联机各600秒均通过：60命令/方向，checksum持续通过，desync/resync/fallback全0。
+actual-network-v1/execution.json+audit.json是权威结果，旧offlinev1/v2失败不改、不绕门禁。
+
+corrected-clock-motion-v1整组一次完成：display25实际43，ABBA四arm及官方v6全valid；
+manager exit0、removed、originalDisplaysUnchanged、postListExact、allOwnedTargetsEnded均true，不重跑。
+基线是正式1.4.3加显式clock=1；候选是accepted paintonly core5f16加desktop d950（clock环境缺省，实际true）。
+因此这是同计时基线，不能称1.4.3原出厂默认性能。候选fat06aa6a85…6c2e不含State22或已否决矩阵。
+同一万初始原版tank/Medium AI0/1792x1008/MSAA4/vsyncOFF/cap300/20秒pan+4秒zoom循环/全静音，
+20秒内RWXX游戏时间推进20000–20001ms，原版20005ms；均通过ratio0.97..1.03门禁，owner fallback0。
+四arm freshHz A1/B1/B2/A2 =242.0214/239.6817/262.4765/257.2998；
+P99=15.3410/15.3667/11.5875/10.7200ms，max=29.5153/29.4917/18.3964/30.8630ms，
+>16.667ms=6/9/3/3，所有>33.333ms均0。
+官方v6 fresh148.65Hz、P9915.9158/max43.6399ms、21个>16.667及1个>33.333ms。
+本轮B1/B2对该官方样本+61.24%/+76.57%，但BvsA两pair方向交叉，不可把全部领先归本批CPU改动。
+原版是官方8a55+兼容Temurin17 x64/OpenGL，RWXX是Java25 arm64/Vulkan；不是stock Oracle8/真实屏幕scanout或零长帧结论。
+此前accepted-default-motion-v1的“约50%”保留，但受旧默认18秒游戏/20秒现实的公平性限制，不能当等量仿真最终结论。
+
+pivoted矩阵虽正确性通过，固定CPU及真实万单位CPU均未证实净收益，Geometry已恢复原版；713283/bd15 fat不可发布。
+新延迟物化immutable state候选只在状态被draw/save/getState观察时创建快照，保存/发布/batch仍不可变；
+core22be61ed223a43ec7967c7b9a8800799f6b40b32cfa9161cd5578dd705fb4d91，core564总/1skip及desktop166通过。
+独立ABI/source审计38项、CPU审计1127项通过。固定工作量所有完整字段/资源hash一致，分配−8.16%/−11.14%；
+实际万单位CPU四arm总分配−9.27%，CPU−0.81%但两pair交叉，freeze收益受A2基线分配偏高影响，不能直接归因。
+窗口无关GPU Sprite148检查/608退休、Map3844/Fog4608/Text3072检查已一次全部通过；Map确认实际新CommandBuffer加载，
+Sprite直接使用immutable packets，不能冒称其覆盖state录制。gpu-completed-v1.json valid true，无音频/GLFW/session加载。
+下一步同corrected-clock测State22真实拖缩ABBA；新lazy-state-motion-v1由agent仅准备，未授权其自行启动。
+
+证据统一在 /Users/wty/code/RWXX/build/ 下的 post-release-performance-20261105/corrected-clock-motion-v1、
+default-original-clock-20261105、desktop-clock-acceptance-20261105、lazy-canvas-state-20261105。
+
+---
+
+## 2026-11-05 历史：画笔组件已证实净收益，pivoted矩阵正确性通过；真实owner原版联机长测运行中
+
+主workspace仍release-1-4-3-performance/RWXX，branch codex/freeze-diagnostics-1.4.4；本批版本1.4.4未提交/发布，1.4.3发布不改。
+旧combined-motion-v1仅baseline完整有效：fresh203.4803/P9918.6624/max88.2264ms、68个>16.667ms；candidate/repeats/officialv4未run。
+对话中断后manager41无livehandle，无cleanup纪录，但独立list完整original快照恢复；不重跑或跨屏拼这组。用户RWXXapp并存，历史负载未采集。
+
+private CPU sources String索引ca0 correctness544/1skip通过，但CPU ABBA两pair回退，source已恢复typedMap，三个回归tests保留。
+画笔white shortcut保持所有getter/NaN校验及direct/team/effect/cache fallback；paintonly5f16。
+固定真实GraphicsEngine API绘制white/shadow/mixed 12JVM跨arm完整字段/资源hash全部exact；white录制alloc−33.69%/CPU−6.69%，
+mixed全stagealloc−6.94%/CPU−2.25%（两pair同向），shadow无alloc改善/CPUpooled+2.21%两pair交叉。607checks独立审计，全部raw/warm/sample保留。
+仅synthetic组件，不宣称真实游戏/万单位FPS；先前90单位replay负向且graph不exact，完整保留，不挑结果。
+
+真实JFR Transform99.955%采样权重来自multiply返回对象，rotate/scale三段链为主；新pivoted保留全部float乘加顺序、仅finite结果新建1对象，
+nonfinite走public原全链。v1/v2 rawNaN过严oracle失败保留；旧3e2/旧3e2双loader200576case自己出现52个NaNpayload差，非NaN0差。
+官方JLS不规定NaNpayload；现在非NaN（含±0/Inf）仍严格rawbit，NaN必须分类一致并记录payload差。
+新713283 core553总/1skip、desktop159（fullscreen excluded）全过，独立旧/新401152scale+rotate输出非NaN/NaN分类/identity0差。
+Geometry class2ef7…0714与parity已验jarbyteexact；纯CPU matched-transform-v1正prepare，未运行，不能将矩阵候选宣布净收益。
+
+时钟默认仍OFF。新增真实Desktop owner/adapter无窗口工具，offlinev1保存图因初始camera漂移失败，但实际replay239ticks/41cmd/240参数完整exact通过。
+offlinev2初始state修复相机已exact，随后camera transition与AI未序列化Math.random导致不同输入，单人AI完整parity仍unproven；不再补丁凑pass。
+独立actual-network-v1明确以完整replay/parameter证据为前置（不绕改旧failed gate），真实KoolDesktopGameSession owner+adapter对官方core8a55，
+双方各600sec、全静音headless/noKoolContext，无窗口/虚拟屏/物理输入、firstfailurestop不重跑。当前session51069，rwx-host进程39998/39999，
+约600秒前需poll同session/launch.log，仍无完整通过结论；第二role由同controller只在第一role成功后继续。
+控制器build/desktop-clock-acceptance-20261105/actual-network-v1/prepare_and_run.py；结果完成后读execution.json+audit.json+双方result/final-clock。
+一次性attempt不可重复。网络结束后才运行新矩阵CPU性能8JVM，避免并发污染；可继续静态review/短correctness，不测GPU/FPS。
+完整目标稳定超原版50%和拖缩不掉帧仍active，当前没有新同屏原版对照，不可宣布完成。
+
+---
+
+## 2026-11-05 发布之后：1.4.4开发分支已完成诊断门控和Atlas私有String索引，性能总目标仍active
+
+1.4.3已推main commit1a3bfbb46ea7285c6e3b26512aa0d0c1d862921f并发布GitHub Release v1.4.3，
+ZIP6598127e…1d3be及checksum已上传且GitHub server digest匹配。本chat managed checkout为primary，
+archive工具拒绝移除primary，故保留在/Users/wty/.codex/worktrees/release-1-4-3-performance/RWXX。
+原仓库/Users/wty/code/RWXX main已对齐1a3且干净，正式.app/ZIP已提升回其canonical build路径，旧canonical有备份；
+安装应用/Steam不改。当前primary新分支codex/freeze-diagnostics-1.4.4，版本两处只升一次为1.4.4，尚未发布/提交本批。
+
+新cadence诊断v1因准备日志误入递归input manifest在启动前被拦，未consume/noJVM/GPU，display39正常清理；
+v2仅声明输入文件/目录、排除日志等输出后2440inputs hash全过，一次真实后台诊断成功，display40已TERM0清理且originalUnchanged。
+同b357/default15，仅加VK/Canvas/JFR，accepted约260/fresh231（诊断performance invalid），4条runtime指标都是target300。
+5204 native fence/acquire/submit/present各return0；4625fresh间隔全保留，13条>16.667ms。
+长帧包含native submit、Canvas commands及多次重复present等待，另9.409ms未覆盖；无ClockSync，不做JFR精确GC归因。
+因此仅反证“恒定120帽”，不能把上次119归OS/负载或当作新优化增益。证据在原仓库build/post-release-diagnostics-20261105/render-cadence-v2/。
+
+本批源码两处纯CPU优化：FrameEnvelope详细诊断比较/计数/ID表仅在Canvas/Reuse消费者开启时执行，
+真实ATTEMPTS/HITS、scratchStats、全部closure/version/missing/cycle/lease保持；Atlas只改private slots字段/get/put用完整String值，
+旧slotForValidatedTexture get+put两处box-impl→0（hit旧只有get一处），483条窄指令投影等价、方法/构造ABI保留。
+当前组合core3e2b1400…d401/desktopac208…cb44，core541总/1skip、desktop159（nativeFullscreen excluded）全过；
+门控单独core538和5种诊断policy检查过。GPU Sprite148checks/608资源退休，Map3844/Fog4608/Text3072都过，
+实际主context4、继承readback1/tolerance3，非FPS。现有GPU runtime在原仓库build/texture-id-boxing-20261105/。
+
+冻结CPU初筛ABBA是真实约90–93单位回放，fe425→10f4（不含AtlasString、不执行renderInto），120warm/300sample，
+场景420scalar行完全一致但graph/rootCommands/像素资源并非每帧完全一致（baseline自身也波动）。
+freezeCPU中位−27.0349%、分配+3.5163%；totalCPU−18.6577%、分配+9.6811%。两pair CPU均下降但异质明显，
+只能初步诊断，不称稳定27%/减分配/FPS/万单位收益；完整审计43checks和数据缺口都保留。
+详见 docs/verification/post-release-cpu-optimizations-2026-11-05.json。
+下一步应测组合renderer CPU/分配与真实拖缩，继续native-submit/重复帧尾部，不重跑已证负项来凑分，不把本批兼容通过当整体目标完成。
+
+---
+
+## 2026-11-05 历史发布交付：完整授权的1.4.3 macOS ARM64包，15项新默认及安装身份/踢出房间修复
 
 用户明确要求“打包一个macos版，提交推送github”，并随后明确“纳入本次发布”安装身份和被踢出房间界面两组改动。
 因此最终发布副本包含全部本批源码，不再排除下文历史选择中的11个文件；保留原工作区并在managed release副本构建。
