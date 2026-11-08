@@ -1,0 +1,7 @@
+// Use for automated checks while a graphical desktop is in use. Native window acceptance
+// must run separately, explicitly bound to an isolated virtual display.
+allprojects {
+    tasks.withType(Test).configureEach {
+        systemProperty "java.awt.headless", "true"
+    }
+}

@@ -481,7 +481,8 @@ val createJpackageImage by tasks.registering(Exec::class) {
             "--java-options", "-Dfile.encoding=UTF-8",
             "--java-options", "-Dorg.lwjgl.opengl.contextAPI=native",
             "--java-options", "-Dorg.lwjgl.system.stackSize=512",
-            "--java-options", "-Dlaunch.dir=\$ROOTDIR",
+            // Keep the installation root distinct from an explicit portable/test launch.dir.
+            "--java-options", "-Drwx.appDir=\$ROOTDIR",
             "--java-options", "--enable-native-access=ALL-UNNAMED",
             "--java-options", "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
             "--java-options", "--add-opens=java.desktop/sun.awt.im=ALL-UNNAMED",

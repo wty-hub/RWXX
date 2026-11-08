@@ -1,0 +1,68 @@
+{
+  "date": "2026-11-06",
+  "applicationVersion": "2.0.0",
+  "artifactSha256": "ca1b6f6bff16d045912b2218103326140ae770f887197ef44a6cc6d1f2241fb5",
+  "frozenArtifact": "build/authoritative-virtual/RWXX-2.0.0-kool-phase2-verified.jar",
+  "rootCause": "In-game MessageManager uses the native canvas text path, bypassing EmojiAwareText; the MSDF atlas has no emoji glyphs.",
+  "additionalDefect": "BMP emoji bases such as U+203C, U+2194 and U+24C2 were missing from cluster detection; VS16 was incorrectly accepted as a separate base.",
+  "fixes": [
+    "Native canvas records platform RGBA emoji clusters and measures mixed text consistently",
+    "BMP emoji base coverage restored; standalone variation selectors remain ordinary text",
+    "Actual MessageManager author/body/multiline route covered by regression"
+  ],
+  "unicodePropertyReference": "https://www.unicode.org/Public/17.0.0/ucd/emoji/emoji-data.txt",
+  "targetedTests": {
+    "canvas": 9,
+    "emojiClusters": 7,
+    "messageManager": 3,
+    "realDesktopFont": 1,
+    "failures": 0
+  },
+  "fullTests": {
+    "core": {
+      "tests": 614,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "desktop": {
+      "tests": 193,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "preview": "desktop/build/verification/in-game-chat-emoji-headless.png",
+  "previewSha256": "13842c2dbdfa25f983d9ae9a22edd899725b0ef1d4a06eb24f62aae230c530fc",
+  "previewScope": "CPU composition from recorded canvas commands with real desktop glyph pixels; not a native GPU screenshot of chat input.",
+  "realDesktopGlyphs": [
+    "🍎",
+    "🎮",
+    "🔥",
+    "🇨🇳",
+    "⚔️",
+    "🏆",
+    "‼️",
+    "↔️",
+    "Ⓜ️"
+  ],
+  "nativeRenderingEvidence": "desktop/build/authoritative/kool-phase2-v4/result.json",
+  "nativeRenderingScope": "Separate new-protocol stock-sprite and own-view replay GUI checks on an inactive virtual display; does not prove native in-game chat glyph display.",
+  "priorRecordUnchanged": "docs/verification/in-game-emoji-2.0.0-2026-11-05.json",
+  "legacyEquivalence": {
+    "baselineSha256": "f51f8c4ade1ccb1916e00dded559390ae10ac57eca090a8a31d6e96ad2ab5b13",
+    "scopePrefixes": [
+      "com/corrodinggames/rts/gameFramework/network/",
+      "com/corrodinggames/rts/gameFramework/Command",
+      "com/corrodinggames/rts/gameFramework/GameSaver",
+      "com/corrodinggames/rts/gameFramework/ReplayEngine",
+      "com/corrodinggames/rts/game/PlayerTeam",
+      "com/corrodinggames/rts/game/GameLogic",
+      "io/github/rwx/SwingKoolHost",
+      "io/github/rwx/DesktopWindowActivity"
+    ],
+    "comparedClasses": 101,
+    "changedClasses": [],
+    "passed": true
+  }
+}

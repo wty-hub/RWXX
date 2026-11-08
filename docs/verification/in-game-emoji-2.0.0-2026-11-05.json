@@ -1,0 +1,40 @@
+{
+  "applicationVersion": "2.0.0",
+  "artifactSha256": "de875e49a9e60046b6595c128bc2106811f709e8220f06ef1b9d36e52a800911",
+  "rootCause": "MessageManager native game text bypassed EmojiAwareText; MSDF atlas has no emoji glyphs. Message content was intact.",
+  "fix": "Record complete emoji clusters as platform-rasterized RGBA textures through existing frozen frame resources; measure mixed text consistently.",
+  "targetedTests": 9,
+  "fullTests": {
+    "core": {
+      "tests": 590,
+      "failures": 0,
+      "skipped": 1
+    },
+    "desktop": {
+      "tests": 177,
+      "failures": 0,
+      "headless": true
+    }
+  },
+  "preview": "desktop/build/verification/in-game-chat-emoji-headless.png",
+  "previewScope": "CPU composite of recorded canvas commands; real desktop font rasterizer and frozen resource ownership tested, not a native GPU screenshot.",
+  "priorLegacyArtifactSha256": "f51f8c4ade1ccb1916e00dded559390ae10ac57eca090a8a31d6e96ad2ab5b13",
+  "legacyEquivalence": {
+    "scopePrefixes": [
+      "com/corrodinggames/rts/gameFramework/network/",
+      "com/corrodinggames/rts/gameFramework/Command",
+      "com/corrodinggames/rts/gameFramework/GameSaver",
+      "com/corrodinggames/rts/gameFramework/ReplayEngine",
+      "com/corrodinggames/rts/game/PlayerTeam",
+      "com/corrodinggames/rts/game/GameLogic",
+      "io/github/rwx/SwingKoolHost",
+      "io/github/rwx/DesktopWindowActivity"
+    ],
+    "comparedClasses": 101,
+    "changedClasses": [],
+    "passed": true
+  },
+  "legacyRuntimeEvidence": "build/authoritative-virtual/review-appendix.json",
+  "legacyRuntimeScope": "Both 600 second directions ran against the prior frozen artifact. The listed legacy classes are byte-identical after this rendering-only fix.",
+  "newProtocolStatus": "Experimental tactical CLI, two players and limited stock actions; full native game UI and action roster remain outstanding."
+}
