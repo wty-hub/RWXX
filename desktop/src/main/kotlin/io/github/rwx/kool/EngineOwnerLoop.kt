@@ -86,7 +86,9 @@ internal class EngineOwnerLoop(
                 }
                 next.execute()
             }
-            if (!running.get()) break
+            // close() may race the empty peek above after an already accepted enqueue.
+            // Recheck the outer queue condition so those tasks are drained before exiting.
+            if (!running.get()) continue
             val now = System.nanoTime()
             if (resetClock) { previous = now; deadline = now; resetClock = false }
             if (now < deadline) {

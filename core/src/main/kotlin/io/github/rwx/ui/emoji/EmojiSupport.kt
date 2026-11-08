@@ -147,7 +147,15 @@ fun Int.isEmojiCodePoint(): Boolean =
             this in 0x2600..0x27BF || // Misc symbols, dingbats
             this in 0x2300..0x23FF || // Misc technical (⏳ etc.)
             this in 0x2B00..0x2BFF || // Misc arrows/symbols
-            this in 0xFE00..0xFE0F || // Variation selectors
+            // BMP emoji bases outside the blocks above (Unicode 17 Emoji property).
+            this == 0x00A9 || this == 0x00AE ||
+            this == 0x203C || this == 0x2049 ||
+            this == 0x2122 || this == 0x2139 ||
+            this in 0x2194..0x2199 || this in 0x21A9..0x21AA ||
+            this == 0x24C2 || this in 0x25AA..0x25AB ||
+            this == 0x25B6 || this == 0x25C0 || this in 0x25FB..0x25FE ||
+            this in 0x2934..0x2935 ||
+            // Variation selectors only modify a base; they cannot start an emoji run.
             this == COMBINING_ENCLOSING_KEYCAP ||
             this == 0x3030 ||
             this == 0x303D ||
@@ -202,4 +210,7 @@ object EmojiRasterizerBridge {
         rasterizer?.rasterize(emoji, sizePx.coerceIn(12, 128))
 
     fun isAvailable(): Boolean = rasterizer != null
+
+    /** Allows CPU canvas caches to distinguish platform rasterizers across host replacement. */
+    fun currentRasterizer(): EmojiRasterizer? = rasterizer
 }

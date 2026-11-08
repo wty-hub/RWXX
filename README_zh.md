@@ -59,6 +59,13 @@ RWX 的 P2P 联机、区域控制、地图联通和 JVM 模组能力构成本项
 ZIP 完整解压后，Windows 启动 `RWXX/RWXX.exe`，Linux 启动 `RWXX/bin/RWXX`，macOS 打开 `RWXX.app`。
 Android 安装包需要有效签名；自行构建的未签名 Release APK 不能直接安装。
 
+macOS 从 1.4.4 起将个人设置保存在 `~/Library/Application Support/rwx/preferences.toml`，
+替换或移动 `RWXX.app` 后仍会保留音量、画面、操作、快捷键、昵称和主题等设置。
+首次启动时，如果用户目录还没有配置，会复制当前应用目录内的旧 `preferences.toml`，保留原文件；已有配置不会被覆盖。
+从 1.4.3 及更早版本首次升级时，请先退出游戏，将旧应用内的 `RWXX.app/preferences.toml`
+备份到上述用户目录，再替换应用；已经随旧应用删除的配置无法自动恢复。
+手动指定 `-Dlaunch.dir=...` 时，配置继续保存在指定目录，便于便携运行和隔离验证。
+
 ## 从源码运行与构建
 
 构建需要 **JDK 25**。Android 构建还需要 Android SDK 36，并通过 `ANDROID_HOME` 或 `local.properties` 配置 SDK 路径。

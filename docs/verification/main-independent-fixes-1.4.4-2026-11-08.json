@@ -1,0 +1,129 @@
+{
+  "passed": true,
+  "applicationVersion": "1.4.4",
+  "branch": "main",
+  "baseCommit": "1a3bfbb46ea7285c6e3b26512aa0d0c1d862921f",
+  "changes": [
+    "Render in-game canvas emoji with the existing platform rasterizer and preserve compound clusters.",
+    "Persist macOS personal preferences outside the application bundle; retain portable overrides and existing user settings.",
+    "Drain already accepted owner-loop tasks during close.",
+    "Retain independent legacy-clock and windowless-emoji verification tools."
+  ],
+  "tests": {
+    "core": {
+      "tests": 547,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "desktop": {
+      "tests": 168,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "command": "./gradlew --no-daemon --max-workers=2 -I desktop/src/test/tools/headless-tests.init.gradle :core:test :desktop:test",
+  "log": "build/main-independent-fixes-20261108-v1/unit-build.log",
+  "logSha256": "be823b87147e6403b03cebc49cf3d070cb2a85ebc78b8e3211f03e34a917652a",
+  "files": [
+    {
+      "path": "core/src/main/kotlin/io/github/rwx/render/canvas/KoolGraphicsEngine.kt",
+      "sha256": "e247eb29e79e41fc93f1368e36b64fd7491c713882f4033a5a53110ec5c27189"
+    },
+    {
+      "path": "core/src/main/kotlin/io/github/rwx/ui/emoji/EmojiSupport.kt",
+      "sha256": "486c15689259acb259cba65f7a99ae9522cecb76bd3c2a15480bc2e1491df192"
+    },
+    {
+      "path": "core/src/test/kotlin/com/corrodinggames/rts/gameFramework/ui/MessageManagerTest.kt",
+      "sha256": "87fbe7cee723bc9968bc9995220cfff11d1d03dc4de02311fea32c2513d360ff"
+    },
+    {
+      "path": "core/src/test/kotlin/io/github/rwx/ui/emoji/EmojiSupportTest.kt",
+      "sha256": "1bafc7eb7184ec10e429907fc4e3b7191d005963a259b2b970fb20145355951e"
+    },
+    {
+      "path": "desktop/src/main/kotlin/io/github/rwx/kool/EngineOwnerLoop.kt",
+      "sha256": "907cd35f4cae3fd5a15043d2259fc74f60741843673fd2d282abd149d044c6b3"
+    },
+    {
+      "path": "core/src/main/kotlin/io/github/rwx/render/canvas/KoolCanvasEmojiText.kt",
+      "sha256": "5726c7a35e6afa31c165489986220811157aa7a80146132ddc655d736b2d4afa"
+    },
+    {
+      "path": "core/src/test/kotlin/io/github/rwx/render/canvas/KoolCanvasEmojiTextTest.kt",
+      "sha256": "d49035ad2f8c0ec2ab75af878785320537130e2fd97037977e5006db1278620f"
+    },
+    {
+      "path": "desktop/src/test/kotlin/com/corrodinggames/rts/gameFramework/ui/WindowlessInGameEmojiOracle.kt",
+      "sha256": "9cbc342922e9f8c5e654ac9b062eb6583e3d25478842d7a30188f719b282a43a"
+    },
+    {
+      "path": "desktop/src/test/kotlin/io/github/rwx/InGameEmojiCanvasTest.kt",
+      "sha256": "e97dcf28a29a1f496891d30f41ce3bdf0d4e5b152d310e129938784f1d63a8dd"
+    },
+    {
+      "path": "desktop/src/main/kotlin/io/github/rwx/DesktopPreferences.kt",
+      "sha256": "5cc5a3ffc85c17df52ed9d6385a10a56297b46cf57b2e8d58d856f1ee5805845"
+    },
+    {
+      "path": "desktop/src/test/kotlin/io/github/rwx/DesktopPreferencesTest.kt",
+      "sha256": "c4752f20814c32d208517c2cd34cc7219f537085aa8b7007e8e1b70d47c4037b"
+    },
+    {
+      "path": "desktop/src/test/kotlin/io/github/rwx/kool/DesktopClockNetworkPeer.kt",
+      "sha256": "0b676b11adbcf304332456d561698673dabd7acad770e1b6fb3987d4d2896eb1"
+    },
+    {
+      "path": "desktop/src/test/kotlin/io/github/rwx/kool/DesktopGameLoopDeltaAcceptance.kt",
+      "sha256": "2888806b8bc6a9e9c5026a4351d5d3f813ec664dd9eb3a3f07d57e534d87c25e"
+    },
+    {
+      "path": "desktop/src/test/tools/headless-tests.init.gradle",
+      "sha256": "2db1f1951f48476ef60e5f369541b19566df3dbda67f6ca5f4d512951bfef752"
+    },
+    {
+      "path": "docs/verification/in-game-emoji-2.0.0-2026-11-05.json",
+      "sha256": "aa8591c37e1d55ee4bfc6d34f7d56947724a00959a62461fa4aaa9b44a46e4fa"
+    },
+    {
+      "path": "docs/verification/in-game-emoji-coverage-2.0.0-2026-11-06.json",
+      "sha256": "b7b1d0c6735d835099b0398db3960be1373fdbfa461a5734756be678b1b9c444"
+    },
+    {
+      "path": "docs/verification/in-game-emoji-gpu-2.0.0-2026-11-06.json",
+      "sha256": "3e9aa222b9c22078f766cddea8e6a8f16be6bfcc22d831d81a7d4f8fea9289b3"
+    },
+    {
+      "path": "README.md",
+      "sha256": "134594816c92c35f8b25e03f6102f0f91065b5ea6137b2cf290c63701f00e70f"
+    },
+    {
+      "path": "README_zh.md",
+      "sha256": "92597a43feaef98ddaa042520a8d9b13ff4e68f14f935bab97d2820c2bc181a3"
+    },
+    {
+      "path": "desktop/build.gradle.kts",
+      "sha256": "e0c65e805c57a0829cd72b25bc505dfa60ce2ff9e8fc85a4898923e81202d04a"
+    },
+    {
+      "path": "desktop/src/main/kotlin/io/github/rwx/DesktopPlatform.kt",
+      "sha256": "d6f524a0ac6161ea512740e50f7516273e935356eca94cb7c4c07d3ef7c376c9"
+    },
+    {
+      "path": "desktop/src/main/kotlin/io/github/rwx/HeadlessMain.kt",
+      "sha256": "13a93151204a8705157fd124f2daa440b81cc12119bbc77c0f40973b1814f39b"
+    },
+    {
+      "path": "gradle.properties",
+      "sha256": "dea5d7f0cff73a17104e135a11857a9a7dd007e583e3b65899db9309e3f37478"
+    },
+    {
+      "path": "core/src/main/kotlin/io/github/rwx/PlatformBridge.kt",
+      "sha256": "d5908e736d9862ef77bb0a5e935f32559e9096e538442fe73b2a8ef3a00ee84a"
+    }
+  ],
+  "newProtocolSourcesIncluded": false,
+  "scope": "Complete core and desktop headless unit tests on main. New protocol development remains only on codex/authoritative-v7. Existing historical2.0.0 emoji visual records retain their original versions and fingerprints; no new GUI, application installation or release-package verification claim."
+}

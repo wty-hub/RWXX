@@ -13,6 +13,8 @@ import de.fabmax.kool.util.Uint8Buffer
 import io.github.rwx.geometry.Rect
 import io.github.rwx.geometry.RectF
 import io.github.rwx.trimAssetPath
+import io.github.rwx.ui.emoji.EmojiRasterizerBridge
+import io.github.rwx.ui.emoji.containsEmoji
 import kotlinx.coroutines.runBlocking
 import java.io.*
 import java.lang.ref.WeakReference
@@ -92,6 +94,7 @@ class KoolGraphicsEngine private constructor(
     )
 
     private var viewport = KoolCanvasViewport(0, 0)
+    private var emojiText: KoolCanvasEmojiText? = null
     private val fallbackTexture = Texture().apply {
         p = 1
         q = 1
@@ -185,6 +188,7 @@ class KoolGraphicsEngine private constructor(
 
     fun beginFrame(width: Int, height: Int) {
         releasePendingImmediateFrameSnapshots()
+        emojiText?.beginFrame()
         viewport = KoolCanvasViewport(width.coerceAtLeast(0), height.coerceAtLeast(0))
         commandBuffer.beginFrame(viewport)
         drawRoleStack.clear()
@@ -509,7 +513,12 @@ class KoolGraphicsEngine private constructor(
     }
 
     override fun a(str: String?, f: Float, f2: Float, paint: KoolPaint?) {
-        commandBuffer.drawText(str.orEmpty(), KoolCanvasPoint(f, f2), paint.toCanvasPaint())
+        val text = str.orEmpty()
+        val baseline = KoolCanvasPoint(f, f2)
+        val recordedPaint = paint.toCanvasPaint()
+        if (emojiRecorder(text)?.draw(text, baseline, recordedPaint, commandBuffer) != true) {
+            commandBuffer.drawText(text, baseline, recordedPaint)
+        }
     }
 
     override fun a(str: String?, f: Float, f2: Float, paint: KoolPaint?, paint2: KoolPaint?, f3: Float) {
@@ -536,11 +545,12 @@ class KoolGraphicsEngine private constructor(
         ).roundToInt().coerceAtLeast(1)
 
     override fun b(str: String?, paint: KoolPaint?): Int =
-        KoolCanvasFontRegistry.textWidth(
+        (emojiRecorder(str.orEmpty())?.width(str.orEmpty(), paint?.textSize()?.coerceAtLeast(1f) ?: DEFAULT_TEXT_SIZE, paint.typefaceKey())
+            ?: KoolCanvasFontRegistry.textWidth(
             text = str.orEmpty(),
             sizePts = paint?.textSize()?.coerceAtLeast(1f) ?: DEFAULT_TEXT_SIZE,
             key = paint.typefaceKey(),
-        ).roundToInt().coerceAtLeast(if (str.isNullOrEmpty()) 0 else 1)
+        )).roundToInt().coerceAtLeast(if (str.isNullOrEmpty()) 0 else 1)
 
     override fun a(texture: Texture?, f: Float, f2: Float, f3: Float, paint: KoolPaint?) {
         if (texture == null) return
@@ -2434,6 +2444,7 @@ class KoolGraphicsEngine private constructor(
         val id = texture.toCanvasTextureId()
         targetStates.remove(texture)?.let { state ->
             state.engine.releasePendingImmediateFrameSnapshots()
+            state.engine.emojiText?.clear()
             state.releaseAuxiliaryTextures(textureStore)
             state.engine.registeredImmediatePixels.remove(id)
             state.engine.registeredImmediateFrames.remove(id)
@@ -3013,6 +3024,11 @@ class KoolGraphicsEngine private constructor(
         c()
 
     private fun KoolPaint?.typefaceKey(): String? = this?.typeface()?.koolKey
+
+    private fun emojiRecorder(text: String): KoolCanvasEmojiText? {
+        if (!EmojiRasterizerBridge.isAvailable() || !text.containsEmoji()) return null
+        return emojiText ?: KoolCanvasEmojiText(textureStore).also { emojiText = it }
+    }
 
     private fun multiplyChannel(source: Int, multiply: Int): Int = (source * multiply) / 255
 

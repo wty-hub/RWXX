@@ -62,6 +62,14 @@ For desktop use, choose the `desktop.zip` matching your OS and architecture; it 
 After extracting the ZIP, launch `RWXX/RWXX.exe` on Windows, `RWXX/bin/RWXX` on Linux, or `RWXX.app` on macOS.
 Android packages require a valid signature; an unsigned Release APK built locally cannot be installed directly.
 
+Starting with 1.4.4, macOS stores personal settings in `~/Library/Application Support/rwx/preferences.toml`,
+so replacing or moving `RWXX.app` preserves audio, graphics, controls, key bindings, player name, and theme settings.
+On first launch, an existing `preferences.toml` in the current application directory is copied there if no user settings exist.
+The original is kept, and existing user settings are never replaced.
+For the first upgrade from 1.4.3 or earlier, quit the game and back up the old app's `RWXX.app/preferences.toml`
+to that user directory before replacing the app. Settings already deleted with the old app cannot be recovered automatically.
+An explicit `-Dlaunch.dir=...` keeps preferences in that directory for portable launches and isolated verification.
+
 ## Run and build from source
 
 Building requires **JDK 25**. Android builds also require Android SDK 36, configured through `ANDROID_HOME` or `local.properties`.

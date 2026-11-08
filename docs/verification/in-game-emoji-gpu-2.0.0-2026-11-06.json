@@ -1,0 +1,295 @@
+{
+  "date": "2026-11-06",
+  "applicationVersion": "2.0.0",
+  "passed": true,
+  "artifact": {
+    "path": "build/authoritative-virtual/RWXX-2.0.0-phase4-headless-v3.jar",
+    "sha256": "27d72f6200678a846fd093d4074ffd86d3310df618a1ec2e4bcf8a1f3cc2a3ea",
+    "sizeBytes": 126083712
+  },
+  "scope": "Real MessageManager recording, frozen packet, production SceneHost and windowless Vulkan MSAA4 offscreen readback; not a complete multiplayer game window or network chat delivery test",
+  "productionJarChanged": false,
+  "nativeGameWindowVerified": false,
+  "networkChatDeliveryVerified": false,
+  "physicalOrVirtualDisplayCreated": false,
+  "foregroundWindowActivated": false,
+  "gpuResult": {
+    "path": "desktop/build/verification/emoji-windowless-v4/result.json",
+    "sha256": "82869f75775f2780a17590d0e20f960450ba1b516560e751ec2b5e7e29ef5b75",
+    "sizeBytes": 7760
+  },
+  "gpuImage": {
+    "path": "desktop/build/verification/emoji-windowless-v4/gpu-chat.png",
+    "sha256": "92a97c4edf62d8d73dae6f7a51e63ea499881d9fb514867bb27b1a4adebd95ad",
+    "sizeBytes": 33714
+  },
+  "launch": {
+    "path": "desktop/build/verification/emoji-windowless-v4-launch.json",
+    "sha256": "9195f71219b65d80ad382a03a8e225019aac34e68f44a4c3279beeb8f9d95dad",
+    "sizeBytes": 1510
+  },
+  "log": {
+    "path": "desktop/build/verification/emoji-windowless-v4.log",
+    "sha256": "83e52b1265e4f79cc3e764bbd05c342a01743604015f5b96c45fe4f04fcbac84",
+    "sizeBytes": 12522
+  },
+  "oracleSource": {
+    "path": "desktop/build/verification/emoji-windowless-v4-oracle.kt",
+    "sha256": "9cbc342922e9f8c5e654ac9b062eb6583e3d25478842d7a30188f719b282a43a",
+    "sizeBytes": 23553
+  },
+  "compiledTestClassSnapshot": {
+    "path": "build/authoritative-virtual/emoji-windowless-v4-tested-classes",
+    "classCount": 185,
+    "manifest": {
+      "path": "desktop/build/verification/emoji-windowless-v4-test-classes.json",
+      "sha256": "91323ce00beb5219195c090ff51be620ab4ae3cfcbb4b321cd782440d622d62e",
+      "sizeBytes": 40425
+    }
+  },
+  "fontInputs": [
+    {
+      "path": "assets/font/NotoSansCJKsc-Regular.json",
+      "sha256": "85cc85ca6e75e283e1651c524bf3e6223cdc864485d8c0c37786b95aad4d159b",
+      "sizeBytes": 1570182
+    },
+    {
+      "path": "assets/font/NotoSansCJKsc-Regular.png",
+      "sha256": "153bbd9c6a49fb69e8efaf3c0de4182f436d41830f82a26fa4cd4915b2eb48bb",
+      "sizeBytes": 15144224
+    }
+  ],
+  "auditedMoltenVk": {
+    "resource": "macos/arm64/org/lwjgl/vulkan/libMoltenVK.dylib",
+    "sha1": "529d3f0cf2f50e8df3d0dd2ec5fe8b9230a037a0",
+    "sha256": "e2ed95ad33fb38251ba990e0dcc54b1fb8b660c6257878cba6b30c7833983b87"
+  },
+  "emoji": [
+    {
+      "cluster": "🍎",
+      "sourceWidth": 45,
+      "sourceHeight": 48,
+      "left": 161.31201,
+      "top": 64.2,
+      "right": 206.31201,
+      "bottom": 112.2,
+      "visibleGpuPixels": 1427,
+      "colorfulGpuPixels": 1410,
+      "sourceColorPixels": 1470,
+      "gpuColorPixels": 1410,
+      "opaqueRasterSamplesCompared": 1249,
+      "maximumRgbDelta": 1,
+      "allowedRgbDelta": 16
+    },
+    {
+      "cluster": "🇨🇳",
+      "sourceWidth": 49,
+      "sourceHeight": 38,
+      "left": 339.896,
+      "top": 64.2,
+      "right": 401.79074,
+      "bottom": 112.2,
+      "visibleGpuPixels": 2363,
+      "colorfulGpuPixels": 2357,
+      "sourceColorPixels": 1538,
+      "gpuColorPixels": 2357,
+      "opaqueRasterSamplesCompared": 2210,
+      "maximumRgbDelta": 1,
+      "allowedRgbDelta": 16
+    },
+    {
+      "cluster": "🎮",
+      "sourceWidth": 48,
+      "sourceHeight": 34,
+      "left": 412.54276,
+      "top": 64.2,
+      "right": 480.30746,
+      "bottom": 112.2,
+      "visibleGpuPixels": 2049,
+      "colorfulGpuPixels": 132,
+      "sourceColorPixels": 48,
+      "gpuColorPixels": 132,
+      "opaqueRasterSamplesCompared": 1748,
+      "maximumRgbDelta": 1,
+      "allowedRgbDelta": 16
+    },
+    {
+      "cluster": "🔥",
+      "sourceWidth": 39,
+      "sourceHeight": 48,
+      "left": 491.05948,
+      "top": 64.2,
+      "right": 530.05945,
+      "bottom": 112.2,
+      "visibleGpuPixels": 1036,
+      "colorfulGpuPixels": 1032,
+      "sourceColorPixels": 1057,
+      "gpuColorPixels": 1032,
+      "opaqueRasterSamplesCompared": 871,
+      "maximumRgbDelta": 1,
+      "allowedRgbDelta": 16
+    },
+    {
+      "cluster": "⚔️",
+      "sourceWidth": 27,
+      "sourceHeight": 29,
+      "left": 540.81146,
+      "top": 64.2,
+      "right": 585.5011,
+      "bottom": 112.2,
+      "visibleGpuPixels": 832,
+      "colorfulGpuPixels": 0,
+      "sourceColorPixels": 0,
+      "gpuColorPixels": 0,
+      "opaqueRasterSamplesCompared": 77,
+      "maximumRgbDelta": 0,
+      "allowedRgbDelta": 16
+    },
+    {
+      "cluster": "🏆",
+      "sourceWidth": 48,
+      "sourceHeight": 48,
+      "left": 596.2531,
+      "top": 64.2,
+      "right": 644.2531,
+      "bottom": 112.2,
+      "visibleGpuPixels": 1099,
+      "colorfulGpuPixels": 1064,
+      "sourceColorPixels": 1082,
+      "gpuColorPixels": 1064,
+      "opaqueRasterSamplesCompared": 764,
+      "maximumRgbDelta": 1,
+      "allowedRgbDelta": 16
+    },
+    {
+      "cluster": "‼️",
+      "sourceWidth": 20,
+      "sourceHeight": 37,
+      "left": 655.0051,
+      "top": 64.2,
+      "right": 680.95105,
+      "bottom": 112.2,
+      "visibleGpuPixels": 476,
+      "colorfulGpuPixels": 0,
+      "sourceColorPixels": 0,
+      "gpuColorPixels": 0,
+      "opaqueRasterSamplesCompared": 163,
+      "maximumRgbDelta": 0,
+      "allowedRgbDelta": 16
+    },
+    {
+      "cluster": "↔️",
+      "sourceWidth": 48,
+      "sourceHeight": 21,
+      "left": 691.70306,
+      "top": 64.2,
+      "right": 801.41736,
+      "bottom": 112.2,
+      "visibleGpuPixels": 1837,
+      "colorfulGpuPixels": 0,
+      "sourceColorPixels": 0,
+      "gpuColorPixels": 0,
+      "opaqueRasterSamplesCompared": 485,
+      "maximumRgbDelta": 1,
+      "allowedRgbDelta": 16
+    },
+    {
+      "cluster": "Ⓜ️",
+      "sourceWidth": 50,
+      "sourceHeight": 49,
+      "left": 812.1694,
+      "top": 64.2,
+      "right": 861.149,
+      "bottom": 112.2,
+      "visibleGpuPixels": 902,
+      "colorfulGpuPixels": 0,
+      "sourceColorPixels": 0,
+      "gpuColorPixels": 0,
+      "opaqueRasterSamplesCompared": 167,
+      "maximumRgbDelta": 0,
+      "allowedRgbDelta": 16
+    }
+  ],
+  "maximumObservedRgbDelta": 1,
+  "realFenceCheckpoint": true,
+  "sourceTexturesUnregisteredBeforeGpuUpload": true,
+  "frozenResourceCount": 9,
+  "frameLeaseReleased": true,
+  "pendingRetirements": 0,
+  "retirementsRequested": 2,
+  "retirementsCompleted": 2,
+  "ownedFontReleased": true,
+  "imageVisuallyReviewed": true,
+  "earlierAttempts": [
+    {
+      "passed": false,
+      "result": {
+        "path": "desktop/build/verification/emoji-windowless-v1/result.json",
+        "sha256": "ea60eca1d13d9bb5eba95ee2c03ec82f7dd72f6e22d6ae7674d39c4832dd0eed",
+        "sizeBytes": 3830
+      },
+      "launch": {
+        "path": "desktop/build/verification/emoji-windowless-v1-launch.json",
+        "sha256": "1a03220427b76178d24988d8e855c9b772906a82565b4903a7c80cb166b1d724",
+        "sizeBytes": 1510
+      },
+      "reason": "New test incorrectly required raw transparent RGB to equal the pre-bleed raster; production registration intentionally fills RGB only where alpha is zero.",
+      "productionChangeRequired": false
+    },
+    {
+      "passed": false,
+      "result": {
+        "path": "desktop/build/verification/emoji-windowless-v2/result.json",
+        "sha256": "dcb2d91889477e3c2eceee23f6819ae6f957018f800916e6ea6bc6b1dd577aef",
+        "sizeBytes": 8315
+      },
+      "launch": {
+        "path": "desktop/build/verification/emoji-windowless-v2-launch.json",
+        "sha256": "c7bc64bd8193a99fab359be385929684aac916a16cd5abeaf14fb281f4bbeb7c",
+        "sizeBytes": 1510
+      },
+      "reason": "New test incorrectly required inherently monochrome source glyphs to contain colored GPU pixels; crossed swords was visible but monochrome.",
+      "productionChangeRequired": false
+    },
+    {
+      "pixelResultReportedPassed": true,
+      "knownNativeResourceDiagnosticsPassed": false,
+      "result": {
+        "path": "desktop/build/verification/emoji-windowless-v3/result.json",
+        "sha256": "3efbf726862950d480f52ab81108917bfdf866afa071475fea48a8d47787b1c8",
+        "sizeBytes": 7685
+      },
+      "log": {
+        "path": "desktop/build/verification/emoji-windowless-v3.log",
+        "sha256": "b9f68d5b41863a6a38a4f446798181ad90bb1d19f4a5085a6c99ce04b8c7b8d5",
+        "sizeBytes": 12918
+      },
+      "launch": {
+        "path": "desktop/build/verification/emoji-windowless-v3-launch.json",
+        "sha256": "0aec97d65f28fe444a8d339d7c51e43f6091628d3db50517102891e00dff3fb2",
+        "sizeBytes": 1510
+      },
+      "summaryAtThatStage": {
+        "path": "desktop/build/verification/emoji-windowless-v3-summary.json",
+        "sha256": "5cc6d460ab61e2e8ad9dc41567c49b1eef661a2bb02d7d632e03f46332c7b5de",
+        "sizeBytes": 8393
+      },
+      "reason": "GPU pixels passed, but shutdown reported one test-owned sprite atlas as leaked; final v4 adds explicit local atlas disposal and six real delayed-release frames.",
+      "productionChangeRequired": false
+    }
+  ],
+  "limitations": [
+    "Actual MessageManager recording and production SceneHost GPU rendering are verified; no complete running multiplayer window or network delivery is claimed.",
+    "Some source glyphs are monochrome. Color is compared to the independent source raster; apple and flag explicitly require colored source and GPU pixels.",
+    "This test does not replace the installed 1.4.4 application."
+  ],
+  "rendererSpriteAtlasExplicitlyCleared": true,
+  "delayedReleaseFramesPumped": 6,
+  "knownNativeResourceDiagnostics": {
+    "passed": true,
+    "leakedImageWarnings": 0,
+    "scope": "Known cleanup diagnostics for this test process, not a general GPU/heap allocation audit.",
+    "fixtureLogNote": "The minimal SettingsEngine fixture logs its Koin-uninitialized fallback; no production application bootstrap is claimed."
+  },
+  "sameImageBytesAsVisuallyReviewedV3": true
+}

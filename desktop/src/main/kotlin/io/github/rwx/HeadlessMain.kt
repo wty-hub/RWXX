@@ -249,7 +249,7 @@ object HeadlessMain {
         return messages.any { message -> messageTextField.get(message) == UNEXPECTED_REPLAY_END }
     }
 
-    private fun configureHeadlessPlatform() {
+    internal fun configureHeadlessPlatform() {
         GameEngine.isMenuBackgroundDisabled = true
         GameEngine.isNonAndroidVersion = true
         GameEngine.isDesktopInitialized = true

@@ -30,7 +30,10 @@ class DesktopPlatformBridge(
 ) : PlatformBridge {
     override val storage: DesktopPlatformStorage = DesktopPlatformStorage()
     override val preferenceStorage: PreferenceStorage = TomlPreferenceStorage(
-        storage.location("/SD/rustedWarfare/", File(storage.rootDir.file, "${PREFERENCE_NAME}.toml"))
+        storage.location(
+            "/SD/rustedWarfare/",
+            DesktopPreferences.resolveFile(storage.baseDir, storage.localBaseDir),
+        )
     ).also { InstallationIdentity.loadOrCreate(it) }
     override val appMetadata: AppMetadata = AppMetadata()
     override val logger: AppLogger = DesktopLogger()
@@ -231,7 +234,8 @@ class DesktopPlatformStorage : PlatformStorage {
             }
         }
         fun defaultRoot(): File {
-            val launchDir = System.getProperty("launch.dir")
+            // launch.dir is an explicit portable/test override; appDir is the packaged app root.
+            val launchDir = System.getProperty("launch.dir") ?: System.getProperty("rwx.appDir")
             if (launchDir != null) {
                 return File(launchDir)
             }

@@ -6,11 +6,40 @@ import com.corrodinggames.rts.gameFramework.SettingsEngine
 import io.github.rwx.render.canvas.KoolCanvasCommand
 import io.github.rwx.render.canvas.KoolCanvasCpuTextureStore
 import io.github.rwx.render.canvas.KoolGraphicsEngine
+import io.github.rwx.ui.emoji.EmojiRaster
+import io.github.rwx.ui.emoji.EmojiRasterizer
+import io.github.rwx.ui.emoji.EmojiRasterizerBridge
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class MessageManagerTest {
+    @Test
+    fun `in game player chat sends complete emoji clusters through the canvas image path`() {
+        val previous = EmojiRasterizerBridge.currentRasterizer()
+        val clusters = mutableListOf<String>()
+        val rasterizer = object : EmojiRasterizer {
+            override fun rasterize(emoji: String, sizePx: Int): EmojiRaster {
+                clusters += emoji
+                return EmojiRaster(2, 2, ByteArray(16) { 0xff.toByte() })
+            }
+        }
+        EmojiRasterizerBridge.install(rasterizer)
+        try {
+            withMessages { _, manager, graphics ->
+                manager.addMessage("玩家🍎", "来了 🇨🇳\n👨‍👩‍👧 🎮")
+                manager.draw(0f, 95)
+                val frame = graphics.snapshot()
+                assertEquals(listOf("🍎", "🇨🇳", "👨‍👩‍👧", "🎮"), clusters)
+                assertEquals(4, frame.commands.filterIsInstance<KoolCanvasCommand.DrawTexture>().size)
+                assertEquals("玩家: 来了  ", frame.commands.filterIsInstance<KoolCanvasCommand.DrawText>().joinToString("") { it.text })
+            }
+        } finally {
+            EmojiRasterizerBridge.uninstall(rasterizer)
+            previous?.let(EmojiRasterizerBridge::install)
+        }
+    }
+
     @Test
     fun `multiline server help leaves space before the next player message`() = withMessages { _, manager, graphics ->
         manager.addMessage("玩家", "来了")
