@@ -1,0 +1,116 @@
+{
+  "status": "branch-separation-verified-protocol-development-incomplete",
+  "date": "2026-11-08",
+  "branch": "codex/authoritative-v7",
+  "localBranchOnly": true,
+  "protocolRoot": "/Users/wty/.codex/worktrees/authoritative-v7/RWXX",
+  "main": {
+    "root": "/Users/wty/code/RWXX",
+    "branch": "main",
+    "head": "1a3bfbb46ea7285c6e3b26512aa0d0c1d862921f",
+    "version": "1.4.3",
+    "headUnchanged": true,
+    "stagingPreservedEmpty": true,
+    "independentFilesSha256Matched": 22,
+    "newProtocolSourcesRemoved": true,
+    "tests": {
+      "core": {
+        "tests": 547,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1,
+        "suites": 132
+      },
+      "desktop": {
+        "tests": 168,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "suites": 40
+      }
+    },
+    "proof": {
+      "path": "desktop/build/verification/authoritative-v7-branch-split-2026-11-08-v1/main-1x-unit-results/result.json",
+      "sha256": "d70d5578d016cc5da0325b413d854904211e8b8197d3a3df1016f077cdb1a8c7"
+    }
+  },
+  "protocol": {
+    "applicationVersion": "2.2.0",
+    "wireVersion": 7,
+    "originalCompatibilityVersion": 176,
+    "sourceCommit": "033cccea6328b4c94839b27759966aeccd6c311e",
+    "tests": {
+      "core": {
+        "tests": 1115,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1,
+        "suites": 214
+      },
+      "desktop": {
+        "tests": 306,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "suites": 64
+      }
+    },
+    "identityIsolationTests": 6,
+    "proof": {
+      "path": "desktop/build/verification/authoritative-v7-branch-split-2026-11-08-v1/protocol-branch-unit-results/result.json",
+      "sha256": "768d6df42d5e2f3ebd6b9696d7ec0d260197cc69eb04c703f6eb537af85edb84"
+    },
+    "jar": {
+      "path": "desktop/build/libs/RWXX-Timeline-2.2.0-all.jar",
+      "bytes": 178508386,
+      "sha256": "c03e644b46f51972116d722611e4ae00a878f91cb51d9124602b5a313e469901"
+    }
+  },
+  "commits": {
+    "sharedExistingFixes": "9db35d2cd76f69fd85b5496f7cac0e1db10d73ec",
+    "protocolSnapshot": "4deeecae3c9d7ee65b866f54026d585b31a38167",
+    "branchIdentity": "033cccea6328b4c94839b27759966aeccd6c311e"
+  },
+  "identity": {
+    "appName": "RWXX-Timeline",
+    "desktopUserDirectory": "rwx-timeline",
+    "androidApplicationId": "io.github.rwx.timeline",
+    "macPackageIdentifier": "io.github.rwx.timeline",
+    "androidAndJpackageConfiguredOnly": true,
+    "noAppInstalled": true
+  },
+  "migration": {
+    "sourceFilesWithExactCopiedSha256": 335,
+    "protocolFilesRemovedFromMain": 290,
+    "trackedProtocolFilesRestored": 23,
+    "independentFilesRetained": 22,
+    "allSourceSnapshotBackup": "/Users/wty/.codex/backups/RWXX/fork-split-20261108-v1/source-before-split.tar",
+    "snapshotProof": {
+      "path": "desktop/build/verification/authoritative-v7-branch-split-2026-11-08-v1/source-manifest.json",
+      "sha256": "978a9d808a010b0582bc5711ab6d9bfd90833a6b77377702a104f17a779b333a"
+    },
+    "splitProof": {
+      "path": "desktop/build/verification/authoritative-v7-branch-split-2026-11-08-v1/source-split-result.json",
+      "sha256": "636b777c4043dd7e1f4a020925c5af5de2d194fa790c9f0eb6ca40e0fb68d11d"
+    },
+    "evidenceMoveProof": {
+      "path": "desktop/build/verification/authoritative-v7-branch-split-2026-11-08-v1/evidence-move-result.json",
+      "sha256": "cfd19b823ee691455349101ad11519f6869b059e9f0cb7f78d635a0b3b7e008b"
+    },
+    "historicalReportsRewritten": false
+  },
+  "referenceChecks": {
+    "normal": 43,
+    "optimized": 43,
+    "proof": {
+      "path": "desktop/build/verification/authoritative-v7-branch-split-2026-11-08-v1/reference-result.json",
+      "sha256": "66a8ed720726caafa89cc8f64165edc1c9d758a4d8901efc2f8788f8718cbea7"
+    }
+  },
+  "capacity": {
+    "passed": false,
+    "scope": "No native, real-TLS, GUI, network-impairment or65k/60Hz test rerun in this branch-separation task. Prior evidence remains bound to its original frozen artifacts.",
+    "priorDevelopmentRecord": "docs/verification/authoritative-v7-development-2.2.0-2026-11-07-v7.json"
+  },
+  "nextWork": "Continue full capacity, compact/shared Producer and engine work only in protocolRoot; historical controller scripts with the old main root must be adapted before running."
+}

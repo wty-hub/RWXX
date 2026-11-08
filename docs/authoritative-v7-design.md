@@ -2,6 +2,8 @@
 
 状态：开发中，完整运行与发布验收未完成。日期：2026-11-07。
 
+2026-11-08 起在长期分支 `codex/authoritative-v7` 继续开发，`main` 保留 1.x。分支与数据隔离见[开发线说明](authoritative-v7-branch.md)及[隔离验证记录](verification/authoritative-v7-branch-split-2.2.0-2026-11-08.json)。历史运行记录仍绑定原始产物。
+
 当前冻结开发产物的分项测试、失败的容量压测及待验收项见[开发验证记录](verification/authoritative-v7-development-2.2.0-2026-11-07-v7.json)。该记录绑定具体产物，不代表后续修改已经验证；[前一份记录](verification/authoritative-v7-development-2.2.0-2026-11-07-v6.json)保留原始产物与结果。
 
 本批开发版本为 `2.2.0`，目标协议为 `7`。最近完成完整验收的冻结产物仍为 `2.1.0`、wire `6`，[v6 客户端规范](authoritative-wire-v6.md)与[验证记录](verification/authoritative-v6-2.1.0-2026-11-07.json)保留其原始结果，不能作为 v7 的性能或正确性证据。本文规定重设计目标、模型约束与实施验收方法；单独通过核心测试或网络劣化工具不等于 v7 对局已通过。v7 的最终字段宽度、枚举、消息顺序和逐字节编码由[主规范](authoritative-wire-v7.md)统一定义；下文概念字段不是另一份编码规范。
