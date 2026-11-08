@@ -35,6 +35,10 @@ object KoolDesktopMain : KoinComponent {
 
     @JvmStatic
     fun main(args: Array<String>) {
+        if (AuthoritativeDesktopMain.handlesArguments(args)) {
+            AuthoritativeDesktopMain.main(args)
+            return
+        }
         if (HEADLESS_FLAG in args) {
             System.setProperty("java.awt.headless", "true")
             HeadlessMain.main(args)

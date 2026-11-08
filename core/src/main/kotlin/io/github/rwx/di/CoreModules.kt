@@ -1,6 +1,7 @@
 package io.github.rwx.di
 
 import io.github.rwx.PlatformStorage
+import io.github.rwx.PlatformBridge
 import io.github.rwx.PreferenceStorage
 import io.github.rwx.mod.ModRepository
 import io.github.rwx.net.ResourceBrowserRepository
@@ -111,6 +112,7 @@ val coreModule = module {
         MultiplayerSceneHost(
             model = parameters.getOrNull<SettingsModel>() ?: SettingsModel(),
             onAction = parameters.getOrNull<(MultiplayerAction) -> Unit>() ?: {},
+            showAuthoritativeControls = getOrNull<PlatformBridge>()?.authoritativeRooms != null,
         )
     }
     factory { parameters ->

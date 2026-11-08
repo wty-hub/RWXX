@@ -2097,6 +2097,201 @@ object I18n {
             ),
         )
 
+        object authority {
+            val create = entry(
+                key = "multiplayer.authority.create",
+                translations = linkedMapOf(
+                    "en" to "Create room",
+                    "zh-CN" to "创建房间",
+                ),
+            )
+
+            val endpointHint = entry(
+                key = "multiplayer.authority.endpointHint",
+                translations = linkedMapOf(
+                    "en" to "192.168.1.2:5124",
+                    "zh-CN" to "192.168.1.2:5124",
+                ),
+            )
+
+            val endpointLabel = entry(
+                key = "multiplayer.authority.endpointLabel",
+                translations = linkedMapOf(
+                    "en" to "Reachable server address:port",
+                    "zh-CN" to "对方可连接的地址:端口",
+                ),
+            )
+
+            val failedHost = entry(
+                key = "multiplayer.authority.failedHost",
+                translations = linkedMapOf(
+                    "en" to "Unable to start the room. Check the address, port and local permissions, then try again.",
+                    "zh-CN" to "无法启动房间。请检查地址、端口和本机权限后重试。",
+                ),
+            )
+
+            val failedJoin = entry(
+                key = "multiplayer.authority.failedJoin",
+                translations = linkedMapOf(
+                    "en" to "Unable to open the player window. Check that the complete invitation is correct and the room is running.",
+                    "zh-CN" to "无法打开玩家窗口。请确认完整邀请正确，且房间仍在运行。",
+                ),
+            )
+
+            val hostButton = entry(
+                key = "multiplayer.authority.hostButton",
+                translations = linkedMapOf(
+                    "en" to "Experimental: Host",
+                    "zh-CN" to "实验新协议：创建",
+                ),
+            )
+
+            val hostInfo = entry(
+                key = "multiplayer.authority.hostInfo",
+                translations = linkedMapOf(
+                    "en" to "Experimental: Small Island for two players, with limited movement, combat, construction and production. Enter an address the other player can reach, then share the generated private invitation. The game opens in a separate window. The host can inspect the complete game state.",
+                    "zh-CN" to "实验新协议：Small Island 双人地图，支持移动、战斗、建造和生产等有限操作。请填写对方可连接的地址，创建后分享生成的私人邀请。游戏将在独立窗口中打开。房主能读取完整战局状态。",
+                ),
+            )
+
+            val hostTitle = entry(
+                key = "multiplayer.authority.hostTitle",
+                translations = linkedMapOf(
+                    "en" to "Create experimental protocol room",
+                    "zh-CN" to "创建实验新协议房间",
+                ),
+            )
+
+            val invalidEndpoint = entry(
+                key = "multiplayer.authority.invalidEndpoint",
+                translations = linkedMapOf(
+                    "en" to "Enter a reachable server address and port, for example 192.168.1.2:5124.",
+                    "zh-CN" to "请输入对方可连接的服务器地址与端口，例如 192.168.1.2:5124。",
+                ),
+            )
+
+            val invalidInvitation = entry(
+                key = "multiplayer.authority.invalidInvitation",
+                translations = linkedMapOf(
+                    "en" to "Paste the complete room invitation.",
+                    "zh-CN" to "请粘贴完整房间邀请。",
+                ),
+            )
+
+            val invalidName = entry(
+                key = "multiplayer.authority.invalidName",
+                translations = linkedMapOf(
+                    "en" to "Enter a player name without control characters (up to 128 UTF-8 bytes).",
+                    "zh-CN" to "请输入不含控制字符的玩家名称（最多 128 个 UTF-8 字节）。",
+                ),
+            )
+
+            val invitationHint = entry(
+                key = "multiplayer.authority.invitationHint",
+                translations = linkedMapOf(
+                    "en" to "Paste the complete invitation from the host",
+                    "zh-CN" to "粘贴房主提供的完整邀请",
+                ),
+            )
+
+            val invitationInfo = entry(
+                key = "multiplayer.authority.invitationInfo",
+                translations = linkedMapOf(
+                    "en" to "The room and your player window have started. Select and copy the invitation below for the other player. It contains the server address, pinned certificate fingerprint and one seat credential; share it only with that player. The host can access the complete battle state.",
+                    "zh-CN" to "房间及你的玩家窗口已启动。选中并复制下方邀请，交给另一位玩家。邀请包含服务器地址、固定证书指纹和一个席位凭据，请仅分享给该玩家。房主能够读取完整战局状态。",
+                ),
+            )
+
+            val invitationLabel = entry(
+                key = "multiplayer.authority.invitationLabel",
+                translations = linkedMapOf(
+                    "en" to "Complete room invitation",
+                    "zh-CN" to "完整房间邀请",
+                ),
+            )
+
+            val invitationTitle = entry(
+                key = "multiplayer.authority.invitationTitle",
+                translations = linkedMapOf(
+                    "en" to "Share the player invitation",
+                    "zh-CN" to "分享玩家邀请",
+                ),
+            )
+
+            val joinButton = entry(
+                key = "multiplayer.authority.joinButton",
+                translations = linkedMapOf(
+                    "en" to "Experimental: Join",
+                    "zh-CN" to "实验新协议：加入",
+                ),
+            )
+
+            val joinInfo = entry(
+                key = "multiplayer.authority.joinInfo",
+                translations = linkedMapOf(
+                    "en" to "Paste the private invitation supplied by the host. The game opens in a separate player window. This experimental mode supports Small Island for two players with limited actions. The host can inspect the complete game state; join a host you trust.",
+                    "zh-CN" to "粘贴房主提供的私人邀请，游戏将在独立玩家窗口中打开。此实验模式支持 Small Island 双人地图及有限操作。房主能读取完整战局状态，请加入你信任的房主。",
+                ),
+            )
+
+            val joinTitle = entry(
+                key = "multiplayer.authority.joinTitle",
+                translations = linkedMapOf(
+                    "en" to "Join experimental protocol room",
+                    "zh-CN" to "加入实验新协议房间",
+                ),
+            )
+
+            val launchedInfo = entry(
+                key = "multiplayer.authority.launchedInfo",
+                translations = linkedMapOf(
+                    "en" to "The separate player window is opening. Connection status and any connection error are shown there.",
+                    "zh-CN" to "独立玩家窗口正在打开。连接状态及连接错误将在该窗口显示。",
+                ),
+            )
+
+            val launchedTitle = entry(
+                key = "multiplayer.authority.launchedTitle",
+                translations = linkedMapOf(
+                    "en" to "Player window launched",
+                    "zh-CN" to "玩家窗口已启动",
+                ),
+            )
+
+            val opening = entry(
+                key = "multiplayer.authority.opening",
+                translations = linkedMapOf(
+                    "en" to "Opening a separate game window. Please wait.",
+                    "zh-CN" to "正在打开独立游戏窗口，请稍候。",
+                ),
+            )
+
+            val playerNameLabel = entry(
+                key = "multiplayer.authority.playerNameLabel",
+                translations = linkedMapOf(
+                    "en" to "Player name",
+                    "zh-CN" to "玩家名称",
+                ),
+            )
+
+            val starting = entry(
+                key = "multiplayer.authority.starting",
+                translations = linkedMapOf(
+                    "en" to "Starting experimental protocol",
+                    "zh-CN" to "正在启动实验新协议",
+                ),
+            )
+
+            val unavailable = entry(
+                key = "multiplayer.authority.unavailable",
+                translations = linkedMapOf(
+                    "en" to "Experimental protocol rooms are available only on supported desktop builds. This platform cannot start the required separate game process.",
+                    "zh-CN" to "实验新协议房间仅适用于支持此功能的桌面版本。当前平台无法启动所需的独立游戏进程。",
+                ),
+            )
+
+        }
+
         val checkConnection = entry(
             key = "multiplayer.checkConnection",
             translations = linkedMapOf(
@@ -3527,6 +3722,14 @@ object I18n {
                 translations = linkedMapOf(
                     "en" to "Produce in all selected factories",
                     "zh-CN" to "所有选中的工厂同时生产",
+                ),
+            )
+
+            val authoritativeMapCacheLimit = entry(
+                key = "settings.gameplay.authoritativeMapCacheLimit",
+                translations = linkedMapOf(
+                    "en" to "New protocol map cache limit (0 disables caching)",
+                    "zh-CN" to "新协议地图缓存数量（0 为关闭）",
                 ),
             )
 

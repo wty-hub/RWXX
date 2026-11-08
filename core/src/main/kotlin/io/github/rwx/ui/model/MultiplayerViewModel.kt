@@ -185,6 +185,10 @@ sealed interface MultiplayerAction {
     /** Host a game in the active lobby. */
     data object HostGame : MultiplayerAction
 
+    /** Launch an experimental authoritative room in an isolated platform process. */
+    data object HostAuthoritative : MultiplayerAction
+    data object JoinAuthoritative : MultiplayerAction
+
     /** Join by a manually-entered address / room code in the active lobby. */
     data object JoinDirect : MultiplayerAction
 
@@ -203,6 +207,8 @@ sealed interface MultiplayerOutcome {
     data object RefreshRequested : MultiplayerOutcome
     data class SwitchLobby(val lobbyKind: MultiplayerLobbyKind) : MultiplayerOutcome
     data object HostGameRequested : MultiplayerOutcome
+    data object HostAuthoritativeRequested : MultiplayerOutcome
+    data object JoinAuthoritativeRequested : MultiplayerOutcome
     data object JoinDirectRequested : MultiplayerOutcome
     data object RejoinLastGameRequested : MultiplayerOutcome
     data object ConfigurePlayerNameRequested : MultiplayerOutcome
@@ -216,6 +222,8 @@ object MultiplayerNavigation {
         MultiplayerAction.Refresh -> MultiplayerOutcome.RefreshRequested
         is MultiplayerAction.SwitchLobby -> MultiplayerOutcome.SwitchLobby(action.lobbyKind)
         MultiplayerAction.HostGame -> MultiplayerOutcome.HostGameRequested
+        MultiplayerAction.HostAuthoritative -> MultiplayerOutcome.HostAuthoritativeRequested
+        MultiplayerAction.JoinAuthoritative -> MultiplayerOutcome.JoinAuthoritativeRequested
         MultiplayerAction.JoinDirect -> MultiplayerOutcome.JoinDirectRequested
         MultiplayerAction.RejoinLastGame -> MultiplayerOutcome.RejoinLastGameRequested
         MultiplayerAction.ConfigurePlayerName -> MultiplayerOutcome.ConfigurePlayerNameRequested

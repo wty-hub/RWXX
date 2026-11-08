@@ -47,6 +47,7 @@ import io.github.rwx.mod.api.UnitRenderLayer;
 import io.github.rwx.mod.registry.DamageRegistry;
 import io.github.rwx.mod.registry.RenderRegistry;
 import io.github.rwx.mod.registry.TurretFireCycleObserverRegistry;
+import io.github.rwx.net.timeline.TimelineNativeEvents;
 import io.github.rwx.render.canvas.KoolArgbColor;
 import io.github.rwx.render.canvas.KoolPaint;
 
@@ -1583,6 +1584,9 @@ public class CustomUnit extends MovableUnit implements TransportUnitInterface, U
             projectileA.lifeTimer = reusedRemainingLife;
         }
         customProjectileTemplate2.a(this, projectileA, baseUnit, f, f2, m());
+        if (z) {
+            TimelineNativeEvents.fire(this, vector3DD.x, vector3DD.y, this.posZ + vector3DD.z);
+        }
         if (!z && customProjectileTemplate2.R == 0.0f && customProjectileTemplate2.S == 0.0f) {
             projectileA.trackOffsetX = shadowTexture.x;
             projectileA.trackOffsetY = shadowTexture.y;

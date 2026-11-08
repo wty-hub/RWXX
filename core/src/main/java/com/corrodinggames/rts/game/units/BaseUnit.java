@@ -38,6 +38,7 @@ import io.github.rwx.geometry.Point;
 import io.github.rwx.geometry.PointF;
 import io.github.rwx.geometry.Rect;
 import io.github.rwx.geometry.RectF;
+import io.github.rwx.net.timeline.TimelineNativeEvents;
 import io.github.rwx.render.canvas.KoolArgbColor;
 import io.github.rwx.render.canvas.KoolMultiplyAddColorFilter;
 import io.github.rwx.render.canvas.KoolPaint;
@@ -561,6 +562,16 @@ public abstract class BaseUnit extends SizedObject {
     public static TransactionalArrayList<BaseUnit> getGlobalUnitList() {
         a.a();
         return a;
+    }
+
+    /**
+     * Instantaneous owner-thread prerequisite for a callback-free observation boundary.
+     * Does not flush, inspect entries or change modCount. Recheck after any callback,
+     * command or world advance; this is not a world snapshot or a reusable permission.
+     * Ordinary getGlobalUnitList calls must remain at their original positions.
+     */
+    public static boolean authoritativeWorldHasNoPendingOperations() {
+        return a.pendingOperations != null && a.pendingOperations.size == 0;
     }
 
     public static void bG() {
@@ -1686,6 +1697,9 @@ public abstract class BaseUnit extends SizedObject {
     }
 
     public void bv() {
+        if (!this.isDead) {
+            TimelineNativeEvents.unitDeath(this, this.posX, this.posY, this.posZ);
+        }
         bu();
         if (!e()) {
             remove();

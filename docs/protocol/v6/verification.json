@@ -1,0 +1,71 @@
+{
+  "format": "rwxx-wire-v6-attachment-verification-1",
+  "date": "2026-11-07",
+  "protocolVersion": 6,
+  "status": "attachment_format_and_state_digest_checks_passed",
+  "scope": "Attachment integrity, offline single-frame syntax and complete raw-state digest checks. No live network, authentication, cross-frame authorization, state reconstruction or rendering claim.",
+  "filesRelativeToThisDirectory": [
+    {
+      "path": "README.md",
+      "sha256": "e0987a4b607d6e4fb18a53677ea7e88a53c165c0fe42cc30211b6301649971a4",
+      "sizeBytes": 3250
+    },
+    {
+      "path": "wire_v6.py",
+      "sha256": "e1fa594de3d0321819a16abd03a56793bfd2d51ce1b4d05ad9e90d987ce970d3",
+      "sizeBytes": 28237
+    },
+    {
+      "path": "test_wire_v6.py",
+      "sha256": "4c7c12977c1682e0fc62367413d291a97a70ac29f0621afff0101fbb826d89b5",
+      "sizeBytes": 10222
+    },
+    {
+      "path": "vectors.json",
+      "sha256": "29b860d0ccf873e65563f52fa70a39a5989c2a9c7102cd6094558b532a909e26",
+      "sizeBytes": 103215
+    },
+    {
+      "path": "terrain-catalog-v1.json",
+      "sha256": "26b42acc4286ea95218c31c4497f796466302b4cb3e7807dd6b42b349bf070ec",
+      "sizeBytes": 59558
+    }
+  ],
+  "checks": {
+    "vectors": {
+      "passed": true,
+      "total": 78,
+      "accepted": 49,
+      "rejected": 29,
+      "messageTypes": 18,
+      "stateDigestExamples": 11,
+      "standardMode": true,
+      "optimizedMode": true,
+      "decodedFieldsMatchExpected": true,
+      "decodedFieldsReencodeByteExactly": true,
+      "expectedFieldsReencodeByteExactly": true,
+      "unitPatchBits": 11,
+      "actionStatePatchBits": 5,
+      "mapContentKeysMatch": true,
+      "completeStateDigestsMatch": true
+    },
+    "offlineBoundaryTests": {
+      "passed": true,
+      "testsPerMode": 9,
+      "standardMode": true,
+      "optimizedMode": true
+    }
+  },
+  "verifyCommands": [
+    "python3 -B wire_v6.py vectors.json",
+    "python3 -B -O wire_v6.py vectors.json",
+    "python3 -B -m unittest test_wire_v6.py",
+    "python3 -B -O -m unittest test_wire_v6.py"
+  ],
+  "notes": [
+    "The digest list omits this record to avoid self-reference.",
+    "Rejected vectors may contain only a length prefix or header declaring a prohibited size; their declared length need not match the available byte count.",
+    "JSON i64 fields are exact decimal strings. Accepted examples are syntax fixtures, not live credentials or capability grants.",
+    "State digest fixtures contain complete authorized views or panels, with domain separation, canonical unit sorting, original action order and signed zero preserved."
+  ]
+}

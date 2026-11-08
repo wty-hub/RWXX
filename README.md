@@ -47,6 +47,12 @@ translate into whole-game FPS improvements, and results from older builds do not
 Desktop results do not establish Android performance. See the [current optimization status](docs/NEXT-SESSION.md)
 for current defaults and coverage.
 
+## Experimental multiplayer protocol
+
+The current development version is `2.2.0`. The new mode's server/client CLI and lobby create/join entries use candidate wire protocol `7`; the original multiplayer protocol `176` remains a separate mode. The server runs the full simulation and sends each client only its authorized timeline.
+
+Local TLS validation with 64 clients and 128 native units has passed. The 65,536-unit real-time performance target has not been met, and overall capacity, GUI, and release acceptance remain open. See the [protocol overview](docs/authoritative-network-protocol.md), [v7 byte specification](docs/authoritative-wire-v7.md), and [reference tools and vectors](docs/protocol/v7/README.md).
+
 ## Download and run
 
 Check [Releases](https://github.com/wty-hub/RWXX/releases) for published versions and the artifacts available for each one.

@@ -1,0 +1,310 @@
+{
+  "passed": true,
+  "date": "2026-11-06",
+  "applicationVersion": "2.0.0",
+  "wireVersion": 5,
+  "originalCompatibilityVersion": 176,
+  "newViewReplayFormat": 2,
+  "scope": "This v5 batch: authorized field deltas, independent panel deltas, persistent public-map cache, interpolation, strict recovery. Evidence is tied to the frozen artifact; historical v1-v4 records remain unchanged.",
+  "artifact": {
+    "path": "build/authoritative-virtual/RWXX-2.0.0-v5-final-v2.jar",
+    "bytes": 126196038,
+    "sha256": "57d035c42cf7cb9ad528d4ce58dec37b2f0682429e9e79dd4c3b5685498e2055"
+  },
+  "appJar": {
+    "path": "desktop/build/jpackage/image/macos-arm64/RWXX.app/Contents/app/RWXX-2.0.0-macos-arm64.jar",
+    "bytes": 126196038,
+    "sha256": "57d035c42cf7cb9ad528d4ce58dec37b2f0682429e9e79dd4c3b5685498e2055"
+  },
+  "distribution": {
+    "path": "desktop/build/distributions/RWXX-2.0.0-macos-arm64-desktop.zip",
+    "bytes": 163088305,
+    "sha256": "89586399a9581bf563e971368171dfed549ef738e0d2af95c6926bd1c2666eb4"
+  },
+  "protocolBundle": {
+    "path": "build/protocol-docs/RWXX-protocol-v5-client-spec-2026-11-06.zip",
+    "bytes": 36830,
+    "sha256": "2ce2b954329c5605dfb55873e87b3b7792897d3c11bf0dea58f8d09589a7886d"
+  },
+  "unitTests": {
+    "core": {
+      "tests": 759,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "desktop": {
+      "tests": 245,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "selectedRegressionSuites": {
+    "io.github.rwx.settings.AuthoritativeMapCacheSettingsTest": {
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "io.github.rwx.net.authoritative.AuthoritativeMapHandshakeTest": {
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "io.github.rwx.net.authoritative.AuthoritativeMapCacheCodecTest": {
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "io.github.rwx.net.authoritative.ViewStreamReplicationTest": {
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "io.github.rwx.net.authoritative.AuthoritativeViewReplayTest": {
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "io.github.rwx.net.authoritative.EngineViewNoninterferenceTest": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "io.github.rwx.authoritative.AuthoritativeMapCacheTest": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "io.github.rwx.authoritative.ViewMotionInterpolatorTest": {
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "engine": {
+    "passed": true,
+    "checks": 340,
+    "basic": 38,
+    "actions": 71,
+    "upgrades": 192,
+    "reconnect": 39,
+    "record": {
+      "path": "desktop/build/authoritative/v5-final-v2/verification.json",
+      "bytes": 18155,
+      "sha256": "896e0f716f0e00426f246118a5759da14bcb76d8c128fc5afc962bf8e9dc46f5"
+    }
+  },
+  "nativePackagedHeadless": {
+    "passed": true,
+    "checks": 340,
+    "noRuntimeJavaOrKeytool": true,
+    "fixedPinTlsAndOwnerPipeEof": true,
+    "launch": {
+      "path": "desktop/build/authoritative/v5-final-v2-native-headless/launch.json",
+      "bytes": 1050,
+      "sha256": "63c30915eb9867945fe8d970566d7ccba8a7a7944137029dcaf9e1a6bf7375ee"
+    },
+    "record": {
+      "path": "desktop/build/authoritative/v5-final-v2-native-headless/verification.json",
+      "bytes": 18155,
+      "sha256": "896e0f716f0e00426f246118a5759da14bcb76d8c128fc5afc962bf8e9dc46f5"
+    }
+  },
+  "runtime3Jvms": {
+    "passed": true,
+    "seconds": 120,
+    "record": {
+      "path": "desktop/build/authoritative/v5-final-v2-120s/manifest.json",
+      "bytes": 3797,
+      "sha256": "e88666bec636a392d3fd2d217da3e52130ec02ef34ec3efdcca86f1f17f2fa45"
+    },
+    "peers": [
+      {
+        "teamId": 0,
+        "views": 1202,
+        "firstTick": 0,
+        "lastTick": 7206,
+        "moved": true,
+        "initialEnemyCount": 0,
+        "wire": {
+          "recvBytes": 140602,
+          "initialBytes": 72878,
+          "steadySeconds": 120.016473125,
+          "steadyBytesPerSecond": 564.2892032784854,
+          "peakOneSecondBytesPerSecond": 2440.367665085638,
+          "mapInitializations": 1,
+          "mapCacheHits": 0,
+          "worldBaselines": 1,
+          "worldDeltas": 1201,
+          "panelBaselines": 1,
+          "panelDeltas": 0,
+          "resyncRequests": 0
+        }
+      },
+      {
+        "teamId": 1,
+        "views": 1202,
+        "firstTick": 0,
+        "lastTick": 7206,
+        "moved": true,
+        "initialEnemyCount": 0,
+        "wire": {
+          "recvBytes": 140606,
+          "initialBytes": 72878,
+          "steadySeconds": 120.019414417,
+          "steadyBytesPerSecond": 564.3087022961408,
+          "peakOneSecondBytesPerSecond": 2440.1992951728357,
+          "mapInitializations": 1,
+          "mapCacheHits": 0,
+          "worldBaselines": 1,
+          "worldDeltas": 1201,
+          "panelBaselines": 1,
+          "panelDeltas": 0,
+          "resyncRequests": 0
+        }
+      }
+    ]
+  },
+  "bandwidth": {
+    "passed": true,
+    "syntheticScenarios": 18,
+    "framesAfterInitialEach": 120,
+    "publicMapCells": 12100,
+    "staticMapFrameBytes": 60546,
+    "cachedMapFrameBytes": 45,
+    "staticMapBytesSavedOnHit": 60501,
+    "quietDynamicFrameBytesAt100_500_1000Units": 50,
+    "singleHealthOrSparseFogFrameBytes": 64,
+    "thousandUnitsChangeOnlyXFrameBytes": 14050,
+    "denseFogFrameBytes": 12155,
+    "scope": "Raw application frame bytes, excluding TCP/TLS. Explicit synthetic workloads and small two-unit real session, not a fixed bandwidth guarantee. Historical v4 frame costs are normalized to 10 Hz, not a simultaneous Internet benchmark.",
+    "record": {
+      "path": "desktop/build/verification/authoritative-v5-bandwidth-v2.json",
+      "bytes": 21440,
+      "sha256": "884f8a945ed2d33aa86c2861794b3d9d502529287cd5fdb211aacae9577b7cd2"
+    },
+    "historicalReference": {
+      "path": "desktop/build/verification/authority-v4-bandwidth-baseline-2026-11-06.json",
+      "bytes": 769,
+      "sha256": "1a6d2d99e51158344dc6df2895d7307675ae44bb3c5369a79854f1ffaf135b1a"
+    }
+  },
+  "mapCache": {
+    "defaultMaps": 16,
+    "configurableMaps": [
+      0,
+      256
+    ],
+    "zeroClearsAndDisables": true,
+    "settings": "设置 → 游戏 → 新协议地图缓存数量（0 为关闭）",
+    "commandLine": "--map-cache-limit=N; --map-cache-dir=PATH",
+    "apply": "Next connection; retain recently used/written public static maps. Resolve one key, verify SHA-256 and pin one map before MapReady.",
+    "realNativeGuest": {
+      "recvBytes": 21856,
+      "mapInitializations": 0,
+      "mapCacheHits": 1,
+      "worldBaselines": 1,
+      "worldDeltas": 108,
+      "resyncRequests": 0
+    },
+    "publicParserRecord": {
+      "path": "desktop/build/verification/authoritative-v5-runtime-public-parser-v2.json",
+      "bytes": 1257,
+      "sha256": "28625dab8c308a70684cee6c81d17260cc9a5ae94b27a4feba22cd45b9f2a28f"
+    }
+  },
+  "nativeGui": {
+    "passed": true,
+    "frozenJarSha256": "57d035c42cf7cb9ad528d4ce58dec37b2f0682429e9e79dd4c3b5685498e2055",
+    "koolClientsAndReadOnlyReplay": {
+      "path": "desktop/build/authoritative/kool-v5-final-v2-v1/result.json",
+      "bytes": 35889,
+      "sha256": "019ffeef478224f962dae7e0c2505910e4532256798355a8f98836645c94a4e3"
+    },
+    "menuApiHostJoin": {
+      "path": "desktop/build/authoritative/menu-v5-final-v2-v1/result.json",
+      "bytes": 69008,
+      "sha256": "4e74186096d636067dc64b81562949f202b79555bc9a5b9f85d19c5dc11c7ae7"
+    },
+    "koolNetworkFrames": [
+      1260,
+      1260
+    ],
+    "replayFrames": 540,
+    "menuFrames": {
+      "guest": 1080,
+      "host": 2310
+    },
+    "menuGuestCacheHitWithoutFullMap": true,
+    "allLiveClientsCompletedThreeUiActions": true,
+    "readOnlyReplayZeroInputs": true,
+    "noClientGameEngine": true,
+    "startMutedAndNoKnownImageOrFontCleanupErrors": true,
+    "displayIds": [
+      54,
+      55
+    ],
+    "bothDisplaysRemoved": true,
+    "originalDisplaysUnchanged": true,
+    "finalDisplayPostcheck": {
+      "path": "desktop/build/verification/authoritative-v5-final-display-postcheck.ndjson",
+      "bytes": 977,
+      "sha256": "3ae0adef44ec0b2c793d37e1d80242e24692abd96f7754983c0f0c6064d20dd3"
+    },
+    "scope": "Owned virtual displays only, guarded window bounds, no activation/focus. Real UI handlers and presented frames; menu launcher API bridge, not physical mouse/clipboard automation or screenshot pixel-baseline comparison."
+  },
+  "legacyByteEquivalence": {
+    "path": "desktop/build/verification/authoritative-v5-legacy-byte-equivalence-v2.json",
+    "bytes": 4276,
+    "sha256": "417934119eed3cc81cf17acf80671667104e501326bd3ac6e8d95e3f0cdac8ff"
+  },
+  "original115LongInterop": "Historical two-direction 600-second evidence retains its original artifact. Not rerun for this v5 batch; all 1217 pre-existing engine classes and both window hosts remain byte-identical to that baseline.",
+  "protocolFormat": {
+    "messageTypes": 16,
+    "acceptedVectors": 45,
+    "rejectedVectors": 14,
+    "independentPythonNormalAndOptimizedPass": true,
+    "boundaryTestsEachMode": 6,
+    "publicAttachmentVerification": {
+      "path": "docs/protocol/v5/verification.json",
+      "bytes": 2300,
+      "sha256": "4fddc4e6b84cb1995f16e27a9a5ee86136ad7d46d6ae52951b1f20a5b804f1d6"
+    }
+  },
+  "harnessChecks": {
+    "pythonTests": 68,
+    "failures": 0,
+    "record": {
+      "path": "desktop/build/authority-v5-harness-tests-v2.log",
+      "bytes": 167,
+      "sha256": "4d4526e67ca07bad3e614239940841fc0d84ebc2ec4443b074857d0b123a8352"
+    }
+  },
+  "supersededCandidateFailure": {
+    "artifact": {
+      "path": "build/authoritative-virtual/RWXX-2.0.0-v5-candidate-v1.jar",
+      "bytes": 177847120,
+      "sha256": "302454eaea5a14ceeccff4e23253e1f5cc6177e2df80a7a0fb5a709536f6172d"
+    },
+    "reason": "Terminal empty panel incorrectly discarded. Fixed owner-zero/no-actions acceptance; all 340 engine checks rerun successfully on final v2.",
+    "record": {
+      "path": "desktop/build/authoritative/v5-candidate-v1/verification-reconnect.json",
+      "bytes": 3294,
+      "sha256": "f98375529742a52200229840adf80ec1457bf5772ff58e89f8cbed20188c6b18"
+    }
+  },
+  "remainingProductScope": [
+    "Two human seats and Small Island remain the experimental game profile.",
+    "Full animation/projectiles, Android, mods, spectators/shared control, host migration, and replay pause/seek remain outside this batch."
+  ],
+  "installedApplication": "/Applications/RWXX.app was not installed or replaced by this batch."
+}

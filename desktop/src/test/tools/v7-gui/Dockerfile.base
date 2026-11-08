@@ -1,0 +1,17 @@
+# Same JRE family and GUI package recipe as the reviewed Linux Xvfb runs.
+# No game, network-emulation worker, recording or credential is baked into this base.
+# Set BASE_IMAGE to a reviewed immutable Temurin 25 JRE Ubuntu Noble image reference.
+ARG BASE_IMAGE=eclipse-temurin:25-jre-noble
+FROM ${BASE_IMAGE}
+USER root
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+       python3 iproute2 xvfb xauth x11-apps x11-utils xdotool mesa-utils \
+       libgl1-mesa-dri libglx-mesa0 libegl1 mesa-vulkan-drivers libvulkan1 \
+       libxtst6 libxi6 libxrandr2 libxinerama1 libxcursor1 libxkbcommon0 \
+       libgtk-3-0t64 libasound2t64 libopenal1 fonts-noto-cjk fonts-noto-color-emoji python3-pil \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /tmp
+USER 1000:1000
+ENTRYPOINT ["/usr/bin/python3"]
+CMD ["--version"]

@@ -82,6 +82,8 @@ class GameSettingsRepository(
         model.singleUnitProduction.value = live?.singleUnitProduction ?: prefs.getBoolean(KEY_SINGLE_UNIT_PRODUCTION, false)
         model.autosaving.value = live?.autosaving ?: prefs.getBoolean(KEY_AUTOSAVING, true)
         model.udpInMultiplayer.value = live?.udpInMultiplayer ?: prefs.getBoolean(KEY_UDP_IN_MULTIPLAYER, false)
+        model.authoritativeMapCacheLimit.value = AuthoritativeMapCacheSettings.normalize(
+            prefs.getInt(AuthoritativeMapCacheSettings.KEY, AuthoritativeMapCacheSettings.DEFAULT_LIMIT)).toFloat()
         model.saveMultiplayerReplays.value =
             live?.saveMultiplayerReplays ?: prefs.getBoolean(KEY_SAVE_MULTIPLAYER_REPLAYS, GameEngine.isPC())
         model.replaysShowRecordedChat.value =
@@ -131,6 +133,7 @@ class GameSettingsRepository(
      */
     fun applyLive(model: SettingsModel) {
         normalizeAudioSettings(model)
+        model.authoritativeMapCacheLimit.value = AuthoritativeMapCacheSettings.normalize(model.authoritativeMapCacheLimit.value).toFloat()
         val snapshot = detachedSettings(model)
         executeOnEngine {
             applySliderSettings(snapshot, runtimeSettings())
@@ -140,6 +143,7 @@ class GameSettingsRepository(
 
     fun saveFrom(model: SettingsModel) {
         normalizeAudioSettings(model)
+        model.authoritativeMapCacheLimit.value = AuthoritativeMapCacheSettings.normalize(model.authoritativeMapCacheLimit.value).toFloat()
         model.maxFrameRate.value = SettingsEngine.normalizeMaxFrameRate(model.maxFrameRate.value)
         val snapshot = detachedSettings(model)
         executeOnEngine {
@@ -207,6 +211,7 @@ class GameSettingsRepository(
         copy.singleUnitProduction.value = model.singleUnitProduction.value
         copy.autosaving.value = model.autosaving.value
         copy.udpInMultiplayer.value = model.udpInMultiplayer.value
+        copy.authoritativeMapCacheLimit.value = model.authoritativeMapCacheLimit.value
         copy.saveMultiplayerReplays.value = model.saveMultiplayerReplays.value
         copy.replaysShowRecordedChat.value = model.replaysShowRecordedChat.value
         copy.sendReports.value = model.sendReports.value
@@ -350,6 +355,7 @@ class GameSettingsRepository(
             .putBoolean(KEY_SINGLE_UNIT_PRODUCTION, model.singleUnitProduction.value)
             .putBoolean(KEY_AUTOSAVING, model.autosaving.value)
             .putBoolean(KEY_UDP_IN_MULTIPLAYER, model.udpInMultiplayer.value)
+            .putInt(AuthoritativeMapCacheSettings.KEY, AuthoritativeMapCacheSettings.normalize(model.authoritativeMapCacheLimit.value))
             .putBoolean(KEY_SAVE_MULTIPLAYER_REPLAYS, model.saveMultiplayerReplays.value)
             .putBoolean(KEY_REPLAYS_SHOW_RECORDED_CHAT, model.replaysShowRecordedChat.value)
             .putBoolean(KEY_SEND_REPORTS, model.sendReports.value)

@@ -1,0 +1,92 @@
+{
+  "format": "rwxx-wire-v4-attachment-verification-1",
+  "date": "2026-11-06",
+  "protocolVersion": 4,
+  "documentRevision": "r2",
+  "status": "attachment_format_checks_passed",
+  "scope": "Attachment integrity and byte-format examples only. These checks do not establish live TLS connectivity, seat authentication, command authorization or rendering correctness.",
+  "filesRelativeToPackageRoot": [
+    {
+      "path": "README.md",
+      "sha256": "11d8e849e9bf57d7af898db06741351b7e34049ce1c7b8b684864f9d2adf57be",
+      "sizeBytes": 869
+    },
+    {
+      "path": "authoritative-wire-v4.md",
+      "sha256": "40d2eabeb5001b6602abfc15977d7405fba4579c5398a69e8b11b11bd287f5fb",
+      "sizeBytes": 34108
+    },
+    {
+      "path": "protocol/v4/README.md",
+      "sha256": "e9990170f5fcbeed60bf625c4bfa14620347b7476613d11892d41c563ef43815",
+      "sizeBytes": 1722
+    },
+    {
+      "path": "protocol/v4/terrain-catalog-v1.json",
+      "sha256": "26b42acc4286ea95218c31c4497f796466302b4cb3e7807dd6b42b349bf070ec",
+      "sizeBytes": 59558
+    },
+    {
+      "path": "protocol/v4/vectors.json",
+      "sha256": "24c549f8d0b670235950f8b3a58015b3fb79ed1fa2971f6814508fcccbe8e516",
+      "sizeBytes": 228201
+    },
+    {
+      "path": "protocol/v4/wire_v4.py",
+      "sha256": "2360a83327643b45efd1f42802cedf880ffd966deedfd15b371fa32696e95c9b",
+      "sizeBytes": 18289
+    }
+  ],
+  "checks": {
+    "frameVectors": {
+      "passed": true,
+      "total": 24,
+      "accepted": 22,
+      "rejected": 2,
+      "standardMode": true,
+      "optimizedMode": true,
+      "decodedFieldsMatchExpected": true,
+      "decodedFieldsReencodeByteExactly": true,
+      "expectedFieldsReencodeByteExactly": true,
+      "completeContiguousAnnotationBytesMatch": true,
+      "nulRejectedOnEncodeAndDecode": true
+    },
+    "terrainCatalog": {
+      "passed": true,
+      "entries": 235,
+      "equalsEmbeddedVectorCatalog": true,
+      "idsContiguousFromZero": true,
+      "zeroIsEmpty": true,
+      "cropGridAndBoundsMatch": true
+    },
+    "inlineHexExamples": {
+      "passed": true,
+      "examples": [
+        {
+          "message": "KeepAlive",
+          "frameBytes": 13,
+          "hex": "00000009525758410000000403"
+        },
+        {
+          "message": "Welcome",
+          "frameBytes": 21,
+          "hex": "000000115257584100000004650000000400000000"
+        },
+        {
+          "message": "Hello",
+          "frameBytes": 42,
+          "hex": "000000265257584100000004010000000400000001410000001030313233343536373839616263646566"
+        }
+      ]
+    }
+  },
+  "verifyCommands": [
+    "python3 -B protocol/v4/wire_v4.py protocol/v4/vectors.json",
+    "python3 -B -O protocol/v4/wire_v4.py protocol/v4/vectors.json"
+  ],
+  "notes": [
+    "Paths and digests refer to files within this documentation package. This record excludes its own digest to avoid self-reference.",
+    "Vector JSON represents i64 values as decimal strings; the wire representation is a signed eight-byte big-endian integer.",
+    "Accepted vectors demonstrate valid field syntax. Example tokens and handles are not authentication or permission credentials."
+  ]
+}

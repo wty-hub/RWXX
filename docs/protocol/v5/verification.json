@@ -1,0 +1,68 @@
+{
+  "format": "rwxx-wire-v5-attachment-verification-1",
+  "date": "2026-11-06",
+  "protocolVersion": 5,
+  "status": "attachment_format_checks_passed",
+  "scope": "Attachment integrity and offline single-frame syntax checks. No live network, authentication, cross-frame authorization, state reconstruction or rendering claim.",
+  "filesRelativeToThisDirectory": [
+    {
+      "path": "README.md",
+      "sha256": "e14267e81232c9fbbf3f1acf8d8ff7964e309d53211443699d5cc71ad7f06b83",
+      "sizeBytes": 2583
+    },
+    {
+      "path": "wire_v5.py",
+      "sha256": "3841099470fa1013d9e4dff234ed6ab24ae76f47ff1543cc5cf513d397f305c0",
+      "sizeBytes": 25734
+    },
+    {
+      "path": "test_wire_v5.py",
+      "sha256": "2f01815fe7ca47c15258e3dd33275f06ad387c78a86e0cdc2b3a82e21831f1c0",
+      "sizeBytes": 6116
+    },
+    {
+      "path": "vectors.json",
+      "sha256": "f496d61b223c2893d3a44a34a7e0a79e3b961175c211c8ea779be89ea3de51a5",
+      "sizeBytes": 69021
+    },
+    {
+      "path": "terrain-catalog-v1.json",
+      "sha256": "26b42acc4286ea95218c31c4497f796466302b4cb3e7807dd6b42b349bf070ec",
+      "sizeBytes": 59558
+    }
+  ],
+  "checks": {
+    "vectors": {
+      "passed": true,
+      "total": 59,
+      "accepted": 45,
+      "rejected": 14,
+      "messageTypes": 16,
+      "standardMode": true,
+      "optimizedMode": true,
+      "decodedFieldsMatchExpected": true,
+      "decodedFieldsReencodeByteExactly": true,
+      "expectedFieldsReencodeByteExactly": true,
+      "unitPatchBits": 11,
+      "actionStatePatchBits": 5,
+      "mapContentKeysMatch": true
+    },
+    "offlineBoundaryTests": {
+      "passed": true,
+      "testsPerMode": 6,
+      "standardMode": true,
+      "optimizedMode": true
+    }
+  },
+  "verifyCommands": [
+    "python3 -B wire_v5.py vectors.json",
+    "python3 -B -O wire_v5.py vectors.json",
+    "python3 -B -m unittest test_wire_v5.py",
+    "python3 -B -O -m unittest test_wire_v5.py"
+  ],
+  "notes": [
+    "The digest list omits this record to avoid self-reference.",
+    "Rejected vectors may contain only a length prefix or header declaring a prohibited size; their declared length need not match the available byte count.",
+    "JSON i64 fields are exact decimal strings. Accepted examples are syntax fixtures, not live credentials or capability grants."
+  ]
+}

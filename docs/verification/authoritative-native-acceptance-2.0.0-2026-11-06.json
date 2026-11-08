@@ -1,0 +1,651 @@
+{
+  "date": "2026-11-06",
+  "applicationVersion": "2.0.0",
+  "viewProtocolVersion": 4,
+  "legacyProtocolVersion": 176,
+  "status": "planned_experimental_protocol_acceptance_complete",
+  "requiredProtocolNativeAcceptancePassed": true,
+  "goalComplete": true,
+  "scope": "Artifact-specific native Vulkan view-only gameplay, offline replay, and actual room-launcher API host/join bridge. Not a complete security certification, exhaustive gameplay proof, physical lobby-button click test, or pixel-golden comparison.",
+  "artifact": {
+    "path": "build/authoritative-virtual/RWXX-2.0.0-phase4-headless-v3.jar",
+    "sha256": "27d72f6200678a846fd093d4074ffd86d3310df618a1ec2e4bcf8a1f3cc2a3ea",
+    "sizeBytes": 126083712
+  },
+  "previousHeadlessRecord": "docs/verification/authoritative-actions-phase4-2.0.0-2026-11-06.json",
+  "historyPolicy": "Earlier blocked and failed records remain unchanged; this new record supplies later native evidence for the same final v3 production JAR.",
+  "review": {
+    "method": "Independently reread raw window/canvas/manager logs, startup/final sound settings, resource diagnostics and recording-inspector JSON; reran offline validators and artifact hashes without launching processes or displays.",
+    "passed": true
+  },
+  "windowProtection": {
+    "agentSha256": "fe722f09d55df604af72e2c35bde949f1c35308e5c8f61fb3ee06c461bac973f",
+    "managerSha256": "c5d00988ed5303be081d0191a3e99fec7e9b2724d80e390bf4f00378daac7ebb",
+    "originalClassSha256": {
+      "io/github/rwx/SwingKoolHost": "999864d314199c4889969471aeb91d68ce2bc7d644491ce68b5bf34ddfd313fd",
+      "io/github/rwx/DesktopWindowActivityKt": "28a955358c2bbe8e7431afc0e2b6e6dda81901b068a9c0374e4fe0d881e0150a"
+    },
+    "transformedClassSha256": {
+      "io/github/rwx/SwingKoolHost": "a998916cf2a67d64dc8107cb1b7622cc9c73390f1e1558c959c201e53b38d2e4",
+      "io/github/rwx/DesktopWindowActivityKt": "db8e476f45fdf0cab3b88630ff15b537f5f8e8967490bc2518c7d384cc2e8c30"
+    },
+    "scope": "Before-construction screen binding plus event/sticky inactive/focus/bounds guards; not independent continuous WindowServer observation.",
+    "onlyProcessSoundMuted": true,
+    "systemVolumeCommandsUsed": false,
+    "physicalDisplayModeCommandsUsed": false
+  },
+  "koolNetworkAndReplay": {
+    "passed": true,
+    "result": {
+      "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/result.json",
+      "sha256": "365c740fc46bcd0c044b87b005898645dd691c4fb8a45cd5939335fe4b5d8303",
+      "sizeBytes": 34713
+    },
+    "runner": {
+      "path": "/Users/wty/code/RWXX/desktop/src/test/tools/authoritative_kool_acceptance.py",
+      "sizeBytes": 39095,
+      "sha256": "31ae580c89fa19585bd4e96121760824fe7ae48bf0287d37a567b2355e4017d5"
+    },
+    "networkSeatCount": 2,
+    "networkSeconds": 12,
+    "replaySeconds": 5,
+    "processes": [
+      {
+        "role": "server",
+        "pid": 58522,
+        "exitCode": 143
+      },
+      {
+        "role": "client-0",
+        "pid": 58526,
+        "exitCode": 0
+      },
+      {
+        "role": "client-1",
+        "pid": 58527,
+        "exitCode": 0
+      },
+      {
+        "role": "inspect-0",
+        "pid": 58647,
+        "exitCode": 0
+      },
+      {
+        "role": "inspect-1",
+        "pid": 58648,
+        "exitCode": 0
+      },
+      {
+        "role": "replay",
+        "pid": 58649,
+        "exitCode": 0
+      }
+    ],
+    "clients": [
+      {
+        "role": "client-0",
+        "pid": 58526,
+        "exitCode": 0,
+        "readOnly": false,
+        "noGameEngine": true,
+        "backend": "Vulkan",
+        "probeCount": 47,
+        "firstTick": 48,
+        "lastTick": 768,
+        "submittedFrames": 1380,
+        "presentedRevision": 1379,
+        "viewSequence": 129,
+        "actionProbe": {
+          "enabled": true,
+          "completed": true,
+          "panelSeen": true,
+          "queueObserved": true,
+          "cancelObserved": true,
+          "uiActionCount": 3
+        },
+        "publicMapVisual": {
+          "catalogVersion": 1,
+          "groundCells": 12100,
+          "decorationCells": 53,
+          "resourcePools": 4,
+          "groundSha256": "333e54c8077b00a8a5af90f4c104511352e03ac586279f95edaa23c34a853a6c",
+          "decorationSha256": "4a9e3c038c3152c40bdc4c8286e93fa53c8b83b37ccb4d225d4459d22477c23b"
+        },
+        "renderedGroundCells": 770,
+        "renderedDecorationCells": 16,
+        "terrainTextures": 5,
+        "windowObservations": 10,
+        "shownWindowObservations": 9,
+        "windowBoundBeforeCreation": true,
+        "allWindowObservationsInactiveUnfocusedInsideVirtualDisplay": true,
+        "bothTransformHashesAndPacerVerified": true,
+        "startupAndFinalMuted": true,
+        "knownResourceDiagnosticsPassed": true,
+        "raw": {
+          "canvas": {
+            "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/client-0/canvas.ndjson",
+            "sha256": "364fc8378f2b6210ebcc4f80191d8b35c4d0d30e9efd919f915f811370f5b30a",
+            "sizeBytes": 29313
+          },
+          "window": {
+            "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/client-0/background-window.ndjson",
+            "sha256": "f5120cf777863ba1999be4b084ebf42366a21b89deac7912a7315df72e09ea0b",
+            "sizeBytes": 9639
+          },
+          "clientLog": {
+            "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/client-0.log",
+            "sha256": "26062ca1e482584f2d6f695dd4737fc97b07537889c082a721373bd2ea7a3219",
+            "sizeBytes": 19336
+          },
+          "startupPreferences": {
+            "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/client-0/startup-preferences.toml",
+            "sha256": "5365ec8b556c75f8ef7cc616899f274df192125b4dbc0c5061d21fc85ad31830",
+            "sizeBytes": 121
+          },
+          "finalPreferences": {
+            "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/client-0/preferences.toml",
+            "sha256": "29c6243e10e5a48a113551a95e36f3e996b95b601813a764ac7a67d121d6e654",
+            "sizeBytes": 224
+          }
+        },
+        "recording": {
+          "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/client-0/own.rwxview",
+          "sha256": "856f332943fc66590eba5cb4a70477324ba13f342575197bda1514772895a657",
+          "sizeBytes": 9391091,
+          "strictCompletion": true,
+          "inspector": {
+            "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/client-0/recording-inspection.json",
+            "sha256": "4b0541d562c15f4bf5f4e8d528e72bd7c97fac9f77588e885d6f0a3a204f8624",
+            "sizeBytes": 452
+          },
+          "teamId": 0,
+          "views": 129,
+          "firstTick": 0,
+          "finalTick": 768,
+          "noGameEngine": true
+        }
+      },
+      {
+        "role": "client-1",
+        "pid": 58527,
+        "exitCode": 0,
+        "readOnly": false,
+        "noGameEngine": true,
+        "backend": "Vulkan",
+        "probeCount": 47,
+        "firstTick": 48,
+        "lastTick": 768,
+        "submittedFrames": 1380,
+        "presentedRevision": 1379,
+        "viewSequence": 129,
+        "actionProbe": {
+          "enabled": true,
+          "completed": true,
+          "panelSeen": true,
+          "queueObserved": true,
+          "cancelObserved": true,
+          "uiActionCount": 3
+        },
+        "publicMapVisual": {
+          "catalogVersion": 1,
+          "groundCells": 12100,
+          "decorationCells": 53,
+          "resourcePools": 4,
+          "groundSha256": "333e54c8077b00a8a5af90f4c104511352e03ac586279f95edaa23c34a853a6c",
+          "decorationSha256": "4a9e3c038c3152c40bdc4c8286e93fa53c8b83b37ccb4d225d4459d22477c23b"
+        },
+        "renderedGroundCells": 770,
+        "renderedDecorationCells": 13,
+        "terrainTextures": 7,
+        "windowObservations": 10,
+        "shownWindowObservations": 9,
+        "windowBoundBeforeCreation": true,
+        "allWindowObservationsInactiveUnfocusedInsideVirtualDisplay": true,
+        "bothTransformHashesAndPacerVerified": true,
+        "startupAndFinalMuted": true,
+        "knownResourceDiagnosticsPassed": true,
+        "raw": {
+          "canvas": {
+            "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/client-1/canvas.ndjson",
+            "sha256": "2b5c54a2316a8b4971b39b14cb47e07a3ad2db4da332831c3af020838fcbd432",
+            "sizeBytes": 29313
+          },
+          "window": {
+            "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/client-1/background-window.ndjson",
+            "sha256": "273d9e0ad88d5dc5133bf05fae00accc7ba305ff838a33e6fb6405ad27a69ab5",
+            "sizeBytes": 9629
+          },
+          "clientLog": {
+            "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/client-1.log",
+            "sha256": "470b9dc78f4ae618802bdee5b39b127338c9e9494b6c9c5e3837dbc21346da0f",
+            "sizeBytes": 19326
+          },
+          "startupPreferences": {
+            "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/client-1/startup-preferences.toml",
+            "sha256": "5365ec8b556c75f8ef7cc616899f274df192125b4dbc0c5061d21fc85ad31830",
+            "sizeBytes": 121
+          },
+          "finalPreferences": {
+            "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/client-1/preferences.toml",
+            "sha256": "64c7487cccf3720b2c50ffb1995ef7120d27bf8dd2e3a09dc027ea37139f083b",
+            "sizeBytes": 224
+          }
+        },
+        "recording": {
+          "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/client-1/own.rwxview",
+          "sha256": "e112db17d9221d4a048847ce35952efdd7e160907d1c691888db9dd6d8e096e3",
+          "sizeBytes": 9391091,
+          "strictCompletion": true,
+          "inspector": {
+            "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/client-1/recording-inspection.json",
+            "sha256": "0c525050390679f2cb8c7ca6208c16af3062d47fee1118d7bf9a23711aee98af",
+            "sizeBytes": 452
+          },
+          "teamId": 1,
+          "views": 129,
+          "firstTick": 0,
+          "finalTick": 768,
+          "noGameEngine": true
+        }
+      }
+    ],
+    "replay": {
+      "role": "replay",
+      "pid": 58649,
+      "exitCode": 0,
+      "readOnly": true,
+      "noGameEngine": true,
+      "backend": "Vulkan",
+      "probeCount": 20,
+      "firstTick": 30,
+      "lastTick": 330,
+      "submittedFrames": 570,
+      "presentedRevision": 569,
+      "viewSequence": 56,
+      "actionProbe": {
+        "enabled": false,
+        "completed": false,
+        "panelSeen": false,
+        "queueObserved": false,
+        "cancelObserved": false,
+        "uiActionCount": 0
+      },
+      "publicMapVisual": {
+        "catalogVersion": 1,
+        "groundCells": 12100,
+        "decorationCells": 53,
+        "resourcePools": 4,
+        "groundSha256": "333e54c8077b00a8a5af90f4c104511352e03ac586279f95edaa23c34a853a6c",
+        "decorationSha256": "4a9e3c038c3152c40bdc4c8286e93fa53c8b83b37ccb4d225d4459d22477c23b"
+      },
+      "renderedGroundCells": 770,
+      "renderedDecorationCells": 16,
+      "terrainTextures": 5,
+      "windowObservations": 10,
+      "shownWindowObservations": 9,
+      "windowBoundBeforeCreation": true,
+      "allWindowObservationsInactiveUnfocusedInsideVirtualDisplay": true,
+      "bothTransformHashesAndPacerVerified": true,
+      "startupAndFinalMuted": true,
+      "knownResourceDiagnosticsPassed": true,
+      "raw": {
+        "canvas": {
+          "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/replay/canvas.ndjson",
+          "sha256": "0de5bdd2c4e154b820fa6f5d514af436690b9829e06c4e1376f4a6c7d40e3e22",
+          "sizeBytes": 12526
+        },
+        "window": {
+          "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/replay/background-window.ndjson",
+          "sha256": "ad98542a06adf3ae53f2b4ab40ce524a28a837ba5d869195d5360282d6fd1f48",
+          "sizeBytes": 9633
+        },
+        "clientLog": {
+          "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/replay.log",
+          "sha256": "e3344bc07201e41aa78b9cb360f7d0a024746f960f4c95208b195c19cb5cae1d",
+          "sizeBytes": 19307
+        },
+        "startupPreferences": {
+          "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/replay/startup-preferences.toml",
+          "sha256": "5365ec8b556c75f8ef7cc616899f274df192125b4dbc0c5061d21fc85ad31830",
+          "sizeBytes": 121
+        },
+        "finalPreferences": {
+          "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/replay/preferences.toml",
+          "sha256": "6e6918c0c2ab225786729af0e3b74da668694f3f66c887815b02ff570b5e46d3",
+          "sizeBytes": 224
+        }
+      },
+      "serverStoppedBeforeReplay": true,
+      "networkConnectionRequested": false,
+      "sourceRecording": {
+        "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/client-0/own.rwxview",
+        "sha256": "856f332943fc66590eba5cb4a70477324ba13f342575197bda1514772895a657",
+        "sizeBytes": 9391091
+      }
+    },
+    "displayCleanup": {
+      "displayId": 51,
+      "managerPid": 58510,
+      "managerExitCode": 0,
+      "removed": true,
+      "originalDisplaysExactlyRestored": true,
+      "preflight": {
+        "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/preflight.ndjson",
+        "sha256": "3ae0adef44ec0b2c793d37e1d80242e24692abd96f7754983c0f0c6064d20dd3",
+        "sizeBytes": 977
+      },
+      "managerLog": {
+        "path": "desktop/build/authoritative/kool-phase4-final-v3-v1/manager.ndjson",
+        "sha256": "7f239a79556e3d25a54aa4a6660611bd9493182599bd9d313190e1d15d2b9550",
+        "sizeBytes": 5268
+      }
+    }
+  },
+  "menuBridge": {
+    "passed": true,
+    "result": {
+      "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/result.json",
+      "sha256": "4e08ea71fd5025e7a0234cc6b3a6ba53d42a866c3403ab60760f211ea36ad992",
+      "sizeBytes": 63359
+    },
+    "probeResult": {
+      "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/probe-result.json",
+      "sha256": "1591a8944bbdc051ea6ea74b0af0dd52faa7a4c40967982cd6de404282c42394",
+      "sizeBytes": 5600
+    },
+    "runningMetadata": {
+      "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/running.json",
+      "sha256": "92e0941e8e73f4fe81b7860545eb9111e0786215de9bc9a4b8e78ee63ee8605f",
+      "sizeBytes": 5492
+    },
+    "runner": {
+      "path": "/Users/wty/code/RWXX/desktop/src/test/tools/authoritative_menu_acceptance.py",
+      "sizeBytes": 29360,
+      "sha256": "e8f8e453a6bfaf76f419c46ff64517e870ed9b93e048f5383c70536ba325dd7a"
+    },
+    "evidenceHelpers": {
+      "path": "/Users/wty/code/RWXX/desktop/src/test/tools/authoritative_kool_acceptance.py",
+      "sizeBytes": 39095,
+      "sha256": "31ae580c89fa19585bd4e96121760824fe7ae48bf0287d37a567b2355e4017d5"
+    },
+    "testClassDirectorySha256AtRun": "f589a784c30b8f957d1fbe91fedcc824f7d07366f89579725fa7872b7c7ac92e",
+    "testClassCountAtRun": 173,
+    "probePid": 61958,
+    "probeExitCode": 0,
+    "serverPid": 61964,
+    "credentialsInArgv": false,
+    "serverStopped": true,
+    "clients": [
+      {
+        "role": "guest",
+        "pid": 62007,
+        "exitCode": 0,
+        "readOnly": false,
+        "noGameEngine": true,
+        "backend": "Vulkan",
+        "probeCount": 37,
+        "firstTick": 48,
+        "lastTick": 630,
+        "submittedFrames": 1080,
+        "presentedRevision": 1079,
+        "viewSequence": 106,
+        "actionProbe": {
+          "enabled": true,
+          "completed": true,
+          "panelSeen": true,
+          "queueObserved": true,
+          "cancelObserved": true,
+          "uiActionCount": 3
+        },
+        "publicMapVisual": {
+          "catalogVersion": 1,
+          "groundCells": 12100,
+          "decorationCells": 53,
+          "resourcePools": 4,
+          "groundSha256": "333e54c8077b00a8a5af90f4c104511352e03ac586279f95edaa23c34a853a6c",
+          "decorationSha256": "4a9e3c038c3152c40bdc4c8286e93fa53c8b83b37ccb4d225d4459d22477c23b"
+        },
+        "renderedGroundCells": 770,
+        "renderedDecorationCells": 13,
+        "terrainTextures": 7,
+        "windowObservations": 10,
+        "shownWindowObservations": 9,
+        "windowBoundBeforeCreation": true,
+        "allWindowObservationsInactiveUnfocusedInsideVirtualDisplay": true,
+        "bothTransformHashesAndPacerVerified": true,
+        "startupAndFinalMuted": true,
+        "knownResourceDiagnosticsPassed": true,
+        "raw": {
+          "canvas": {
+            "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/rooms/room-14353839060765501598/canvas.ndjson",
+            "sha256": "23f2ed64ad6224c69b59d4b12727fcbfc8a423d167c09cb911ff4fee75402bd4",
+            "sizeBytes": 23053
+          },
+          "window": {
+            "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/rooms/room-14353839060765501598/background-window.ndjson",
+            "sha256": "e8246011f36afe4af09d131724d9462f376f2bd38f84c5c196bc7a19239c080c",
+            "sizeBytes": 9710
+          },
+          "clientLog": {
+            "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/rooms/room-14353839060765501598/client.log",
+            "sha256": "73a42e91e95cc93e8e8026da3f8eaecdb4c11d2d454975cf3fee7b3f5951760d",
+            "sizeBytes": 18504
+          },
+          "startupPreferences": {
+            "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/rooms/room-14353839060765501598/startup-preferences.toml",
+            "sha256": "7a3cff612576b7c28e7a340ecf29eab92b8e19a87a51cd2cdef790502f511947",
+            "sizeBytes": 111
+          },
+          "finalPreferences": {
+            "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/rooms/room-14353839060765501598/preferences.toml",
+            "sha256": "7cb118df6491e1dd0a74eb4b60cb24ffd97b57f744a0572091ef18f326163869",
+            "sizeBytes": 224
+          }
+        },
+        "recording": {
+          "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/rooms/room-14353839060765501598/own.rwxview",
+          "sha256": "4cf6c82ea6ae9cfb8752c6743294a0b71ef279dbdd384b83f7d25112f4821705",
+          "sizeBytes": 7862312,
+          "strictCompletion": true,
+          "inspector": {
+            "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/guest-recording-inspection.json",
+            "sha256": "5e688d89be45d82b4f1298c14b299ca23b15b7c2ff9c255aab5ec110a5de0823",
+            "sizeBytes": 452
+          },
+          "teamId": 1,
+          "views": 108,
+          "firstTick": 0,
+          "finalTick": 642,
+          "noGameEngine": true
+        }
+      },
+      {
+        "role": "host",
+        "pid": 61961,
+        "exitCode": 0,
+        "readOnly": false,
+        "noGameEngine": true,
+        "backend": "Vulkan",
+        "probeCount": 78,
+        "firstTick": 0,
+        "lastTick": 1170,
+        "submittedFrames": 2310,
+        "presentedRevision": 2309,
+        "viewSequence": 196,
+        "actionProbe": {
+          "enabled": true,
+          "completed": true,
+          "panelSeen": true,
+          "queueObserved": true,
+          "cancelObserved": true,
+          "uiActionCount": 3
+        },
+        "publicMapVisual": {
+          "catalogVersion": 1,
+          "groundCells": 12100,
+          "decorationCells": 53,
+          "resourcePools": 4,
+          "groundSha256": "333e54c8077b00a8a5af90f4c104511352e03ac586279f95edaa23c34a853a6c",
+          "decorationSha256": "4a9e3c038c3152c40bdc4c8286e93fa53c8b83b37ccb4d225d4459d22477c23b"
+        },
+        "renderedGroundCells": 770,
+        "renderedDecorationCells": 16,
+        "terrainTextures": 5,
+        "windowObservations": 10,
+        "shownWindowObservations": 9,
+        "windowBoundBeforeCreation": true,
+        "allWindowObservationsInactiveUnfocusedInsideVirtualDisplay": true,
+        "bothTransformHashesAndPacerVerified": true,
+        "startupAndFinalMuted": true,
+        "knownResourceDiagnosticsPassed": true,
+        "raw": {
+          "canvas": {
+            "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/rooms/room-17838250980223101494/canvas.ndjson",
+            "sha256": "e37154ad86794d0447e5cd16dbd89bfd51fb784b4ca3de213db0344b9b30249f",
+            "sizeBytes": 48720
+          },
+          "window": {
+            "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/rooms/room-17838250980223101494/background-window.ndjson",
+            "sha256": "a189ebd15d23e23fe07f916a7ead78edfbe7044fb15d1fc3dd697cbedd9a80bd",
+            "sizeBytes": 9700
+          },
+          "clientLog": {
+            "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/rooms/room-17838250980223101494/client.log",
+            "sha256": "00299e85a292775c48a7bffa16a737db9ade185e4a2b2a32fb843044a7912cea",
+            "sizeBytes": 32027
+          },
+          "startupPreferences": {
+            "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/rooms/room-17838250980223101494/startup-preferences.toml",
+            "sha256": "7a3cff612576b7c28e7a340ecf29eab92b8e19a87a51cd2cdef790502f511947",
+            "sizeBytes": 111
+          },
+          "finalPreferences": {
+            "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/rooms/room-17838250980223101494/preferences.toml",
+            "sha256": "c57ef58903aaa1d80a53b3d71e4ebe0454301aba8aad87870cf96a72392b849e",
+            "sizeBytes": 224
+          }
+        },
+        "recording": {
+          "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/rooms/room-17838250980223101494/own.rwxview",
+          "sha256": "f0e521e15b0315e1272d9fa0f2c6906580fa915a4d619c5695aaa2e85efb4c87",
+          "sizeBytes": 14268624,
+          "strictCompletion": true,
+          "inspector": {
+            "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/host-recording-inspection.json",
+            "sha256": "7cf57c2426c20cd3653e63cff87236315275c92ad871ca9246c52bbfcef8aaed",
+            "sizeBytes": 453
+          },
+          "teamId": 0,
+          "views": 196,
+          "firstTick": 0,
+          "finalTick": 1170,
+          "noGameEngine": true
+        }
+      }
+    ],
+    "ownedChildrenAllStopped": true,
+    "identityResamples": [],
+    "displayCleanup": {
+      "displayId": 53,
+      "managerPid": 61953,
+      "managerExitCode": 0,
+      "removed": true,
+      "originalDisplaysExactlyRestored": true,
+      "preflight": {
+        "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/preflight.ndjson",
+        "sha256": "3ae0adef44ec0b2c793d37e1d80242e24692abd96f7754983c0f0c6064d20dd3",
+        "sizeBytes": 977
+      },
+      "managerLog": {
+        "path": "desktop/build/authoritative/menu-phase4-final-v3-v2/manager.ndjson",
+        "sha256": "a6fb0391b2c4c303ad21daefd57f65d7811bcb8ee811af2505726a783b38f0a2",
+        "sizeBytes": 5265
+      }
+    },
+    "scope": "Invokes the production DesktopAuthoritativeRoomLauncher.host/join API, automatic seats/TLS/invitation setup and separate GUI/server processes. Does not click actual lobby buttons or exercise operating-system clipboard interactions. Normal host shutdown is verified; this native run does not establish owner-pipe EOF causality or abrupt host-crash cleanup.",
+    "preservedTestClasses": {
+      "path": "build/authoritative-virtual/menu-phase4-final-v3-tested-classes",
+      "sha256": "f589a784c30b8f957d1fbe91fedcc824f7d07366f89579725fa7872b7c7ac92e",
+      "classCount": 173,
+      "matchesAllRecordedEntries": true,
+      "manifest": {
+        "path": "desktop/build/authoritative/menu-phase4-final-v3-tested-classes.json",
+        "sha256": "b5489bce4082264d18980cbdfeae2c4d87a53b881435653fc62e2e1535457bdd",
+        "sizeBytes": 36811
+      }
+    }
+  },
+  "failedMenuAttemptPreserved": {
+    "result": {
+      "path": "desktop/build/authoritative/menu-phase4-final-v3-v1/result.json",
+      "sha256": "32256970208cf0501c7fdac87956a925278557bc0923b103de084661c9532382",
+      "sizeBytes": 48112
+    },
+    "passed": false,
+    "failure": [
+      {
+        "stage": "acceptance",
+        "error": "Owned process metadata does not match current PID identity/command"
+      }
+    ],
+    "ownedChildrenAllStopped": true,
+    "virtualDisplayRemoved": true,
+    "originalDisplaysExactlyRestored": true,
+    "interpretation": "The original result lacks instantaneous observed identity/command diagnostics. All final start seconds match. A non-atomic ps/exec transition is only a hypothesis; the succeeding run used zero resamples and does not establish that cause. Original evidence was not overwritten."
+  },
+  "finalDisplayPostcheck": {
+    "evidence": {
+      "path": "desktop/build/authoritative/native-phase4-final-v3-postcheck.ndjson",
+      "sha256": "3ae0adef44ec0b2c793d37e1d80242e24692abd96f7754983c0f0c6064d20dd3",
+      "sizeBytes": 977
+    },
+    "matchesBothSuccessfulRunsOriginalDisplays": true,
+    "activePhysicalMain": true,
+    "knownPendingDisplayTupleAbsent": true,
+    "remainingDisplayIds": [
+      1
+    ],
+    "afterSupplementalEmojiCheck": {
+      "path": "desktop/build/authoritative/native-phase4-final-v3-postcheck-after-emoji.ndjson",
+      "sha256": "3ae0adef44ec0b2c793d37e1d80242e24692abd96f7754983c0f0c6064d20dd3",
+      "sizeBytes": 977,
+      "matchesOriginalDisplays": true
+    }
+  },
+  "offlinePythonTests": {
+    "tests": 67,
+    "failures": 0,
+    "evidence": {
+      "path": "desktop/build/authority-phase4-native-python-tests.log",
+      "sha256": "c9653c95ba1720cdf89e95bdb96dda0b3019c02529594a7d50ac0a25bc94e0ad",
+      "sizeBytes": 166
+    },
+    "scope": "Complete offline Python test discovery; no display, JVM or network start performed by those tests."
+  },
+  "additionalEmojiGpuEvidence": {
+    "status": "passed_test_only_real_message_recording_windowless_vulkan_pixels_and_known_cleanup_diagnostics",
+    "requiredProtocolNativeGate": false,
+    "productionJarChanged": false,
+    "evidence": {
+      "path": "docs/verification/in-game-emoji-gpu-2.0.0-2026-11-06.json",
+      "sha256": "3e9aa222b9c22078f766cddea8e6a8f16be6bfcc22d831d81a7d4f8fea9289b3",
+      "sizeBytes": 10064
+    },
+    "gpuImage": {
+      "path": "desktop/build/verification/emoji-windowless-v4/gpu-chat.png",
+      "sha256": "92a97c4edf62d8d73dae6f7a51e63ea499881d9fb514867bb27b1a4adebd95ad",
+      "sizeBytes": 33714
+    },
+    "emojiCount": 9,
+    "maximumObservedRgbDelta": 1,
+    "knownNativeResourceDiagnosticsPassed": true,
+    "scope": "Real MessageManager recording, frozen packet, production SceneHost and windowless Vulkan MSAA4 offscreen readback; not a complete multiplayer game window or network chat delivery test"
+  },
+  "limitations": [
+    "Rendered terrain/texture counts and presented frame revisions prove exercised rendering paths, not pixel-golden visual correctness.",
+    "Known resource log checks cover leaked-image cleanup and authority font failures, not a complete GPU/heap leak audit.",
+    "Short native sessions are separate from historical legacy 600-second compatibility runs and the final v3 120-second headless three-JVM run.",
+    "Complete animations, projectile effects, Android, mods, spectators/shared control, host migration, replay pause/seek and broader long-match combinations remain separate extensions."
+  ],
+  "remainingClosure": "None for the recorded experimental protocol acceptance scope. Deferred features and untested broader scenarios remain listed separately."
+}

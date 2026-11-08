@@ -23,6 +23,7 @@ internal class ActionRouter(
     private val battleRoomController: BattleRoomController,
     private val multiplayerLobbyController: MultiplayerLobbyController,
     private val multiplayerConnectionController: MultiplayerConnectionController,
+    private val authoritativeRoomController: AuthoritativeRoomController,
     private val battleRoomAdminController: BattleRoomAdminController,
     private val battleRoomLaunchController: BattleRoomLaunchController,
     private val modsController: ModsController,
@@ -212,6 +213,8 @@ internal class ActionRouter(
             MultiplayerOutcome.RefreshRequested -> multiplayerLobbyController.requestRefresh()
             is MultiplayerOutcome.SwitchLobby -> multiplayerLobbyController.switchLobby(outcome.lobbyKind)
             MultiplayerOutcome.HostGameRequested -> multiplayerConnectionController.hostMultiplayerGame()
+            MultiplayerOutcome.HostAuthoritativeRequested -> authoritativeRoomController.showHost()
+            MultiplayerOutcome.JoinAuthoritativeRequested -> authoritativeRoomController.showJoin()
             MultiplayerOutcome.JoinDirectRequested -> multiplayerConnectionController.showJoinDirectDialog()
             MultiplayerOutcome.RejoinLastGameRequested -> multiplayerConnectionController.rejoinLastGame()
             MultiplayerOutcome.ConfigurePlayerNameRequested -> multiplayerConnectionController.showPlayerNameDialog()

@@ -1,0 +1,1711 @@
+{
+    "format": "rwxx-wire-v5-vectors-1",
+    "protocolVersion": 5,
+    "vectorCount": 59,
+    "integerByteOrder": "big-endian",
+    "int64ExpectedRepresentation": "decimal strings",
+    "scope": "Frame syntax examples only; tokens and handles are not live credentials.",
+    "vectors": [
+        {
+            "id": "hello-utf8",
+            "direction": "client-to-server",
+            "message": "Hello",
+            "accepted": true,
+            "frameBytes": 45,
+            "declaredPayloadBytes": 41,
+            "hex": "000000295257584100000005010000000be78ea9e5aeb620f09f9a800000000d6578616d706c652d746f6b656e",
+            "expected": {
+                "playerName": "玩家 🚀",
+                "joinToken": "example-token"
+            }
+        },
+        {
+            "id": "hello-plain",
+            "direction": "client-to-server",
+            "message": "Hello",
+            "accepted": true,
+            "frameBytes": 23,
+            "declaredPayloadBytes": 19,
+            "hex": "0000001352575841000000050100000001410000000142",
+            "expected": {
+                "playerName": "A",
+                "joinToken": "B"
+            }
+        },
+        {
+            "id": "map-ready-hit",
+            "direction": "client-to-server",
+            "message": "MapReady",
+            "accepted": true,
+            "frameBytes": 46,
+            "declaredPayloadBytes": 42,
+            "hex": "0000002a5257584100000005077ebf07406f5f23eaba5e9929b994b9ec0529bbb9c8bedae9dfff2787ad85677d01",
+            "expected": {
+                "contentKey": "7ebf07406f5f23eaba5e9929b994b9ec0529bbb9c8bedae9dfff2787ad85677d",
+                "haveMap": true
+            }
+        },
+        {
+            "id": "map-ready-miss",
+            "direction": "client-to-server",
+            "message": "MapReady",
+            "accepted": true,
+            "frameBytes": 46,
+            "declaredPayloadBytes": 42,
+            "hex": "0000002a5257584100000005077ebf07406f5f23eaba5e9929b994b9ec0529bbb9c8bedae9dfff2787ad85677d00",
+            "expected": {
+                "contentKey": "7ebf07406f5f23eaba5e9929b994b9ec0529bbb9c8bedae9dfff2787ad85677d",
+                "haveMap": false
+            }
+        },
+        {
+            "id": "keepalive",
+            "direction": "client-to-server",
+            "message": "KeepAlive",
+            "accepted": true,
+            "frameBytes": 13,
+            "declaredPayloadBytes": 9,
+            "hex": "00000009525758410000000502",
+            "expected": {}
+        },
+        {
+            "id": "order-move",
+            "direction": "client-to-server",
+            "message": "Order",
+            "accepted": true,
+            "frameBytes": 59,
+            "declaredPayloadBytes": 55,
+            "hex": "000000375257584100000005037fffffffffffffff0020000000000001010000000200000000000000017fffffffffffffff018000000042fb0000",
+            "expected": {
+                "sequence": "9223372036854775807",
+                "viewSequence": "9007199254740993",
+                "kind": "MOVE",
+                "unitHandles": [
+                    "1",
+                    "9223372036854775807"
+                ],
+                "target": {
+                    "kind": "POINT",
+                    "x": -0.0,
+                    "y": 125.5
+                }
+            }
+        },
+        {
+            "id": "order-attack_move",
+            "direction": "client-to-server",
+            "message": "Order",
+            "accepted": true,
+            "frameBytes": 59,
+            "declaredPayloadBytes": 55,
+            "hex": "000000375257584100000005037fffffffffffffff0020000000000001020000000200000000000000017fffffffffffffff018000000042fb0000",
+            "expected": {
+                "sequence": "9223372036854775807",
+                "viewSequence": "9007199254740993",
+                "kind": "ATTACK_MOVE",
+                "unitHandles": [
+                    "1",
+                    "9223372036854775807"
+                ],
+                "target": {
+                    "kind": "POINT",
+                    "x": -0.0,
+                    "y": 125.5
+                }
+            }
+        },
+        {
+            "id": "order-stop",
+            "direction": "client-to-server",
+            "message": "Order",
+            "accepted": true,
+            "frameBytes": 51,
+            "declaredPayloadBytes": 47,
+            "hex": "0000002f5257584100000005037fffffffffffffff0020000000000001030000000200000000000000017fffffffffffffff00",
+            "expected": {
+                "sequence": "9223372036854775807",
+                "viewSequence": "9007199254740993",
+                "kind": "STOP",
+                "unitHandles": [
+                    "1",
+                    "9223372036854775807"
+                ],
+                "target": {
+                    "kind": "NONE"
+                }
+            }
+        },
+        {
+            "id": "order-attack_unit",
+            "direction": "client-to-server",
+            "message": "Order",
+            "accepted": true,
+            "frameBytes": 59,
+            "declaredPayloadBytes": 55,
+            "hex": "000000375257584100000005037fffffffffffffff0020000000000001040000000200000000000000017fffffffffffffff027fffffffffffffff",
+            "expected": {
+                "sequence": "9223372036854775807",
+                "viewSequence": "9007199254740993",
+                "kind": "ATTACK_UNIT",
+                "unitHandles": [
+                    "1",
+                    "9223372036854775807"
+                ],
+                "target": {
+                    "kind": "UNIT",
+                    "handle": "9223372036854775807"
+                }
+            }
+        },
+        {
+            "id": "action-query",
+            "direction": "client-to-server",
+            "message": "ActionPanelRequest",
+            "accepted": true,
+            "frameBytes": 37,
+            "declaredPayloadBytes": 33,
+            "hex": "000000215257584100000005047fffffffffffffff00000000000000017fffffffffffffff",
+            "expected": {
+                "querySequence": "9223372036854775807",
+                "viewSequence": "1",
+                "unitHandle": "9223372036854775807"
+            }
+        },
+        {
+            "id": "action-query-clear",
+            "direction": "client-to-server",
+            "message": "ActionPanelRequest",
+            "accepted": true,
+            "frameBytes": 37,
+            "declaredPayloadBytes": 33,
+            "hex": "00000021525758410000000504000000000000000100000000000000010000000000000000",
+            "expected": {
+                "querySequence": "1",
+                "viewSequence": "1",
+                "unitHandle": "0"
+            }
+        },
+        {
+            "id": "action-none",
+            "direction": "client-to-server",
+            "message": "ActionIntent",
+            "accepted": true,
+            "frameBytes": 55,
+            "declaredPayloadBytes": 51,
+            "hex": "000000335257584100000005050000000000000001000000000000000100000000000000017fffffffffffffff7fffffffffffffff0000",
+            "expected": {
+                "sequence": "1",
+                "viewSequence": "1",
+                "panelSequence": "1",
+                "unitHandle": "9223372036854775807",
+                "actionHandle": "9223372036854775807",
+                "target": {
+                    "kind": "NONE"
+                },
+                "queued": false,
+                "cancel": false
+            }
+        },
+        {
+            "id": "action-point-queued",
+            "direction": "client-to-server",
+            "message": "ActionIntent",
+            "accepted": true,
+            "frameBytes": 63,
+            "declaredPayloadBytes": 59,
+            "hex": "0000003b5257584100000005050000000000000002000000000000000100000000000000010000000000000007000000000000000901402000008000000001",
+            "expected": {
+                "sequence": "2",
+                "viewSequence": "1",
+                "panelSequence": "1",
+                "unitHandle": "7",
+                "actionHandle": "9",
+                "target": {
+                    "kind": "POINT",
+                    "x": 2.5,
+                    "y": -0.0
+                },
+                "queued": true,
+                "cancel": false
+            }
+        },
+        {
+            "id": "action-unit",
+            "direction": "client-to-server",
+            "message": "ActionIntent",
+            "accepted": true,
+            "frameBytes": 63,
+            "declaredPayloadBytes": 59,
+            "hex": "0000003b52575841000000050500000000000000030000000000000001000000000000000100000000000000070000000000000009027fffffffffffffff00",
+            "expected": {
+                "sequence": "3",
+                "viewSequence": "1",
+                "panelSequence": "1",
+                "unitHandle": "7",
+                "actionHandle": "9",
+                "target": {
+                    "kind": "UNIT",
+                    "handle": "9223372036854775807"
+                },
+                "queued": false,
+                "cancel": false
+            }
+        },
+        {
+            "id": "action-cancel",
+            "direction": "client-to-server",
+            "message": "ActionIntent",
+            "accepted": true,
+            "frameBytes": 55,
+            "declaredPayloadBytes": 51,
+            "hex": "00000033525758410000000505000000000000000400000000000000010000000000000001000000000000000700000000000000090002",
+            "expected": {
+                "sequence": "4",
+                "viewSequence": "1",
+                "panelSequence": "1",
+                "unitHandle": "7",
+                "actionHandle": "9",
+                "target": {
+                    "kind": "NONE"
+                },
+                "queued": false,
+                "cancel": true
+            }
+        },
+        {
+            "id": "resync-1",
+            "direction": "client-to-server",
+            "message": "ResyncRequest",
+            "accepted": true,
+            "frameBytes": 14,
+            "declaredPayloadBytes": 10,
+            "hex": "0000000a52575841000000050601",
+            "expected": {
+                "channels": 1
+            }
+        },
+        {
+            "id": "resync-2",
+            "direction": "client-to-server",
+            "message": "ResyncRequest",
+            "accepted": true,
+            "frameBytes": 14,
+            "declaredPayloadBytes": 10,
+            "hex": "0000000a52575841000000050602",
+            "expected": {
+                "channels": 2
+            }
+        },
+        {
+            "id": "resync-3",
+            "direction": "client-to-server",
+            "message": "ResyncRequest",
+            "accepted": true,
+            "frameBytes": 14,
+            "declaredPayloadBytes": 10,
+            "hex": "0000000a52575841000000050603",
+            "expected": {
+                "channels": 3
+            }
+        },
+        {
+            "id": "welcome",
+            "direction": "server-to-client",
+            "message": "Welcome",
+            "accepted": true,
+            "frameBytes": 21,
+            "declaredPayloadBytes": 17,
+            "hex": "00000011525758410000000565000000000000003c",
+            "expected": {
+                "teamId": 0,
+                "ticksPerSecond": 60
+            }
+        },
+        {
+            "id": "map-init-visual",
+            "direction": "server-to-client",
+            "message": "MapInit",
+            "accepted": true,
+            "frameBytes": 76,
+            "declaredPayloadBytes": 72,
+            "hex": "00000048525758410000000566000000030000000200000014000000140000000600010204080f010000000100000006000100500051005a00610063000000060000000000e200e600ea0000",
+            "expected": {
+                "map": {
+                    "width": 3,
+                    "height": 2,
+                    "tileWidth": 20,
+                    "tileHeight": 20,
+                    "terrain": [
+                        0,
+                        1,
+                        2,
+                        4,
+                        8,
+                        15
+                    ],
+                    "visual": {
+                        "catalogVersion": 1,
+                        "groundTileIds": [
+                            1,
+                            80,
+                            81,
+                            90,
+                            97,
+                            99
+                        ],
+                        "decorationTileIds": [
+                            0,
+                            0,
+                            226,
+                            230,
+                            234,
+                            0
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": "map-init-plain",
+            "direction": "server-to-client",
+            "message": "MapInit",
+            "accepted": true,
+            "frameBytes": 40,
+            "declaredPayloadBytes": 36,
+            "hex": "00000024525758410000000566000000030000000200000014000000140000000600010204080f00",
+            "expected": {
+                "map": {
+                    "width": 3,
+                    "height": 2,
+                    "tileWidth": 20,
+                    "tileHeight": 20,
+                    "terrain": [
+                        0,
+                        1,
+                        2,
+                        4,
+                        8,
+                        15
+                    ],
+                    "visual": null
+                }
+            }
+        },
+        {
+            "id": "map-cached",
+            "direction": "server-to-client",
+            "message": "MapCached",
+            "accepted": true,
+            "frameBytes": 45,
+            "declaredPayloadBytes": 41,
+            "hex": "0000002952575841000000056c7ebf07406f5f23eaba5e9929b994b9ec0529bbb9c8bedae9dfff2787ad85677d",
+            "expected": {
+                "contentKey": "7ebf07406f5f23eaba5e9929b994b9ec0529bbb9c8bedae9dfff2787ad85677d"
+            }
+        },
+        {
+            "id": "map-offer",
+            "direction": "server-to-client",
+            "message": "MapOffer",
+            "accepted": true,
+            "frameBytes": 45,
+            "declaredPayloadBytes": 41,
+            "hex": "0000002952575841000000056d7ebf07406f5f23eaba5e9929b994b9ec0529bbb9c8bedae9dfff2787ad85677d",
+            "expected": {
+                "contentKey": "7ebf07406f5f23eaba5e9929b994b9ec0529bbb9c8bedae9dfff2787ad85677d"
+            }
+        },
+        {
+            "id": "world-baseline",
+            "direction": "server-to-client",
+            "message": "Baseline",
+            "accepted": true,
+            "frameBytes": 116,
+            "declaredPayloadBytes": 112,
+            "hex": "000000705257584100000005670000000000000001000000000000000080000000000000000000000600010405090a000000017fffffffffffffff0000000ae58d95e4bd8df09f9a80fffffffe8000000040200000bf80000043af00000000000042c800003f0000000003000000000000000000",
+            "expected": {
+                "baseline": {
+                    "sequence": "1",
+                    "tick": 0,
+                    "teamId": 0,
+                    "credits": -0.0,
+                    "fog": [
+                        0,
+                        1,
+                        4,
+                        5,
+                        9,
+                        10
+                    ],
+                    "units": [
+                        {
+                            "handle": "9223372036854775807",
+                            "typeName": "单位🚀",
+                            "teamId": -2,
+                            "x": -0.0,
+                            "y": 2.5,
+                            "height": -1.0,
+                            "heading": 350.0,
+                            "health": 0.0,
+                            "maxHealth": 100.0,
+                            "buildProgress": 0.5,
+                            "controllable": false,
+                            "upgradeLevel": 3
+                        }
+                    ],
+                    "matchStatus": {
+                        "phase": "RUNNING",
+                        "winnerTeamIds": [],
+                        "defeatedTeamIds": []
+                    }
+                }
+            }
+        },
+        {
+            "id": "world-baseline-terminal",
+            "direction": "server-to-client",
+            "message": "Baseline",
+            "accepted": true,
+            "frameBytes": 68,
+            "declaredPayloadBytes": 64,
+            "hex": "0000004052575841000000056700000000000000020000000a000000004034800000000000000000060a0a0a0a0a0a000000000100000001000000000000000100000001",
+            "expected": {
+                "baseline": {
+                    "sequence": "2",
+                    "tick": 10,
+                    "teamId": 0,
+                    "credits": 20.5,
+                    "fog": [
+                        10,
+                        10,
+                        10,
+                        10,
+                        10,
+                        10
+                    ],
+                    "units": [],
+                    "matchStatus": {
+                        "phase": "FINISHED",
+                        "winnerTeamIds": [
+                            0
+                        ],
+                        "defeatedTeamIds": [
+                            1
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": "world-delta-metadata",
+            "direction": "server-to-client",
+            "message": "Delta",
+            "accepted": true,
+            "frameBytes": 50,
+            "declaredPayloadBytes": 46,
+            "hex": "0000002e52575841000000056800000000000000010000000000000002000000060000000000000000000000000000000000",
+            "expected": {
+                "delta": {
+                    "baseSequence": "1",
+                    "sequence": "2",
+                    "tick": 6,
+                    "teamId": 0,
+                    "credits": null,
+                    "fog": null,
+                    "enteredUnits": [],
+                    "unitPatches": [],
+                    "removedHandles": [],
+                    "matchStatus": null
+                }
+            }
+        },
+        {
+            "id": "world-delta-full-fields",
+            "direction": "server-to-client",
+            "message": "Delta",
+            "accepted": true,
+            "frameBytes": 185,
+            "declaredPayloadBytes": 181,
+            "hex": "000000b55257584100000005680000000000000001000000000000000200000006000000000380000000000000000000000006000005050a0a000000017fffffffffffffff0000000ae58d95e4bd8df09f9a80fffffffe8000000040200000bf80000043af00000000000042c800003f000000000300000001000000000000000207ff0000000474616e6b000000008000000040800000bf800000412000004248000042c800003f0000000102000000010000000000000003",
+            "expected": {
+                "delta": {
+                    "baseSequence": "1",
+                    "sequence": "2",
+                    "tick": 6,
+                    "teamId": 0,
+                    "credits": -0.0,
+                    "fog": {
+                        "kind": "REPLACE",
+                        "values": [
+                            0,
+                            0,
+                            5,
+                            5,
+                            10,
+                            10
+                        ]
+                    },
+                    "enteredUnits": [
+                        {
+                            "handle": "9223372036854775807",
+                            "typeName": "单位🚀",
+                            "teamId": -2,
+                            "x": -0.0,
+                            "y": 2.5,
+                            "height": -1.0,
+                            "heading": 350.0,
+                            "health": 0.0,
+                            "maxHealth": 100.0,
+                            "buildProgress": 0.5,
+                            "controllable": false,
+                            "upgradeLevel": 3
+                        }
+                    ],
+                    "unitPatches": [
+                        {
+                            "handle": "2",
+                            "typeName": "tank",
+                            "teamId": 0,
+                            "x": -0.0,
+                            "y": 4.0,
+                            "height": -1.0,
+                            "heading": 10.0,
+                            "health": 50.0,
+                            "maxHealth": 100.0,
+                            "buildProgress": 0.5,
+                            "controllable": true,
+                            "upgradeLevel": 2
+                        }
+                    ],
+                    "removedHandles": [
+                        "3"
+                    ],
+                    "matchStatus": null
+                }
+            }
+        },
+        {
+            "id": "world-delta-fog-runs",
+            "direction": "server-to-client",
+            "message": "Delta",
+            "accepted": true,
+            "frameBytes": 74,
+            "declaredPayloadBytes": 70,
+            "hex": "00000046525758410000000568000000000000000200000000000000030000000c000000000201000000020000000000000002010200000004000000010a000000000000000000000000",
+            "expected": {
+                "delta": {
+                    "baseSequence": "2",
+                    "sequence": "3",
+                    "tick": 12,
+                    "teamId": 0,
+                    "credits": null,
+                    "fog": {
+                        "kind": "RUNS",
+                        "patches": [
+                            {
+                                "start": 0,
+                                "values": [
+                                    1,
+                                    2
+                                ]
+                            },
+                            {
+                                "start": 4,
+                                "values": [
+                                    10
+                                ]
+                            }
+                        ]
+                    },
+                    "enteredUnits": [],
+                    "unitPatches": [],
+                    "removedHandles": [],
+                    "matchStatus": null
+                }
+            }
+        },
+        {
+            "id": "world-delta-terminal",
+            "direction": "server-to-client",
+            "message": "Delta",
+            "accepted": true,
+            "frameBytes": 75,
+            "declaredPayloadBytes": 71,
+            "hex": "00000047525758410000000568000000000000000300000000000000040000001200000000040000000000000000000000017fffffffffffffff0100000001000000000000000100000001",
+            "expected": {
+                "delta": {
+                    "baseSequence": "3",
+                    "sequence": "4",
+                    "tick": 18,
+                    "teamId": 0,
+                    "credits": null,
+                    "fog": null,
+                    "enteredUnits": [],
+                    "unitPatches": [],
+                    "removedHandles": [
+                        "9223372036854775807"
+                    ],
+                    "matchStatus": {
+                        "phase": "FINISHED",
+                        "winnerTeamIds": [
+                            0
+                        ],
+                        "defeatedTeamIds": [
+                            1
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "id": "unit-patch-bit-0",
+            "direction": "server-to-client",
+            "message": "Delta",
+            "accepted": true,
+            "frameBytes": 68,
+            "declaredPayloadBytes": 64,
+            "hex": "00000040525758410000000568000000000000000100000000000000020000000100000000000000000000000001000000000000000100010000000474616e6b00000000",
+            "expected": {
+                "delta": {
+                    "baseSequence": "1",
+                    "sequence": "2",
+                    "tick": 1,
+                    "teamId": 0,
+                    "credits": null,
+                    "fog": null,
+                    "enteredUnits": [],
+                    "unitPatches": [
+                        {
+                            "handle": "1",
+                            "typeName": "tank",
+                            "teamId": null,
+                            "x": null,
+                            "y": null,
+                            "height": null,
+                            "heading": null,
+                            "health": null,
+                            "maxHealth": null,
+                            "buildProgress": null,
+                            "controllable": null,
+                            "upgradeLevel": null
+                        }
+                    ],
+                    "removedHandles": [],
+                    "matchStatus": null
+                }
+            }
+        },
+        {
+            "id": "unit-patch-bit-1",
+            "direction": "server-to-client",
+            "message": "Delta",
+            "accepted": true,
+            "frameBytes": 64,
+            "declaredPayloadBytes": 60,
+            "hex": "0000003c525758410000000568000000000000000100000000000000020000000100000000000000000000000001000000000000000100020000003f00000000",
+            "expected": {
+                "delta": {
+                    "baseSequence": "1",
+                    "sequence": "2",
+                    "tick": 1,
+                    "teamId": 0,
+                    "credits": null,
+                    "fog": null,
+                    "enteredUnits": [],
+                    "unitPatches": [
+                        {
+                            "handle": "1",
+                            "typeName": null,
+                            "teamId": 63,
+                            "x": null,
+                            "y": null,
+                            "height": null,
+                            "heading": null,
+                            "health": null,
+                            "maxHealth": null,
+                            "buildProgress": null,
+                            "controllable": null,
+                            "upgradeLevel": null
+                        }
+                    ],
+                    "removedHandles": [],
+                    "matchStatus": null
+                }
+            }
+        },
+        {
+            "id": "unit-patch-bit-2",
+            "direction": "server-to-client",
+            "message": "Delta",
+            "accepted": true,
+            "frameBytes": 64,
+            "declaredPayloadBytes": 60,
+            "hex": "0000003c525758410000000568000000000000000100000000000000020000000100000000000000000000000001000000000000000100048000000000000000",
+            "expected": {
+                "delta": {
+                    "baseSequence": "1",
+                    "sequence": "2",
+                    "tick": 1,
+                    "teamId": 0,
+                    "credits": null,
+                    "fog": null,
+                    "enteredUnits": [],
+                    "unitPatches": [
+                        {
+                            "handle": "1",
+                            "typeName": null,
+                            "teamId": null,
+                            "x": -0.0,
+                            "y": null,
+                            "height": null,
+                            "heading": null,
+                            "health": null,
+                            "maxHealth": null,
+                            "buildProgress": null,
+                            "controllable": null,
+                            "upgradeLevel": null
+                        }
+                    ],
+                    "removedHandles": [],
+                    "matchStatus": null
+                }
+            }
+        },
+        {
+            "id": "unit-patch-bit-3",
+            "direction": "server-to-client",
+            "message": "Delta",
+            "accepted": true,
+            "frameBytes": 64,
+            "declaredPayloadBytes": 60,
+            "hex": "0000003c525758410000000568000000000000000100000000000000020000000100000000000000000000000001000000000000000100083f80000000000000",
+            "expected": {
+                "delta": {
+                    "baseSequence": "1",
+                    "sequence": "2",
+                    "tick": 1,
+                    "teamId": 0,
+                    "credits": null,
+                    "fog": null,
+                    "enteredUnits": [],
+                    "unitPatches": [
+                        {
+                            "handle": "1",
+                            "typeName": null,
+                            "teamId": null,
+                            "x": null,
+                            "y": 1.0,
+                            "height": null,
+                            "heading": null,
+                            "health": null,
+                            "maxHealth": null,
+                            "buildProgress": null,
+                            "controllable": null,
+                            "upgradeLevel": null
+                        }
+                    ],
+                    "removedHandles": [],
+                    "matchStatus": null
+                }
+            }
+        },
+        {
+            "id": "unit-patch-bit-4",
+            "direction": "server-to-client",
+            "message": "Delta",
+            "accepted": true,
+            "frameBytes": 64,
+            "declaredPayloadBytes": 60,
+            "hex": "0000003c52575841000000056800000000000000010000000000000002000000010000000000000000000000000100000000000000010010c000000000000000",
+            "expected": {
+                "delta": {
+                    "baseSequence": "1",
+                    "sequence": "2",
+                    "tick": 1,
+                    "teamId": 0,
+                    "credits": null,
+                    "fog": null,
+                    "enteredUnits": [],
+                    "unitPatches": [
+                        {
+                            "handle": "1",
+                            "typeName": null,
+                            "teamId": null,
+                            "x": null,
+                            "y": null,
+                            "height": -2.0,
+                            "heading": null,
+                            "health": null,
+                            "maxHealth": null,
+                            "buildProgress": null,
+                            "controllable": null,
+                            "upgradeLevel": null
+                        }
+                    ],
+                    "removedHandles": [],
+                    "matchStatus": null
+                }
+            }
+        },
+        {
+            "id": "unit-patch-bit-5",
+            "direction": "server-to-client",
+            "message": "Delta",
+            "accepted": true,
+            "frameBytes": 64,
+            "declaredPayloadBytes": 60,
+            "hex": "0000003c525758410000000568000000000000000100000000000000020000000100000000000000000000000001000000000000000100207f7fffff00000000",
+            "expected": {
+                "delta": {
+                    "baseSequence": "1",
+                    "sequence": "2",
+                    "tick": 1,
+                    "teamId": 0,
+                    "credits": null,
+                    "fog": null,
+                    "enteredUnits": [],
+                    "unitPatches": [
+                        {
+                            "handle": "1",
+                            "typeName": null,
+                            "teamId": null,
+                            "x": null,
+                            "y": null,
+                            "height": null,
+                            "heading": 3.4028234663852886E38,
+                            "health": null,
+                            "maxHealth": null,
+                            "buildProgress": null,
+                            "controllable": null,
+                            "upgradeLevel": null
+                        }
+                    ],
+                    "removedHandles": [],
+                    "matchStatus": null
+                }
+            }
+        },
+        {
+            "id": "unit-patch-bit-6",
+            "direction": "server-to-client",
+            "message": "Delta",
+            "accepted": true,
+            "frameBytes": 64,
+            "declaredPayloadBytes": 60,
+            "hex": "0000003c525758410000000568000000000000000100000000000000020000000100000000000000000000000001000000000000000100400000000000000000",
+            "expected": {
+                "delta": {
+                    "baseSequence": "1",
+                    "sequence": "2",
+                    "tick": 1,
+                    "teamId": 0,
+                    "credits": null,
+                    "fog": null,
+                    "enteredUnits": [],
+                    "unitPatches": [
+                        {
+                            "handle": "1",
+                            "typeName": null,
+                            "teamId": null,
+                            "x": null,
+                            "y": null,
+                            "height": null,
+                            "heading": null,
+                            "health": 0.0,
+                            "maxHealth": null,
+                            "buildProgress": null,
+                            "controllable": null,
+                            "upgradeLevel": null
+                        }
+                    ],
+                    "removedHandles": [],
+                    "matchStatus": null
+                }
+            }
+        },
+        {
+            "id": "unit-patch-bit-7",
+            "direction": "server-to-client",
+            "message": "Delta",
+            "accepted": true,
+            "frameBytes": 64,
+            "declaredPayloadBytes": 60,
+            "hex": "0000003c525758410000000568000000000000000100000000000000020000000100000000000000000000000001000000000000000100807f7fffff00000000",
+            "expected": {
+                "delta": {
+                    "baseSequence": "1",
+                    "sequence": "2",
+                    "tick": 1,
+                    "teamId": 0,
+                    "credits": null,
+                    "fog": null,
+                    "enteredUnits": [],
+                    "unitPatches": [
+                        {
+                            "handle": "1",
+                            "typeName": null,
+                            "teamId": null,
+                            "x": null,
+                            "y": null,
+                            "height": null,
+                            "heading": null,
+                            "health": null,
+                            "maxHealth": 3.4028234663852886E38,
+                            "buildProgress": null,
+                            "controllable": null,
+                            "upgradeLevel": null
+                        }
+                    ],
+                    "removedHandles": [],
+                    "matchStatus": null
+                }
+            }
+        },
+        {
+            "id": "unit-patch-bit-8",
+            "direction": "server-to-client",
+            "message": "Delta",
+            "accepted": true,
+            "frameBytes": 64,
+            "declaredPayloadBytes": 60,
+            "hex": "0000003c525758410000000568000000000000000100000000000000020000000100000000000000000000000001000000000000000101000000000000000000",
+            "expected": {
+                "delta": {
+                    "baseSequence": "1",
+                    "sequence": "2",
+                    "tick": 1,
+                    "teamId": 0,
+                    "credits": null,
+                    "fog": null,
+                    "enteredUnits": [],
+                    "unitPatches": [
+                        {
+                            "handle": "1",
+                            "typeName": null,
+                            "teamId": null,
+                            "x": null,
+                            "y": null,
+                            "height": null,
+                            "heading": null,
+                            "health": null,
+                            "maxHealth": null,
+                            "buildProgress": 0.0,
+                            "controllable": null,
+                            "upgradeLevel": null
+                        }
+                    ],
+                    "removedHandles": [],
+                    "matchStatus": null
+                }
+            }
+        },
+        {
+            "id": "unit-patch-bit-9",
+            "direction": "server-to-client",
+            "message": "Delta",
+            "accepted": true,
+            "frameBytes": 61,
+            "declaredPayloadBytes": 57,
+            "hex": "00000039525758410000000568000000000000000100000000000000020000000100000000000000000000000001000000000000000102000000000000",
+            "expected": {
+                "delta": {
+                    "baseSequence": "1",
+                    "sequence": "2",
+                    "tick": 1,
+                    "teamId": 0,
+                    "credits": null,
+                    "fog": null,
+                    "enteredUnits": [],
+                    "unitPatches": [
+                        {
+                            "handle": "1",
+                            "typeName": null,
+                            "teamId": null,
+                            "x": null,
+                            "y": null,
+                            "height": null,
+                            "heading": null,
+                            "health": null,
+                            "maxHealth": null,
+                            "buildProgress": null,
+                            "controllable": false,
+                            "upgradeLevel": null
+                        }
+                    ],
+                    "removedHandles": [],
+                    "matchStatus": null
+                }
+            }
+        },
+        {
+            "id": "unit-patch-bit-10",
+            "direction": "server-to-client",
+            "message": "Delta",
+            "accepted": true,
+            "frameBytes": 61,
+            "declaredPayloadBytes": 57,
+            "hex": "00000039525758410000000568000000000000000100000000000000020000000100000000000000000000000001000000000000000104000100000000",
+            "expected": {
+                "delta": {
+                    "baseSequence": "1",
+                    "sequence": "2",
+                    "tick": 1,
+                    "teamId": 0,
+                    "credits": null,
+                    "fog": null,
+                    "enteredUnits": [],
+                    "unitPatches": [
+                        {
+                            "handle": "1",
+                            "typeName": null,
+                            "teamId": null,
+                            "x": null,
+                            "y": null,
+                            "height": null,
+                            "heading": null,
+                            "health": null,
+                            "maxHealth": null,
+                            "buildProgress": null,
+                            "controllable": null,
+                            "upgradeLevel": 1
+                        }
+                    ],
+                    "removedHandles": [],
+                    "matchStatus": null
+                }
+            }
+        },
+        {
+            "id": "rejected",
+            "direction": "server-to-client",
+            "message": "Rejected",
+            "accepted": true,
+            "frameBytes": 37,
+            "declaredPayloadBytes": 33,
+            "hex": "0000002152575841000000056900000014e5b8ade4bd8de4b88de58fafe794a820f09f9a80",
+            "expected": {
+                "reason": "席位不可用 🚀"
+            }
+        },
+        {
+            "id": "panel-baseline-all-kinds",
+            "direction": "server-to-client",
+            "message": "ActionPanelBaseline",
+            "accepted": true,
+            "frameBytes": 1123,
+            "declaredPayloadBytes": 1119,
+            "hex": "0000045f52575841000000056a0000000000000001000000000000000100000000000000010000000000000000000000070000000f000000000000000101000000000d616374696f6e2e746573742e300000000474616e6b000000ffffffff00000000bf80000001000000000000000202010000000d616374696f6e2e746573742e310000000474616e6b0180000000800000007f7fffffff7fffff7fffffff000100010000000000003f00000000000000000000000303020000000d616374696f6e2e746573742e320000000474616e6b0180000000800000007f7fffffff7fffff7fffffff0180000000800000007f7fffffff7fffff7fffffff02ffffffff00000000bf80000001000000000000000404000000000d616374696f6e2e746573742e330000000474616e6b000180000000800000007f7fffffff7fffff7fffffff0000010000000000003f00000000000000000000000505010000000d616374696f6e2e746573742e340000000474616e6b000001ffffffff00000000bf80000001000000000000000606020000000d616374696f6e2e746573742e350000000474616e6b0180000000800000007f7fffffff7fffff7fffffff000200010000000000003f00000000000000000000000707000000000d616374696f6e2e746573742e360000000474616e6b0180000000800000007f7fffffff7fffff7fffffff0180000000800000007f7fffffff7fffff7fffffff00ffffffff00000000bf80000001000000000000000808010000000d616374696f6e2e746573742e370000000474616e6b000180000000800000007f7fffffff7fffff7fffffff0100010000000000003f00000000000000000000000909020000000d616374696f6e2e746573742e380000000474616e6b000002ffffffff00000000bf80000001000000000000000a0a000000000d616374696f6e2e746573742e390000000474616e6b0180000000800000007f7fffffff7fffff7fffffff000000010000000000003f00000000000000000000000b0b010000000e616374696f6e2e746573742e31300000000474616e6b0180000000800000007f7fffffff7fffff7fffffff0180000000800000007f7fffffff7fffff7fffffff01ffffffff00000000bf80000001000000000000000c0c020000000e616374696f6e2e746573742e31310000000474616e6b000180000000800000007f7fffffff7fffff7fffffff0200010000000000003f00000000000000000000000d0d000000000e616374696f6e2e746573742e31320000000474616e6b000000ffffffff00000000bf80000001000000000000000e0e010000000e616374696f6e2e746573742e31330000000474616e6b0180000000800000007f7fffffff7fffff7fffffff000100010000000000003f00000000000000000000000f0f020000000e616374696f6e2e746573742e31340000000474616e6b0180000000800000007f7fffffff7fffff7fffffff0180000000800000007f7fffffff7fffff7fffffff02ffffffff00000000bf80000001",
+            "expected": {
+                "panel": {
+                    "querySequence": "1",
+                    "panelSequence": "1",
+                    "viewSequence": "1",
+                    "teamId": 0,
+                    "unitHandle": "7",
+                    "actions": [
+                        {
+                            "handle": "1",
+                            "kind": "BUILD",
+                            "targetMode": "NONE",
+                            "presentationKey": "action.test.0",
+                            "producedTypeKey": "tank",
+                            "upfrontCost": null,
+                            "streamingCost": null,
+                            "readiness": "READY",
+                            "queuedCount": -1,
+                            "stockpileCount": 0,
+                            "progress": -1.0,
+                            "canCancel": true
+                        },
+                        {
+                            "handle": "2",
+                            "kind": "PRODUCE",
+                            "targetMode": "POINT",
+                            "presentationKey": "action.test.1",
+                            "producedTypeKey": "tank",
+                            "upfrontCost": {
+                                "credits": -2147483648,
+                                "energy": -0.0,
+                                "hp": 3.4028234663852886E38,
+                                "shield": -3.4028234663852886E38,
+                                "ammo": 2147483647
+                            },
+                            "streamingCost": null,
+                            "readiness": "BLOCKED",
+                            "queuedCount": 65536,
+                            "stockpileCount": 0,
+                            "progress": 0.5,
+                            "canCancel": false
+                        },
+                        {
+                            "handle": "3",
+                            "kind": "UPGRADE",
+                            "targetMode": "VISIBLE_UNIT",
+                            "presentationKey": "action.test.2",
+                            "producedTypeKey": "tank",
+                            "upfrontCost": {
+                                "credits": -2147483648,
+                                "energy": -0.0,
+                                "hp": 3.4028234663852886E38,
+                                "shield": -3.4028234663852886E38,
+                                "ammo": 2147483647
+                            },
+                            "streamingCost": {
+                                "credits": -2147483648,
+                                "energy": -0.0,
+                                "hp": 3.4028234663852886E38,
+                                "shield": -3.4028234663852886E38,
+                                "ammo": 2147483647
+                            },
+                            "readiness": "UNKNOWN",
+                            "queuedCount": -1,
+                            "stockpileCount": 0,
+                            "progress": -1.0,
+                            "canCancel": true
+                        },
+                        {
+                            "handle": "4",
+                            "kind": "RALLY",
+                            "targetMode": "NONE",
+                            "presentationKey": "action.test.3",
+                            "producedTypeKey": "tank",
+                            "upfrontCost": null,
+                            "streamingCost": {
+                                "credits": -2147483648,
+                                "energy": -0.0,
+                                "hp": 3.4028234663852886E38,
+                                "shield": -3.4028234663852886E38,
+                                "ammo": 2147483647
+                            },
+                            "readiness": "READY",
+                            "queuedCount": 65536,
+                            "stockpileCount": 0,
+                            "progress": 0.5,
+                            "canCancel": false
+                        },
+                        {
+                            "handle": "5",
+                            "kind": "REPAIR",
+                            "targetMode": "POINT",
+                            "presentationKey": "action.test.4",
+                            "producedTypeKey": "tank",
+                            "upfrontCost": null,
+                            "streamingCost": null,
+                            "readiness": "BLOCKED",
+                            "queuedCount": -1,
+                            "stockpileCount": 0,
+                            "progress": -1.0,
+                            "canCancel": true
+                        },
+                        {
+                            "handle": "6",
+                            "kind": "RECLAIM",
+                            "targetMode": "VISIBLE_UNIT",
+                            "presentationKey": "action.test.5",
+                            "producedTypeKey": "tank",
+                            "upfrontCost": {
+                                "credits": -2147483648,
+                                "energy": -0.0,
+                                "hp": 3.4028234663852886E38,
+                                "shield": -3.4028234663852886E38,
+                                "ammo": 2147483647
+                            },
+                            "streamingCost": null,
+                            "readiness": "UNKNOWN",
+                            "queuedCount": 65536,
+                            "stockpileCount": 0,
+                            "progress": 0.5,
+                            "canCancel": false
+                        },
+                        {
+                            "handle": "7",
+                            "kind": "LOAD_INTO",
+                            "targetMode": "NONE",
+                            "presentationKey": "action.test.6",
+                            "producedTypeKey": "tank",
+                            "upfrontCost": {
+                                "credits": -2147483648,
+                                "energy": -0.0,
+                                "hp": 3.4028234663852886E38,
+                                "shield": -3.4028234663852886E38,
+                                "ammo": 2147483647
+                            },
+                            "streamingCost": {
+                                "credits": -2147483648,
+                                "energy": -0.0,
+                                "hp": 3.4028234663852886E38,
+                                "shield": -3.4028234663852886E38,
+                                "ammo": 2147483647
+                            },
+                            "readiness": "READY",
+                            "queuedCount": -1,
+                            "stockpileCount": 0,
+                            "progress": -1.0,
+                            "canCancel": true
+                        },
+                        {
+                            "handle": "8",
+                            "kind": "LOAD_UP",
+                            "targetMode": "POINT",
+                            "presentationKey": "action.test.7",
+                            "producedTypeKey": "tank",
+                            "upfrontCost": null,
+                            "streamingCost": {
+                                "credits": -2147483648,
+                                "energy": -0.0,
+                                "hp": 3.4028234663852886E38,
+                                "shield": -3.4028234663852886E38,
+                                "ammo": 2147483647
+                            },
+                            "readiness": "BLOCKED",
+                            "queuedCount": 65536,
+                            "stockpileCount": 0,
+                            "progress": 0.5,
+                            "canCancel": false
+                        },
+                        {
+                            "handle": "9",
+                            "kind": "UNLOAD",
+                            "targetMode": "VISIBLE_UNIT",
+                            "presentationKey": "action.test.8",
+                            "producedTypeKey": "tank",
+                            "upfrontCost": null,
+                            "streamingCost": null,
+                            "readiness": "UNKNOWN",
+                            "queuedCount": -1,
+                            "stockpileCount": 0,
+                            "progress": -1.0,
+                            "canCancel": true
+                        },
+                        {
+                            "handle": "10",
+                            "kind": "STOP_UNLOAD",
+                            "targetMode": "NONE",
+                            "presentationKey": "action.test.9",
+                            "producedTypeKey": "tank",
+                            "upfrontCost": {
+                                "credits": -2147483648,
+                                "energy": -0.0,
+                                "hp": 3.4028234663852886E38,
+                                "shield": -3.4028234663852886E38,
+                                "ammo": 2147483647
+                            },
+                            "streamingCost": null,
+                            "readiness": "READY",
+                            "queuedCount": 65536,
+                            "stockpileCount": 0,
+                            "progress": 0.5,
+                            "canCancel": false
+                        },
+                        {
+                            "handle": "11",
+                            "kind": "TARGET_GROUND",
+                            "targetMode": "POINT",
+                            "presentationKey": "action.test.10",
+                            "producedTypeKey": "tank",
+                            "upfrontCost": {
+                                "credits": -2147483648,
+                                "energy": -0.0,
+                                "hp": 3.4028234663852886E38,
+                                "shield": -3.4028234663852886E38,
+                                "ammo": 2147483647
+                            },
+                            "streamingCost": {
+                                "credits": -2147483648,
+                                "energy": -0.0,
+                                "hp": 3.4028234663852886E38,
+                                "shield": -3.4028234663852886E38,
+                                "ammo": 2147483647
+                            },
+                            "readiness": "BLOCKED",
+                            "queuedCount": -1,
+                            "stockpileCount": 0,
+                            "progress": -1.0,
+                            "canCancel": true
+                        },
+                        {
+                            "handle": "12",
+                            "kind": "TOGGLE",
+                            "targetMode": "VISIBLE_UNIT",
+                            "presentationKey": "action.test.11",
+                            "producedTypeKey": "tank",
+                            "upfrontCost": null,
+                            "streamingCost": {
+                                "credits": -2147483648,
+                                "energy": -0.0,
+                                "hp": 3.4028234663852886E38,
+                                "shield": -3.4028234663852886E38,
+                                "ammo": 2147483647
+                            },
+                            "readiness": "UNKNOWN",
+                            "queuedCount": 65536,
+                            "stockpileCount": 0,
+                            "progress": 0.5,
+                            "canCancel": false
+                        },
+                        {
+                            "handle": "13",
+                            "kind": "GUARD",
+                            "targetMode": "NONE",
+                            "presentationKey": "action.test.12",
+                            "producedTypeKey": "tank",
+                            "upfrontCost": null,
+                            "streamingCost": null,
+                            "readiness": "READY",
+                            "queuedCount": -1,
+                            "stockpileCount": 0,
+                            "progress": -1.0,
+                            "canCancel": true
+                        },
+                        {
+                            "handle": "14",
+                            "kind": "PATROL",
+                            "targetMode": "POINT",
+                            "presentationKey": "action.test.13",
+                            "producedTypeKey": "tank",
+                            "upfrontCost": {
+                                "credits": -2147483648,
+                                "energy": -0.0,
+                                "hp": 3.4028234663852886E38,
+                                "shield": -3.4028234663852886E38,
+                                "ammo": 2147483647
+                            },
+                            "streamingCost": null,
+                            "readiness": "BLOCKED",
+                            "queuedCount": 65536,
+                            "stockpileCount": 0,
+                            "progress": 0.5,
+                            "canCancel": false
+                        },
+                        {
+                            "handle": "15",
+                            "kind": "ATTACK_MODE",
+                            "targetMode": "VISIBLE_UNIT",
+                            "presentationKey": "action.test.14",
+                            "producedTypeKey": "tank",
+                            "upfrontCost": {
+                                "credits": -2147483648,
+                                "energy": -0.0,
+                                "hp": 3.4028234663852886E38,
+                                "shield": -3.4028234663852886E38,
+                                "ammo": 2147483647
+                            },
+                            "streamingCost": {
+                                "credits": -2147483648,
+                                "energy": -0.0,
+                                "hp": 3.4028234663852886E38,
+                                "shield": -3.4028234663852886E38,
+                                "ammo": 2147483647
+                            },
+                            "readiness": "UNKNOWN",
+                            "queuedCount": -1,
+                            "stockpileCount": 0,
+                            "progress": -1.0,
+                            "canCancel": true
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "id": "panel-baseline-clear",
+            "direction": "server-to-client",
+            "message": "ActionPanelBaseline",
+            "accepted": true,
+            "frameBytes": 53,
+            "declaredPayloadBytes": 49,
+            "hex": "0000003152575841000000056a00000000000000020000000000000002000000000000000100000000000000000000000000000000",
+            "expected": {
+                "panel": {
+                    "querySequence": "2",
+                    "panelSequence": "2",
+                    "viewSequence": "1",
+                    "teamId": 0,
+                    "unitHandle": "0",
+                    "actions": []
+                }
+            }
+        },
+        {
+            "id": "panel-delta-metadata",
+            "direction": "server-to-client",
+            "message": "ActionPanelDelta",
+            "accepted": true,
+            "frameBytes": 61,
+            "declaredPayloadBytes": 57,
+            "hex": "0000003952575841000000056b000000000000000100000000000000020000000000000002000000000000000100000000000000000000000700000000",
+            "expected": {
+                "delta": {
+                    "basePanelSequence": "1",
+                    "querySequence": "2",
+                    "panelSequence": "2",
+                    "viewSequence": "1",
+                    "teamId": 0,
+                    "unitHandle": "7",
+                    "updates": []
+                }
+            }
+        },
+        {
+            "id": "panel-delta-all-mask-bits",
+            "direction": "server-to-client",
+            "message": "ActionPanelDelta",
+            "accepted": true,
+            "frameBytes": 143,
+            "declaredPayloadBytes": 139,
+            "hex": "0000008b52575841000000056b00000000000000010000000000000002000000000000000200000000000000010000000000000000000000070000000600000000000000011f00ffffffff00010000bf800000010000000000000002010200000000000000030200000000000000000000000404ffffffff0000000000000005088000000000000000000000061000",
+            "expected": {
+                "delta": {
+                    "basePanelSequence": "1",
+                    "querySequence": "2",
+                    "panelSequence": "2",
+                    "viewSequence": "1",
+                    "teamId": 0,
+                    "unitHandle": "7",
+                    "updates": [
+                        {
+                            "handle": "1",
+                            "readiness": "READY",
+                            "queuedCount": -1,
+                            "stockpileCount": 65536,
+                            "progress": -1.0,
+                            "canCancel": true
+                        },
+                        {
+                            "handle": "2",
+                            "readiness": "UNKNOWN",
+                            "queuedCount": null,
+                            "stockpileCount": null,
+                            "progress": null,
+                            "canCancel": null
+                        },
+                        {
+                            "handle": "3",
+                            "readiness": null,
+                            "queuedCount": 0,
+                            "stockpileCount": null,
+                            "progress": null,
+                            "canCancel": null
+                        },
+                        {
+                            "handle": "4",
+                            "readiness": null,
+                            "queuedCount": null,
+                            "stockpileCount": -1,
+                            "progress": null,
+                            "canCancel": null
+                        },
+                        {
+                            "handle": "5",
+                            "readiness": null,
+                            "queuedCount": null,
+                            "stockpileCount": null,
+                            "progress": -0.0,
+                            "canCancel": null
+                        },
+                        {
+                            "handle": "6",
+                            "readiness": null,
+                            "queuedCount": null,
+                            "stockpileCount": null,
+                            "progress": null,
+                            "canCancel": false
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "id": "old-v4-header",
+            "direction": "client-to-server",
+            "message": "KeepAlive",
+            "accepted": false,
+            "frameBytes": 13,
+            "declaredPayloadBytes": 9,
+            "hex": "00000009525758410000000402",
+            "expected": null,
+            "rejectionCategory": "unsupported-version"
+        },
+        {
+            "id": "oversized-frame-prefix",
+            "direction": "client-to-server",
+            "message": "KeepAlive",
+            "accepted": false,
+            "frameBytes": 4,
+            "declaredPayloadBytes": 4194305,
+            "hex": "00400001",
+            "expected": null,
+            "rejectionCategory": "frame-capacity"
+        },
+        {
+            "id": "oversized-panel-header",
+            "direction": "server-to-client",
+            "message": "ActionPanelDelta",
+            "accepted": false,
+            "frameBytes": 13,
+            "declaredPayloadBytes": 65537,
+            "hex": "0001000152575841000000056b",
+            "expected": null,
+            "rejectionCategory": "panel-capacity"
+        },
+        {
+            "id": "hello-unexpected-cache-list",
+            "direction": "client-to-server",
+            "message": "Hello",
+            "accepted": false,
+            "frameBytes": 24,
+            "declaredPayloadBytes": 20,
+            "hex": "000000145257584100000005010000000141000000014200",
+            "expected": null,
+            "rejectionCategory": "trailing-data"
+        },
+        {
+            "id": "map-ready-noncanonical-bool",
+            "direction": "client-to-server",
+            "message": "MapReady",
+            "accepted": false,
+            "frameBytes": 46,
+            "declaredPayloadBytes": 42,
+            "hex": "0000002a525758410000000507000000000000000000000000000000000000000000000000000000000000000002",
+            "expected": null,
+            "rejectionCategory": "invalid-boolean"
+        },
+        {
+            "id": "hello-nul",
+            "direction": "client-to-server",
+            "message": "Hello",
+            "accepted": false,
+            "frameBytes": 24,
+            "declaredPayloadBytes": 20,
+            "hex": "000000145257584100000005010000000241000000000142",
+            "expected": null,
+            "rejectionCategory": "control-text"
+        },
+        {
+            "id": "hello-malformed-utf8",
+            "direction": "client-to-server",
+            "message": "Hello",
+            "accepted": false,
+            "frameBytes": 24,
+            "declaredPayloadBytes": 20,
+            "hex": "0000001452575841000000050100000002c3280000000142",
+            "expected": null,
+            "rejectionCategory": "malformed-utf8"
+        },
+        {
+            "id": "order-huge-selection",
+            "direction": "client-to-server",
+            "message": "Order",
+            "accepted": false,
+            "frameBytes": 34,
+            "declaredPayloadBytes": 30,
+            "hex": "0000001e52575841000000050300000000000000010000000000000001017fffffff",
+            "expected": null,
+            "rejectionCategory": "selection-capacity"
+        },
+        {
+            "id": "order-i64-min-sequence",
+            "direction": "client-to-server",
+            "message": "Order",
+            "accepted": false,
+            "frameBytes": 43,
+            "declaredPayloadBytes": 39,
+            "hex": "00000027525758410000000503800000000000000000000000000000010300000001000000000000000100",
+            "expected": null,
+            "rejectionCategory": "nonpositive-sequence"
+        },
+        {
+            "id": "action-unknown-flags",
+            "direction": "client-to-server",
+            "message": "ActionIntent",
+            "accepted": false,
+            "frameBytes": 55,
+            "declaredPayloadBytes": 51,
+            "hex": "00000033525758410000000505000000000000000100000000000000010000000000000001000000000000000100000000000000010004",
+            "expected": null,
+            "rejectionCategory": "unknown-flags"
+        },
+        {
+            "id": "unit-unknown-mask",
+            "direction": "server-to-client",
+            "message": "Delta",
+            "accepted": false,
+            "frameBytes": 64,
+            "declaredPayloadBytes": 60,
+            "hex": "0000003c525758410000000568000000000000000100000000000000020000000100000000000000000000000001000000000000000108000000000000000000",
+            "expected": null,
+            "rejectionCategory": "unknown-mask"
+        },
+        {
+            "id": "action-empty-mask",
+            "direction": "server-to-client",
+            "message": "ActionPanelDelta",
+            "accepted": false,
+            "frameBytes": 71,
+            "declaredPayloadBytes": 67,
+            "hex": "0000004352575841000000056b00000000000000010000000000000001000000000000000200000000000000010000000000000000000000010000000100000000000000010000",
+            "expected": null,
+            "rejectionCategory": "empty-mask"
+        },
+        {
+            "id": "fog-overlapping-runs",
+            "direction": "server-to-client",
+            "message": "Delta",
+            "accepted": false,
+            "frameBytes": 73,
+            "declaredPayloadBytes": 69,
+            "hex": "00000045525758410000000568000000000000000100000000000000020000000100000000020100000002000000000000000100000000000000000100000000000000000000000000",
+            "expected": null,
+            "rejectionCategory": "overlapping-fog"
+        },
+        {
+            "id": "map-cached-short",
+            "direction": "server-to-client",
+            "message": "MapCached",
+            "accepted": false,
+            "frameBytes": 44,
+            "declaredPayloadBytes": 40,
+            "hex": "0000002852575841000000056c00000000000000000000000000000000000000000000000000000000000000",
+            "expected": null,
+            "rejectionCategory": "fixed-size"
+        }
+    ],
+    "mapContentKeyExamples": [
+        {
+            "map": {
+                "width": 3,
+                "height": 2,
+                "tileWidth": 20,
+                "tileHeight": 20,
+                "terrain": [
+                    0,
+                    1,
+                    2,
+                    4,
+                    8,
+                    15
+                ],
+                "visual": {
+                    "catalogVersion": 1,
+                    "groundTileIds": [
+                        1,
+                        80,
+                        81,
+                        90,
+                        97,
+                        99
+                    ],
+                    "decorationTileIds": [
+                        0,
+                        0,
+                        226,
+                        230,
+                        234,
+                        0
+                    ]
+                }
+            },
+            "sha256": "7ebf07406f5f23eaba5e9929b994b9ec0529bbb9c8bedae9dfff2787ad85677d"
+        }
+    ]
+}

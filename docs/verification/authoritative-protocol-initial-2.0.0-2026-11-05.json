@@ -1,0 +1,101 @@
+{
+  "stage": "Initial experimental authority protocol, before the subsequent in-game emoji fix",
+  "applicationVersion": "2.0.0",
+  "viewProtocolVersion": 1,
+  "legacyProtocolVersion": 176,
+  "artifactSha256": "f51f8c4ade1ccb1916e00dded559390ae10ac57eca090a8a31d6e96ad2ab5b13",
+  "unitTests": {
+    "core": {
+      "tests": 582,
+      "failures": 0,
+      "skipped": 1
+    },
+    "desktop": {
+      "tests": 176,
+      "failures": 0,
+      "headless": true
+    }
+  },
+  "newProtocol": {
+    "realEngineGameplayPassed": true,
+    "checks": {
+      "legacyNetworkingDisabled": true,
+      "applicationVersion": true,
+      "legacyProtocolUnchanged": true,
+      "unseenEnemiesExcludedBothDirections": true,
+      "hiddenPositionHealthResourcesDoNotChangeWireView": true,
+      "missingFogFailsClosed": true,
+      "realTcpClientsReceiveOnlyOwnViews": true,
+      "scoutingDisclosesEnemy": true,
+      "visibleEnemyAttackAccepted": true,
+      "serverActuallyExecutesAttack": true,
+      "leavingSightRemovesEnemy": true,
+      "staleEnemyHandleRejected": true,
+      "foreignUnitHandleRejected": true,
+      "tcpMoveIntoFogAccepted": true,
+      "duplicateIntentRejected": true,
+      "serverActuallyExecutesMove": true,
+      "clientReceivesAdvancedServerTick": true,
+      "buildFactoryIntentAccepted": true,
+      "serverCompletesFactoryAndChargesResources": true,
+      "produceTankIntentAccepted": true,
+      "serverActuallyProducesTank": true,
+      "producedStockReplacementIsDisclosedAsTank": true,
+      "unsupportedProductionRejected": true,
+      "defeatCannotUpgradeToFullMapView": true
+    },
+    "threeIndependentProcessesPassed": true,
+    "probeTicks": [
+      720,
+      720
+    ]
+  },
+  "legacyInterop": {
+    "rwx-host": {
+      "passed": true,
+      "durationSeconds": 600.9084048329969,
+      "samples": 530,
+      "submittedCommands": 60,
+      "rwxExecutedCommands": 60,
+      "finalClientChecksumPasses": 120,
+      "originalPeerMode": "headless-original-core",
+      "nativeOriginalUi": false,
+      "desyncErrors": 0,
+      "resyncs": 0
+    },
+    "original-host": {
+      "passed": true,
+      "durationSeconds": 600.9532277919934,
+      "samples": 530,
+      "submittedCommands": 60,
+      "rwxExecutedCommands": 60,
+      "finalClientChecksumPasses": 119,
+      "originalPeerMode": "headless-original-core",
+      "nativeOriginalUi": false,
+      "desyncErrors": 0,
+      "resyncs": 0
+    }
+  },
+  "virtualDisplay": {
+    "independentReviewPassed": true,
+    "rawControllerResult": "Preserved false: wrapper used kind instead of event. Independent appendix validates raw in-JVM guard events; runtime wrapper branches were also affected.",
+    "appendix": "build/authoritative-virtual/review-appendix.json",
+    "cleanup": {
+      "removed": true,
+      "originalDisplaysUnchanged": true
+    }
+  },
+  "limitations": [
+    "Experimental CLI and tactical client; normal lobby still legacy",
+    "Small Island, two fixed human seats, limited standard construction and production",
+    "No claim of complete gameplay coverage or production security acceptance",
+    "Original peer uses actual 1.15 headless core, not native original UI",
+    "Window safety evidence uses in-JVM events, not independent continuous WindowServer tracking"
+  ],
+  "remaining": [
+    "Full original game visuals and UI",
+    "Full supported standard action roster and effects",
+    "Complete lifecycle and per-view replay",
+    "Android and mod compatibility for the new protocol"
+  ]
+}

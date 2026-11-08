@@ -44,6 +44,12 @@ RWX 的 P2P 联机、区域控制、地图联通和 JVM 模组能力构成本项
 早期版本的数据也不代表当前默认配置。桌面端的优化结果不直接外推到 Android。
 最新默认值与验收范围见 [当前优化状态](docs/NEXT-SESSION.md)。
 
+## 实验联机协议
+
+当前开发版本为 `2.2.0`。新模式的服务器、客户端 CLI 和大厅创建/加入入口使用候选协议 `7`；原版联机协议 `176` 作为独立模式保留。新模式由服务器运行完整仿真，只向各客户端发送其获准知道的时间线。
+
+64 个客户端、128 个原生单位的本机 TLS 检查已通过。65,536 单位的实时性能目标尚未达标，容量、GUI 与正式发布整体验收仍未完成。详见 [协议概览](docs/authoritative-network-protocol.md)、[v7 逐字节规范](docs/authoritative-wire-v7.md)和[参考工具与向量](docs/protocol/v7/README.md)。
+
 ## 下载与运行
 
 在 [Releases](https://github.com/wty-hub/RWXX/releases) 查看已发布版本，具体文件以对应版本提供的产物为准。

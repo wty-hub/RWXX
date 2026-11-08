@@ -1,0 +1,76 @@
+{
+  "scope": "Runtime source fingerprints; no product JAR/image fingerprint is assumed. No runtime launch is performed by these checks.",
+  "baseRecipeRuntimeVerified": false,
+  "files": [
+    {
+      "file": "Dockerfile.base",
+      "bytes": 861,
+      "sha256": "a0d3aee156edf73fc8d05ca6a623ed711223c20a019032f6dbdf938ae34edfb2"
+    },
+    {
+      "file": "Dockerfile.history",
+      "bytes": 582,
+      "sha256": "d0a663d90409fe4923b0f9059ae127eb1de259d7eedc119b864eba9b758653d5"
+    },
+    {
+      "file": "Dockerfile.live",
+      "bytes": 556,
+      "sha256": "4b34d8695ae9660857e2967c8f86c8792aa1e0bef14b25e807279dc7a7beba88"
+    },
+    {
+      "file": "Dockerfile.menu",
+      "bytes": 522,
+      "sha256": "080dc5e52554839365f056b4448e12c96cf60c782173ceb42cdc44033b86eb28"
+    },
+    {
+      "file": "Dockerfile.replay",
+      "bytes": 984,
+      "sha256": "73083354716045045e8ffbe35f5952ed4cd672c4f358bf0900240e75faf0b414"
+    },
+    {
+      "file": "gui_common.py",
+      "bytes": 19015,
+      "sha256": "5e7114cb5587da6567b3527d65482f9d9da8254375cd9435c0784863e36be4d9"
+    },
+    {
+      "file": "observed-network.json",
+      "bytes": 7791,
+      "sha256": "832d2faeb8ebaf0e30c262989c4387d81e227e808ceefe68ec21bd7891cc511b"
+    },
+    {
+      "file": "xvfb_gui_controller.py",
+      "bytes": 13348,
+      "sha256": "438e34b3408136173ac20b0a306f86180a13705050ec31df2315b5ceabcc12ad"
+    },
+    {
+      "file": "xvfb_history_controller.py",
+      "bytes": 13818,
+      "sha256": "c09e29c368025fe7b380b152d35e56f91b080c44194238e190f20d37c4ee0486"
+    },
+    {
+      "file": "xvfb_history_worker.py",
+      "bytes": 37545,
+      "sha256": "c34a7a80146f43da69069b50e873da025f444be8cc07048dec972d17d2d60704"
+    },
+    {
+      "file": "xvfb_replay_controller.py",
+      "bytes": 15248,
+      "sha256": "a31b89d170d776904eb330cdc20b3f327b90ae51bbf062931a2c7570cc25d527"
+    },
+    {
+      "file": "xvfb_replay_worker.py",
+      "bytes": 23414,
+      "sha256": "fdbb8a9f3027cbdba7d114990fa1dda1b321fcd2998cf1be0da3f01f21f00718"
+    },
+    {
+      "file": "xvfb_v7_controller.py",
+      "bytes": 13860,
+      "sha256": "848f74ee76f5b35ebd86e5088e307730d1e9cec18d3b6e9b3ae316817cde1dfe"
+    },
+    {
+      "file": "xvfb_v7_worker.py",
+      "bytes": 23832,
+      "sha256": "2772b10908fc73fcd3fb58208677cbe383b7c081c119d6c241ea52dc7def9832"
+    }
+  ]
+}

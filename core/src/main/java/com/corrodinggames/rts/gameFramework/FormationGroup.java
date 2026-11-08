@@ -35,6 +35,11 @@ public class FormationGroup {
     /* JADX INFO: renamed from: h */
     final /* synthetic */ FormationEngine formationEngine;
 
+    private int assignedWaypointCount;
+    private OrderableUnit onlyAssignedUnit;
+    private boolean rebuildStarted;
+    private OrderableUnit immediateSingleCandidate;
+
     public FormationGroup(FormationEngine formationEngine) {
         this.formationEngine = formationEngine;
     }
@@ -42,6 +47,22 @@ public class FormationGroup {
     public void a(OrderableUnit orderableUnit, UnitCommand unitCommand) {
         unitCommand.transportTarget = this;
         this.isQueued = unitCommand.isQueued;
+        if (this.assignedWaypointCount < 2) this.assignedWaypointCount++;
+        this.onlyAssignedUnit = this.assignedWaypointCount == 1 ? orderableUnit : null;
+    }
+
+    /** Only Command's newly created, singly assigned group may consume this one-shot shortcut. */
+    void rebuildFreshSingleAssignment(OrderableUnit unit) {
+        if (!this.rebuildStarted && this.assignedWaypointCount == 1 && this.onlyAssignedUnit == unit
+                && unit != null && unit.isHighlighted && !unit.isDead && !unit.isDestroyed
+                && this.formationEngine.isAuthoritativeHeadlessSingleUnitFormationEnabled()) {
+            this.immediateSingleCandidate = unit;
+        }
+        try {
+            b();
+        } finally {
+            this.immediateSingleCandidate = null;
+        }
     }
 
     public void a(UnitCommand unitCommand) {
@@ -54,8 +75,23 @@ public class FormationGroup {
     }
 
     public void a() {
+        this.rebuildStarted = true;
         UnitCommand currentWaypoint;
         this.units.clear();
+        OrderableUnit single = this.immediateSingleCandidate;
+        this.immediateSingleCandidate = null;
+        this.onlyAssignedUnit = null;
+        if (single != null) {
+            // Keep the exact native filter and its evaluation order. In particular, an appended
+            // queued waypoint may not be current, and buildings/attached units may not form groups.
+            if (single.I() && (currentWaypoint = single.getCurrentWaypoint()) != null
+                    && currentWaypoint.transportTarget == this && single.bg()) {
+                this.units.add(single);
+                this.targetX = currentWaypoint.getTargetX();
+                this.targetY = currentWaypoint.getTargetY();
+            }
+            return;
+        }
         BaseUnit[] baseUnitArrA = BaseUnit.bE.a();
         int size = BaseUnit.bE.size();
         for (int i = 0; i < size; i++) {

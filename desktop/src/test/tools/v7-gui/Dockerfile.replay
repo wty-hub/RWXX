@@ -1,0 +1,15 @@
+ARG BASE_IMAGE=rwxx-gui-v7:xvfb-base-v1
+FROM ${BASE_IMAGE}
+USER root
+ARG GAME_JAR_SHA256
+ARG RECORDING_0_SHA256
+ARG RECORDING_1_SHA256
+COPY game.jar /opt/rwxx-v7-gui-replay/game.jar
+COPY seat-0.rwxr seat-1.rwxr xvfb_replay_worker.py gui_common.py /opt/rwxx-v7-gui-replay/
+RUN test -n "$GAME_JAR_SHA256" && test -n "$RECORDING_0_SHA256" && test -n "$RECORDING_1_SHA256" && echo "$GAME_JAR_SHA256  /opt/rwxx-v7-gui-replay/game.jar" | sha256sum -c - && echo "$RECORDING_0_SHA256  /opt/rwxx-v7-gui-replay/seat-0.rwxr" | sha256sum -c - && echo "$RECORDING_1_SHA256  /opt/rwxx-v7-gui-replay/seat-1.rwxr" | sha256sum -c - && chmod 0444 /opt/rwxx-v7-gui-replay/*
+LABEL io.github.rwx.v7-gui-replay.jar-sha256=$GAME_JAR_SHA256
+LABEL io.github.rwx.v7-gui-replay.recording-0-sha256=$RECORDING_0_SHA256
+LABEL io.github.rwx.v7-gui-replay.recording-1-sha256=$RECORDING_1_SHA256
+WORKDIR /tmp
+USER 1000:1000
+ENTRYPOINT ["/usr/bin/python3", "-u", "-B", "/opt/rwxx-v7-gui-replay/xvfb_replay_worker.py"]

@@ -52,6 +52,14 @@ class DesktopPlatformBridge(
     override val isMobilePlatform: Boolean = false
     override val audio: PlatformAudio = audio ?: DesktopPlatformAudio(storage)
     override var filePickerHost: PlatformFilePickerHost?=null
+    override val authoritativeRooms: AuthoritativeRoomLauncher by lazy {
+        DesktopAuthoritativeRoomLauncher(authoritativeRoomsDirectory(storage.localDir.file, System.getProperty("launch.dir")),
+            mapCacheLimit = {
+                preferenceStorage.preference(PREFERENCE_NAME).getInt(
+                    io.github.rwx.settings.AuthoritativeMapCacheSettings.KEY,
+                    io.github.rwx.settings.AuthoritativeMapCacheSettings.DEFAULT_LIMIT)
+            })
+    }
 
     override fun createModClassLoader(modFile: File, parent: ClassLoader): ClassLoader {
         return URLClassLoader(arrayOf(modFile.toURI().toURL()), parent)

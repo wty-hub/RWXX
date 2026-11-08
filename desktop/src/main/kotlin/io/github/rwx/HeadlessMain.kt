@@ -270,7 +270,7 @@ internal data class HeadlessOptions(
     val parity: File? = null,
 )
 
-private val headlessModule = module {
+internal val headlessModule = module {
     single<PlatformBridge> { DesktopPlatformBridge(audio = NoopPlatformAudio) }
     single<PlatformStorage> { get<PlatformBridge>().storage }
     single<PreferenceStorage> { get<PlatformBridge>().preferenceStorage }

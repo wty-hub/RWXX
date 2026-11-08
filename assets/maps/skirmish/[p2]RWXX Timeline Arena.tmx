@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='utf-8'?>
+<map version="1.0" tiledversion="1.0.3" orientation="orthogonal" renderorder="right-down" width="128" height="128" tilewidth="20" tileheight="20">
+ <tileset firstgid="1" name="Snow" tilewidth="20" tileheight="20" tilecount="80" columns="8">
+  <image source="terrain/bitmaps/snow.png" trans="008a76" width="160" height="200" />
+  <tile id="14">
+   <properties>
+    <property name="tree" value="" />
+   </properties>
+  </tile>
+  <tile id="15">
+   <properties>
+    <property name="tree" value="" />
+   </properties>
+  </tile>
+  <tile id="55">
+   <properties>
+    <property name="tree" value="" />
+   </properties>
+  </tile>
+  <tile id="79">
+   <properties>
+    <property name="tree" value="" />
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="81" name="misc" tilewidth="20" tileheight="20" tilecount="9" columns="3">
+  <image source="bitmaps/misc.png" width="79" height="160" />
+  <tile id="4">
+   <properties>
+    <property name="res_pool" value="" />
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="90" name="units" tilewidth="20" tileheight="20" spacing="1" margin="1" tilecount="279" columns="9">
+  <image source="bitmaps/units.png" width="200" height="665" />
+  <tile id="1">
+   <properties>
+    <property name="team" value="0" />
+    <property name="unit" value="builder" />
+   </properties>
+  </tile>
+  <tile id="6">
+   <properties>
+    <property name="team" value="0" />
+    <property name="unit" value="commandCenter" />
+   </properties>
+  </tile>
+  <tile id="46">
+   <properties>
+    <property name="team" value="1" />
+    <property name="unit" value="builder" />
+   </properties>
+  </tile>
+  <tile id="51">
+   <properties>
+    <property name="team" value="1" />
+    <property name="unit" value="commandCenter" />
+   </properties>
+  </tile>
+ </tileset>
+ <layer name="Ground" width="128" height="128">
+  <data encoding="base64" compression="gzip">
+H4sIAAAAAAAC/+3DAQ0AAAzDoM6/6Qs5JKyaqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq7x+e3FbSAAABAA==
+</data>
+ </layer>
+ <layer name="Items" width="128" height="128">
+  <data encoding="base64" compression="gzip">
+H4sIAAAAAAAC/+3YyRHEIAwEQJJU/qmQA4fE0f3fKtuMxvK2BjAnin5bce3xwZkA6DoAfQUA2B8A
+AHbsKvYcwHcXyLVZBcC7CgAA+yOAPgNAF4N5AQCwnwHoPF0LdhRA34CsAgBg5wRAL4KZBDkFuLHr
+dDFmCdAbAAAAvn0A0N/Owf1BRnbkEtAbAAAA4DsYzCDOD97Nt1l0HiCrYBYBAMCuDLIDJ82TWQTs
+B3YaZMezBAAAAGCE/2U8V+QGILOb4pDreKGPvTcAAIAVOhmr3GoAAAEA
+</data>
+ </layer>
+ <layer name="Units" width="128" height="128">
+  <data encoding="base64" compression="gzip">
+H4sIAAAAAAAC/+3QoQEAMAjEQPasYRxMd8azwt+52FQBAAAA6fr0swQAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgzj89lgAAAECkBYnRoKUAAAEA
+</data>
+ </layer>
+</map>

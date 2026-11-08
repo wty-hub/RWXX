@@ -17,6 +17,8 @@ interface PlatformBridge {
     val audio: PlatformAudio
         get() = NoopPlatformAudio
     var filePickerHost: PlatformFilePickerHost?
+    val authoritativeRooms: AuthoritativeRoomLauncher?
+        get() = null
 
     /**
      * Create an isolated ClassLoader for a mod JAR file.
@@ -66,7 +68,7 @@ data class AppMetadata(
     companion object {
         const val DEFAULT_PACKAGE_NAME = "com.corrodinggames.rts.gdx"
         const val DEFAULT_INSTALLER_PACKAGE_NAME = "java-gdx"
-        const val VERSION_NAME = "1.4.3"
+        const val VERSION_NAME = "2.2.0"
         val VERSION_CODE = VERSION_NAME.split('.', '-', '+')
             .take(3)
             .map { it.toIntOrNull() ?: 0 }

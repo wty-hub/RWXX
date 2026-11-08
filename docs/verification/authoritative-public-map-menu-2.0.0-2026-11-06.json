@@ -1,0 +1,150 @@
+{
+  "date": "2026-11-06",
+  "applicationVersion": "2.0.0",
+  "viewProtocolVersion": 3,
+  "legacyProtocolVersion": 176,
+  "artifact": {
+    "path": "desktop/build/libs/RWXX-2.0.0-macos-arm64.jar",
+    "frozenPath": "build/authoritative-virtual/RWXX-2.0.0-phase3-headless.jar",
+    "sha256": "4aa8564246dc0605064c074bb893b893c43e28716f36b5637d2f960debb721b6"
+  },
+  "fullTests": {
+    "core": {
+      "tests": 632,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "desktop": {
+      "tests": 210,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "buildLog": "desktop/build/authority-phase3-final-artifact.log",
+  "pythonTests": {
+    "tests": 46,
+    "failures": 0,
+    "optimizedModeAuthorityTests": 39
+  },
+  "implementation": [
+    "Public static Ground/approved Items artwork frozen once before simulation and shared across reconnects",
+    "Closed eleven-PNG/234-cell catalog, no map script or filesystem paths on the wire",
+    "Four Items resource pools included in public terrain",
+    "Independent experimental host/join menu entries; original entries unchanged",
+    "Automatic private seats, pinned TLS invitation and separate view-only process",
+    "JCA certificate generation without external keytool",
+    "User-writable room storage; installation root distinct from explicit portable override",
+    "JDK, Launch4j javaw-only and trimmed native-launcher command selection",
+    "Owner pipe EOF and bounded owned-process shutdown",
+    "Correct stock tank/turret/extractor identity, legal build actions and artwork",
+    "Explicit waiting state before the second seat joins"
+  ],
+  "headlessGameplay": {
+    "passed": true,
+    "report": "desktop/build/authoritative/phase3-final-source.json",
+    "reportSha256": "11b35a9015296dd05528ff032ae9bb7da4e864df7bc588d320de483366e1c9b9",
+    "checks": {
+      "legacyNetworkingDisabled": true,
+      "applicationVersion": true,
+      "legacyProtocolUnchanged": true,
+      "isolatedServerForkAcceptsPinnedTlsSeats": true,
+      "ownerPipeEofStopsServerWithoutSignal": true,
+      "launcherPreservesParentEngine": true,
+      "launcherHasNoExternalKeytoolDependency": true,
+      "publicTerrainHasOriginalArtwork": true,
+      "itemsResourcePoolsIncluded": true,
+      "unseenEnemiesExcludedBothDirections": true,
+      "hiddenPositionHealthResourcesDoNotChangeWireView": true,
+      "missingFogFailsClosed": true,
+      "realTcpClientsReceiveOnlyOwnViews": true,
+      "scoutingDisclosesEnemy": true,
+      "visibleEnemyAttackAccepted": true,
+      "serverActuallyExecutesAttack": true,
+      "leavingSightRemovesEnemy": true,
+      "staleEnemyHandleRejected": true,
+      "foreignUnitHandleRejected": true,
+      "tcpMoveIntoFogAccepted": true,
+      "duplicateIntentRejected": true,
+      "serverActuallyExecutesMove": true,
+      "clientReceivesAdvancedServerTick": true,
+      "buildFactoryIntentAccepted": true,
+      "serverCompletesFactoryAndChargesResources": true,
+      "produceTankIntentAccepted": true,
+      "serverActuallyProducesTank": true,
+      "producedStockReplacementIsDisclosedAsTank": true,
+      "unsupportedProductionRejected": true,
+      "turretStockBuildAccepted": true,
+      "turretStockBuildCompletesAndCharges": true,
+      "turretStockReplacementStaysVisible": true,
+      "extractorStockBuildAccepted": true,
+      "extractorStockBuildCompletesAndCharges": true,
+      "extractorStockReplacementStaysVisible": true,
+      "defeatCannotUpgradeToFullMapView": true,
+      "serverPublishesCorrectWinner": true,
+      "finishedMatchRejectsFurtherInput": true
+    },
+    "scope": "Real engine and two TCP clients; opt-in deterministic fixture; not full gameplay or production security acceptance"
+  },
+  "threeProcessMovement": {
+    "passed": true,
+    "report": "desktop/build/authoritative/phase3-three-process-final/manifest.json",
+    "reportSha256": "9f708659fea53738db630c00415ced4f8f5ba95b132beecfcbeaf00ad4644aa3",
+    "scope": "Actual unchanged stock map, separate server and two headless client JVMs; five-second advancing/movement scenario, not a long session."
+  },
+  "trimmedRuntime": {
+    "passed": true,
+    "report": "desktop/build/authoritative/trimmed-runtime-phase3-final/verification.json",
+    "reportSha256": "11b35a9015296dd05528ff032ae9bb7da4e864df7bc588d320de483366e1c9b9",
+    "log": "desktop/build/authoritative/trimmed-runtime-phase3-final/verification.log",
+    "headlessForced": true,
+    "UIElementForced": true,
+    "installed": false,
+    "javaExecutablePresent": false,
+    "keytoolExecutablePresent": false,
+    "nativeExecutableSelfForkVerified": true,
+    "tlsAndOwnerEofVerified": true,
+    "scope": "Fresh temporary jpackage image, forced headless; native self-fork, TLS, gameplay and EOF shutdown. This does not prove native GUI rendering or menu interaction."
+  },
+  "legacyEquivalence": {
+    "baselineSha256": "f51f8c4ade1ccb1916e00dded559390ae10ac57eca090a8a31d6e96ad2ab5b13",
+    "scopePrefixes": [
+      "com/corrodinggames/rts/gameFramework/network/",
+      "com/corrodinggames/rts/gameFramework/Command",
+      "com/corrodinggames/rts/gameFramework/GameSaver",
+      "com/corrodinggames/rts/gameFramework/ReplayEngine",
+      "com/corrodinggames/rts/game/PlayerTeam",
+      "com/corrodinggames/rts/game/GameLogic",
+      "io/github/rwx/SwingKoolHost",
+      "io/github/rwx/DesktopWindowActivity"
+    ],
+    "comparedClasses": 101,
+    "changedClasses": [],
+    "passed": true
+  },
+  "legacyRuntimeEvidence": "build/authoritative-virtual/review-appendix.json",
+  "legacyRuntimeScope": "Prior baseline ran original-1.15 interoperability in both directions for 600 seconds. The listed classes remain byte-identical. Those long GUI sessions were not rerun on this artifact.",
+  "currentNativeGui": {
+    "passed": false,
+    "report": "desktop/build/authoritative/kool-phase3-v1/result.json",
+    "postcheck": "desktop/build/authoritative/kool-phase3-v1/readonly-postcheck.json",
+    "noGameJvmWasLaunched": true,
+    "reason": "Physical main display was inactive; virtual-display session configuration failed before any GUI launched.",
+    "physicalDisplaysFullyUnchangedAtPostcheck": true,
+    "ownedVirtualRemovalVerified": false,
+    "ownedVirtualIdAtFailedRun": 50,
+    "followup": "Create preflight now requires an active main display and readable mode before any virtual registration; wait for session recovery and verify the old owned display is absent before retrying. No foreground, wake or physical-mode fallback."
+  },
+  "priorNativeGuiEvidence": "docs/verification/authoritative-kool-replay-2.0.0-2026-11-06.json",
+  "priorNativeGuiScope": "Protocol-2 frozen artifact passed virtual-screen client rendering, recording and offline replay. It cannot prove protocol-3 terrain, new stock artwork or menu launcher GUI behavior.",
+  "remaining": [
+    "Protocol-3 virtual-screen terrain/replay and actual menu-bridge rendering acceptance after display recovery",
+    "Verify owned display cleanup after the failed creation",
+    "Complete standard action/unit roster and audited dynamic-action policy",
+    "Independent turret aim, animation and projectile/effect presentation",
+    "Full reconnect/lifecycle, replay controls and Android integration",
+    "Final supported-scope long-session and security acceptance"
+  ],
+  "goalComplete": false
+}

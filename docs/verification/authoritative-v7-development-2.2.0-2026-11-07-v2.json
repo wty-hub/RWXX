@@ -1,0 +1,197 @@
+{
+  "status": "development-incomplete",
+  "applicationVersion": "2.2.0",
+  "protocolVersion": 7,
+  "scope": "Frozen development artifact v18. Passing components do not constitute full v7 acceptance. Packed representation is tested but production Store/Publisher still use typed objects.",
+  "currentFrozenArtifacts": [
+    {
+      "name": "RWXX-2.2.0-all.jar",
+      "sha256": "6174394adfd7e42cb1f840a947ac15a475879bed0cc96b9c1c26afa8165f1047",
+      "bytes": 178346957
+    },
+    {
+      "name": "RWXX-timeline-acceptance-2.2.0.jar",
+      "sha256": "01e1565a7232944514b1371181c52bb3d4ce3ae09ddc6105e8185813f2364ce7",
+      "bytes": 180920079
+    }
+  ],
+  "unitChecks": {
+    "core": {
+      "tests": 968,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "desktop": {
+      "tests": 291,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "nativeChecks": {
+    "passed": true,
+    "cases": 267,
+    "scope": "Real native action and upgrade effects, one real v7 capability/RALLY/production roundtrip. No GUI/capacity claim.",
+    "report": "desktop/build/verification/authoritative-v7-native-2026-11-07-v5/result.json",
+    "artifact": "acceptance-v18"
+  },
+  "syntheticPublisher": {
+    "completed": true,
+    "realtimeClaimed": false,
+    "sameGoldenDigests": true,
+    "report": "desktop/build/verification/authoritative-v7-publisher-development-2026-11-07-v9/result.json",
+    "scope": "1000/10000/65536 synthetic authorized units, two simulated seconds, actual full retained-state hashes, no native engine/network",
+    "artifact": "acceptance-v15",
+    "notCurrentArtifact": true
+  },
+  "fullChainRegional": {
+    "passed": false,
+    "completed": false,
+    "artifact": "acceptance-v18",
+    "seatsConnected": 64,
+    "realLivingUnits": 65536,
+    "requiredMeasuredTicks": 600,
+    "measuredTicks": 109,
+    "requiredP95Millis": 16.666666666666668,
+    "partialNativeTiming": {
+      "samples": 109,
+      "p50Millis": 53.910875,
+      "p95Millis": 108.200375,
+      "maxMillis": 261.185042,
+      "over16Point667Millis": 105
+    },
+    "partialWholeRoomTiming": {
+      "samples": 109,
+      "p50Millis": 1037.353084,
+      "p95Millis": 2219.848417,
+      "maxMillis": 3156.727,
+      "over16Point667Millis": 109
+    },
+    "stoppedBy": "Work deadline reached109 of600 measured ticks. All64 connected and sessions have no failure. Whole-room p95 remains2219.85ms against16.667ms target.",
+    "report": "desktop/build/verification/authoritative-v7-fullchain-regional-2026-11-07-v8/result.json",
+    "sustainedCombatLateJoinClaimed": false,
+    "resultSha256": "278326e9b2b8e50bf986834c516ade00d97c7ef4469ad552461392f81c5097f7",
+    "sessionsWithFailure": 0,
+    "sampledChildPeakHeapBytes": 3967289608,
+    "partialOwnerCpu": {
+      "scope": "MEASURED",
+      "nativeAdvance": {
+        "samples": 109,
+        "p50Millis": 53.910875,
+        "p95Millis": 108.200375,
+        "maxMillis": 261.185042,
+        "over16Point667Millis": 105
+      },
+      "wholeRoom": {
+        "samples": 109,
+        "p50Millis": 1037.353084,
+        "p95Millis": 2219.848417,
+        "maxMillis": 3156.727,
+        "over16Point667Millis": 109
+      },
+      "ownerCpuSamples": 109,
+      "nativeOwnerCpu": {
+        "samples": 109,
+        "p50Millis": 51.505,
+        "p95Millis": 79.574,
+        "maxMillis": 103.736,
+        "over16Point667Millis": 105
+      },
+      "wholeRoomOwnerCpu": {
+        "samples": 109,
+        "p50Millis": 743.629,
+        "p95Millis": 964.967,
+        "maxMillis": 1046.791,
+        "over16Point667Millis": 109
+      }
+    },
+    "slowReaderPartial": {
+      "othersAdvanced": true,
+      "fullRecoveryCompleted": false,
+      "tcpZeroWindowClaimed": false,
+      "doesNotProveLargeRoomIsolationAcceptance": true
+    }
+  },
+  "earlierComponentEvidence": [
+    {
+      "kind": "64 TLS clients /128 actual native units; slow reader/reconnect/HISTORY/archive",
+      "passed": true,
+      "artifact": "production-v6 plus test-v5, exact classpath manifest in report",
+      "report": "desktop/build/verification/authoritative-v7-seats-64-profile-2026-11-07-v8/result.json",
+      "doesNotProve65536Capacity": true
+    },
+    {
+      "kind": "Isolated Linux real TCP netem: clean/delay/loss/250kbit",
+      "passed": true,
+      "artifact": "test formation-v1, SHA c1df506906f3b8ca67376cd4ae8b7808ba946f6840652c1f733a017434932cdd",
+      "report": "desktop/build/verification/authoritative-v7-netem-suite-2026-11-07-v1/result.json",
+      "doesNotProve65536Bandwidth": true
+    },
+    {
+      "kind": "Independent original176 two host directions,600 seconds each",
+      "passed": true,
+      "artifact": "acceptance-v4",
+      "report": "desktop/build/verification/original-176-headless-full-2026-11-07-v1/result.json"
+    },
+    {
+      "kind": "Original format offline replay random seek",
+      "passed": true,
+      "artifact": "acceptance-v4",
+      "report": "desktop/build/verification/original-replay-seek-2026-11-07-v1/acceptance.json"
+    }
+  ],
+  "gui": {
+    "runOnCurrentArtifact": false,
+    "reason": "Read-only preflight reports original main display inactive; virtual display creation was not attempted.",
+    "physicalDisplayChanged": false,
+    "foregroundWindowActivated": false
+  },
+  "publicSpecification": {
+    "status": "candidate",
+    "byteSpecification": "docs/authoritative-wire-v7.md",
+    "referenceDirectory": "docs/protocol/v7",
+    "candidateZip": "build/protocol-docs/RWXX-protocol-v7-client-spec-2026-11-07-candidate-v1.zip",
+    "candidateZipSha256": "c258bbdd2d3adf3c0f62a35b830e308da7f990ad682cd19d203f9747e9f42a5d"
+  },
+  "openAcceptance": [
+    "65536 actual native units at predeclared60Hz p95 step budget",
+    "Full64-seat pipeline in regional and high-overlap visibility scenarios",
+    "Sustained combat late join without stopping world",
+    "Large-room slow client and history isolation",
+    "Current final artifact netem/bandwidth/GUI/original176/replay revalidation as applicable",
+    "Final native packaging and deliverable validation"
+  ],
+  "nextArtifactChangesNotCoveredByThisRecord": [
+    "Private OwnedSeatVision nonzero bit index candidate",
+    "NativeSightLookup single-slot identity cache candidate",
+    "Incremental packed page editing candidate",
+    "Real native movement record-growth diagnostic still running"
+  ],
+  "representationWork": {
+    "packedPageAndLazyMapBridgeTestsPassed": true,
+    "productionStorePublisherPackedEnabled": false,
+    "retainsFullProfileAndActualFullHash": true,
+    "abiReport": "desktop/build/verification/authoritative-v7-packed-state-abi-2026-11-07-v1/result.json"
+  },
+  "rejectedNativeCandidates": [
+    {
+      "candidate": "branchless signed-byte refog max",
+      "retained": false,
+      "report": "desktop/build/verification/authoritative-v7-engine-refog-max-comparison-2026-11-07-v1/decision.json"
+    },
+    {
+      "candidate": "shared native fog-row geometry within one call",
+      "retained": false,
+      "report": "desktop/build/verification/authoritative-v7-engine-shared-rows-comparison-2026-11-07-v2/decision.json"
+    }
+  ],
+  "changesSincePriorFrozenRecord": [
+    "Pure exact-native sight/capture lookup windows with unknown class/container fallback",
+    "Typed nonfatal stale-input refusal and concurrent-close snapshot correction",
+    "Immutable curve-format lookups reduce allocations while full validation remains",
+    "Exact bounded Float quantization; old Double behavior and uncommon-value fallback preserved",
+    "Packed page and lazy-map foundations; production Store/Publisher not enabled"
+  ],
+  "previousRecord": "docs/verification/authoritative-v7-development-2.2.0-2026-11-07.json"
+}

@@ -179,6 +179,8 @@ class SettingsModel {
     val singleUnitProduction: MutableStateValue<Boolean> = mutableStateOf(false)
     val autosaving: MutableStateValue<Boolean> = mutableStateOf(true)
     val udpInMultiplayer: MutableStateValue<Boolean> = mutableStateOf(false)
+    val authoritativeMapCacheLimit: MutableStateValue<Float> =
+        mutableStateOf(io.github.rwx.settings.AuthoritativeMapCacheSettings.DEFAULT_LIMIT.toFloat())
     val saveMultiplayerReplays: MutableStateValue<Boolean> = mutableStateOf(true)
     val replaysShowRecordedChat: MutableStateValue<Boolean> = mutableStateOf(true)
     val sendReports: MutableStateValue<Boolean> = mutableStateOf(true)
@@ -353,6 +355,12 @@ class SettingsViewModel(val model: SettingsModel) {
                 SettingsPage.Gameplay -> SettingsPageContent(
                     page = page,
                     items = listOf(SettingsPageItem.FactoryProduction) +
+                            (if (isPcPlatform()) listOf(SettingsPageItem.Slider(SettingSlider(
+                                I18n.settings.gameplay.authoritativeMapCacheLimit,
+                                model.authoritativeMapCacheLimit, 0f,
+                                io.github.rwx.settings.AuthoritativeMapCacheSettings.MAX_LIMIT.toFloat(),
+                                step = 1f, formatValue = { it.roundToInt().toString() },
+                            ))) else emptyList()) +
                             gameplayToggles().map { SettingsPageItem.Toggle(it) },
                 )
 

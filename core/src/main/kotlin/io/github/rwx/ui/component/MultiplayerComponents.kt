@@ -191,6 +191,8 @@ fun UiScope.MultiplayerRoomList(
             maxWidth = UiTheme.Layout.menuButtonWidth,
         )
     }
+    val hostAuthoritative = actions.onHostAuthoritative
+    val joinAuthoritative = actions.onJoinAuthoritative
     if (contentWidth.value < MULTIPLAYER_COMPACT_WIDTH_DP) {
         Column(width = contentWidth) {
             TextIconButton(I18n.multiplayer.refresh(), Icon.Refresh, buttonWidth, theme) {
@@ -204,6 +206,14 @@ fun UiScope.MultiplayerRoomList(
             }
             TextIconButton(I18n.multiplayer.rejoinLastGame(), Icon.Back, buttonWidth, theme) {
                 actions.onRejoinLastGame()
+            }
+            if (hostAuthoritative != null && joinAuthoritative != null) {
+                TextIconButton(I18n.multiplayer.authority.hostButton(), Icon.Start, buttonWidth, theme) {
+                    hostAuthoritative()
+                }
+                TextIconButton(I18n.multiplayer.authority.joinButton(), Icon.Multiplayer, buttonWidth, theme) {
+                    joinAuthoritative()
+                }
             }
         }
     } else {
@@ -223,6 +233,17 @@ fun UiScope.MultiplayerRoomList(
             modifier.alignX(AlignmentX.Center)
             TextIconButton(I18n.multiplayer.rejoinLastGame(), Icon.Back, UiTheme.Layout.menuButtonWidth, theme) {
                 actions.onRejoinLastGame()
+            }
+        }
+        if (hostAuthoritative != null && joinAuthoritative != null) {
+            Row {
+                modifier.alignX(AlignmentX.Center)
+                TextIconButton(I18n.multiplayer.authority.hostButton(), Icon.Start, buttonWidth, theme) {
+                    hostAuthoritative()
+                }
+                TextIconButton(I18n.multiplayer.authority.joinButton(), Icon.Multiplayer, buttonWidth, theme) {
+                    joinAuthoritative()
+                }
             }
         }
     }
@@ -484,4 +505,6 @@ data class MultiplayerRoomListActions(
     val onJoinDirect: () -> Unit,
     val onRejoinLastGame: () -> Unit,
     val onConfigure: () -> Unit,
+    val onHostAuthoritative: (() -> Unit)? = null,
+    val onJoinAuthoritative: (() -> Unit)? = null,
 )

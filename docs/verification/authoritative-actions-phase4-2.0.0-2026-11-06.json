@@ -1,0 +1,744 @@
+{
+  "date": "2026-11-06",
+  "applicationVersion": "2.0.0",
+  "viewProtocolVersion": 4,
+  "legacyProtocolVersion": 176,
+  "status": "final_v3_headless_verified_required_native_gui_blocked",
+  "scope": "Experimental authoritative standard-stock actions with separate view-only clients. Evidence is artifact-specific; no complete security certification or unrestricted gameplay claim.",
+  "finalV3": {
+    "status": "headless_artifact_and_packaged_launcher_verified_native_gui_blocked",
+    "artifact": {
+      "frozenPath": "build/authoritative-virtual/RWXX-2.0.0-phase4-headless-v3.jar",
+      "sha256": "27d72f6200678a846fd093d4074ffd86d3310df618a1ec2e4bcf8a1f3cc2a3ea"
+    },
+    "fullTests": {
+      "core": {
+        "tests": 716,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "desktop": {
+        "tests": 234,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "pythonTests": {
+      "scope": "Current kool/menu offline evidence inspectors only; no native processes launched",
+      "tests": 44,
+      "failures": 0,
+      "optimizedModeTests": 44,
+      "optimizedModeFailures": 0,
+      "commands": [
+        "python3 -m unittest -q test_authoritative_kool_acceptance test_authoritative_menu_acceptance",
+        "python3 -O -m unittest -q test_authoritative_kool_acceptance test_authoritative_menu_acceptance"
+      ],
+      "workingDirectory": "desktop/src/test/tools"
+    },
+    "realEngineAcceptance": {
+      "passed": true,
+      "checkCount": 340,
+      "allChecksTrue": true,
+      "evidence": {
+        "path": "desktop/build/authoritative/phase4-final-v3-artifact.json",
+        "sha256": "0ee8b2a36a8755287c5e13f786b1954f37f09fb26ef497375c1a9650edc2e93f",
+        "sizeBytes": 18148
+      },
+      "groups": {
+        "base": 38,
+        "actions": 71,
+        "upgrades": 192,
+        "reconnect": 39
+      },
+      "productionProjection": true,
+      "frozenPublicMapAndStockClosureReused": true,
+      "scope": "Base world projection, actions, upgrade and reconnect fixtures use the production complete frozen catalog/closure; actual commands and effects are checked. Not native GUI acceptance."
+    },
+    "threeProcess120Seconds": {
+      "passed": true,
+      "seconds": 120,
+      "evidence": {
+        "path": "desktop/build/authoritative/phase4-three-process-final-v3/manifest.json",
+        "sha256": "8945c05eae38e3729f59ec91eafe11fb05df76a7b052dacc049fe20ed27da757",
+        "sizeBytes": 3041
+      },
+      "artifactSha256": "27d72f6200678a846fd093d4074ffd86d3310df618a1ec2e4bcf8a1f3cc2a3ea",
+      "processes": [
+        {
+          "role": "server",
+          "pid": 35221,
+          "exitCode": 143
+        },
+        {
+          "role": "probe-0",
+          "pid": 35222,
+          "exitCode": 0
+        },
+        {
+          "role": "probe-1",
+          "pid": 35223,
+          "exitCode": 0
+        }
+      ],
+      "clients": [
+        {
+          "teamId": 0,
+          "viewCount": 1201,
+          "firstTick": 0,
+          "lastTick": 7200,
+          "initialEnemyCount": 0,
+          "maxEnemyCount": 0,
+          "moveSent": true,
+          "moved": true,
+          "passed": true
+        },
+        {
+          "teamId": 1,
+          "viewCount": 1201,
+          "firstTick": 0,
+          "lastTick": 7200,
+          "initialEnemyCount": 0,
+          "maxEnemyCount": 0,
+          "moveSent": true,
+          "moved": true,
+          "passed": true
+        }
+      ],
+      "scope": "Independent real server plus two headless view-only client JVMs on the unmodified stock map; not native GUI or complete match-security certification."
+    },
+    "legacyEquivalence": {
+      "baselineSha256": "f51f8c4ade1ccb1916e00dded559390ae10ac57eca090a8a31d6e96ad2ab5b13",
+      "comparedExistingEngineClasses": 1217,
+      "changedExistingEngineClasses": [],
+      "addedClasses": [
+        "com/corrodinggames/rts/game/units/custom/AuthoritativeContentAccess$Sequence.class",
+        "com/corrodinggames/rts/game/units/custom/AuthoritativeContentAccess.class",
+        "com/corrodinggames/rts/game/units/custom/hooks/AuthoritativeAttachmentAccess.class",
+        "com/corrodinggames/rts/game/units/custom/logic/actions/AuthoritativeLogicAccess.class"
+      ],
+      "hostClasses": [
+        "io/github/rwx/SwingKoolHost.class",
+        "io/github/rwx/DesktopWindowActivityKt.class"
+      ],
+      "changedHostClasses": [],
+      "passed": true,
+      "evidence": {
+        "path": "desktop/build/authoritative/phase4-final-v3-tests.json",
+        "sha256": "d89d0cca4d083bea598fca4068c7d443af16b5a742e8b7a1e1e912619f570b2e",
+        "sizeBytes": 1182
+      }
+    },
+    "note": "Every final runtime result below is tied to the final v3 artifact; the prior v2 records remain separate.",
+    "fullTestsEvidence": {
+      "path": "desktop/build/authoritative/phase4-final-v3-tests.json",
+      "sha256": "d89d0cca4d083bea598fca4068c7d443af16b5a742e8b7a1e1e912619f570b2e",
+      "sizeBytes": 1182
+    },
+    "actualPackagedLauncher": {
+      "passed": true,
+      "checkCount": 340,
+      "allChecksTrue": true,
+      "evidence": {
+        "path": "desktop/build/authoritative/packaged-runtime-phase4-final-v3/verification.json",
+        "sha256": "0ee8b2a36a8755287c5e13f786b1954f37f09fb26ef497375c1a9650edc2e93f",
+        "sizeBytes": 18148
+      },
+      "status": "passed_headless",
+      "launchEvidence": {
+        "path": "desktop/build/authoritative/packaged-runtime-phase4-final-v3/launch.json",
+        "sha256": "e7acd5b2a78c5dfb6ee9e2307731133589f4d4c5431303b112dc7295e377e5f0",
+        "sizeBytes": 1016
+      },
+      "applicationPath": "desktop/build/jpackage/image/macos-arm64/RWXX.app",
+      "bundleVersion": "2.0.0",
+      "artifactSha256": "27d72f6200678a846fd093d4074ffd86d3310df618a1ec2e4bcf8a1f3cc2a3ea",
+      "launcherSha256": "75f0e67e11fee44eaaed0e8fe010cba87935b62470dfa208f07e78a8c4e2147f",
+      "exitCode": 0,
+      "runtimeJavaPresent": false,
+      "runtimeKeytoolPresent": false,
+      "headlessForced": true,
+      "uiElementForced": true,
+      "installed": false,
+      "nativeExecutableSelfForkTlsAndOwnerEofVerified": true,
+      "scope": "Actual deliverable app launcher, forced headless and UIElement for this process only; isolated state/home, no GUI or installation."
+    },
+    "actions": {
+      "passed": true,
+      "checkCount": 71,
+      "allChecksTrue": true,
+      "evidence": {
+        "path": "desktop/build/authoritative/phase4-final-v3-artifact-actions.json",
+        "sha256": "575ab37138a250dcc5e01cc74c8081cc89b5ab9346b5c29a1fd5c3f32eea5bf8",
+        "sizeBytes": 18795
+      },
+      "loadedStockTypes": 152,
+      "unsupportedActions": 0,
+      "closureFailures": 0
+    },
+    "upgradeChains": {
+      "passed": true,
+      "checkCount": 192,
+      "allChecksTrue": true,
+      "evidence": {
+        "path": "desktop/build/authoritative/phase4-final-v3-artifact-upgrades.json",
+        "sha256": "1f6e8ae472278718d0f279c34e8bead3a34df03e60a790490c9ace83e822149b",
+        "sizeBytes": 686168
+      },
+      "chainCount": 13,
+      "stepCount": 23,
+      "chains": [
+        {
+          "name": "nativeLandFactory",
+          "passed": true,
+          "targets": [
+            "landFactory"
+          ]
+        },
+        {
+          "name": "nativeAirFactory",
+          "passed": true,
+          "targets": [
+            "airFactory"
+          ]
+        },
+        {
+          "name": "nativeSeaFactory",
+          "passed": true,
+          "targets": [
+            "seaFactory"
+          ]
+        },
+        {
+          "name": "extractor",
+          "passed": true,
+          "targets": [
+            "extractorT2",
+            "extractorT3",
+            "extractorT3_overclocked",
+            "extractorT3",
+            "extractorT3_reinforced",
+            "extractorT3"
+          ]
+        },
+        {
+          "name": "fabricator",
+          "passed": true,
+          "targets": [
+            "fabricatorT2",
+            "fabricatorT3"
+          ]
+        },
+        {
+          "name": "turretGun",
+          "passed": true,
+          "targets": [
+            "turretT2",
+            "turretT3"
+          ]
+        },
+        {
+          "name": "turretArtillery",
+          "passed": true,
+          "targets": [
+            "turret_artillery",
+            "c_turret_t2_artillery"
+          ]
+        },
+        {
+          "name": "turretFlame",
+          "passed": true,
+          "targets": [
+            "turret_flamethrower"
+          ]
+        },
+        {
+          "name": "turretLightning",
+          "passed": true,
+          "targets": [
+            "c_turret_t1_lightning",
+            "c_turret_t2_lightning"
+          ]
+        },
+        {
+          "name": "antiAir",
+          "passed": true,
+          "targets": [
+            "antiAirTurretT2",
+            "c_antiAirTurretT3"
+          ]
+        },
+        {
+          "name": "antiAirFlak",
+          "passed": true,
+          "targets": [
+            "antiAirTurretFlak"
+          ]
+        },
+        {
+          "name": "mechFactory",
+          "passed": true,
+          "targets": [
+            "mechFactoryT2"
+          ]
+        },
+        {
+          "name": "outpost",
+          "passed": true,
+          "targets": [
+            "outpostT2"
+          ]
+        }
+      ]
+    },
+    "continuousReconnect": {
+      "passed": true,
+      "checkCount": 39,
+      "allChecksTrue": true,
+      "evidence": {
+        "path": "desktop/build/authoritative/phase4-final-v3-artifact-reconnect.json",
+        "sha256": "95890758599140ff78faebb0d2a35cee0614f0b0c9f2fe8f63f622fb6aa7ef81",
+        "sizeBytes": 3537
+      },
+      "phase": "closed-transport-strict-replay",
+      "recording": {
+        "path": "/Users/wty/code/RWXX/desktop/build/authoritative/phase4-final-v3-artifact-reconnect.rwxview",
+        "viewFrames": 4,
+        "firstTick": 71502,
+        "lastTick": 71504,
+        "panelsRecorded": false,
+        "strictCompletion": true
+      },
+      "queueBarrier": "Read-only BlockingQueue.size via fixture-only reflection; no queue elements or global engine IDs inspected"
+    },
+    "distribution": {
+      "path": "desktop/build/distributions/RWXX-2.0.0-macos-arm64-desktop.zip",
+      "sha256": "33e3adbbdf920fa0e7ae63c079e95d2e2485df929021c3f12d97173496961bc0",
+      "sizeBytes": 162984828,
+      "embeddedJarPath": "RWXX.app/Contents/app/RWXX-2.0.0-macos-arm64.jar",
+      "embeddedJarSha256": "27d72f6200678a846fd093d4074ffd86d3310df618a1ec2e4bcf8a1f3cc2a3ea",
+      "matchesVerifiedFinalArtifact": true,
+      "installed": false,
+      "evidence": {
+        "path": "desktop/build/authoritative/packaged-runtime-phase4-final-v3/distribution.json",
+        "sha256": "8cbacd9cdb309a4f625ed59a183b82f357529870225e3996fa82f2a6cce96c7b",
+        "sizeBytes": 410
+      }
+    }
+  },
+  "verifiedV2": {
+    "artifact": {
+      "frozenPath": "build/authoritative-virtual/RWXX-2.0.0-phase4-headless-v2.jar",
+      "sha256": "e1f053082102fc9160b5b629dd435bb9c4ebd95b73e11be79d740ef58c6e536d"
+    },
+    "fullTests": {
+      "core": {
+        "tests": 710,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1
+      },
+      "desktop": {
+        "tests": 234,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "fullTestsEvidence": {
+      "path": "desktop/build/authoritative/phase4-final-v2-tests.json",
+      "sha256": "97c5f5c74dc98f1911126495ce3a1eb3b3bba41c042baa17b0b1c69b52d2076d",
+      "sizeBytes": 1040
+    },
+    "realEngineAcceptance": {
+      "passed": true,
+      "checkCount": 340,
+      "allChecksTrue": true,
+      "evidence": {
+        "path": "desktop/build/authoritative/phase4-final-v2-artifact.json",
+        "sha256": "0ee8b2a36a8755287c5e13f786b1954f37f09fb26ef497375c1a9650edc2e93f",
+        "sizeBytes": 18148
+      },
+      "groups": {
+        "base": 38,
+        "actions": 71,
+        "upgrades": 192,
+        "reconnect": 39
+      },
+      "productionProjection": false,
+      "scope": "Opt-in real-engine fixture. Action, upgrade and reconnect fixtures use the full frozen stock catalog/closure, but the v2 base-world projector fixture still uses the early limited projection constructor. The base projection was corrected and rerun in v3; this result must not be promoted to v3 production-projection coverage.",
+      "mainWorldProjectionUsesFullStockCatalog": false,
+      "actionsUpgradesReconnectUseFullStockCatalog": true
+    },
+    "actions": {
+      "passed": true,
+      "checkCount": 71,
+      "allChecksTrue": true,
+      "evidence": {
+        "path": "desktop/build/authoritative/phase4-final-v2-artifact-actions.json",
+        "sha256": "575ab37138a250dcc5e01cc74c8081cc89b5ab9346b5c29a1fd5c3f32eea5bf8",
+        "sizeBytes": 18795
+      },
+      "loadedStockTypes": 152,
+      "unsupportedActions": 0,
+      "closureFailures": 0,
+      "coverage": [
+        "Build/produce/upgrade/queue cancellation and refunds",
+        "Rally, repair and neutral-resource reclaim",
+        "Both load directions, unload, stop unload, guard, patrol and attack mode",
+        "Stock deployment and modular parent slot selection, private child construction/cancellation/cooldown/reclaim",
+        "Nuclear ammo production, fog-coordinate ground command and real hidden-target damage",
+        "Real TCP action panel and command roundtrip"
+      ]
+    },
+    "upgradeChains": {
+      "passed": true,
+      "checkCount": 192,
+      "allChecksTrue": true,
+      "evidence": {
+        "path": "desktop/build/authoritative/phase4-final-v2-artifact-upgrades.json",
+        "sha256": "1f6e8ae472278718d0f279c34e8bead3a34df03e60a790490c9ace83e822149b",
+        "sizeBytes": 686168
+      },
+      "chainCount": 13,
+      "stepCount": 23,
+      "chains": [
+        {
+          "name": "nativeLandFactory",
+          "passed": true,
+          "targets": [
+            "landFactory"
+          ]
+        },
+        {
+          "name": "nativeAirFactory",
+          "passed": true,
+          "targets": [
+            "airFactory"
+          ]
+        },
+        {
+          "name": "nativeSeaFactory",
+          "passed": true,
+          "targets": [
+            "seaFactory"
+          ]
+        },
+        {
+          "name": "extractor",
+          "passed": true,
+          "targets": [
+            "extractorT2",
+            "extractorT3",
+            "extractorT3_overclocked",
+            "extractorT3",
+            "extractorT3_reinforced",
+            "extractorT3"
+          ]
+        },
+        {
+          "name": "fabricator",
+          "passed": true,
+          "targets": [
+            "fabricatorT2",
+            "fabricatorT3"
+          ]
+        },
+        {
+          "name": "turretGun",
+          "passed": true,
+          "targets": [
+            "turretT2",
+            "turretT3"
+          ]
+        },
+        {
+          "name": "turretArtillery",
+          "passed": true,
+          "targets": [
+            "turret_artillery",
+            "c_turret_t2_artillery"
+          ]
+        },
+        {
+          "name": "turretFlame",
+          "passed": true,
+          "targets": [
+            "turret_flamethrower"
+          ]
+        },
+        {
+          "name": "turretLightning",
+          "passed": true,
+          "targets": [
+            "c_turret_t1_lightning",
+            "c_turret_t2_lightning"
+          ]
+        },
+        {
+          "name": "antiAir",
+          "passed": true,
+          "targets": [
+            "antiAirTurretT2",
+            "c_antiAirTurretT3"
+          ]
+        },
+        {
+          "name": "antiAirFlak",
+          "passed": true,
+          "targets": [
+            "antiAirTurretFlak"
+          ]
+        },
+        {
+          "name": "mechFactory",
+          "passed": true,
+          "targets": [
+            "mechFactoryT2"
+          ]
+        },
+        {
+          "name": "outpost",
+          "passed": true,
+          "targets": [
+            "outpostT2"
+          ]
+        }
+      ],
+      "method": "Actual legal land/water/resource-pool placement and native snapping, private panel commands, queue progression, per-tick debit/refund, completed identity/level and new view disclosure. No forced upgrades or completion."
+    },
+    "continuousReconnect": {
+      "passed": true,
+      "checkCount": 39,
+      "allChecksTrue": true,
+      "evidence": {
+        "path": "desktop/build/authoritative/phase4-final-v2-artifact-reconnect.json",
+        "sha256": "cbc5874a49354d4504649471ea2790c2a1152e643a1b8942351a9a3412d5da90",
+        "sizeBytes": 3537
+      },
+      "coverage": [
+        "Old input demonstrably queued before disconnect and discarded after generation replacement",
+        "Unit/action handles rotate; old capability rejected with new owner/view/panel receipts",
+        "Fresh capability causes real production, then cancels only its own queue delta",
+        "One seat remains connected through reconnects and terminal transition",
+        "New terminal connection receives no units and fog entirely 10",
+        "Stale-generation view/panel/disconnect rejected with independent writer-channel barriers",
+        "Actually received running and terminal views recorded and strictly read after closing transport"
+      ]
+    },
+    "threeProcess120Seconds": {
+      "passed": true,
+      "seconds": 120,
+      "evidence": {
+        "path": "desktop/build/authoritative/phase4-three-process-final-v2/manifest.json",
+        "sha256": "b89e0f79f072ae8809f63eea5482315a1502e6c8c20e34a12d0cf354aab3a10e",
+        "sizeBytes": 3041
+      },
+      "processes": [
+        {
+          "role": "server",
+          "pid": 27369,
+          "exitCode": 143
+        },
+        {
+          "role": "probe-0",
+          "pid": 27370,
+          "exitCode": 0
+        },
+        {
+          "role": "probe-1",
+          "pid": 27371,
+          "exitCode": 0
+        }
+      ],
+      "clients": [
+        {
+          "teamId": 0,
+          "viewCount": 1201,
+          "firstTick": 0,
+          "lastTick": 7200,
+          "initialEnemyCount": 0,
+          "maxEnemyCount": 0,
+          "moveSent": true,
+          "moved": true,
+          "passed": true
+        },
+        {
+          "teamId": 1,
+          "viewCount": 1201,
+          "firstTick": 0,
+          "lastTick": 7200,
+          "initialEnemyCount": 0,
+          "maxEnemyCount": 0,
+          "moveSent": true,
+          "moved": true,
+          "passed": true
+        }
+      ],
+      "scope": "Unmodified stock map, independent server plus two headless protocol-client JVMs; no GUI and no full simulation in clients."
+    },
+    "trimmedRuntime": {
+      "passed": true,
+      "checkCount": 340,
+      "allChecksTrue": true,
+      "evidence": {
+        "path": "desktop/build/authoritative/trimmed-runtime-phase4-final-v2/verification.json",
+        "sha256": "0ee8b2a36a8755287c5e13f786b1954f37f09fb26ef497375c1a9650edc2e93f",
+        "sizeBytes": 18148
+      },
+      "buildEvidence": {
+        "path": "desktop/build/authoritative/trimmed-runtime-phase4-final-v2/build-command.json",
+        "sha256": "20d8d8429a56159d768131dc8aaa929885d09b9491a4ea842d378c18577b281b",
+        "sizeBytes": 1177
+      },
+      "headlessForced": true,
+      "uiElementForced": true,
+      "installed": false,
+      "nativeExecutableSelfForkTlsAndOwnerEofVerified": true,
+      "scope": "Temporary jpackage app image and native launcher, forced headless. Does not prove graphics/menu interaction."
+    },
+    "legacyEquivalence": {
+      "baselineSha256": "f51f8c4ade1ccb1916e00dded559390ae10ac57eca090a8a31d6e96ad2ab5b13",
+      "artifactSha256": "e1f053082102fc9160b5b629dd435bb9c4ebd95b73e11be79d740ef58c6e536d",
+      "prefix": "com/corrodinggames/rts/",
+      "comparedExistingClasses": 1217,
+      "changedExistingClasses": [],
+      "addedClasses": [
+        "com/corrodinggames/rts/game/units/custom/AuthoritativeContentAccess$Sequence.class",
+        "com/corrodinggames/rts/game/units/custom/AuthoritativeContentAccess.class",
+        "com/corrodinggames/rts/game/units/custom/hooks/AuthoritativeAttachmentAccess.class",
+        "com/corrodinggames/rts/game/units/custom/logic/actions/AuthoritativeLogicAccess.class"
+      ],
+      "passed": true,
+      "evidence": {
+        "path": "desktop/build/authoritative/phase4-final-v2-extended-legacy.json",
+        "sha256": "a5d8f6b7e3b9326e675ea4963dc18dcc139d4b2cb4386efe9aae508a15e923bd",
+        "sizeBytes": 681
+      },
+      "priorRuntimeEvidence": "build/authoritative-virtual/review-appendix.json",
+      "scope": "All 1217 existing com/corrodinggames/rts classes equal the frozen baseline; four new read-only access bridges listed separately. Prior original-1.15 bidirectional 600-second sessions were not rerun on v2."
+    }
+  },
+  "currentSourceBoundaries": {
+    "catalog": "120 audited concrete stock configs with 18 native replacements; effective loaded roster has 152 types.",
+    "productionProjector": "Uses the complete frozen StockUnitCatalog and StockActionClosure, not the small early fixture whitelist.",
+    "unitVisibility": "Any non-null CustomUnitConfig.isVisible is rejected at catalog capture and excluded from entity disclosure and sight sources. No predicate is executed. Captured stats identity and enemy-visible flag must remain stable.",
+    "actionVisibility": "Static-hidden actions are omitted; unsafe dynamic readiness remains UNKNOWN without dynamic tooltip/icon evaluation. Authoritative checks occur when executing the real action.",
+    "privateCapabilities": "Connection/owner/action/definition/queue/closure identities bound; modular children remain private behind the parent handle.",
+    "capacity": {
+      "maxWorldPayloadBytes": 4194304,
+      "maxUnits": 65536,
+      "maxSelectedUnits": 256,
+      "maxPanelBytes": 65536,
+      "maxActionsPerPanel": 128,
+      "testSource": {
+        "path": "core/src/test/kotlin/io/github/rwx/net/authoritative/AuthoritativeWireCodecCapacityTest.kt",
+        "sha256": "b11f3c0a7fddf0de347c9de6d461df88f531d3105a81464e8a2adc6c72416157",
+        "sizeBytes": 7929
+      },
+      "positiveCases": [
+        "65536 unique units with all upgrade levels round-trip",
+        "Measured exact 4 MiB world payload followed by an independent panel decodes without consuming the next frame"
+      ],
+      "negativeCases": [
+        "65537 units rejected on read and write",
+        "4 MiB plus one byte rejected on read and write",
+        "Rejected write emits no partial prefix/frame and preserves earlier complete frames"
+      ],
+      "scope": "Codec limits, not real-time performance at maximum unit count."
+    },
+    "verifiedArtifactSha256": "27d72f6200678a846fd093d4074ffd86d3310df618a1ec2e4bcf8a1f3cc2a3ea"
+  },
+  "requiredNativeGui": {
+    "status": "blocked_before_display_creation",
+    "passed": false,
+    "evidence": {
+      "path": "desktop/build/authoritative/kool-phase4-v2/result.json",
+      "sha256": "519bf124431a356cfb60d5ee1d97de6ee9d5302d50b9b944fb5bcf76cbdec43d",
+      "sizeBytes": 3311
+    },
+    "preflightEvidence": {
+      "path": "desktop/build/authoritative/kool-phase4-v2/preflight.ndjson",
+      "sha256": "734ebf410701570152c0a0822a1dcabcfafd968e0cf1c112306def0b13d5303c",
+      "sizeBytes": 2659
+    },
+    "processesLaunched": 0,
+    "newDisplayCreated": false,
+    "newCleanupRequired": false,
+    "physicalMainActive": false,
+    "knownPendingOwnedDisplay": {
+      "vendor": 29561,
+      "serial": 807753347,
+      "observedId": 50,
+      "removalConfirmed": false
+    },
+    "guard": "Both runners reject this exact vendor/serial tuple regardless of display ID, bounds, active state or readable mode. Other display identities retain previous checks.",
+    "beforeRetry": [
+      "Perform a fresh read-only manager --list",
+      "Require active physical main with readable mode",
+      "Confirm exact pending owned vendor/serial is absent",
+      "Do not wake/change physical screens or use a foreground fallback"
+    ],
+    "remainingCases": [
+      "Two live Kool clients with presented normal-UI selection/production/real queue/cancel/refund evidence",
+      "Read-only replay with the opt-in inherited but zero probe input",
+      "Actual menu bridge launches two isolated view-only GUI processes",
+      "Inactive/unfocused virtual placement, startup mute, native resource cleanup and owned-display removal"
+    ],
+    "priorGuiEvidence": "docs/verification/authoritative-kool-replay-2.0.0-2026-11-06.json",
+    "priorGuiScope": "Protocol-2 frozen artifact only; cannot certify protocol-4 terrain, standard roster/actions or current menu GUI.",
+    "artifactSha256": "27d72f6200678a846fd093d4074ffd86d3310df618a1ec2e4bcf8a1f3cc2a3ea",
+    "priorPhase4V2ArtifactPreflight": {
+      "path": "desktop/build/authoritative/kool-phase4-v1/result.json",
+      "sha256": "02df35261039843b7cdc3cb728777993ed057fe4692962a0fe39d01186fa6476",
+      "sizeBytes": 3311
+    }
+  },
+  "deferredFeatures": [
+    "Full animation and projectile/effect presentation",
+    "Android authoritative client",
+    "Mods",
+    "Spectators and shared control",
+    "Host migration",
+    "Replay pause/seek",
+    "Broader long-session and unit-combination coverage"
+  ],
+  "historicalEvidenceUnchanged": true,
+  "goalComplete": false,
+  "emojiArtifactAudit": {
+    "evidence": {
+      "path": "desktop/build/verification/in-game-emoji-final-artifact-2026-11-06.json",
+      "sha256": "06fbb6f30590b81b5ec9e4274bef0fd93eed17b80b8699220d6fb2f1225a3176",
+      "sizeBytes": 3537
+    },
+    "applicationArtifacts": [
+      {
+        "applicationPath": "/Applications/RWXX.app",
+        "bundleVersion": "1.4.4",
+        "jarPath": "/Applications/RWXX.app/Contents/app/RWXX-1.4.4-macos-arm64.jar",
+        "sha256": "c64dc21378a3e5381afed77adcaeeaa04d292990d7bd154306b703f2dd4a5304",
+        "nativeCanvasEmojiClassPresent": false,
+        "nativeGraphicsEngineReferencesEmojiRecorder": false
+      },
+      {
+        "applicationPath": "/Users/wty/code/RWXX/desktop/build/jpackage/image/macos-arm64/RWXX.app",
+        "bundleVersion": "2.0.0",
+        "jarPath": "/Users/wty/code/RWXX/desktop/build/jpackage/image/macos-arm64/RWXX.app/Contents/app/RWXX-2.0.0-macos-arm64.jar",
+        "sha256": "27d72f6200678a846fd093d4074ffd86d3310df618a1ec2e4bcf8a1f3cc2a3ea",
+        "nativeCanvasEmojiClassPresent": true,
+        "nativeGraphicsEngineReferencesEmojiRecorder": true
+      }
+    ],
+    "installedApplicationModified": false,
+    "nativeInGameChatGpuVerifiedThisCheck": false,
+    "headlessRegression": {
+      "tests": 22,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "testsScope": "Related regression subset; do not add these 22 again to the full suite totals.",
+    "conclusion": "Installed app remains 1.4.4 without the in-game canvas emoji path. Regenerated workspace app is 2.0.0 and includes the repair. The user actual failing launch path is unconfirmed; CPU/frame regressions do not certify native GPU output."
+  }
+}

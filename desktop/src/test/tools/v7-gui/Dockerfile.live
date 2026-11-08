@@ -1,0 +1,12 @@
+ARG BASE_IMAGE=rwxx-gui-v7:xvfb-base-v1
+FROM ${BASE_IMAGE}
+USER root
+ARG GAME_JAR_SHA256
+COPY game.jar /opt/rwxx-v7-gui-live/game.jar
+COPY xvfb_v7_worker.py /opt/rwxx-v7-gui-live/worker.py
+COPY gui_common.py /opt/rwxx-v7-gui-live/gui_common.py
+RUN test -n "$GAME_JAR_SHA256" && echo "$GAME_JAR_SHA256  /opt/rwxx-v7-gui-live/game.jar" | sha256sum -c - && chmod 0444 /opt/rwxx-v7-gui-live/*
+LABEL io.github.rwx.v7-gui-live.jar-sha256=$GAME_JAR_SHA256
+WORKDIR /tmp
+USER 1000:1000
+ENTRYPOINT ["/usr/bin/python3", "-u", "-B", "/opt/rwxx-v7-gui-live/worker.py"]

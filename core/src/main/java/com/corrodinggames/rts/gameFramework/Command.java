@@ -659,6 +659,8 @@ public class Command {
                 }
                 i++;
             }
+            int assignedWaypointCount = 0;
+            OrderableUnit onlyAssignedUnit = null;
             for (OrderableUnit orderableUnit6 : this.selectedUnits) {
                 if (!orderableUnit6.isValidNewWaypoint(this.unitCommand, CommandController.logRateLimitCounter < 5)) {
                     String str4 = VariableScope.nullOrMissingString;
@@ -670,9 +672,16 @@ public class Command {
                     UnitCommand unitCommandAppendWaypointCopy = orderableUnit6.appendWaypointCopy(this.unitCommand);
                     formationGroupB.a(orderableUnit6, unitCommandAppendWaypointCopy);
                     orderableUnit6.a(unitCommandAppendWaypointCopy);
+                    assignedWaypointCount++;
+                    onlyAssignedUnit = orderableUnit6;
                 }
             }
-            formationGroupB.b();
+            if (assignedWaypointCount == 1 && !this.isReplayCommand
+                    && gameEngine.formationEngine.isAuthoritativeHeadlessSingleUnitFormationEnabled()) {
+                formationGroupB.rebuildFreshSingleAssignment(onlyAssignedUnit);
+            } else {
+                formationGroupB.b();
+            }
             return;
         }
         if (AbstractUnitAction.isActionIdSpecified(this.actionId)) {

@@ -1,0 +1,143 @@
+{
+  "format": "rwxt-v7-operation-vectors-1",
+  "wireVersion": 7,
+  "scope": "Operation byte grammar and type context only; not an authorization or historical-state applicability proof.",
+  "vectors": [
+    {
+      "name": "all-six-opcodes-with-immediate-declarations",
+      "operationsHex": "08010400000000020700010101010000030a000100000a01000a0001021900808004040500011000010103000000080000000000000000040c0080800400000a01010101010104010100000503010201060102",
+      "accepted": true,
+      "initialFormats": [],
+      "allowMissingContext": false,
+      "expectedFormats": [
+        [
+          "0",
+          "1",
+          1,
+          1
+        ],
+        [
+          "0",
+          "65536",
+          4,
+          5
+        ]
+      ]
+    },
+    {
+      "name": "zero-operation-update",
+      "operationsHex": "00",
+      "accepted": true,
+      "initialFormats": [],
+      "allowMissingContext": false,
+      "expectedFormats": []
+    },
+    {
+      "name": "update-using-declared-base",
+      "operationsHex": "01030a000100000a01000a0001",
+      "accepted": true,
+      "initialFormats": [
+        [
+          "0",
+          "1",
+          1,
+          1
+        ]
+      ],
+      "allowMissingContext": false,
+      "expectedFormats": [
+        [
+          "0",
+          "1",
+          1,
+          1
+        ]
+      ]
+    },
+    {
+      "name": "missing-base-envelope-only",
+      "operationsHex": "01030a000100000a01000a0001",
+      "accepted": true,
+      "initialFormats": [],
+      "allowMissingContext": true,
+      "expectedFormats": []
+    },
+    {
+      "name": "missing-base-is-not-applicable",
+      "operationsHex": "01030a000100000a01000a0001",
+      "accepted": false,
+      "initialFormats": [],
+      "allowMissingContext": false
+    },
+    {
+      "name": "unknown-opcode",
+      "operationsHex": "010700",
+      "accepted": false,
+      "initialFormats": [],
+      "allowMissingContext": false
+    },
+    {
+      "name": "redundant-operation-count",
+      "operationsHex": "8000",
+      "accepted": false,
+      "initialFormats": [],
+      "allowMissingContext": false
+    },
+    {
+      "name": "too-many-operations",
+      "operationsHex": "81808001",
+      "accepted": false,
+      "initialFormats": [],
+      "allowMissingContext": false
+    },
+    {
+      "name": "oversized-body-declaration",
+      "operationsHex": "0101818040",
+      "accepted": false,
+      "initialFormats": [],
+      "allowMissingContext": false
+    },
+    {
+      "name": "duplicate-curve-declaration",
+      "operationsHex": "02020700010101010000020700010101010000",
+      "accepted": false,
+      "initialFormats": [],
+      "allowMissingContext": false
+    },
+    {
+      "name": "malformed-after-missing-base",
+      "operationsHex": "02030a000100000a01000a00010700",
+      "accepted": false,
+      "initialFormats": [],
+      "allowMissingContext": true
+    },
+    {
+      "name": "pulse-used-as-segment",
+      "operationsHex": "0202190080800404050001100001010300000008000000000000000003080080800400000a00",
+      "accepted": false,
+      "initialFormats": [],
+      "allowMissingContext": false
+    },
+    {
+      "name": "trailing-operation-bytes",
+      "operationsHex": "0000",
+      "accepted": false,
+      "initialFormats": [],
+      "allowMissingContext": false
+    },
+    {
+      "name": "close-root-forbidden",
+      "operationsHex": "010503000201",
+      "accepted": false,
+      "initialFormats": [],
+      "allowMissingContext": false
+    },
+    {
+      "name": "forever-retain-forbidden",
+      "operationsHex": "010609ffffffffffffffff7f",
+      "accepted": false,
+      "initialFormats": [],
+      "allowMissingContext": false
+    }
+  ]
+}

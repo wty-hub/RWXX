@@ -1,0 +1,761 @@
+{
+  "passed": true,
+  "date": "2026-11-07",
+  "applicationVersion": "2.1.0",
+  "wireVersion": 6,
+  "originalCompatibilityVersion": 176,
+  "newViewReplayFormat": 2,
+  "scope": "This v6 batch: fresh full-state SHA-256/128 checks approximately once per second per active authorized channel, bounded implicit recovery, strict v6 network/cache/recording paths. Historical v1-v5 records retain their original results and fingerprints.",
+  "artifact": {
+    "path": "build/authoritative-virtual/RWXX-2.1.0-v6-final-v1.jar",
+    "bytes": 126223438,
+    "sha256": "23aa52f708dc562d7821aadf5559150800953eaa03cda24da0750cb241465bb7"
+  },
+  "appJar": {
+    "path": "desktop/build/jpackage/image/macos-arm64/RWXX.app/Contents/app/RWXX-2.1.0-macos-arm64.jar",
+    "bytes": 126223438,
+    "sha256": "23aa52f708dc562d7821aadf5559150800953eaa03cda24da0750cb241465bb7"
+  },
+  "distribution": {
+    "path": "desktop/build/distributions/RWXX-2.1.0-macos-arm64-desktop.zip",
+    "bytes": 163114612,
+    "sha256": "d05f1a96bb5512c6bcdc62967bb749300dbb2870ed3ed9ac7d19f5c58bb2026b"
+  },
+  "protocolBundle": {
+    "path": "build/protocol-docs/RWXX-protocol-v6-client-spec-2026-11-07.zip",
+    "bytes": 44076,
+    "sha256": "cd119bc4b61df7f463c7bd8367704e87f85e5c3ad078e50e17b2b5ff844ddade"
+  },
+  "unitTests": {
+    "core": {
+      "tests": 783,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "desktop": {
+      "tests": 245,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "selectedRegressionSuites": {
+    "io.github.rwx.settings.AuthoritativeMapCacheSettingsTest": {
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "io.github.rwx.net.authoritative.AuthoritativeStateDigestTest": {
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "com.corrodinggames.rts.game.map.MapCacheExperimentalCellSizeTest": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "com.corrodinggames.rts.game.map.MapCacheGridResizeTest": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "io.github.rwx.net.authoritative.AuthoritativeMapHandshakeTest": {
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "io.github.rwx.net.authoritative.AuthoritativeMapCacheCodecTest": {
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "io.github.rwx.net.authoritative.ViewStreamReplicationTest": {
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "com.corrodinggames.rts.game.map.MapCacheMultiScrollTest": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "com.corrodinggames.rts.game.map.MapCacheScrollPreloadTest": {
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "com.corrodinggames.rts.game.map.MapCachePrewarmPriorityTest": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "io.github.rwx.net.authoritative.AuthoritativeViewReplayTest": {
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "io.github.rwx.net.authoritative.EngineViewNoninterferenceTest": {
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "io.github.rwx.net.authoritative.AuthoritativeStateCheckTransportTest": {
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "com.corrodinggames.rts.game.map.MapCacheZoomCadenceTest": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "io.github.rwx.authoritative.AuthoritativeMapCacheTest": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "io.github.rwx.authoritative.ViewMotionInterpolatorTest": {
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "unitBuildLog": {
+    "path": "desktop/build/authority-v6-tests-final.log",
+    "bytes": 29468,
+    "sha256": "c302248b13be4d0c95a38f3c3f0724a64f0b1574066aed85f23e077ee2b34fe7"
+  },
+  "stateCheck": {
+    "canonicalHash": "First 16 bytes of SHA-256 over freshly validated/canonicalized full authorized state, domain-separated WORLD/PANEL. Includes static public map, all dynamic world fields and panel fields; no cached per-object digest.",
+    "intervalMs": 1000,
+    "channels": [
+      "WORLD",
+      "PANEL"
+    ],
+    "checkFrameBytes": 46,
+    "ackFrameBytes": 46,
+    "bytesPerSecondEachDirectionPerActiveChannel": 46,
+    "combinedBytesPerSecondWithBothChannels": 184,
+    "bandwidthScope": "Application frames only; excludes TCP/IP/TLS. Baselines/deltas and recovery traffic are separate.",
+    "ackDeadlineMs": 10000,
+    "recoveryDeadlineMs": 10000,
+    "consecutiveRecoveryLimitPerChannel": 3,
+    "behavior": "A mismatch first revokes operational state; actual-digest ACK alone requests a fresh baseline. No duplicate explicit Resync for that event. Heartbeats and repeated baselines do not extend deadlines. Fourth consecutive recovery disconnects; a valid ACK resets that channel budget.",
+    "tests": "Full mutation/canonical vectors, unchanged/terminal checks, reader/writer ACK races, ACK and baseline deadlines, recovery budgets and owner transitions are covered by the linked test suites."
+  },
+  "engine": {
+    "passed": true,
+    "checks": 340,
+    "basic": 38,
+    "actions": 71,
+    "upgrades": 192,
+    "reconnect": 39,
+    "record": {
+      "path": "desktop/build/authoritative/v6-final-v1/verification.json",
+      "bytes": 18155,
+      "sha256": "7229aa2d5fbc5452e0138846a9207f687424b0dfc3656394b436729ade18fa44"
+    }
+  },
+  "nativePackagedHeadless": {
+    "passed": true,
+    "checks": 340,
+    "noRuntimeJavaOrKeytool": true,
+    "fixedPinTlsAndOwnerPipeEof": true,
+    "launch": {
+      "path": "desktop/build/authoritative/v6-final-v1-native-headless/launch.json",
+      "bytes": 921,
+      "sha256": "0a7423e40d80e0d91b71f2fd0887e5aeb9f286653e74992ef675bd50e5ba9bec"
+    },
+    "record": {
+      "path": "desktop/build/authoritative/v6-final-v1-native-headless/verification.json",
+      "bytes": 18155,
+      "sha256": "7229aa2d5fbc5452e0138846a9207f687424b0dfc3656394b436729ade18fa44"
+    }
+  },
+  "runtime3Jvms": {
+    "passed": true,
+    "seconds": 120,
+    "record": {
+      "path": "desktop/build/authoritative/v6-final-v1-120s/manifest.json",
+      "bytes": 4312,
+      "sha256": "16350a2b52da9cc056da5f993414894baa5afab7a07018273c994ad38e78655f"
+    },
+    "peers": [
+      {
+        "teamId": 0,
+        "sampledViews": 1201,
+        "firstTick": 6,
+        "lastTick": 7206,
+        "moved": true,
+        "initialEnemyCount": 0,
+        "wire": {
+          "recvBytes": 151002,
+          "initialBytes": 72928,
+          "steadySeconds": 120.02262075,
+          "steadyBytesPerSecond": 650.4940444736956,
+          "peakOneSecondBytesPerSecond": 2464.5153825974303,
+          "mapInitializations": 1,
+          "mapCacheHits": 0,
+          "worldBaselines": 1,
+          "worldDeltas": 1201,
+          "panelBaselines": 1,
+          "panelDeltas": 0,
+          "resyncRequests": 0,
+          "stateChecks": 226,
+          "worldStateChecks": 113,
+          "panelStateChecks": 113,
+          "stateAcks": 226,
+          "stateMismatches": 0,
+          "stateRecoveries": 0,
+          "stateDigestNanos": 123851133,
+          "meanStateDigestMs": 0.548013
+        }
+      },
+      {
+        "teamId": 1,
+        "sampledViews": 1201,
+        "firstTick": 6,
+        "lastTick": 7206,
+        "moved": true,
+        "initialEnemyCount": 0,
+        "wire": {
+          "recvBytes": 151002,
+          "initialBytes": 72928,
+          "steadySeconds": 120.005947292,
+          "steadyBytesPerSecond": 650.5844232038713,
+          "peakOneSecondBytesPerSecond": 2447.390276915171,
+          "mapInitializations": 1,
+          "mapCacheHits": 0,
+          "worldBaselines": 1,
+          "worldDeltas": 1201,
+          "panelBaselines": 1,
+          "panelDeltas": 0,
+          "resyncRequests": 0,
+          "stateChecks": 226,
+          "worldStateChecks": 113,
+          "panelStateChecks": 113,
+          "stateAcks": 226,
+          "stateMismatches": 0,
+          "stateRecoveries": 0,
+          "stateDigestNanos": 116530579,
+          "meanStateDigestMs": 0.515622
+        }
+      }
+    ],
+    "scope": "Small stock-map session with two own units, movement and an open panel. Mean digest includes startup; receive rate includes state checks but excludes TCP/TLS. Initial-byte sample may already include a delta. Not a large-battle or Internet benchmark."
+  },
+  "fullStateHashPerformance": {
+    "record": {
+      "path": "desktop/build/verification/authoritative-v6-full-state-hash-benchmark-2026-11-07.json",
+      "bytes": 2434,
+      "sha256": "a49a2e7ab387e8e1d6e3ac9a775e54a74ed973b37d3dad0a55cd7f612ef860a1"
+    },
+    "javaVersion": "25.0.4.1",
+    "osArch": "aarch64",
+    "scope": "Synthetic authorized views; full static and dynamic canonical encoding, validation and SHA-256; local JVM latency, not a game-server capacity or GUI benchmark",
+    "scenarios": [
+      {
+        "unitCount": 100,
+        "mapCells": 12100,
+        "canonicalBytes": 77687,
+        "iterations": 100,
+        "warmups": 150,
+        "minimumMs": 0.159708,
+        "medianMs": 0.173167,
+        "p95Ms": 0.218166,
+        "meanMs": 0.1817633,
+        "meanMiBPerSecond": 407.6075677469123,
+        "gcCollections": 0,
+        "gcMillis": 0
+      },
+      {
+        "unitCount": 1000,
+        "mapCells": 12100,
+        "canonicalBytes": 122687,
+        "iterations": 100,
+        "warmups": 150,
+        "minimumMs": 0.264125,
+        "medianMs": 0.292625,
+        "p95Ms": 0.341667,
+        "meanMs": 0.29782253000000003,
+        "meanMiBPerSecond": 392.8629605588724,
+        "gcCollections": 0,
+        "gcMillis": 0
+      },
+      {
+        "unitCount": 10000,
+        "mapCells": 12100,
+        "canonicalBytes": 572687,
+        "iterations": 24,
+        "warmups": 12,
+        "minimumMs": 1.319916,
+        "medianMs": 1.347042,
+        "p95Ms": 1.491875,
+        "meanMs": 1.4609913333333333,
+        "meanMiBPerSecond": 373.82623070984187,
+        "gcCollections": 1,
+        "gcMillis": 1
+      },
+      {
+        "unitCount": 65536,
+        "mapCells": 12100,
+        "canonicalBytes": 3349487,
+        "iterations": 24,
+        "warmups": 12,
+        "minimumMs": 7.597375,
+        "medianMs": 7.827917,
+        "p95Ms": 8.764125,
+        "meanMs": 8.0884115,
+        "meanMiBPerSecond": 394.9254714645294,
+        "gcCollections": 3,
+        "gcMillis": 2
+      },
+      {
+        "unitCount": 60000,
+        "mapCells": 1048576,
+        "canonicalBytes": 5097227,
+        "iterations": 24,
+        "warmups": 12,
+        "minimumMs": 7.78,
+        "medianMs": 7.929708,
+        "p95Ms": 8.166083,
+        "meanMs": 8.015079916666666,
+        "meanMiBPerSecond": 606.4935752773038,
+        "gcCollections": 2,
+        "gcMillis": 2
+      }
+    ]
+  },
+  "bandwidth": {
+    "passed": true,
+    "syntheticScenarios": 18,
+    "framesAfterInitialEach": 120,
+    "publicMapCells": 12100,
+    "staticMapFrameBytes": 60546,
+    "cachedMapFrameBytes": 45,
+    "staticMapBytesSavedOnHit": 60501,
+    "quietDynamicFrameBytesAt100_500_1000Units": 50,
+    "singleHealthOrSparseFogFrameBytes": 64,
+    "thousandUnitsChangeOnlyXFrameBytes": 14050,
+    "denseFogFrameBytes": 12155,
+    "stateChecksEachScenario": 12,
+    "stateCheckDownBytesEachScenario": 552,
+    "stateAckUpBytesEachScenario": 552,
+    "scope": "Application frame bytes excluding TCP/TLS. Each scenario has one WORLD check/ACK per ten updates at the 10 Hz reference rate; no action panel. Explicit synthetic workloads, not a fixed bandwidth guarantee.",
+    "record": {
+      "path": "desktop/build/verification/authoritative-v6-bandwidth-2026-11-07.json",
+      "bytes": 26475,
+      "sha256": "dc77084414f32ca334cf4fe2f42e2ae9a5b9a3df1471eec3e2c74eb60a499a0f"
+    }
+  },
+  "mapCache": {
+    "activeDirectory": "cache/authoritative-maps-v6",
+    "noV5DirectoryFallback": true,
+    "defaultMaps": 16,
+    "configurableMaps": [
+      0,
+      256
+    ],
+    "zeroClearsAndDisables": true,
+    "realNativeGuest": {
+      "recvBytes": 22736,
+      "mapInitializations": 0,
+      "mapCacheHits": 1,
+      "worldBaselines": 1,
+      "worldDeltas": 106,
+      "resyncRequests": 0,
+      "stateChecks": 19,
+      "stateAcks": 19,
+      "stateMismatches": 0,
+      "stateDigestNanos": 7113417,
+      "worldStateChecks": 10,
+      "panelStateChecks": 9
+    },
+    "publicParserRecord": {
+      "path": "desktop/build/verification/authoritative-v6-runtime-public-parser-2026-11-07.json",
+      "bytes": 2471,
+      "sha256": "7587791d50e55e05f643fae3d5319dd7b02a79e22504559594ef00760a5cb6ac"
+    }
+  },
+  "nativeGui": {
+    "passed": true,
+    "frozenJarSha256": "23aa52f708dc562d7821aadf5559150800953eaa03cda24da0750cb241465bb7",
+    "koolClientsAndReadOnlyReplay": {
+      "path": "desktop/build/authoritative/kool-v6-final-v1/result.json",
+      "bytes": 36957,
+      "sha256": "ccae19b4eef16d5f7920bca2c58de0e9e4ba18b5926af3f2c363e8278a604958"
+    },
+    "menuApiHostJoin": {
+      "path": "desktop/build/authoritative/menu-v6-final-v5/result.json",
+      "bytes": 70787,
+      "sha256": "dbfd56a49c8bdb68254140e5a802716840970c3478a0b35bdb85c48c8ece29dd"
+    },
+    "koolNetworkFrames": [
+      1260,
+      1290
+    ],
+    "replayFrames": 570,
+    "menuFrames": {
+      "guest": 1140,
+      "host": 2340
+    },
+    "menuWire": {
+      "guest": {
+        "recvBytes": 22736,
+        "mapInitializations": 0,
+        "mapCacheHits": 1,
+        "worldBaselines": 1,
+        "worldDeltas": 106,
+        "resyncRequests": 0,
+        "stateChecks": 19,
+        "stateAcks": 19,
+        "stateMismatches": 0,
+        "stateDigestNanos": 7113417,
+        "worldStateChecks": 10,
+        "panelStateChecks": 9
+      },
+      "host": {
+        "recvBytes": 91878,
+        "mapInitializations": 1,
+        "mapCacheHits": 0,
+        "worldBaselines": 1,
+        "worldDeltas": 194,
+        "resyncRequests": 0,
+        "stateChecks": 37,
+        "stateAcks": 37,
+        "stateMismatches": 0,
+        "stateDigestNanos": 14626125,
+        "worldStateChecks": 19,
+        "panelStateChecks": 18
+      }
+    },
+    "menuGuestCacheHitWithoutFullMap": true,
+    "allLiveClientsCompletedThreeUiActions": true,
+    "readOnlyReplayZeroInputs": true,
+    "noClientGameEngine": true,
+    "startMutedAndNoKnownImageOrFontCleanupErrors": true,
+    "finalSuccessfulDisplayIds": [
+      56,
+      61
+    ],
+    "finalSuccessfulDisplaysRemoved": true,
+    "originalDisplaysUnchanged": true,
+    "finalDisplayPostcheck": {
+      "path": "desktop/build/authoritative/menu-v6-final-v5/postcheck.ndjson",
+      "bytes": 977,
+      "sha256": "3ae0adef44ec0b2c793d37e1d80242e24692abd96f7754983c0f0c6064d20dd3"
+    },
+    "scope": "Owned virtual displays only, guarded window bounds, no activation/focus. Real UI handlers and presented frames; host/join launcher API bridge, not physical lobby-button/clipboard automation. Window evidence is creation binding and event/cumulative guards, not independent continuous WindowServer monitoring. No screenshot pixel baseline or complete GPU/heap leak audit."
+  },
+  "legacyByteEquivalence": {
+    "path": "desktop/build/verification/authoritative-v6-legacy-byte-equivalence-2026-11-07.json",
+    "bytes": 7999,
+    "sha256": "00947202708a4a32d637df1fd59eb156980e03678e161d784ba3277cf2d3d1e6"
+  },
+  "original115LongInterop": "Historical two-direction 600-second evidence remains bound to its original artifact. Not rerun in v6; 1217 pre-existing engine classes and both guarded window hosts remain byte-identical to that baseline.",
+  "v5Cleanup": {
+    "networkDecoder": "Only wire6; wire5 rejected, no fallback.",
+    "viewReplay": "Format2 header must declare wire6; embedded wire5 frames rejected; only self-contained MapInit/Baseline/Delta accepted.",
+    "cache": "Only maps-v6 directory and strict wire6 MapInit bytes; no v5 migration or fallback.",
+    "tooling": "Active vector generator and acceptance/reference codecs use v6; V5 generator archived outside active source roots.",
+    "historicalRecords": "Historical v5 specs, vectors, binaries and raw verification records retained unchanged as archives."
+  },
+  "protocolFormat": {
+    "messageTypes": 18,
+    "acceptedVectors": 49,
+    "rejectedVectors": 29,
+    "completeStateDigestExamples": 11,
+    "independentPythonNormalAndOptimizedPass": true,
+    "boundaryTestsEachMode": 9,
+    "publicAttachmentVerification": {
+      "path": "docs/protocol/v6/verification.json",
+      "bytes": 2591,
+      "sha256": "d04ab99ed0638d08f423b001d93cc1e55a7addc18fd738415ee3c0ad270a35e4"
+    },
+    "internalRecord": {
+      "path": "desktop/build/verification/authoritative-wire-v6-python-2026-11-07.json",
+      "bytes": 1723,
+      "sha256": "1272ef06494f0be9efa414c241faf0239b126c66d08b692003b50b90346eb15e"
+    }
+  },
+  "harnessChecks": {
+    "pythonTests": 77,
+    "failures": 0,
+    "record": {
+      "path": "desktop/build/authority-v6-harness-tests-final-v4.log",
+      "bytes": 176,
+      "sha256": "d6e5dd196f8170b4923b0d9cd1b0a1bc5b67d20e797ae9ce556dc72e5bc83cef"
+    }
+  },
+  "preservedMenuFailures": {
+    "records": [
+      {
+        "record": {
+          "path": "desktop/build/authoritative/menu-v6-final-v1/result.json",
+          "bytes": 53581,
+          "sha256": "e0af5ad3fd37c950267306164997bceb58bb799d46313372c4571803b95dcf52"
+        },
+        "passed": false,
+        "failures": [
+          {
+            "stage": "acceptance",
+            "error": "Owned process metadata does not match current PID identity/command: pid=47263, expectedStartSecond=1793983041, observedStartSecond=1793983041, commandMatch=False, resamples=0"
+          },
+          {
+            "stage": "final evidence",
+            "error": "No successful manager cleanup"
+          }
+        ],
+        "cleanup": {
+          "displayID": 57,
+          "displays": [
+            {
+              "active": true,
+              "bounds": {
+                "height": 956,
+                "width": 1470,
+                "x": 0,
+                "y": 0
+              },
+              "id": 1,
+              "inMirrorSet": 0,
+              "main": 1,
+              "mirrorOf": 0,
+              "mode": {
+                "height": 956,
+                "id": 6,
+                "ioFlags": 7,
+                "nativePixelsHigh": 1912,
+                "nativePixelsWide": 2940,
+                "refreshHz": 60,
+                "width": 1470
+              },
+              "modeAvailable": true,
+              "modes": [
+                {
+                  "height": 1200,
+                  "id": 9,
+                  "ioFlags": 3,
+                  "nativePixelsHigh": 1200,
+                  "nativePixelsWide": 1920,
+                  "refreshHz": 60,
+                  "width": 1920
+                },
+                {
+                  "height": 1280,
+                  "id": 10,
+                  "ioFlags": 3,
+                  "nativePixelsHigh": 1280,
+                  "nativePixelsWide": 2048,
+                  "refreshHz": 60,
+                  "width": 2048
+                },
+                {
+                  "height": 1332,
+                  "id": 11,
+                  "ioFlags": 3,
+                  "nativePixelsHigh": 1332,
+                  "nativePixelsWide": 2048,
+                  "refreshHz": 60,
+                  "width": 2048
+                },
+                {
+                  "height": 1600,
+                  "id": 12,
+                  "ioFlags": 3,
+                  "nativePixelsHigh": 1600,
+                  "nativePixelsWide": 2560,
+                  "refreshHz": 60,
+                  "width": 2560
+                },
+                {
+                  "height": 1664,
+                  "id": 13,
+                  "ioFlags": 33554435,
+                  "nativePixelsHigh": 1664,
+                  "nativePixelsWide": 2560,
+                  "refreshHz": 60,
+                  "width": 2560
+                }
+              ],
+              "modesAvailable": true,
+              "pixelsHigh": 956,
+              "pixelsWide": 1470,
+              "serial": 4251086178,
+              "vendor": 1552
+            },
+            {
+              "active": true,
+              "bounds": {
+                "height": 1080,
+                "width": 1920,
+                "x": 1470,
+                "y": 0
+              },
+              "id": 57,
+              "inMirrorSet": 0,
+              "main": 0,
+              "mirrorOf": 0,
+              "mode": {},
+              "modeAvailable": false,
+              "modes": [],
+              "modesAvailable": false,
+              "pixelsHigh": 1080,
+              "pixelsWide": 1920,
+              "serial": 4263490729,
+              "vendor": 24780
+            }
+          ],
+          "exitCode": 1,
+          "kind": "cleanup",
+          "originalDisplaysUnchanged": true,
+          "removed": false,
+          "signal": 15
+        }
+      },
+      {
+        "record": {
+          "path": "desktop/build/authoritative/menu-v6-final-v2/result.json",
+          "bytes": 53024,
+          "sha256": "5ea26aa7dba76ff4a808c553c42ba7428f092f071907d74a61b8bd42baee65de"
+        },
+        "passed": false,
+        "failures": [
+          {
+            "stage": "acceptance",
+            "error": "Owned process metadata does not match current PID identity/command: pid=49792, expectedStartSecond=1793983239, observedStartSecond=1793983239, commandMatch=False, resamples=0"
+          }
+        ],
+        "cleanup": {
+          "displayID": 58,
+          "displays": [
+            {
+              "active": true,
+              "bounds": {
+                "height": 956,
+                "width": 1470,
+                "x": 0,
+                "y": 0
+              },
+              "id": 1,
+              "inMirrorSet": 0,
+              "main": 1,
+              "mirrorOf": 0,
+              "mode": {
+                "height": 956,
+                "id": 6,
+                "ioFlags": 7,
+                "nativePixelsHigh": 1912,
+                "nativePixelsWide": 2940,
+                "refreshHz": 60,
+                "width": 1470
+              },
+              "modeAvailable": true,
+              "modes": [
+                {
+                  "height": 1200,
+                  "id": 9,
+                  "ioFlags": 3,
+                  "nativePixelsHigh": 1200,
+                  "nativePixelsWide": 1920,
+                  "refreshHz": 60,
+                  "width": 1920
+                },
+                {
+                  "height": 1280,
+                  "id": 10,
+                  "ioFlags": 3,
+                  "nativePixelsHigh": 1280,
+                  "nativePixelsWide": 2048,
+                  "refreshHz": 60,
+                  "width": 2048
+                },
+                {
+                  "height": 1332,
+                  "id": 11,
+                  "ioFlags": 3,
+                  "nativePixelsHigh": 1332,
+                  "nativePixelsWide": 2048,
+                  "refreshHz": 60,
+                  "width": 2048
+                },
+                {
+                  "height": 1600,
+                  "id": 12,
+                  "ioFlags": 3,
+                  "nativePixelsHigh": 1600,
+                  "nativePixelsWide": 2560,
+                  "refreshHz": 60,
+                  "width": 2560
+                },
+                {
+                  "height": 1664,
+                  "id": 13,
+                  "ioFlags": 33554435,
+                  "nativePixelsHigh": 1664,
+                  "nativePixelsWide": 2560,
+                  "refreshHz": 60,
+                  "width": 2560
+                }
+              ],
+              "modesAvailable": true,
+              "pixelsHigh": 956,
+              "pixelsWide": 1470,
+              "serial": 4251086178,
+              "vendor": 1552
+            }
+          ],
+          "exitCode": 0,
+          "kind": "cleanup",
+          "originalDisplaysUnchanged": true,
+          "removed": true,
+          "signal": 15
+        }
+      }
+    ],
+    "reason": "The old harness rejected loss of argv on an already bound child during normal exit. The harness now performs bounded read-only resampling for exact exit placeholders; final identity decisions use one snapshot. Ownership/command checks before signals remain strict.",
+    "firstRunCleanupFailurePreserved": true,
+    "firstRunLaterReadOnlyPostcheck": {
+      "path": "desktop/build/authoritative/menu-v6-final-v1/postcheck-after-failed-run.ndjson",
+      "bytes": 977,
+      "sha256": "3ae0adef44ec0b2c793d37e1d80242e24692abd96f7754983c0f0c6064d20dd3"
+    },
+    "laterDisplayAbsentAndOriginalConfigurationMatches": true,
+    "intermediateSuccesses": [
+      {
+        "path": "desktop/build/authoritative/menu-v6-final-v3/result.json",
+        "bytes": 70781,
+        "sha256": "18da636fbfea1ab266333ceea8b8c1c8c473f1bd0d98b5b941b977f23113a312"
+      },
+      {
+        "path": "desktop/build/authoritative/menu-v6-final-v4/result.json",
+        "bytes": 70577,
+        "sha256": "5b480cc1dc9a33122bf6e5f5ebc7aec88e657b80f7b827a53bbcda8ebb9b8332"
+      }
+    ]
+  },
+  "remainingProductScope": [
+    "Two human seats and Small Island remain the experimental game profile.",
+    "Full animation/projectiles, Android, mods, spectators/shared control, host migration, and replay pause/seek remain outside this batch.",
+    "This record is bounded functional, performance and guarded-GUI evidence, not complete anti-cheat/security certification."
+  ],
+  "installedApplication": "/Applications/RWXX.app was not installed or replaced by this batch."
+}

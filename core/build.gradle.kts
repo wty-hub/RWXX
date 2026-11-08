@@ -35,3 +35,17 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation(libs.httpclient)
 }
+
+tasks.register<JavaExec>("timelinePublisherBenchmark") {
+    group = "verification"
+    description = "Measure synthetic v7 timeline publication, allocation and full hashing without a window."
+    dependsOn(tasks.named("testClasses"))
+    classpath = sourceSets.test.get().runtimeClasspath
+    mainClass.set("io.github.rwx.net.timeline.TimelinePublisherBenchmark")
+    workingDir = rootProject.projectDir
+    maxHeapSize = "2g"
+    systemProperty("java.awt.headless", "true")
+    providers.gradleProperty("timelineJfr").orNull?.let { path ->
+        jvmArgs("-XX:StartFlightRecording=filename=$path,settings=profile,dumponexit=true")
+    }
+}

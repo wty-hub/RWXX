@@ -251,6 +251,11 @@ fun installApp(
         updateBattleRoomFromNetwork = battleRoomController::updateFromNetwork,
         showUnavailableDialog = dialogController::showUnavailable,
     )
+    val authoritativeRoomController = AuthoritativeRoomController(
+        launcher = { platformBridge?.authoritativeRooms },
+        initialPlayerName = gameSession::currentMultiplayerPlayerName,
+        showDialog = dialogSceneHost::show,
+    )
     val battleRoomLaunchController = BattleRoomLaunchController(
         gameSession = gameSession,
         storage = { platformBridge?.storage },
@@ -456,6 +461,7 @@ fun installApp(
         battleRoomController = battleRoomController,
         multiplayerLobbyController = multiplayerLobbyController,
         multiplayerConnectionController = multiplayerConnectionController,
+        authoritativeRoomController = authoritativeRoomController,
         battleRoomAdminController = battleRoomAdminController,
         battleRoomLaunchController = battleRoomLaunchController,
         modsController = modsController,

@@ -12,6 +12,7 @@ import io.github.rwx.ui.model.*
 class MultiplayerSceneHost(
     private val model: SettingsModel = SettingsModel(),
     private val onAction: (MultiplayerAction) -> Unit = {},
+    private val showAuthoritativeControls: Boolean = false,
 ) {
     private val rooms = mutableStateListOf<MultiplayerRoomItem>()
     private val statusText = mutableStateOf("")
@@ -31,7 +32,7 @@ class MultiplayerSceneHost(
 
     fun createScene(): Scene = UiScene(MULTIPLAYER_SCENE_NAME) {
         addPanelSurface(PanelStyle.Menu, "multiplayer-panel", model, showBackdropLabels = false) { theme ->
-            val metrics = multiplayerLayoutMetrics()
+            val metrics = multiplayerLayoutMetrics(showAuthoritativeControls)
             MultiplayerRoomList(
                 model = MultiplayerRoomListModel(
                     title = I18n.multiplayer.title(),
@@ -48,6 +49,12 @@ class MultiplayerSceneHost(
                     onRefresh = { dispatch(MultiplayerAction.Refresh) },
                     onSwitchLobby = { dispatch(MultiplayerAction.SwitchLobby(it)) },
                     onHostGame = { dispatch(MultiplayerAction.HostGame) },
+                    onHostAuthoritative = if (showAuthoritativeControls) {
+                        { dispatch(MultiplayerAction.HostAuthoritative) }
+                    } else null,
+                    onJoinAuthoritative = if (showAuthoritativeControls) {
+                        { dispatch(MultiplayerAction.JoinAuthoritative) }
+                    } else null,
                     onJoinDirect = { dispatch(MultiplayerAction.JoinDirect) },
                     onRejoinLastGame = { dispatch(MultiplayerAction.RejoinLastGame) },
                     onConfigure = { dispatch(MultiplayerAction.ConfigurePlayerName) },
@@ -66,7 +73,7 @@ private data class MultiplayerLayoutMetrics(
     val viewportHeight: Dp,
 )
 
-private fun UiScope.multiplayerLayoutMetrics(): MultiplayerLayoutMetrics {
+private fun UiScope.multiplayerLayoutMetrics(showAuthoritativeControls: Boolean): MultiplayerLayoutMetrics {
     val contentWidth = ResponsiveContentWidth(
         defaultWidth = UiTheme.Layout.multiplayerRoomRowWidth,
         minWidth = UiTheme.Layout.multiplayerMinContentWidth,
@@ -75,7 +82,8 @@ private fun UiScope.multiplayerLayoutMetrics(): MultiplayerLayoutMetrics {
     val compact = contentWidth.value < MULTIPLAYER_COMPACT_WIDTH_DP
     val controlRow = UiTheme.Layout.menuButtonHeight.value + UiTheme.Spacing.sm.value
     val filterRows = if (compact) 3f else 1f
-    val extraFooterRows = if (compact) 4f else 1f // compact lobby/footer rows, or the return button row
+    val extraFooterRows = (if (compact) 4f else 1f) +
+        (if (showAuthoritativeControls) { if (compact) 2f else 1f } else 0f)
     return MultiplayerLayoutMetrics(
         contentWidth = contentWidth,
         viewportHeight = ResponsiveViewportHeight(

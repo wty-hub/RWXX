@@ -1,0 +1,495 @@
+{
+  "status": "development-incomplete",
+  "applicationVersion": "2.2.0",
+  "protocolVersion": 7,
+  "scope": "Frozen development artifact v26. Finite splice upper-bound optimization, continuous retention and component tests validated.65,536-unit full native capacity remains incomplete; shared numeric architecture is not enabled.",
+  "currentFrozenArtifacts": [
+    {
+      "name": "RWXX-2.2.0-all.jar",
+      "sha256": "e4efc4240713f4ed2c7f069e910dce4e62f8196e780fba735960d4c595e0448e",
+      "bytes": 178394376
+    },
+    {
+      "name": "RWXX-timeline-acceptance-2.2.0.jar",
+      "sha256": "e70a77229eb9eb35895c4e0047f70c2737e259892746b628dabd80df2c012adc",
+      "bytes": 181007458
+    }
+  ],
+  "unitChecks": {
+    "core": {
+      "tests": 1044,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "desktop": {
+      "tests": 293,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "nativeChecks": {
+    "passed": true,
+    "cases": 267,
+    "scope": "Actual native actions/upgrades plus one real v7 RALLY roundtrip; no capacity/GUI claim.",
+    "artifact": "acceptance-v26",
+    "report": "desktop/build/verification/authoritative-v7-native-2026-11-07-v12/result.json",
+    "runtimeBinding": "desktop/build/verification/authoritative-v7-native-2026-11-07-v12/runtime-binding.json",
+    "bindingIsControllerAttestedNotChildSelfReported": true,
+    "savedControllerArgv": "desktop/build/verification/authoritative-v7-native-2026-11-07-v12/launch.json"
+  },
+  "syntheticPublisher": {
+    "completed": true,
+    "realtimeClaimed": false,
+    "sameGoldenDigests": true,
+    "report": "desktop/build/verification/authoritative-v7-publisher-development-2026-11-07-v9/result.json",
+    "scope": "Historical pre5s-sealing synthetic publisher result, not a bandwidth/performance result forv22.",
+    "artifact": "acceptance-v15",
+    "notCurrentArtifact": true,
+    "notApplicableToNewSealing": true
+  },
+  "fullChainRegional": {
+    "passed": false,
+    "completed": false,
+    "artifact": "acceptance-v21",
+    "seatsConnected": 64,
+    "realLivingUnits": 65536,
+    "requiredMeasuredTicks": 600,
+    "measuredTicks": 91,
+    "requiredP95Millis": 16.666666666666668,
+    "partialNativeTiming": {
+      "samples": 91,
+      "p50Millis": 79.621333,
+      "p95Millis": 239.918583,
+      "maxMillis": 697.885375,
+      "over16Point667Millis": 91
+    },
+    "partialWholeRoomTiming": {
+      "samples": 91,
+      "p50Millis": 1144.0375,
+      "p95Millis": 3188.873291,
+      "maxMillis": 5564.862,
+      "over16Point667Millis": 91
+    },
+    "stoppedBy": "Work deadline after91 of600 measured ticks. Owner CPU decreased but wall timing remains far beyond16.667ms and heap nearly4GiB.",
+    "report": "desktop/build/verification/authoritative-v7-fullchain-moving-profile-2026-11-07-v3/result.json",
+    "sustainedCombatLateJoinClaimed": false,
+    "resultSha256": "2fe33ef420a54d2d242aefb9fb9d1cfab7786840e1684f0e20093396193e34e5",
+    "sessionsWithFailure": 0,
+    "sampledChildPeakHeapBytes": 4124232712,
+    "partialOwnerCpu": {
+      "scope": "MEASURED",
+      "nativeAdvance": {
+        "samples": 91,
+        "p50Millis": 79.621333,
+        "p95Millis": 239.918583,
+        "maxMillis": 697.885375,
+        "over16Point667Millis": 91
+      },
+      "wholeRoom": {
+        "samples": 91,
+        "p50Millis": 1144.0375,
+        "p95Millis": 3188.873291,
+        "maxMillis": 5564.862,
+        "over16Point667Millis": 91
+      },
+      "ownerCpuSamples": 91,
+      "nativeOwnerCpu": {
+        "samples": 91,
+        "p50Millis": 59.939,
+        "p95Millis": 132.774,
+        "maxMillis": 255.164,
+        "over16Point667Millis": 91
+      },
+      "wholeRoomOwnerCpu": {
+        "samples": 91,
+        "p50Millis": 510.946,
+        "p95Millis": 770.784,
+        "maxMillis": 856.203,
+        "over16Point667Millis": 91
+      }
+    },
+    "slowReaderPartial": {
+      "othersAdvanced": true,
+      "fullRecoveryCompleted": false,
+      "tcpZeroWindowClaimed": false,
+      "doesNotProveLargeRoomIsolationAcceptance": true
+    },
+    "notCurrentArtifact": true,
+    "usesNewSealing": false,
+    "diagnosticJfrPerturbsTiming": true
+  },
+  "gui": {
+    "runOnCurrentArtifact": false,
+    "attemptedArtifact": "acceptance-v24",
+    "passed": false,
+    "stage": "manager protection before game launch",
+    "reason": "Inactive original mirror mode/modes temporarily changed after virtual registration; strict full-display snapshot guard rejected before any game JVM/window.",
+    "activeMainFullSnapshotUnchanged": true,
+    "originalDisplaysFullyUnchangedDuringAttempt": false,
+    "ownedVirtualDisplayRemoved": true,
+    "allOriginalDisplaySnapshotsRestoredAfterCleanup": true,
+    "independentPostCleanupReadOnlySnapshotMatchesBefore": true,
+    "gameJvmsLaunched": 0,
+    "foregroundWindowActivated": false,
+    "report": "desktop/build/verification/authoritative-v7-virtual-timeline-2026-11-07-v1/result.json",
+    "tightenedPreflight": "desktop/build/verification/authoritative-v7-virtual-preflight-guard-2026-11-07-v1/result.json",
+    "guardNormalAndOptimizedTests": 33,
+    "newGuardRequiresAllOriginalDisplaysExplicitlyActive": true,
+    "thisLayoutWillNotBeRetried": true,
+    "linuxMenuSmoke": {
+      "passed": true,
+      "artifact": "acceptance-v26",
+      "imageId": "sha256:885e5eabd32726c30fc2a365ebed9e28492d87b1a4e326a6977bfa706c887966",
+      "report": "desktop/build/verification/authoritative-v7-linux-menu-smoke-2026-11-07-v3/result.json",
+      "workerReport": "desktop/build/verification/authoritative-v7-linux-menu-smoke-2026-11-07-v3/worker-result.json",
+      "rootVisualReview": "desktop/build/verification/authoritative-v7-linux-menu-smoke-2026-11-07-v3/visual-review.json",
+      "actualOpenGL": "Mesa25.2.8/llvmpipe4.5,LLVM20.1.2,software rendering",
+      "privateDisplay": [
+        1920,
+        1080
+      ],
+      "ownedWindow": [
+        100,
+        100,
+        1280,
+        800
+      ],
+      "captures": 2,
+      "sameStaticImageSha256": "30110454237e413f55015d5533fd46ada07d5d640dcf93b655fd6f7a7764633a",
+      "javaTimedExitCode": 0,
+      "allOwnedProcessesStopped": true,
+      "containerRemoved": true,
+      "hostDisplaySoundDevicesMountsPortsUsed": false,
+      "cpus": 2,
+      "softwareRendererThreads": 2,
+      "menuClickProtocolGameplayMacCoverage": false,
+      "preflightFailuresPreserved": [
+        "desktop/build/verification/authoritative-v7-linux-menu-smoke-2026-11-07-v1/result.json",
+        "desktop/build/verification/authoritative-v7-linux-menu-smoke-2026-11-07-v2/result.json"
+      ]
+    },
+    "fullCurrentGraphicalAcceptancePassed": false
+  },
+  "publicSpecification": {
+    "status": "candidate",
+    "byteSpecification": "docs/authoritative-wire-v7.md",
+    "referenceDirectory": "docs/protocol/v7",
+    "candidateZip": "build/protocol-docs/RWXX-protocol-v7-client-spec-2026-11-07-candidate-v2.zip",
+    "candidateZipSha256": "3495a6da43fe5e15656e8f6d34a67133eccb546f91567138d14b519db18d334d",
+    "byteGrammarChanged": false,
+    "referenceVectorBytesChanged": false
+  },
+  "openAcceptance": [
+    "Native sustained motion/combat beyond LIVE window with concurrent whole-game archives",
+    "65536 actual native units at predeclared60Hz p95 step budget",
+    "Full64-seat pipeline in regional and high-overlap visibility scenarios",
+    "Sustained combat late join without stopping world",
+    "Large-room slow client and history isolation",
+    "Current final artifact netem/GUI/original176/replay revalidation as applicable",
+    "Final native packaging and deliverable validation"
+  ],
+  "nextArtifactChangesNotCoveredByThisRecord": [
+    "Detached numeric-frame bank staging only; no Room/Session/Publisher sharing enabled",
+    "Audited owner observation groups and shared numeric curve bodies not implemented",
+    "Full65k capacity and Linux live-protocol/history GUI/macOS native GUI acceptance remain open"
+  ],
+  "representationWork": {
+    "packedPageAndLazyMapBridgeTestsPassed": true,
+    "productionStorePublisherPackedEnabled": false,
+    "retainsFullProfileAndActualFullHash": true,
+    "abiReport": "desktop/build/verification/authoritative-v7-packed-state-abi-2026-11-07-v1/result.json"
+  },
+  "rejectedNativeCandidates": [
+    {
+      "candidate": "branchless signed-byte refog max",
+      "retained": false,
+      "report": "desktop/build/verification/authoritative-v7-engine-refog-max-comparison-2026-11-07-v1/decision.json"
+    },
+    {
+      "candidate": "shared native fog-row geometry within one call",
+      "retained": false,
+      "report": "desktop/build/verification/authoritative-v7-engine-shared-rows-comparison-2026-11-07-v2/decision.json"
+    }
+  ],
+  "changesSincePriorFrozenRecord": [
+    "Finite non-PULSE splice upper bounds avoid redundant FOREVER bytes without changing states",
+    "Two-minute continuous-motion LIVE turnover and independent complete archive seek regression",
+    "New same-sealing real-TLS1,000-unit10/30-second comparisons show descriptive~10% application down-byte reduction",
+    "Currentv26 native267 and64TLS/128native-unit component revalidation",
+    "Currentv26 Linux Xvfb/OpenGL menu rendered and visually reviewed; no host display/device/mount or foreground window used"
+  ],
+  "previousRecord": "docs/verification/authoritative-v7-development-2.2.0-2026-11-07-v4.json",
+  "componentEvidence": [
+    {
+      "kind": "Current64real TLS clients/128actual native units;4s slow reader recovery/reconnect/HISTORY/64finished archives",
+      "passed": true,
+      "artifact": "acceptance-v26",
+      "report": "desktop/build/verification/authoritative-v7-seats-64-2026-11-07-v10/result.json",
+      "doesNotProve65536Capacity": true,
+      "runtimeBinding": "desktop/build/verification/authoritative-v7-seats-64-2026-11-07-v10/runtime-binding.json",
+      "elapsedSeconds": 23.40560525,
+      "slowApplicationReaderHoldSeconds": 4.0048915,
+      "noForcedCleanup": true
+    },
+    {
+      "kind": "Isolated Linux real TCP netem: clean/delay/loss/250kbit",
+      "passed": true,
+      "artifact": "acceptance-v24",
+      "report": "desktop/build/verification/authoritative-v7-netem-suite-2026-11-07-v2/result.json",
+      "doesNotProve65536Bandwidth": true,
+      "testJarSha256": "a2e1f0f52dc2433b66d02078505fc13a334484f45acd69c975c6a4edce08d631",
+      "containerImageId": "sha256:3ad7c317960d0494fbdf1b1aadc4f9c9589c21ded16a3f841c83883560166d9f",
+      "allOwnedContainersRemoved": true,
+      "hostTrafficControlChanged": false
+    },
+    {
+      "kind": "Independent original176 two host directions,600 seconds each",
+      "passed": true,
+      "artifact": "acceptance-v4",
+      "report": "desktop/build/verification/original-176-headless-full-2026-11-07-v1/result.json"
+    },
+    {
+      "kind": "Original format offline replay random seek",
+      "passed": true,
+      "artifact": "acceptance-v4",
+      "report": "desktop/build/verification/original-replay-seek-2026-11-07-v1/acceptance.json"
+    }
+  ],
+  "sealingPolicy": {
+    "targetSeconds": 5,
+    "triggerSeconds": 4.9,
+    "normalPublicationCadenceMillis": 100,
+    "wallClockGuaranteeDuringOwnerStall": false,
+    "nonconstantPredictionMaxSeconds": 1,
+    "coreBatchingTestsPassed": 8,
+    "forcedFinishConfirmsExistingObservedTime": true,
+    "wholeNewlySealedIntervalArchivedIncludingFractionalTail": true,
+    "archiveBudgetsIncreased": false,
+    "bandwidthAndLongRawSampleMemoryComparison": "Completed synthetic continuous raw-storage and real single-client TLS tests. Fewer library records; no network bandwidth reduction established.",
+    "configuredFullStateCheckIntervalMillis": 1000,
+    "userAccepted2To5SecondsPrioritizingBandwidth": true
+  },
+  "privateSightIndex": {
+    "actualFullFrameHashesUnchanged": true,
+    "report": "desktop/build/verification/authoritative-v7-owned-vision-bits-comparison-2026-11-07-v3/decision.json",
+    "ordinaryStockRadiusCpuImproved": true,
+    "universalLatencyImprovementClaimed": false,
+    "knownRegressions": [
+      "Full-r1024 stress CPU",
+      "Clustered-r11 wall p95"
+    ]
+  },
+  "rawSampleStorage": {
+    "representation": "Owned primitive numeric pages and owner/generation-checked borrowed runs. Immutable values only at required endpoints.",
+    "perPublicationV23OracleTestsPassed": 2,
+    "helperTestsPassed": 6,
+    "samePriorFiveSecondOperationTotalsAndFinalDigest": [
+      {
+        "units": 1000,
+        "seconds": 30
+      },
+      {
+        "units": 10000,
+        "seconds": 10
+      },
+      {
+        "units": 65536,
+        "seconds": 2
+      }
+    ],
+    "summary": {
+      "path": "desktop/build/verification/authoritative-v7-primitive-raw-comparison-2026-11-07-v1/comparison-summary.json",
+      "bytes": 43919,
+      "sha256": "a3890d2d0582abec696b3e2ba82e8871b2ee31e2695c2d92706da0ae1d66a935"
+    },
+    "singleRunPairedChangePercent": [
+      {
+        "units": 1000,
+        "seconds": 30,
+        "elapsed": -14.702563,
+        "ownerAllocated": -15.624229,
+        "sampledUsedHeap": -47.080798
+      },
+      {
+        "units": 10000,
+        "seconds": 10,
+        "elapsed": -13.625456,
+        "ownerAllocated": -14.362551,
+        "sampledUsedHeap": -51.347659
+      },
+      {
+        "units": 65536,
+        "seconds": 2,
+        "elapsed": -13.864609,
+        "ownerAllocated": -8.145461,
+        "sampledUsedHeap": -16.484901
+      }
+    ],
+    "unpaired65536EightSecondCaseCompleted": true,
+    "notLiveHeapOrStatisticalSpeedup": true,
+    "noNativeSocketOrCapacityPassInferred": true
+  },
+  "continuousTls": {
+    "passed": true,
+    "actualProductionDefaultBytesPerSecond": 1048576,
+    "scope": "One synthetic authorized view, real loopback pinned TLS and independent PeerEncoder. Actual framed application bytes excluding TLS/TCP/IP overhead; no native/WAN/capacity claim.",
+    "actualWallClockFullHashAndClientAck": true,
+    "mismatchesAndRestores": 0,
+    "bandwidthReductionDemonstrated": false,
+    "comparisons": [
+      {
+        "units": 1000,
+        "seconds": 10,
+        "controlArtifact": "acceptance-v21",
+        "candidateArtifact": "acceptance-v25",
+        "bothPassed": true,
+        "sameFinalObservedThrough": true,
+        "sameObservedTimeDownBytes": {
+          "control": 1772409,
+          "candidate": 1855885
+        },
+        "steadyDownBytes": {
+          "control": 1772036,
+          "candidate": 1792809
+        },
+        "idleConfirmationDownBytes": {
+          "control": 2032,
+          "candidate": 180748
+        },
+        "controlFullySealed": false,
+        "candidateFullySealed": true,
+        "lateTicksOverOneTick": {
+          "control": 4,
+          "candidate": 13
+        },
+        "reports": [
+          {
+            "path": "desktop/build/verification/authoritative-v7-continuous-tls-comparison-2026-11-07-v1/control-1000-10/result.json",
+            "bytes": 18331,
+            "sha256": "c9c839b6ce6a266e0a181b9230101b7a6b940fda78ba03794c0645bb6dde8e41"
+          },
+          {
+            "path": "desktop/build/verification/authoritative-v7-continuous-tls-comparison-2026-11-07-v1/candidate-1000-10/result.json",
+            "bytes": 18273,
+            "sha256": "014fefcff6196aeaba335986d70394cd8d716e1529cb3030b953c65ea7c92df4"
+          }
+        ]
+      },
+      {
+        "units": 1000,
+        "seconds": 30,
+        "controlArtifact": "acceptance-v21",
+        "candidateArtifact": "acceptance-v25",
+        "bothPassed": true,
+        "sameFinalObservedThrough": true,
+        "sameObservedTimeDownBytes": {
+          "control": 5427671,
+          "candidate": 5500820
+        },
+        "steadyDownBytes": {
+          "control": 5427202,
+          "candidate": 5500351
+        },
+        "idleConfirmationDownBytes": {
+          "control": 2032,
+          "candidate": 185310
+        },
+        "controlFullySealed": false,
+        "candidateFullySealed": true,
+        "lateTicksOverOneTick": {
+          "control": 4,
+          "candidate": 40
+        },
+        "reports": [
+          {
+            "path": "desktop/build/verification/authoritative-v7-continuous-tls-comparison-2026-11-07-v1/control-1000-30/result.json",
+            "bytes": 39900,
+            "sha256": "9b9bc0de0a3453f118123e63c8b6cac93a456c8183bddfa92574797ce97c5953"
+          },
+          {
+            "path": "desktop/build/verification/authoritative-v7-continuous-tls-comparison-2026-11-07-v1/candidate-1000-30/result.json",
+            "bytes": 39817,
+            "sha256": "0cf2b23ecdef5be14121d3fc5ea25a3b36b9fd6fdc1779c50fd2b42f65c0f414"
+          }
+        ]
+      }
+    ],
+    "limits": [
+      "Single sequential trial per duration/build; not a randomized repeated comparison.",
+      "Control v21 and candidate v25 contain other changes as well as the sealing policy.",
+      "Idle confirmation has different semantics: candidate fully seals O; control leaves S<O.",
+      "Some input ticks exceed one tick lateness; this is not a verified full60Hz scene."
+    ],
+    "isHistoricalSealingComparison": true,
+    "note": "v21/v25 comparison retained. New v25/v26 finite-splice comparison is separate and has same sealing semantics."
+  },
+  "finiteSpliceEndpoint": {
+    "productionEnabled": true,
+    "wireGrammarChanged": false,
+    "scope": "Existing non-PULSE replacement only: max(priorSuffixLastHi,newSuffixLastHi), with FOREVER retained for an infinite tail. Segment/anchor/flag/revision semantics unchanged.",
+    "stateEquivalenceTests": 8,
+    "sameFullObjectsCurveRevisionsCanonicalBytesAndDigest": true,
+    "classAudit": {
+      "path": "desktop/build/verification/authoritative-v7-continuous-tls-comparison-2026-11-07-v2/zip-audit.json",
+      "bytes": 13358,
+      "sha256": "88b8cb8b7ec997713d20a283696482a4758e799daa2b4a261139d353fa4c711b"
+    },
+    "sameHarnessBytes": {
+      "path": "desktop/build/verification/authoritative-v7-continuous-tls-comparison-2026-11-07-v2/harness-class-audit.json",
+      "bytes": 1590,
+      "sha256": "53e290be0a949c9f4a03deefbc502353aa4850368ee2257ae2cf2f38090ecc53"
+    },
+    "realTlsSummary": {
+      "path": "desktop/build/verification/authoritative-v7-continuous-tls-comparison-2026-11-07-v2/comparison-summary.json",
+      "bytes": 32155,
+      "sha256": "6856bc351d13576a2535c0ae4d6e8a3d12a1ae6de3c4492fc24031b815c9eee9"
+    },
+    "singleTrialSameObservedTimeDownBytes": [
+      {
+        "units": 1000,
+        "inputSeconds": 10,
+        "controlV25": 1855897,
+        "candidateV26": 1675005,
+        "bothFullySealedAfterRealIdle": true
+      },
+      {
+        "units": 1000,
+        "inputSeconds": 30,
+        "controlV25": 5500820,
+        "candidateV26": 4953214,
+        "bothFullySealedAfterRealIdle": true
+      }
+    ],
+    "statisticalOrNativeWanCapacityBenefitClaimed": false,
+    "actualWallOneHzFullChecksAndClientWrittenAcks": true,
+    "mismatchesAndRestores": 0
+  },
+  "continuousRetention": {
+    "passed": true,
+    "syntheticSeconds": 120,
+    "units": 12,
+    "ticks": 7200,
+    "finalLiveRetainedFromSeconds": 90,
+    "completeArchiveRangeSeconds": [
+      0,
+      120
+    ],
+    "eachInputTickCheckedAgainstIndependentTrajectory": true,
+    "randomSeekReverseBoundariesAndOnlineCommittedOldSeek": true,
+    "boundedPrimitivePayloadAssertions": true,
+    "scope": "Core semantic regression; not wall-clock/net/native throughput or heap measurement.",
+    "testResult": {
+      "path": "desktop/build/verification/authoritative-v7-unit-batch-2026-11-07-v38/core/TEST-io.github.rwx.net.timeline.TimelineContinuousRetentionTest.xml",
+      "bytes": 570,
+      "sha256": "0e283dfa1960c3d2db5693e4dbfd531f0b4fe29931a0c716391e9edda60c9958"
+    }
+  },
+  "detachedNumericFramePrototype": {
+    "productionIntegrated": false,
+    "stagedSemanticTestsPassed": 7,
+    "report": "desktop/build/verification/authoritative-v7-numeric-frame-stage-2026-11-07-v1/result.json",
+    "scope": "Staged prototype compiled as TEST sources only, no shared raw or curves yet. Revocable scalar frames do not prove native purity/authorization or4GiB capacity."
+  }
+}

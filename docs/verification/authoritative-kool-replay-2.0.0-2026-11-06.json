@@ -1,0 +1,281 @@
+{
+  "date": "2026-11-06",
+  "applicationVersion": "2.0.0",
+  "viewProtocolVersion": 2,
+  "legacyProtocolVersion": 176,
+  "artifact": {
+    "path": "desktop/build/libs/RWXX-2.0.0-macos-arm64.jar",
+    "frozenPath": "build/authoritative-virtual/RWXX-2.0.0-kool-phase2-verified.jar",
+    "sha256": "ca1b6f6bff16d045912b2218103326140ae770f887197ef44a6cc6d1f2241fb5"
+  },
+  "fullTests": {
+    "core": {
+      "tests": 614,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "desktop": {
+      "tests": 193,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "pythonTests": {
+    "tests": 22,
+    "failures": 0,
+    "nativeRunnerOptimizedModeTests": 11,
+    "headless": true
+  },
+  "buildLog": "desktop/build/authority-phase2-v4-build.log",
+  "gameplay": {
+    "passed": true,
+    "report": "desktop/build/authoritative/phase2-v4-gameplay.json",
+    "reportSha256": "a5fd5c2798a7d90808ecdbef21eeccbb177d8c95a886dd576b7845cff097da25",
+    "checks": {
+      "legacyNetworkingDisabled": true,
+      "applicationVersion": true,
+      "legacyProtocolUnchanged": true,
+      "unseenEnemiesExcludedBothDirections": true,
+      "hiddenPositionHealthResourcesDoNotChangeWireView": true,
+      "missingFogFailsClosed": true,
+      "realTcpClientsReceiveOnlyOwnViews": true,
+      "scoutingDisclosesEnemy": true,
+      "visibleEnemyAttackAccepted": true,
+      "serverActuallyExecutesAttack": true,
+      "leavingSightRemovesEnemy": true,
+      "staleEnemyHandleRejected": true,
+      "foreignUnitHandleRejected": true,
+      "tcpMoveIntoFogAccepted": true,
+      "duplicateIntentRejected": true,
+      "serverActuallyExecutesMove": true,
+      "clientReceivesAdvancedServerTick": true,
+      "buildFactoryIntentAccepted": true,
+      "serverCompletesFactoryAndChargesResources": true,
+      "produceTankIntentAccepted": true,
+      "serverActuallyProducesTank": true,
+      "producedStockReplacementIsDisclosedAsTank": true,
+      "unsupportedProductionRejected": true,
+      "defeatCannotUpgradeToFullMapView": true,
+      "serverPublishesCorrectWinner": true,
+      "finishedMatchRejectsFurtherInput": true
+    },
+    "scope": "Real engine and two TCP clients; opt-in deterministic fixture; not full gameplay or production security acceptance"
+  },
+  "native": {
+    "passed": true,
+    "report": "desktop/build/authoritative/kool-phase2-v4/result.json",
+    "reportSha256": "9c8f05ac1af2b2124b3199b729e80c605bcd75acd5fbe29bdc49af33dfabd6a7",
+    "backend": "Vulkan",
+    "scope": "Short real-window rendering, isolation, completed own-view recording and offline read-only replay; not a full-game or security certification.",
+    "networkClients": [
+      {
+        "pid": 53192,
+        "exitCode": 0,
+        "canvas": {
+          "probeCount": 47,
+          "readOnly": false,
+          "first": {
+            "submittedFrames": 1,
+            "presentedRevision": -1,
+            "viewSequence": 11,
+            "tick": 60,
+            "width": 1280,
+            "height": 720,
+            "connected": true,
+            "readOnly": false,
+            "noGameEngine": true,
+            "backend": "Vulkan"
+          },
+          "last": {
+            "submittedFrames": 1380,
+            "presentedRevision": 1379,
+            "viewSequence": 130,
+            "tick": 774,
+            "width": 1280,
+            "height": 720,
+            "connected": true,
+            "readOnly": false,
+            "noGameEngine": true,
+            "backend": "Vulkan"
+          }
+        },
+        "recordingInspection": {
+          "passed": true,
+          "protocolVersion": 2,
+          "teamId": 0,
+          "views": 131,
+          "firstTick": 0,
+          "finalTick": 780,
+          "finalPhase": "RUNNING",
+          "maximumDisclosedUnits": 2,
+          "noGameEngine": true
+        }
+      },
+      {
+        "pid": 53193,
+        "exitCode": 0,
+        "canvas": {
+          "probeCount": 47,
+          "readOnly": false,
+          "first": {
+            "submittedFrames": 1,
+            "presentedRevision": -1,
+            "viewSequence": 11,
+            "tick": 60,
+            "width": 1280,
+            "height": 720,
+            "connected": true,
+            "readOnly": false,
+            "noGameEngine": true,
+            "backend": "Vulkan"
+          },
+          "last": {
+            "submittedFrames": 1380,
+            "presentedRevision": 1379,
+            "viewSequence": 130,
+            "tick": 774,
+            "width": 1280,
+            "height": 720,
+            "connected": true,
+            "readOnly": false,
+            "noGameEngine": true,
+            "backend": "Vulkan"
+          }
+        },
+        "recordingInspection": {
+          "passed": true,
+          "protocolVersion": 2,
+          "teamId": 1,
+          "views": 131,
+          "firstTick": 0,
+          "finalTick": 780,
+          "finalPhase": "RUNNING",
+          "maximumDisclosedUnits": 2,
+          "noGameEngine": true
+        }
+      }
+    ],
+    "replay": {
+      "pid": 53280,
+      "exitCode": 0,
+      "serverStoppedBeforeReplay": true,
+      "networkConnectionRequested": false,
+      "readOnly": true,
+      "canvas": {
+        "probeCount": 20,
+        "readOnly": true,
+        "first": {
+          "submittedFrames": 1,
+          "presentedRevision": -1,
+          "viewSequence": 7,
+          "tick": 36,
+          "width": 1280,
+          "height": 720,
+          "connected": true,
+          "readOnly": true,
+          "noGameEngine": true,
+          "backend": "Vulkan"
+        },
+        "last": {
+          "submittedFrames": 570,
+          "presentedRevision": 569,
+          "viewSequence": 56,
+          "tick": 330,
+          "width": 1280,
+          "height": 720,
+          "connected": true,
+          "readOnly": true,
+          "noGameEngine": true,
+          "backend": "Vulkan"
+        }
+      }
+    },
+    "noLocalGameEngine": true,
+    "resourceCleanup": {
+      "client-0": {
+        "passed": true,
+        "log": "/Users/wty/code/RWXX/desktop/build/authoritative/kool-phase2-v4/client-0.log",
+        "logSha256": "fce5a6b5bcd8f4c4376c18fbc92ab6d907206e04aa41eac8cf6809d5244075f4",
+        "checks": [
+          "No leaked-image cleanup warning",
+          "No authority UI font loading failure"
+        ],
+        "scope": "Known native resource diagnostics; not a general heap or GPU allocation audit"
+      },
+      "client-1": {
+        "passed": true,
+        "log": "/Users/wty/code/RWXX/desktop/build/authoritative/kool-phase2-v4/client-1.log",
+        "logSha256": "5913b22e999ab16a26a614b753e558eba520c577b7776a535ff2d37007063b56",
+        "checks": [
+          "No leaked-image cleanup warning",
+          "No authority UI font loading failure"
+        ],
+        "scope": "Known native resource diagnostics; not a general heap or GPU allocation audit"
+      },
+      "replay": {
+        "passed": true,
+        "log": "/Users/wty/code/RWXX/desktop/build/authoritative/kool-phase2-v4/replay.log",
+        "logSha256": "2e7ed19f47b1631c548ea62c05a0769f7176e29def1d85089fefcc9252d404ba",
+        "checks": [
+          "No leaked-image cleanup warning",
+          "No authority UI font loading failure"
+        ],
+        "scope": "Known native resource diagnostics; not a general heap or GPU allocation audit"
+      }
+    },
+    "allWindowsInactiveAndUnfocused": true,
+    "virtualDisplayRemoved": true,
+    "originalDisplaysUnchanged": true,
+    "systemVolumeChanged": false
+  },
+  "fixes": [
+    "Explicit latched terminal outcome and no terminal input or all-map fallback",
+    "Streaming own-seat-only view recording and pure read-only replay",
+    "Recorder closes atomically after draining every accepted frame",
+    "Kool view-only stock-sprite presentation without local GameEngine",
+    "Owned CJK font and native GPU lease retirement before delayed shutdown release pump",
+    "Native evidence parser requires event-specific window safety, readOnly and resource diagnostics"
+  ],
+  "legacyEquivalence": {
+    "baselineSha256": "f51f8c4ade1ccb1916e00dded559390ae10ac57eca090a8a31d6e96ad2ab5b13",
+    "scopePrefixes": [
+      "com/corrodinggames/rts/gameFramework/network/",
+      "com/corrodinggames/rts/gameFramework/Command",
+      "com/corrodinggames/rts/gameFramework/GameSaver",
+      "com/corrodinggames/rts/gameFramework/ReplayEngine",
+      "com/corrodinggames/rts/game/PlayerTeam",
+      "com/corrodinggames/rts/game/GameLogic",
+      "io/github/rwx/SwingKoolHost",
+      "io/github/rwx/DesktopWindowActivity"
+    ],
+    "comparedClasses": 101,
+    "changedClasses": [],
+    "passed": true
+  },
+  "legacyRuntimeEvidence": "build/authoritative-virtual/review-appendix.json",
+  "legacyRuntimeScope": "The prior frozen baseline ran both original-1.15 interoperability directions for 600 seconds. Listed classes are byte-identical; those long sessions were not rerun on this artifact.",
+  "earlierRuns": [
+    {
+      "report": "desktop/build/authoritative/kool-phase2-v1/result.json",
+      "note": "Failed launcher/cleanup run; retained unchanged."
+    },
+    {
+      "report": "desktop/build/authoritative/kool-phase2-v2/result.json",
+      "note": "Passed earlier network/render/recording scope; no replay GUI or strict readOnly/resource check."
+    },
+    {
+      "report": "desktop/build/authoritative/kool-phase2-v3/result.json",
+      "note": "Passed window/progression/recording/offline replay scope, but post-review found three catalog image cleanup warnings in client-0. Raw pass is retained; this was not final resource acceptance."
+    }
+  ],
+  "remaining": [
+    "Public original terrain artwork including reviewed decoration/resource layers",
+    "Full standard action and unit roster, projectiles and animations",
+    "Normal lobby and lifecycle integration, reconnect experience",
+    "Replay pause and seeking, Android integration",
+    "Final supported-scope long-session and security acceptance"
+  ],
+  "goalComplete": false
+}

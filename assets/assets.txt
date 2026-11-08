@@ -328,6 +328,8 @@ maps/skirmish/[p2]Ice Island (2p).tmx
 maps/skirmish/[p2]Ice Island (2p)_map.png
 maps/skirmish/[p2]Lake (2p).tmx
 maps/skirmish/[p2]Lake (2p)_map.png
+maps/skirmish/[p2]RWXX Timeline Arena.tmx
+maps/skirmish/[p2]RWXX Timeline Large Arena.tmx
 maps/skirmish/[p2]Small_Island (2p).tmx
 maps/skirmish/[p2]Small_Island (2p)_map.png
 maps/skirmish/[p2]Two_cold_sides (2p).tmx

@@ -1,0 +1,985 @@
+{
+  "format": "rwxt-v7-state-fixtures-1",
+  "wireVersion": 7,
+  "scope": "Complete canonical byte encoding and independent SHA-256/128 calculation. This file does not attest authorization, transaction application or full profile semantic validation.",
+  "states": [
+    {
+      "name": "canonical-structure-365",
+      "scope": "Canonical structure example; deliberately omits mandatory profile attributes.",
+      "state": {
+        "matchIdHex": "000102030405060708090a0b0c0d0e0f",
+        "accessIdHex": "101112131415161718191a1b1c1d1e1f",
+        "mapHex": "0001010200000004000000010002010200000004000000010003010200000004000000010004010200000004000000140005010200000004000000140006010600000001000007010200000004000000010008010600000002000100090106000000020000000a01060000000100",
+        "mapKeyHex": "9d237f7c1cc71f6778c9d0d0fdff0979c325e8c2afcc5cbb37995e4c6f496dae",
+        "profileId": 1,
+        "teamId": 0,
+        "ticksPerSecond": 60,
+        "streamId": "1",
+        "epoch": "1",
+        "revision": "1",
+        "observedThrough": "100",
+        "sealedThrough": "50",
+        "retainedFrom": "0",
+        "retainedUntil": "200",
+        "controlEpoch": "1",
+        "objectHighWater": "2",
+        "mode": 1,
+        "objects": [
+          {
+            "handle": "0",
+            "kind": 0,
+            "observedFrom": "0",
+            "close": null,
+            "descriptorHex": "",
+            "curves": [
+              {
+                "attributeId": 1,
+                "mode": 1,
+                "valueType": 1,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": "1024"
+                  }
+                ],
+                "events": []
+              }
+            ]
+          },
+          {
+            "handle": "1",
+            "kind": 1,
+            "observedFrom": "0",
+            "close": null,
+            "descriptorHex": "000100050000000474616e6b",
+            "curves": [
+              {
+                "attributeId": 8,
+                "mode": 1,
+                "valueType": 3,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "3",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": "1"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 7,
+                "mode": 1,
+                "valueType": 5,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "2",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": {
+                      "hex": "74616e6b"
+                    }
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 1,
+                "mode": 2,
+                "valueType": 2,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "100",
+                    "predicted": false,
+                    "anchor0Time": "0",
+                    "anchor1Time": "100",
+                    "value0": [
+                      "0",
+                      "0",
+                      "0"
+                    ],
+                    "value1": [
+                      "100",
+                      "100",
+                      "10"
+                    ]
+                  }
+                ],
+                "events": []
+              }
+            ]
+          },
+          {
+            "handle": "2",
+            "kind": 4,
+            "observedFrom": "0",
+            "close": null,
+            "descriptorHex": "",
+            "curves": [
+              {
+                "attributeId": 65536,
+                "mode": 4,
+                "valueType": 5,
+                "critical": false,
+                "eventHighWater": "4",
+                "metadataHex": "00010103000000080000000000000064000900f000000004deadcafe",
+                "curveRevision": "2",
+                "segments": [],
+                "events": [
+                  {
+                    "time": "20",
+                    "eventId": "2",
+                    "value": {
+                      "hex": "0102"
+                    }
+                  },
+                  {
+                    "time": "50",
+                    "eventId": "3",
+                    "value": {
+                      "hex": "03"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "canonicalHex": "525758542d53544154452d3700000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f9d237f7c1cc71f6778c9d0d0fdff0979c325e8c2afcc5cbb37995e4c6f496dae6e0001010200000004000000010002010200000004000000010003010200000004000000010004010200000004000000140005010200000004000000140006010600000001000007010200000004000000010008010600000002000100090106000000020000000a0106000000010001003c010101643200c801010203000000000001010101010000010100ffffffffffffffff7f008010010100000c000100050000000474616e6b0301020201000001010064000064000000c801c80114070105010000020100ffffffffffffffff7f000474616e6b080103010000030100ffffffffffffffff7f0001020400000001808004040500041c00010103000000080000000000000064000900f000000004deadcafe0202140202010232030103",
+      "canonicalBytes": 365,
+      "persistentBytes": 177,
+      "digest128": "d9d58a53f9d767f20b481f6cc3a24bed"
+    },
+    {
+      "name": "complete-world-shape",
+      "scope": "All mandatory ROOT and UNIT attributes with an optional opaque pulse curve.",
+      "state": {
+        "matchIdHex": "000102030405060708090a0b0c0d0e0f",
+        "accessIdHex": "101112131415161718191a1b1c1d1e1f",
+        "mapHex": "0001010200000004000000010002010200000004000000010003010200000004000000010004010200000004000000140005010200000004000000140006010600000001000007010200000004000000010008010600000002000100090106000000020000000a01060000000100",
+        "mapKeyHex": "9d237f7c1cc71f6778c9d0d0fdff0979c325e8c2afcc5cbb37995e4c6f496dae",
+        "profileId": 1,
+        "teamId": 0,
+        "ticksPerSecond": 60,
+        "streamId": "1",
+        "epoch": "1",
+        "revision": "1",
+        "observedThrough": "100",
+        "sealedThrough": "50",
+        "retainedFrom": "0",
+        "retainedUntil": "200",
+        "controlEpoch": "1",
+        "objectHighWater": "2",
+        "mode": 1,
+        "objects": [
+          {
+            "handle": "0",
+            "kind": 0,
+            "observedFrom": "0",
+            "close": null,
+            "descriptorHex": "",
+            "curves": [
+              {
+                "attributeId": 1,
+                "mode": 1,
+                "valueType": 1,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": "1024"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 2,
+                "mode": 1,
+                "valueType": 5,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": {
+                      "hex": "00000000"
+                    }
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 3,
+                "mode": 1,
+                "valueType": 5,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": {
+                      "hex": "00"
+                    }
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 4096,
+                "mode": 1,
+                "valueType": 5,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": {
+                      "hex": "000a"
+                    }
+                  }
+                ],
+                "events": []
+              }
+            ]
+          },
+          {
+            "handle": "1",
+            "kind": 1,
+            "observedFrom": "0",
+            "close": null,
+            "descriptorHex": "000100050000000474616e6b",
+            "curves": [
+              {
+                "attributeId": 1,
+                "mode": 2,
+                "valueType": 2,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "anchor0Time": "0",
+                    "anchor1Time": "9223372036854775807",
+                    "value0": [
+                      "256",
+                      "512",
+                      "0"
+                    ],
+                    "value1": [
+                      "256",
+                      "512",
+                      "0"
+                    ]
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 2,
+                "mode": 3,
+                "valueType": 3,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "anchor0Time": "0",
+                    "anchor1Time": "9223372036854775807",
+                    "value0": "65000",
+                    "value1": "65000"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 3,
+                "mode": 1,
+                "valueType": 1,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": "25600"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 4,
+                "mode": 1,
+                "valueType": 1,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": "25600"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 5,
+                "mode": 2,
+                "valueType": 3,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "anchor0Time": "0",
+                    "anchor1Time": "9223372036854775807",
+                    "value0": "65535",
+                    "value1": "65535"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 6,
+                "mode": 1,
+                "valueType": 1,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": "0"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 7,
+                "mode": 1,
+                "valueType": 5,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": {
+                      "hex": "74616e6b"
+                    }
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 8,
+                "mode": 1,
+                "valueType": 3,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": "1"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 9,
+                "mode": 1,
+                "valueType": 4,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": true
+                  }
+                ],
+                "events": []
+              }
+            ]
+          },
+          {
+            "handle": "2",
+            "kind": 4,
+            "observedFrom": "0",
+            "close": null,
+            "descriptorHex": "",
+            "curves": [
+              {
+                "attributeId": 65536,
+                "mode": 4,
+                "valueType": 5,
+                "critical": false,
+                "eventHighWater": "4",
+                "metadataHex": "00010103000000080000000000000064000900f000000004deadcafe",
+                "curveRevision": "2",
+                "segments": [],
+                "events": [
+                  {
+                    "time": "20",
+                    "eventId": "2",
+                    "value": {
+                      "hex": "0102"
+                    }
+                  },
+                  {
+                    "time": "50",
+                    "eventId": "3",
+                    "value": {
+                      "hex": "03"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "canonicalHex": "525758542d53544154452d3700000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f9d237f7c1cc71f6778c9d0d0fdff0979c325e8c2afcc5cbb37995e4c6f496dae6e0001010200000004000000010002010200000004000000010003010200000004000000010004010200000004000000140005010200000004000000140006010600000001000007010200000004000000010008010600000002000100090106000000020000000a0106000000010001003c010101643200c801010203000000000004010101010000010100ffffffffffffffff7f008010020105010000010100ffffffffffffffff7f000400000000030105010000010100ffffffffffffffff7f00010080200105010000010100ffffffffffffffff7f0002000a010100000c000100050000000474616e6b09010202010000010100ffffffffffffffff7f0000ffffffffffffffff7f80048008008004800800020303010000010100ffffffffffffffff7f0000ffffffffffffffff7fe8fb03e8fb03030101010000010100ffffffffffffffff7f00809003040101010000010100ffffffffffffffff7f00809003050203010000010100ffffffffffffffff7f0000ffffffffffffffff7fffff03ffff03060101010000010100ffffffffffffffff7f0000070105010000010100ffffffffffffffff7f000474616e6b080103010000010100ffffffffffffffff7f0001090104010000010100ffffffffffffffff7f0001020400000001808004040500041c00010103000000080000000000000064000900f000000004deadcafe0202140202010232030103",
+      "canonicalBytes": 605,
+      "persistentBytes": 417,
+      "digest128": "54d4e373c04f4aa13de273501ed12da3"
+    },
+    {
+      "name": "complete-world-with-cost-capability",
+      "scope": "Selected UNIT, PANEL, ACTION and exact optional costs.",
+      "state": {
+        "matchIdHex": "000102030405060708090a0b0c0d0e0f",
+        "accessIdHex": "101112131415161718191a1b1c1d1e1f",
+        "mapHex": "0001010200000004000000010002010200000004000000010003010200000004000000010004010200000004000000140005010200000004000000140006010600000001000007010200000004000000010008010600000002000100090106000000020000000a01060000000100",
+        "mapKeyHex": "9d237f7c1cc71f6778c9d0d0fdff0979c325e8c2afcc5cbb37995e4c6f496dae",
+        "profileId": 1,
+        "teamId": 0,
+        "ticksPerSecond": 60,
+        "streamId": "1",
+        "epoch": "1",
+        "revision": "1",
+        "observedThrough": "100",
+        "sealedThrough": "50",
+        "retainedFrom": "0",
+        "retainedUntil": "200",
+        "controlEpoch": "1",
+        "objectHighWater": "4",
+        "mode": 1,
+        "objects": [
+          {
+            "handle": "0",
+            "kind": 0,
+            "observedFrom": "0",
+            "close": null,
+            "descriptorHex": "",
+            "curves": [
+              {
+                "attributeId": 1,
+                "mode": 1,
+                "valueType": 1,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": "1024"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 2,
+                "mode": 1,
+                "valueType": 5,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": {
+                      "hex": "00000000"
+                    }
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 3,
+                "mode": 1,
+                "valueType": 5,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": {
+                      "hex": "0101"
+                    }
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 4096,
+                "mode": 1,
+                "valueType": 5,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": {
+                      "hex": "000a"
+                    }
+                  }
+                ],
+                "events": []
+              }
+            ]
+          },
+          {
+            "handle": "1",
+            "kind": 1,
+            "observedFrom": "0",
+            "close": null,
+            "descriptorHex": "000100050000000474616e6b",
+            "curves": [
+              {
+                "attributeId": 1,
+                "mode": 2,
+                "valueType": 2,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "anchor0Time": "0",
+                    "anchor1Time": "9223372036854775807",
+                    "value0": [
+                      "256",
+                      "512",
+                      "0"
+                    ],
+                    "value1": [
+                      "256",
+                      "512",
+                      "0"
+                    ]
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 2,
+                "mode": 3,
+                "valueType": 3,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "anchor0Time": "0",
+                    "anchor1Time": "9223372036854775807",
+                    "value0": "65000",
+                    "value1": "65000"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 3,
+                "mode": 1,
+                "valueType": 1,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": "25600"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 4,
+                "mode": 1,
+                "valueType": 1,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": "25600"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 5,
+                "mode": 2,
+                "valueType": 3,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "anchor0Time": "0",
+                    "anchor1Time": "9223372036854775807",
+                    "value0": "65535",
+                    "value1": "65535"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 6,
+                "mode": 1,
+                "valueType": 1,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": "0"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 7,
+                "mode": 1,
+                "valueType": 5,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": {
+                      "hex": "74616e6b"
+                    }
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 8,
+                "mode": 1,
+                "valueType": 3,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": "1"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 9,
+                "mode": 1,
+                "valueType": 4,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": true
+                  }
+                ],
+                "events": []
+              }
+            ]
+          },
+          {
+            "handle": "2",
+            "kind": 4,
+            "observedFrom": "0",
+            "close": null,
+            "descriptorHex": "",
+            "curves": [
+              {
+                "attributeId": 65536,
+                "mode": 4,
+                "valueType": 5,
+                "critical": false,
+                "eventHighWater": "4",
+                "metadataHex": "00010103000000080000000000000064000900f000000004deadcafe",
+                "curveRevision": "2",
+                "segments": [],
+                "events": [
+                  {
+                    "time": "20",
+                    "eventId": "2",
+                    "value": {
+                      "hex": "0102"
+                    }
+                  },
+                  {
+                    "time": "50",
+                    "eventId": "3",
+                    "value": {
+                      "hex": "03"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "handle": "3",
+            "kind": 2,
+            "observedFrom": "0",
+            "close": null,
+            "descriptorHex": "0002010300000008000000000000000100050106000000020101",
+            "curves": [
+              {
+                "attributeId": 1,
+                "mode": 1,
+                "valueType": 4,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": true
+                  }
+                ],
+                "events": []
+              }
+            ]
+          },
+          {
+            "handle": "4",
+            "kind": 3,
+            "observedFrom": "0",
+            "close": null,
+            "descriptorHex": "00020103000000080000000000000001000301030000000800000000000000030004010700000113000101020000000400000002000201020000000400000000000301010000000100000401050000000f70726f647563652e6275696c64657200050105000000076275696c6465720006010400000008000000000000060000070102000000040000000100090007000000500001010400000008000000000000060000020104000000080000000000000200000301040000000800000000000000000004010400000008000000000000000000050104000000080000000000000400000a0007000000500001010400000008000000000000000000020104000000080000000000000000000301040000000800000000000000000004010400000008ffffffffffffffff00050104000000080000000000000000",
+            "curves": [
+              {
+                "attributeId": 1,
+                "mode": 1,
+                "valueType": 3,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": "2"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 2,
+                "mode": 1,
+                "valueType": 1,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": "-1"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 3,
+                "mode": 1,
+                "valueType": 1,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": "7"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 4,
+                "mode": 2,
+                "valueType": 3,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "anchor0Time": "0",
+                    "anchor1Time": "9223372036854775807",
+                    "value0": "32768",
+                    "value1": "32768"
+                  }
+                ],
+                "events": []
+              },
+              {
+                "attributeId": 5,
+                "mode": 1,
+                "valueType": 4,
+                "critical": true,
+                "eventHighWater": "0",
+                "metadataHex": "",
+                "curveRevision": "1",
+                "segments": [
+                  {
+                    "lo": "0",
+                    "hi": "9223372036854775807",
+                    "predicted": false,
+                    "value": true
+                  }
+                ],
+                "events": []
+              }
+            ]
+          }
+        ]
+      },
+      "canonicalHex": "525758542d53544154452d3700000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f9d237f7c1cc71f6778c9d0d0fdff0979c325e8c2afcc5cbb37995e4c6f496dae6e0001010200000004000000010002010200000004000000010003010200000004000000010004010200000004000000140005010200000004000000140006010600000001000007010200000004000000010008010600000002000100090106000000020000000a0106000000010001003c010101643200c801010405000000000004010101010000010100ffffffffffffffff7f008010020105010000010100ffffffffffffffff7f000400000000030105010000010100ffffffffffffffff7f0002010180200105010000010100ffffffffffffffff7f0002000a010100000c000100050000000474616e6b09010202010000010100ffffffffffffffff7f0000ffffffffffffffff7f80048008008004800800020303010000010100ffffffffffffffff7f0000ffffffffffffffff7fe8fb03e8fb03030101010000010100ffffffffffffffff7f00809003040101010000010100ffffffffffffffff7f00809003050203010000010100ffffffffffffffff7f0000ffffffffffffffff7fffff03ffff03060101010000010100ffffffffffffffff7f0000070105010000010100ffffffffffffffff7f000474616e6b080103010000010100ffffffffffffffff7f0001090104010000010100ffffffffffffffff7f0001020400000001808004040500041c00010103000000080000000000000064000900f000000004deadcafe0202140202010232030103030200001a000201030000000800000000000000010005010600000002010101010104010000010100ffffffffffffffff7f000104030000bb0200020103000000080000000000000001000301030000000800000000000000030004010700000113000101020000000400000002000201020000000400000000000301010000000100000401050000000f70726f647563652e6275696c64657200050105000000076275696c6465720006010400000008000000000000060000070102000000040000000100090007000000500001010400000008000000000000060000020104000000080000000000000200000301040000000800000000000000000004010400000008000000000000000000050104000000080000000000000400000a0007000000500001010400000008000000000000000000020104000000080000000000000000000301040000000800000000000000000004010400000008ffffffffffffffff0005010400000008000000000000000005010103010000010100ffffffffffffffff7f0002020101010000010100ffffffffffffffff7f0001030101010000010100ffffffffffffffff7f000e040203010000010100ffffffffffffffff7f0000ffffffffffffffff7f808002808002050104010000010100ffffffffffffffff7f0001",
+      "canonicalBytes": 1095,
+      "persistentBytes": 907,
+      "digest128": "428653eae0c1a654c21331b0f3c5c3c8"
+    }
+  ]
+}

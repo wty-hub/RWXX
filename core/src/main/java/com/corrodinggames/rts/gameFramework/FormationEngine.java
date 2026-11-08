@@ -1,6 +1,7 @@
 package com.corrodinggames.rts.gameFramework;
 
 import com.corrodinggames.rts.game.units.OrderableUnit;
+import com.corrodinggames.rts.game.map.TileMap;
 import com.corrodinggames.rts.gameFramework.network.GameInputStream;
 import com.corrodinggames.rts.gameFramework.network.GameOutputStream;
 import com.corrodinggames.rts.gameFramework.utility.FastArrayList;
@@ -17,6 +18,34 @@ public class FormationEngine extends Serializable {
     int nextFormationId;
 
     PointF b = new PointF();
+
+    // Runtime-only, never serialized into legacy commands or replays.
+    private GameEngine authoritativeEngine;
+    private TileMap authoritativeMap;
+    private Thread authoritativeOwner;
+
+    /** Explicit opt-in for a newly booted authoritative headless room only. */
+    public void enableAuthoritativeHeadlessSingleUnitFormation() {
+        GameEngine engine = GameEngine.getInstance();
+        if (!GameEngine.isHeadlessMode || engine == null || engine.formationEngine != this
+                || engine.tileMap == null || engine.currentTick != 0
+                || engine.networkEngine == null || engine.networkEngine.networkGameActive
+                || engine.replayEngine == null || engine.replayEngine.j()) {
+            throw new IllegalStateException("Single-unit formation optimization requires a new authoritative headless room");
+        }
+        this.authoritativeEngine = engine;
+        this.authoritativeMap = engine.tileMap;
+        this.authoritativeOwner = Thread.currentThread();
+    }
+
+    public boolean isAuthoritativeHeadlessSingleUnitFormationEnabled() {
+        GameEngine engine = GameEngine.getInstance();
+        return this.authoritativeEngine != null && engine == this.authoritativeEngine
+                && engine.formationEngine == this && engine.tileMap == this.authoritativeMap
+                && Thread.currentThread() == this.authoritativeOwner && GameEngine.isHeadlessMode
+                && engine.networkEngine != null && !engine.networkEngine.networkGameActive
+                && engine.replayEngine != null && !engine.replayEngine.j();
+    }
 
     public void a() {
         this.nextFormationId = 1;

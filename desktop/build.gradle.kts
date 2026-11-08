@@ -190,6 +190,101 @@ tasks.register<JavaExec>("headless") {
     jvmArgs("-Djava.awt.headless=true")
 }
 
+tasks.register<JavaExec>("authoritative") {
+    group = "application"
+    description = "Run the timeline protocol server, client, host or archive playback."
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass.set("io.github.rwx.AuthoritativeDesktopMain")
+    workingDir = project.file("..")
+    // JavaExec does not read the fat JAR's Add-Exports manifest. Match the packaged launcher's
+    // native/AWT access flags for the display-only Kool client as well as the normal app.
+    jvmArgs(application.applicationDefaultJvmArgs)
+}
+
+tasks.register<JavaExec>("timelineEngineAcceptance") {
+    group = "verification"
+    description = "Run the explicitly enabled headless v7 real-engine smoke test. Pass a new --output path."
+    dependsOn(tasks.named("testClasses"))
+    classpath = sourceSets.test.get().runtimeClasspath
+    mainClass.set("io.github.rwx.TimelineEngineAcceptanceMain")
+    workingDir = project.file("..")
+    jvmArgs(application.applicationDefaultJvmArgs)
+    systemProperty("java.awt.headless", "true")
+}
+
+tasks.register<JavaExec>("timelineProcessAcceptance") {
+    group = "verification"
+    description = "Run the explicitly enabled headless v7 production entry and four-seat process acceptance."
+    dependsOn(tasks.named("testClasses"))
+    classpath = sourceSets.test.get().runtimeClasspath
+    mainClass.set("io.github.rwx.TimelineProcessAcceptanceMain")
+    workingDir = project.file("..")
+    jvmArgs(application.applicationDefaultJvmArgs)
+    systemProperty("java.awt.headless", "true")
+}
+
+tasks.register<JavaExec>("timelineNativeAcceptance") {
+    group = "verification"
+    description = "Run explicitly enabled v7 real-engine action, upgrade and TCP capability acceptance."
+    dependsOn(tasks.named("testClasses"))
+    classpath = sourceSets.test.get().runtimeClasspath
+    mainClass.set("io.github.rwx.TimelineNativeAcceptanceMain")
+    workingDir = project.file("..")
+    jvmArgs(application.applicationDefaultJvmArgs)
+    systemProperty("java.awt.headless", "true")
+}
+
+tasks.register<JavaExec>("timelineSeatCapacityAcceptance") {
+    group = "verification"
+    description = "Run explicitly enabled 64-seat v7 production-entry acceptance without a window."
+    dependsOn(tasks.named("testClasses"))
+    classpath = sourceSets.test.get().runtimeClasspath
+    mainClass.set("io.github.rwx.TimelineSeatCapacityAcceptanceMain")
+    workingDir = project.file("..")
+    jvmArgs(application.applicationDefaultJvmArgs)
+    systemProperty("java.awt.headless", "true")
+    maxHeapSize = "2g"
+}
+
+tasks.register<JavaExec>("timelineFullChainAcceptance") {
+    group = "verification"
+    description = "Run explicitly enabled real-engine 64-seat/65,536-unit full-chain capacity checks."
+    dependsOn(tasks.named("testClasses"))
+    classpath = sourceSets.test.get().runtimeClasspath
+    mainClass.set("io.github.rwx.TimelineFullChainAcceptanceMain")
+    workingDir = project.file("..")
+    jvmArgs(application.applicationDefaultJvmArgs)
+    systemProperty("java.awt.headless", "true")
+    maxHeapSize = "2g"
+}
+
+tasks.register<JavaExec>("timelineScaleAcceptance") {
+    group = "verification"
+    description = "Measure explicitly enabled real-engine scale with a hard deadline and no window."
+    dependsOn(tasks.named("testClasses"))
+    classpath = sourceSets.test.get().runtimeClasspath
+    mainClass.set("io.github.rwx.TimelineScaleAcceptanceMain")
+    workingDir = project.file("..")
+    jvmArgs(application.applicationDefaultJvmArgs)
+    systemProperty("java.awt.headless", "true")
+    maxHeapSize = "4g"
+    providers.gradleProperty("timelineScaleJfr").orNull?.let { path ->
+        jvmArgs("-XX:StartFlightRecording=filename=$path,settings=profile,dumponexit=true")
+    }
+}
+
+tasks.register<ShadowJar>("timelineAcceptanceJar") {
+    group = "verification"
+    description = "Build the isolated v7 acceptance runtime, including test-only entry points."
+    dependsOn(tasks.named("testClasses"))
+    from(sourceSets.test.get().output)
+    configurations = listOf(project.configurations.testRuntimeClasspath.get(), universalNatives)
+    archiveBaseName.set("RWXX-timeline-acceptance")
+    archiveClassifier.set("")
+    configureRunnableJar()
+    manifest { attributes["Main-Class"] = "io.github.rwx.TimelineProcessAcceptanceMain" }
+}
+
 /**
  * Pixel oracle for the GPU map cell path (`RenderTargetMode.GPU_TARGET`). Readback waits for the
  * queue, so this is a functional check and must never be used for performance measurement.

@@ -22,6 +22,7 @@ import io.github.rwx.geometry.RectF;
 import io.github.rwx.mod.registry.DamageRegistry;
 import io.github.rwx.mod.registry.ProjectileObserverRegistry;
 import io.github.rwx.mod.registry.RenderRegistry;
+import io.github.rwx.net.timeline.TimelineNativeEvents;
 import io.github.rwx.render.canvas.KoolArgbColor;
 import io.github.rwx.render.canvas.KoolMultiplyAddColorFilter;
 import io.github.rwx.render.canvas.KoolPaint;
@@ -698,6 +699,12 @@ public class Projectile extends PositionedObject {
     }
 
     public static Projectile a(BaseUnit baseUnit, float f2, float f3) {
+        Projectile projectile = createProjectile(baseUnit, f2, f3);
+        TimelineNativeEvents.fire(baseUnit, f2, f3, baseUnit.posZ);
+        return projectile;
+    }
+
+    private static Projectile createProjectile(BaseUnit baseUnit, float f2, float f3) {
         Projectile projectile = new Projectile(false);
         projectile.sourceUnit = baseUnit;
         projectile.posX = f2;
@@ -709,11 +716,12 @@ public class Projectile extends PositionedObject {
     }
 
     public static Projectile a(BaseUnit baseUnit, float f2, float f3, float f4, int i) {
-        Projectile projectileA = a(baseUnit, f2, f3);
+        Projectile projectileA = createProjectile(baseUnit, f2, f3);
         projectileA.posZ = f4;
         projectileA.techLevel = (short) i;
         projectileA.randomSeed = Utility.getDeterministicRandomFloatForUnit(baseUnit, 0.0f, 1.0f, baseUnit.unitCounter);
         baseUnit.unitCounter++;
+        TimelineNativeEvents.fire(baseUnit, f2, f3, f4);
         return projectileA;
     }
 
@@ -1128,6 +1136,10 @@ public class Projectile extends PositionedObject {
                         this.hitY = this.targetUnit.posY + this.trackOffsetY;
                         this.hitZ = this.targetUnit.posZ;
                     }
+                }
+                TimelineNativeEvents.hit(this.hitX, this.hitY, this.hitZ);
+                if (!this.isBeam && !projectileTemplate.noExplosion && (this.explosionRadius > 0.0f || this.isNuke)) {
+                    TimelineNativeEvents.explosion(this.hitX, this.hitY, this.hitZ);
                 }
                 if (!this.persistsAfterExplosion && !this.renderJitter && !projectileTemplate.X) {
                     this.hasExploded = false;

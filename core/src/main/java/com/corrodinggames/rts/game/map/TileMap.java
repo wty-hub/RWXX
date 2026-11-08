@@ -103,6 +103,58 @@ public final class TileMap {
     /* JADX INFO: renamed from: N */
     public byte[][] fogOfWarNext;
 
+    /** Explicit per-map opt-in; ordinary headless replay and legacy networking retain display work. */
+    private boolean authoritativeHeadlessDisplayCachesDisabled;
+
+    /** Called on the engine owner before the first simulation tick of an authoritative headless room.
+     * This affects only display masks and invalidation, never PlayerTeam.fogOfWarData. */
+    public void disableDisplayCachesForAuthoritativeHeadless() {
+        GameEngine engine = GameEngine.getInstance();
+        if (!GameEngine.isHeadlessMode || engine == null || engine.tileMap != this || engine.currentTick != 0
+                || engine.networkEngine == null || engine.networkEngine.networkGameActive
+                || engine.replayEngine == null || engine.replayEngine.j()) {
+            throw new IllegalStateException("Display-cache opt-out requires a new authoritative headless map");
+        }
+        this.authoritativeHeadlessDisplayCachesDisabled = true;
+    }
+
+    public boolean isAuthoritativeHeadlessDisplayCachesDisabled() {
+        return this.authoritativeHeadlessDisplayCachesDisabled;
+    }
+
+    // Runtime-only opt-in. The zero column is a comparison operand, never cached fog state.
+    private GameEngine authoritativeZeroFogEngine;
+    private Thread authoritativeZeroFogOwner;
+    private byte[] authoritativeZeroFogColumn;
+
+    /** Only skip a native row after reading its current bytes and proving every cell is already zero. */
+    public void enableAuthoritativeHeadlessZeroFogRows() {
+        GameEngine engine = GameEngine.getInstance();
+        if (!this.authoritativeHeadlessDisplayCachesDisabled || !GameEngine.isHeadlessMode
+                || engine == null || engine.tileMap != this || engine.currentTick != 0
+                || this.tileCountX <= 0 || this.tileCountY <= 0
+                || engine.networkEngine == null || engine.networkEngine.networkGameActive
+                || engine.replayEngine == null || engine.replayEngine.j()) {
+            throw new IllegalStateException("Zero-fog row scanning requires a new authoritative headless map");
+        }
+        this.authoritativeZeroFogColumn = new byte[this.tileCountY];
+        this.authoritativeZeroFogEngine = engine;
+        this.authoritativeZeroFogOwner = Thread.currentThread();
+    }
+
+    public boolean isAuthoritativeHeadlessZeroFogRowsEnabled() {
+        return canSkipAuthoritativeZeroFogRows(GameEngine.getInstance());
+    }
+
+    private boolean canSkipAuthoritativeZeroFogRows(GameEngine engine) {
+        return this.authoritativeZeroFogColumn != null && this.authoritativeHeadlessDisplayCachesDisabled
+                && engine == this.authoritativeZeroFogEngine && engine != null && engine.tileMap == this
+                && Thread.currentThread() == this.authoritativeZeroFogOwner && GameEngine.isHeadlessMode
+                && this.authoritativeZeroFogColumn.length == this.tileCountY
+                && engine.networkEngine != null && !engine.networkEngine.networkGameActive
+                && engine.replayEngine != null && !engine.replayEngine.j();
+    }
+
     /* JADX INFO: renamed from: Q */
     public MapObjectLayer objectsLayer;
 
@@ -251,6 +303,7 @@ public final class TileMap {
     }
 
     public void updateRealtimeFogDisplay(byte[][] previous, byte[][] current) {
+        if (this.authoritativeHeadlessDisplayCachesDisabled) return;
         if (current == null) return;
         if (previous == null || previous.length != tileCountX || previous[0].length != tileCountY) {
             invalidateFogDisplay();
@@ -277,6 +330,7 @@ public final class TileMap {
     }
 
     public void invalidateFogDisplay() {
+        if (this.authoritativeHeadlessDisplayCachesDisabled) return;
         if (tileCountX > 0 && tileCountY > 0) {
             ensureFogCacheAllocated();
             for (byte[] column : fogOfWarCurrent) Arrays.fill(column, (byte) 127);
@@ -1278,6 +1332,7 @@ public final class TileMap {
 
     /* JADX INFO: renamed from: a */
     public void enqueueScorchMark(ScorchMark scorchMark) {
+        if (this.authoritativeHeadlessDisplayCachesDisabled) return;
         if (GameEngine.isNonAndroidVersion && !GameEngine.isPCOrIOSVersion) {
             return;
         }
@@ -1328,6 +1383,7 @@ public final class TileMap {
 
     /* JADX INFO: renamed from: g */
     public void invalidateAllLayerCells() {
+        if (this.authoritativeHeadlessDisplayCachesDisabled) return;
         layerBufferManager.invalidateAllCells();
     }
 
@@ -1504,6 +1560,7 @@ public final class TileMap {
 
     /* JADX INFO: renamed from: k */
     public void resetFogToInvisible() {
+        if (this.authoritativeHeadlessDisplayCachesDisabled) return;
         ensureFogCacheAllocated();
         for (int i = 0; i < this.tileCountX; i++) {
             for (int i2 = 0; i2 < this.tileCountY; i2++) {
@@ -1515,12 +1572,14 @@ public final class TileMap {
 
     /* JADX INFO: renamed from: f */
     public void invalidateLayerCellAt(int i, int i2) {
+        if (this.authoritativeHeadlessDisplayCachesDisabled) return;
         this.fogOfWarCurrent[i][i2] = 0;
         this.fogOfWarNext[i][i2] = 0;
     }
 
     /* JADX INFO: renamed from: g */
     public void invalidateLayerCellsAround(int i, int i2) {
+        if (this.authoritativeHeadlessDisplayCachesDisabled) return;
         int i3 = i - 1;
         int i4 = i2 - 1;
         if (i3 < 0) {
@@ -1551,6 +1610,7 @@ public final class TileMap {
 
     /* JADX INFO: renamed from: l */
     public void ensureFogCacheAllocated() {
+        if (this.authoritativeHeadlessDisplayCachesDisabled) return;
         boolean z = false;
         if (this.fogOfWarCurrent == null) {
             z = true;
@@ -1606,9 +1666,24 @@ public final class TileMap {
             }
             LayerBufferManager layerBufferManager2 = layerBufferManager;
             boolean z2 = false;
-            boolean isCurrentPlayerTeam = !gameEngine.replayEngine.j() && playerTeam.isCurrentPlayerTeam();
+            boolean isCurrentPlayerTeam = !this.authoritativeHeadlessDisplayCachesDisabled
+                    && !gameEngine.replayEngine.j() && playerTeam.isCurrentPlayerTeam();
+            byte[] zeroColumn = canSkipAuthoritativeZeroFogRows(gameEngine) ? this.authoritativeZeroFogColumn : null;
+            boolean validZeroRange = zeroColumn != null && i6 >= 0 && i6 <= i8 && i8 < zeroColumn.length;
             for (int i9 = i5; i9 <= i7; i9++) {
-                for (int i10 = i6; i10 <= i8; i10++) {
+                int rowStart = i6;
+                if (validZeroRange && i9 >= 0 && i9 < bArr.length) {
+                    byte[] actualColumn = bArr[i9];
+                    // Invalid native shapes retain the original loop's bounds/null behavior.
+                    // No result survives this row; a mod's next write is read again on the next call.
+                    if (actualColumn != null && i8 < actualColumn.length) {
+                        int firstNonzero = Arrays.mismatch(actualColumn, i6, i8 + 1, zeroColumn, 0, i8 - i6 + 1);
+                        if (firstNonzero == -1) continue;
+                        // mismatch is relative to the compared range. Its zero prefix has no native effects.
+                        rowStart = i6 + firstNonzero;
+                    }
+                }
+                for (int i10 = rowStart; i10 <= i8; i10++) {
                     byte b3 = bArr[i9][i10];
                     if (b3 != 0) {
                         float fDistanceSq = Utility.distanceSq(f7, f8, i9, i10);
@@ -1684,7 +1759,8 @@ public final class TileMap {
                             GameEngine.logColored("fogOfWar_map==null for:" + i);
                         }
                         boolean z2 = false;
-                        boolean isCurrentPlayerTeam = !gameEngine.replayEngine.j() && playerTeamK.isCurrentPlayerTeam();
+                        boolean isCurrentPlayerTeam = !this.authoritativeHeadlessDisplayCachesDisabled
+                                && !gameEngine.replayEngine.j() && playerTeamK.isCurrentPlayerTeam();
                         byte[][] bArr = playerTeamK.fogOfWarData;
                         byte[][] bArr2 = this.fogOfWarNext;
                         for (int i3 = 0; i3 < this.tileCountX; i3++) {
