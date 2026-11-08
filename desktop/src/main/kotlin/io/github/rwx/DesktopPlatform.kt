@@ -227,15 +227,20 @@ class DesktopPlatformStorage : PlatformStorage {
 
         internal fun resolveAssetRoot(): File = resolvedAssetRoot
 
-        internal fun defaultLocalBaseDir(): File {
-            val os = System.getProperty("os.name", "").lowercase()
-            val appDirName = "rwx"
+        internal fun defaultLocalBaseDir(
+            osName: String = System.getProperty("os.name", ""),
+            userHome: String = System.getProperty("user.home"),
+            appData: String? = System.getenv("APPDATA"),
+            xdgDataHome: String? = System.getenv("XDG_DATA_HOME"),
+        ): File {
+            val os = osName.lowercase()
+            val appDirName = "rwx-timeline"
             return when {
-                os.contains("win") -> File(System.getenv("APPDATA") ?: System.getProperty("user.home"), appDirName)
-                os.contains("mac") -> File(System.getProperty("user.home"), "Library/Application Support/$appDirName")
+                os.contains("win") -> File(appData ?: userHome, appDirName)
+                os.contains("mac") -> File(userHome, "Library/Application Support/$appDirName")
                 else -> File(
-                    System.getenv("XDG_DATA_HOME") ?: File(
-                        System.getProperty("user.home"),
+                    xdgDataHome ?: File(
+                        userHome,
                         ".local/share"
                     ).path, appDirName
                 )

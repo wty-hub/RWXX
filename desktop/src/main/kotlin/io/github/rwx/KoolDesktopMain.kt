@@ -145,7 +145,7 @@ object KoolDesktopMain : KoinComponent {
         renderBackend: BackendProvider,
     ): KoolConfigJvm = KoolConfigJvm(
         defaultAssetLoader = NativeAssetLoader(DesktopPlatformStorage.resolveAssetRoot().absolutePath),
-        windowTitle = "RWXX",
+        windowTitle = "RWXX-Timeline",
         windowSize = swingHost.windowSize,
         renderBackend = renderBackend,
         windowSubsystem = swingHost.windowSubsystem,

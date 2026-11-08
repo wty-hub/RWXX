@@ -49,6 +49,8 @@ for current defaults and coverage.
 
 ## Experimental multiplayer protocol
 
+Development continues on the long-lived `codex/authoritative-v7` branch. The `main` branch remains the 1.x line. See the [branch separation policy](docs/authoritative-v7-branch.md).
+
 The current development version is `2.2.0`. The new mode's server/client CLI and lobby create/join entries use candidate wire protocol `7`; the original multiplayer protocol `176` remains a separate mode. The server runs the full simulation and sends each client only its authorized timeline.
 
 Local TLS validation with 64 clients and 128 native units has passed. The 65,536-unit real-time performance target has not been met, and overall capacity, GUI, and release acceptance remain open. See the [protocol overview](docs/authoritative-network-protocol.md), [v7 byte specification](docs/authoritative-wire-v7.md), and [reference tools and vectors](docs/protocol/v7/README.md).
@@ -68,13 +70,10 @@ For desktop use, choose the `desktop.zip` matching your OS and architecture; it 
 After extracting the ZIP, launch `RWXX/RWXX.exe` on Windows, `RWXX/bin/RWXX` on Linux, or `RWXX.app` on macOS.
 Android packages require a valid signature; an unsigned Release APK built locally cannot be installed directly.
 
-Starting with 1.4.4, macOS stores personal settings in `~/Library/Application Support/rwx/preferences.toml`,
-so replacing or moving `RWXX.app` preserves audio, graphics, controls, key bindings, player name, and theme settings.
-On first launch, an existing `preferences.toml` in the current application directory is copied there if no user settings exist.
-The original is kept, and existing user settings are never replaced.
-For the first upgrade from 1.4.3 or earlier, quit the game and back up the old app's `RWXX.app/preferences.toml`
-to that user directory before replacing the app. Settings already deleted with the old app cannot be recovered automatically.
-An explicit `-Dlaunch.dir=...` keeps preferences in that directory for portable launches and isolated verification.
+This experimental branch builds as `RWXX-Timeline`. Its macOS settings use
+`~/Library/Application Support/rwx-timeline/preferences.toml`; the 1.x `rwx` settings remain separate.
+It does not import settings from the 1.x user directory. An explicit `-Dlaunch.dir=...` keeps preferences
+in the chosen directory for portable launches and isolated verification.
 
 ## Run and build from source
 

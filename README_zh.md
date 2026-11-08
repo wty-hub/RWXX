@@ -46,6 +46,8 @@ RWX 的 P2P 联机、区域控制、地图联通和 JVM 模组能力构成本项
 
 ## 实验联机协议
 
+此功能在长期分支 `codex/authoritative-v7` 开发，`main` 继续维护 1.x。分支和数据隔离规则见[开发线说明](docs/authoritative-v7-branch.md)。
+
 当前开发版本为 `2.2.0`。新模式的服务器、客户端 CLI 和大厅创建/加入入口使用候选协议 `7`；原版联机协议 `176` 作为独立模式保留。新模式由服务器运行完整仿真，只向各客户端发送其获准知道的时间线。
 
 64 个客户端、128 个原生单位的本机 TLS 检查已通过。65,536 单位的实时性能目标尚未达标，容量、GUI 与正式发布整体验收仍未完成。详见 [协议概览](docs/authoritative-network-protocol.md)、[v7 逐字节规范](docs/authoritative-wire-v7.md)和[参考工具与向量](docs/protocol/v7/README.md)。
@@ -65,12 +67,9 @@ RWX 的 P2P 联机、区域控制、地图联通和 JVM 模组能力构成本项
 ZIP 完整解压后，Windows 启动 `RWXX/RWXX.exe`，Linux 启动 `RWXX/bin/RWXX`，macOS 打开 `RWXX.app`。
 Android 安装包需要有效签名；自行构建的未签名 Release APK 不能直接安装。
 
-macOS 从 1.4.4 起将个人设置保存在 `~/Library/Application Support/rwx/preferences.toml`，
-替换或移动 `RWXX.app` 后仍会保留音量、画面、操作、快捷键、昵称和主题等设置。
-首次启动时，如果用户目录还没有配置，会复制当前应用目录内的旧 `preferences.toml`，保留原文件；已有配置不会被覆盖。
-从 1.4.3 及更早版本首次升级时，请先退出游戏，将旧应用内的 `RWXX.app/preferences.toml`
-备份到上述用户目录，再替换应用；已经随旧应用删除的配置无法自动恢复。
-手动指定 `-Dlaunch.dir=...` 时，配置继续保存在指定目录，便于便携运行和隔离验证。
+此实验分支的构建名为 `RWXX-Timeline`，macOS 配置保存在
+`~/Library/Application Support/rwx-timeline/preferences.toml`，与 1.x 的 `rwx` 目录分开，
+不会自动导入 1.x 用户目录中的配置。手动指定 `-Dlaunch.dir=...` 时，配置保存在指定目录，便于便携运行和隔离验证。
 
 ## 从源码运行与构建
 

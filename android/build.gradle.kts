@@ -54,7 +54,7 @@ android {
     useLibrary("org.apache.http.legacy")
 
     defaultConfig {
-        applicationId = project.group.toString()
+        applicationId = "io.github.rwx.timeline"
         minSdk = 28
         targetSdk = 36
         versionCode = releaseVersionCode

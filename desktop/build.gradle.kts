@@ -584,6 +584,7 @@ val createJpackageImage by tasks.registering(Exec::class) {
             "--java-options", "--add-opens=java.base/java.lang=ALL-UNNAMED",
         )
         val icon = if (targetPlatform.osName == "macos") {
+            args += listOf("--mac-package-identifier", "io.github.rwx.timeline")
             args += listOf("--java-options", "--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED")
             generatedMacIcon.get().asFile
         } else {
