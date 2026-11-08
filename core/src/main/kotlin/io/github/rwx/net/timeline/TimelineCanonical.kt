@@ -2,6 +2,7 @@ package io.github.rwx.net.timeline
 
 import java.io.OutputStream
 import java.io.BufferedOutputStream
+import java.io.DataOutputStream
 import java.security.DigestOutputStream
 import java.security.MessageDigest
 
@@ -112,6 +113,7 @@ object TimelineCanonical {
         protocolRequire(header.objectHighWater >= 0, "Invalid object high water")
         protocolRequire(state.objects.size <= TimelineProtocol.MAX_OBJECTS && state.objects[0]?.kind == TimelineObjectKind.ROOT, "Invalid object set")
         val out = TimelineBinary.LimitedOutput(output, TimelineProtocol.MAX_BLOB_BYTES.toLong())
+        val records = DataOutputStream(out)
         fun unsigned(value: Long) = TimelineBinary.writeVUInt(out, value)
         unsigned(context.profileId.toLong()); unsigned(context.teamId.toLong()); unsigned(context.ticksPerSecond.toLong())
         unsigned(header.streamId); unsigned(header.epoch); unsigned(header.revision)
@@ -135,7 +137,7 @@ object TimelineCanonical {
                 protocolRequire(handle != 0L && close.until in item.observedFrom..header.observedThrough, "Invalid observation close")
                 unsigned(close.until); out.write(close.kind.code)
             }
-            TimelineBinary.writeVRecord(out, item.descriptor)
+            TimelineBinary.writeVRecord(records, item.descriptor)
             protocolRequire(item.curves.size <= if (item.kind == TimelineObjectKind.ROOT) TimelineProtocol.MAX_ROOT_ATTRIBUTES else TimelineProtocol.MAX_ATTRIBUTES, "Too many attributes")
             unsigned(item.curves.size.toLong())
             for ((attributeId, curve) in orderedCurves(item.curves)) {
@@ -145,7 +147,7 @@ object TimelineCanonical {
                 unsigned(attributeId.toLong()); out.write(curve.mode.code); out.write(curve.valueType.code)
                 out.write(if (curve.criticalAttribute) 1 else 0)
                 unsigned(curve.eventHighWater)
-                TimelineBinary.writeVRecord(out, curve.metadata)
+                TimelineBinary.writeVRecord(records, curve.metadata)
                 unsigned(curve.curveRevision)
                 if (curve.mode == TimelineMode.PULSE) {
                     protocolRequire(curve.segments.isEmpty(), "PULSE contains segments")
@@ -155,7 +157,8 @@ object TimelineCanonical {
                     var previousTime = -1L
                     var previousId = -1L
                     val ids = HashSet<Long>()
-                    for (event in curve.events) {
+                    for (index in curve.events.indices) {
+                        val event = curve.events[index]
                         protocolRequire(event.eventId <= curve.eventHighWater && ids.add(event.eventId) &&
                             (event.time > previousTime || event.time == previousTime && event.eventId > previousId), "Invalid pulse order or high water")
                         protocolRequire(event.time >= item.observedFrom && event.time <= header.observedThrough &&
@@ -169,7 +172,8 @@ object TimelineCanonical {
                     totalRecords += curve.segments.size
                     protocolRequire(totalRecords <= TimelineProtocol.MAX_CURVE_RECORDS, "Too many curve records")
                     var previousEnd = item.observedFrom
-                    for (segment in curve.segments) {
+                    for (index in curve.segments.indices) {
+                        val segment = curve.segments[index]
                         protocolRequire(segment.lo >= previousEnd && (item.close == null || segment.hi <= item.close.until), "Segments overlap or escape observation")
                         previousEnd = segment.hi
                         TimelineBinary.writeSegment(out, curve.mode, curve.valueType, segment)

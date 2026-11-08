@@ -146,7 +146,7 @@ object TimelineBinary {
     }
 
     fun writeRecord(record: TimelineRecord, output: OutputStream) {
-        recordSize(record)
+        if (recordSize(record) == 0) return
         writeRecordUnchecked(record, DataOutputStream(output))
     }
 
@@ -354,7 +354,18 @@ object TimelineBinary {
         return TimelineBytes(reader.bytes(size.toInt()))
     }
     internal fun writeVBytes(out: OutputStream, bytes: TimelineBytes) { writeVUInt(out, bytes.size.toLong()); bytes.writeTo(out) }
-    internal fun writeVRecord(out: OutputStream, record: TimelineRecord) { writeVUInt(out, recordSize(record).toLong()); writeRecord(record, out) }
+    internal fun writeVRecord(out: OutputStream, record: TimelineRecord) {
+        val size = recordSize(record)
+        writeVUInt(out, size.toLong())
+        if (size != 0) writeRecordUnchecked(record, DataOutputStream(out))
+    }
+
+    /** The canonical writer owns this wrapper; arbitrary public outputs retain their wrapper. */
+    internal fun writeVRecord(out: DataOutputStream, record: TimelineRecord) {
+        val size = recordSize(record)
+        writeVUInt(out, size.toLong())
+        if (size != 0) writeRecordUnchecked(record, out)
+    }
 
     fun validateValue(type: TimelineValueType, value: TimelineValue) {
         protocolRequire(value.type == type, "Curve value has wrong type")

@@ -1,0 +1,54 @@
+{
+  "status": "targeted-tests-passed-performance-comparison-paused",
+  "applicationVersion": "2.2.0",
+  "wireVersion": 7,
+  "branch": "codex/authoritative-v7",
+  "changes": [
+    "Avoid empty-record stream allocation after complete validation.",
+    "Share one owned fixed-field writer per canonical pass.",
+    "Remove duplicate immutable record length validation during one write.",
+    "Index frozen segment/event lists without changing order."
+  ],
+  "files": [
+    {
+      "path": "core/src/main/kotlin/io/github/rwx/net/timeline/TimelineBinary.kt",
+      "baseSha256": "149c9eaa9c5b2bbd1f12a5783e0e158fe17e02695bb37b88f52a4b3e46f9abef",
+      "candidateSha256": "019198f5d49cd00b13d58aa82dd557e4d8c1365dac445f2cc1462fef823d5c0b",
+      "candidateBytes": 46681
+    },
+    {
+      "path": "core/src/main/kotlin/io/github/rwx/net/timeline/TimelineCanonical.kt",
+      "baseSha256": "d3b8fb82abf75ae4f0b3b80bad6c7d56e98fa1d190ef16bb262892e5b54a7d21",
+      "candidateSha256": "2036adb69b65f361a13250647e32e9a082c81a037d8af373b0c621a7ca0e0a55",
+      "candidateBytes": 10680
+    },
+    {
+      "path": "core/src/test/kotlin/io/github/rwx/net/timeline/TimelineRecordStreamTest.kt",
+      "baseSha256": null,
+      "candidateSha256": "7dd5c5e2b4075db7989b69d0083d7ed7cf6c8db9bcfb839a989334f4d3eb61b6",
+      "candidateBytes": 3779
+    }
+  ],
+  "targetedTests": {
+    "tests": 26,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "report": "desktop/build/verification/authoritative-v7-canonical-stream-target-2026-11-08-v1/result.json",
+    "reportSha256": "f9940bc3cb60e151d996fc13e8a6461b81ef40bdeefa3030dde9158e832851a4"
+  },
+  "independentReview": {
+    "path": "build/timeline-development/canonical-stream-independent-review-v1/review.json",
+    "sha256": "e2e4923d0e75558f35ddbc16b372ef1490a583bd51fc48642855a7a9a40e412c"
+  },
+  "performance": {
+    "complete": false,
+    "stoppedForExplicitUserPause": true,
+    "completedRuns": 8,
+    "report": "desktop/build/verification/authoritative-v7-canonical-stream-comparison-2026-11-08-v1/partial.json",
+    "speedupClaim": false
+  },
+  "fullSuiteRerunAfterThisChange": false,
+  "fullNativeCapacityPassed": false,
+  "scope": "Submission of tested source snapshot only. Targeted tests include independent complete canonical byte fixtures. The benchmark was stopped for user pause; no complete performance result or65k/60Hz claim."
+}
